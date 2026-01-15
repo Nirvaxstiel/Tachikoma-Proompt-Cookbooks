@@ -1,5 +1,5 @@
 <p align="center">
-    <img src = "assets/tachikoma1.png" alt="tachikoma1.png">
+    <img width="500px" src= "assets/tachikoma1.png" alt="tachikoma1.png">
 </p>
 
 # Tachikoma Proompt Cookbooks 🕷️
