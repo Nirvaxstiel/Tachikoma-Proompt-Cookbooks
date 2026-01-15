@@ -78,3 +78,70 @@ Save the **generated agent file** somewhere the IDE or agent can auto-load, or s
 
 If your tool has a default “agent rules” location, use that.
 Otherwise, `.github/agent.md` is a safe, portable default.
+
+---
+
+## Works Best With
+
+### Editors / IDEs
+
+**Best**
+
+* **VS Code + Copilot**
+* **Zed + Copilot**
+
+**Okay**
+
+* **Visual Studio (Enterprise) + Copilot**
+  *(works, but… yeah)*
+
+---
+
+### Models / Agents
+
+**Best experience so far**
+
+* **Claude 4**
+* **Claude 4.5 Sonnet**
+* **Claude 4.5 Opus**
+
+**Mixed (experiment, YMMV)**
+
+* **OpenAI**
+
+  * GPT-4 series — hit or miss; try different agents
+  * GPT-5 — generally better, still inconsistent; experiment
+
+**Not recommended**
+
+* **Grok models** — no ❤️
+
+**Promising**
+
+* **Gemini 3+** — decent results, needs more tuning
+
+---
+
+### Tools to Watch 👀
+
+**Haven’t used heavily yet, but liked the vibes**
+
+* **Opencode**
+* **RooCode**
+
+Will probably reach for these more once the setup (and mood) is right.
+
+---
+
+### Notes
+
+Copilot is doing a lot of the heavy lifting here —
+work pays for it, so I’m turning the knobs and trying **every model it’ll let me** 😄
+
+---
+
+### Disclaimer
+
+AI agents vary wildly by model, tool, and prompt plumbing.
+**Your mileage may vary.**
+Experiment and trust local results over lists like this.
