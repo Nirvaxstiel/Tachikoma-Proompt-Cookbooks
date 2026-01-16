@@ -62,6 +62,22 @@ Never override higher precedence without calling it out.
 **Key Constraints**  
 - <e.g. no GETs, no DB, async only, etc>
 
+**Architecture Decision Matrix**
+| Concern | Write-Optimized Pattern | Read-Optimized Pattern | Hybrid Approach |
+|---------|-------------------------|------------------------|-----------------|
+| State Management | Event-driven + message bus | Database queries + caching | Event sourcing with materialized views |
+| Data Flow | CQRS (Command side) | Traditional CRUD | Eventual consistency |
+| API Design | Task-based (verbs) | Resource-based (nouns) | Domain-driven endpoints |
+| Multi-tenancy | Route prefix isolation | Database schema per tenant | Row-level security |
+
+**Constraint Application Rules**
+| Constraint Type | Implementation Pattern | Verification Method |
+|-----------------|------------------------|---------------------|
+| No read endpoints | Write-only API layer | Static analysis, route audit |
+| Stateless design | Externalize state to bus | Memory usage monitoring |
+| Async-only I/O | Non-blocking operations | Blocking call detection |
+| Single source of truth | Event publishing | Message bus audit trail |
+
 ---
 
 ## 5. Repository & File Patterns
@@ -91,6 +107,23 @@ Describe *where things live* and *what goes where*.
 - Frameworks:
 - Naming patterns:
 - What is worth testing vs not:
+
+**File Organization Matrix**
+| Layer | Location Pattern | Responsibilities | Key Patterns |
+|-------|-----------------|------------------|--------------|
+| Entry Points | `api/` or `web/` | Request handling, validation | Controllers, routers, handlers |
+| Business Logic | `services/` or `domain/` | Core operations, orchestration | Services, processors, managers |
+| Data Transfer | `dto/` or `models/` | Data structures, contracts | DTOs, value objects, records |
+| Infrastructure | `infra/` or `external/` | External integrations | Adapters, clients, publishers |
+| Shared Utilities | `common/` or `utils/` | Cross-cutting concerns | Helpers, extensions, validators |
+
+**Type System Strategy**
+| Language Family | Immutable Type | Mutable Type | Performance Considerations |
+|-----------------|----------------|--------------|----------------------------|
+| Statically typed | Records, structs, frozen classes | Classes with builders | Value types for small/frequent data |
+| Dynamically typed | Frozen objects, const declarations | Standard objects | Object pooling for high-frequency |
+| Functional-first | Algebraic data types | Ref cells, mutable references | Structural sharing for persistence |
+| Scripting languages | Deep freeze, Object.seal() | Standard dictionaries/objects | Reference counting awareness |
 
 ---
 
@@ -122,6 +155,24 @@ If a change would violate one of these, stop and surface it.
 - Factories, Func<>, or DI gymnastics
 - Duplicated validation or mapping logic
 
+**Pattern Matching Guide**
+| Problem Type | Pattern Category | Implementation Approach |
+|--------------|------------------|-------------------------|
+| Authentication | Cross-cutting concern | Middleware, interceptors, filters |
+| Validation | Pre-processing | Decorators, aspect-oriented, before hooks |
+| Transformation | Data mapping | Mappers, adapters, converters |
+| Error handling | Exception flow | Result types, monadic error handling |
+| Caching | Performance optimization | Decorator pattern, cache-aside |
+
+**Red Flag Resolution Matrix**
+| Red Flag | Immediate Action | Long-term Solution |
+|----------|-----------------|--------------------|
+| Interface proliferation | Search for existing contract | Consolidate with generic interface |
+| Logic duplication | Extract to shared function | Create domain-specific language |
+| Manual DI wiring | Use framework DI | Convention-based registration |
+| Stringly-typed code | Introduce enums/constants | Type-safe configuration |
+| God objects | Extract cohesive modules | Apply single responsibility principle |
+
 ---
 
 ## 8. Code Style & Design Bias
@@ -133,6 +184,24 @@ If a change would violate one of these, stop and surface it.
 - No speculative extensibility (YAGNI)
 
 Document *only* what is non-obvious or externally constrained.
+
+**Design Principle Application**
+| Principle | Implementation Pattern | Code Smell to Avoid |
+|-----------|------------------------|---------------------|
+| Immutability | Copy-on-write, persistent data structures | Mutable shared state |
+| Functional core | Pure functions, side-effect isolation | Mixed business/IO |
+| Declarative style | DSLs, fluent interfaces, configuration | Imperative spaghetti |
+| Minimal API surface | Hide implementation details | Public everything |
+| Fail fast | Early validation, defensive programming | Silent failures |
+
+**Modern Feature Adoption Matrix**
+| Language Feature | Use When | Avoid When |
+|------------------|----------|------------|
+| Pattern matching | Complex conditionals, type checking | Simple null checks |
+| Collection literals | List/map initialization | Performance-critical loops |
+| Extension methods | Adding functionality to sealed types | Replacing inheritance |
+| Async/await | I/O-bound operations | CPU-bound calculations |
+| Generics | Type-safe containers, algorithms | Over-abstraction |
 
 ---
 
@@ -174,6 +243,22 @@ Never narrate intent already obvious from code.
 
 Consolidate similar cases aggressively.
 
+**Test Coverage Decision Matrix**
+| Test Category | What to Verify | Assertion Style | Integration Level |
+|---------------|----------------|-----------------|-------------------|
+| Unit | Pure business logic | State/result checks | Isolated (mocks) |
+| Integration | Component interaction | Behavior verification | Partial (stubs) |
+| Contract | API compatibility | Schema validation | Service boundaries |
+| Performance | Resource usage | Timing/threshold checks | Full stack |
+| Security | Access control, injection | Penetration testing | Cross-boundary |
+
+**Test Pyramid Implementation**
+| Layer | Test Type | Execution Speed | Maintenance Cost | % of Tests |
+|-------|-----------|-----------------|------------------|------------|
+| Base | Unit tests | Milliseconds | Low | 70-80% |
+| Middle | Integration tests | Seconds | Medium | 15-25% |
+| Top | E2E/UI tests | Minutes | High | 5-10% |
+
 ---
 
 ## 12. Operational Rules
@@ -186,6 +271,22 @@ Consolidate similar cases aggressively.
 **Post-Task Output**:
 - 2–5 bullets summarizing what changed
 - Call out any assumptions or risks
+
+**Change Impact Matrix**
+| Change Scope | Code Review Required | Tests Required | Documentation Required |
+|--------------|---------------------|----------------|------------------------|
+| Bug fix | Light (peer review) | Regression only | None |
+| Feature addition | Medium (team lead) | Unit + integration | API docs |
+| Architecture change | Heavy (architect) | Full suite | Design document |
+| Breaking change | Heavy + stakeholder | Integration + contract | Migration guide |
+
+**Output Structure Guide**
+| Audience | Format | Detail Level | Examples |
+|----------|--------|--------------|----------|
+| Developer | Code diff + comments | High | Line-by-line changes |
+| Reviewer | Summary table | Medium | Before/after comparison |
+| Manager | Bulleted impact list | Low | Business value, risks |
+| CI/CD | Structured data (JSON) | Machine-readable | Test results, metrics |
 
 ---
 
@@ -213,3 +314,42 @@ At each step, the agent must:
 If unsure, stop and ask.
 
 ---
+
+## Performance Optimization Matrix
+
+**Memory Management**
+| Strategy | Use When | Avoid When |
+|----------|----------|------------|
+| Object pooling | High-frequency creation | Memory pressure high |
+| Lazy loading | Large dependency graphs | Startup time critical |
+| Copy-on-write | Read-heavy, infrequent writes | Write-heavy workloads |
+| Flyweight pattern | Many similar objects | Object uniqueness required |
+
+**Concurrency Models**
+| Pattern | Best For | Complexity | Error Handling |
+|---------|----------|------------|----------------|
+| Async/await | I/O-bound tasks | Low | Exception-based |
+| Actors | Stateful services | Medium | Supervision trees |
+| Channels | Producer-consumer | Medium | Closed channel detection |
+| Thread pools | CPU-bound tasks | High | Thread starvation |
+
+**Collection Performance**
+| Operation | Array | Linked List | Hash Map | Tree Map |
+|-----------|-------|-------------|----------|----------|
+| Random access | O(1) | O(n) | O(1) | O(log n) |
+| Insert at start | O(n) | O(1) | O(1) | O(log n) |
+| Iteration | O(n) | O(n) | O(n) | O(n) |
+| Memory overhead | Low | High | Medium | Medium |
+
+---
+
+## Quick Review Checklist
+
+| Category | Checks | Auto-Detectable |
+|----------|--------|-----------------|
+| Correctness | Logic errors, edge cases | Partially (static analysis) |
+| Security | Injection, auth bypass | Mostly (SAST tools) |
+| Performance | N+1 queries, memory leaks | Yes (profiling) |
+| Maintainability | Complexity, duplication | Yes (metrics) |
+| Testing | Coverage, test quality | Partially (coverage tools) |
+| Documentation | API docs, comments | Partially (linters) |

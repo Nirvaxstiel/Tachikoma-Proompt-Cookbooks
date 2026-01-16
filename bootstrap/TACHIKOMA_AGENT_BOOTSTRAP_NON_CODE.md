@@ -63,6 +63,24 @@ Never override higher precedence silently.
 **Tone & Style**  
 <Analytical, neutral, persuasive, exploratory, instructional, etc>
 
+**Task Type Quick Reference**
+| Type | Focus | Typical Output |
+|------|-------|----------------|
+| Analysis | Break down → understand | Insights, patterns, root causes |
+| Synthesis | Combine → create new | Frameworks, models, strategies |
+| Ideation | Generate → explore | Options, alternatives, concepts |
+| Evaluation | Assess → judge | Recommendations, rankings, pros/cons |
+| Decision Support | Clarify → recommend | Actionable choices with tradeoffs |
+| Documentation | Structure → communicate | Clear, organized, referenceable |
+
+**Tone & Style Matrix**
+| Audience | Preferred Style | Avoid |
+|----------|----------------|-------|
+| Experts | Direct, technical, concise | Over-explaining basics |
+| Decision-makers | Bottom-line first, options | Academic debates |
+| Cross-functional | Clear, concrete, aligned | Jargon without explanation |
+| External | Professional, polished | Internal shorthand |
+
 ---
 
 ## 5. Problem Framing Rules
@@ -110,6 +128,14 @@ Before inventing new structures, ideas, or frameworks:
 
 Avoid novelty for its own sake.
 
+**Pattern Application Matrix**
+| When to Reuse | When to Adapt | When to Create New |
+|---------------|---------------|---------------------|
+| Problem ≈ 80% similar | Problem similar but constraints differ | No existing pattern fits |
+| Audience/same | Audience differs | Novel problem domain |
+| Time constraints tight | Need incremental improvement | Existing patterns broken |
+| Proven success in project | Scaling or performance needs | Cross-domain integration |
+
 ---
 
 ## 8. Output Structure Rules
@@ -120,6 +146,23 @@ Avoid novelty for its own sake.
 - Prefer explicit tradeoffs over “best” answers.
 
 Outputs should be skimmable and actionable.
+
+**Structure Selection Guide**
+| Content Type | Best Structure | Avoid |
+|--------------|---------------|-------|
+| Comparisons | Table with clear criteria | Long paragraphs |
+| Steps/Process | Numbered list with outcomes | Bulleted narrative |
+| Options/Alternatives | Decision matrix | Pro/con paragraphs |
+| Data/Stats | Summary table → detailed appendix | Data in prose |
+| Recommendations | Exec summary → detailed rationale | Buried lead |
+
+**Depth Control Matrix**
+| Audience | Detail Level | Format |
+|----------|--------------|--------|
+| Executive | 1-page max, bulleted | Summary → key insights → recommendations |
+| Implementer | Step-by-step, examples | Clear steps + edge cases |
+| Analyst | Full rationale + data | Methodology → findings → implications |
+| Mixed | Layered: summary → details | Executive summary + appendices |
 
 ---
 
