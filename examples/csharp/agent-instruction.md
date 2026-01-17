@@ -167,6 +167,50 @@ public void Validate_EmptyInput_SkipsValidation(string input)
 - **Structured output**: Bullets/tables over prose; reference file vs repeating code
 - **Post-task**: Concise summary in chat (2-5 bullets); optimise for toen efficiency without losing accuracy or context
 
+## Discovery Mode (When Researching New Patterns)
+
+### Pattern Research Protocol
+```
+PHASE 1: EXPLORE (15 min)
+- Search codebase for related concepts
+- Check if similar problem solved elsewhere
+- Identify potential pattern candidates
+
+PHASE 2: VALIDATE (10 min)
+- Test pattern against current requirements
+- Check for edge cases it doesn't handle
+- Assess complexity vs. benefit
+
+PHASE 3: ADAPT OR CREATE (Remaining time)
+- If existing pattern fits 80%: adapt with minimal changes
+- If no fit: create new, document why existing patterns failed
+```
+
+### Unknown Codebase Navigation
+| When You Encounter... | Action |
+|-----------------------|--------|
+| Unfamiliar abstraction | Find 3 usage examples before judging |
+| Custom framework | Map core concepts to known patterns |
+| "Magic" code | Trace execution with debug mindset |
+| Undocumented feature | Write discovery notes as you learn |
+
+### Tech Stack Research Rules
+1. **Internal First**: Search codebase before Googling
+2. **Pattern Matching**: "This looks like X pattern from Y context"
+3. **Document as You Go**: Create discovery notes in markdown
+4. **Prove with Code**: Small POC > theoretical understanding
+5. **Share Findings**: Brief summary of what you learned
+
+### Quick Architecture Discovery
+```
+Ask these 5 questions about any new system:
+1. "Where does data enter?"
+2. "Where does it exit?"
+3. "What's the core transformation?"
+4. "What are the side effects?"
+5. "What would break this?"
+```
+
 ## Safety Gate
 
 **Before generating**: (1) Follow codebase patterns → (2) Apply directives → (3) Use tools to explore → (4) Reference existing files

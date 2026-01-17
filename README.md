@@ -41,43 +41,72 @@ Generated files are for **daily use**.
 
 ---
 
-## Where the Generated File Lives
+## SKILL Support
 
-Save the **generated agent file** somewhere the IDE or agent can auto-load, or somewhere convenient to paste from.
+This repo also plays nice with **SKILL format** for Claude Code and OpenCode:
 
-### Common Locations (Recommended)
+1. Open `bootstrap/TACHIKOMA_AGENT_BOOTSTRAP.md` in your agent
+2. Agent scaffolds `.cli-agent/skills/` folder structures
+3. Agent fills in project-specific content and generates SKILL.md files
+4. rename `.cli-agent` to your agent of choosing - `.claude` | `.opencode` | `.gemini` or whichever
 
-#### GitHub / Repo-level
+**Locations:**
+- Claude Code: `.claude/skills/<skill>/SKILL.md` or `~/.claude/skills/`
+- OpenCode: `.opencode/skill/<skill>/SKILL.md` or `~/.config/opencode/skill/`
 
-- `.github/agent.md`
-- `.github/ai-instructions.md`
+See [docs/SKILLS_GUIDE.md](docs/SKILLS_GUIDE.md) for the nitty-gritty.
 
-#### Cursor
+---
 
-- `.cursor/agent.md`
-- `.cursor/rules.md`
+## Output Locations Summary
 
-#### VS Code
+### SKILL Format
 
-- `.vscode/agent.md`
-- `.vscode/ai-context.md`
+| Platform | File/Folder |
+|-------------|----------|
+| Claude Code | `.claude/skills/<name>/SKILL.md` |
+| Claude Code | `.claude/skill/<name>/SKILL.md` |
+| OpenCode | `.opencode/skill/<name>/SKILL.md` |
+| OpenCode | `.gemini/skill/<name>/SKILL.md` |
+| OpenCode | `~/.config/opencode/skill/<name>/SKILL.md` |
 
-#### Visual Studio
+### Agent Instructions
 
-- `.github/agent.md`
-  _(or repo root for manual inclusion)_
 
-#### Kiro
+| Tool / Platform | Primary Project-Level Path(s) |
+| :--- | :--- |
+| **Claude Code** | `.claude/skills/<skill-name>/SKILL.md` |
+| **Cursor** | `.cursorrules`, `.cursor/rules` |
+| **Gemini CLI** | `.gemini/skills/<skill-name>/` (if using project-specific skills) |
+| **GitHub Copilot** | `.github/copilot-instructions.md`<br>`.github/instructions/*.instructions.md` |
+| **Kiro** | `.kiro/specs/<domain>/` (for requirements, design, tasks) and `.kiro/steering/` for rules |
+| **OpenCode** | `.opencode/skill/<skill-name>/SKILL.md`<br>`AGENTS.md` (general project instructions) |
+| **Roo Code** | `.roo/rules/` (directory for `.md` files) |
+| **Tabnine** | `.tabnine/` (directory) |
+| **Windsurf** | `.windsurfrules`, `.windsruf/rules` |
+| **Zed Editor** | `.rules` (also checks for: `.cursorrules`, `.windsurfrules`, `.clinerules`, `CLAUDE.md`, `AGENTS.md`) |
 
-- `.kiro/agent.md` _(or tool-default folder)_
+### Kiro's Specs-Based Approach
 
-#### Zed
+Kiro uses a **workflow documentation** approach with specs organized by domain:
 
-- `.zed/agent.md`
-- Repo root for manual loading
+```
+.kiro/specs/
+├── user-authentication/       # Login, signup, password reset
+├── product-catalog/           # Product listing, search, filtering
+├── shopping-cart/             # Add to cart, checkout
+└── payment-processing/        # Gateway integration, orders
+```
 
-If your tool has a default “agent rules” location, use that.
-Otherwise, `.github/agent.md` is a safe, portable default.
+| Spec File | Purpose |
+|-----------|---------|
+| `requirements.md` | User stories + acceptance criteria (EARS notation) |
+| `design.md` | Technical architecture, sequence diagrams |
+| `tasks.md` | Implementation plan with status tracking |
+
+Format: `WHEN [condition] THE SYSTEM SHALL [behavior]`
+
+Not sure where to put it? `.github/agent.md` works just about everywhere.
 
 ---
 
@@ -109,8 +138,8 @@ Otherwise, `.github/agent.md` is a safe, portable default.
 
 * **OpenAI**
 
-  * GPT-4 series — hit or miss; try different agents
-  * GPT-5 — generally better, still inconsistent; experiment
+   * GPT-4 series — hit or miss; try different agents
+   * GPT-5 — generally better, still inconsistent; experiment
 
 **Not recommended**
 
@@ -124,7 +153,7 @@ Otherwise, `.github/agent.md` is a safe, portable default.
 
 ### Tools to Watch 👀
 
-**Haven’t used heavily yet, but liked the vibes**
+**Haven't used heavily yet, but liked the vibes**
 
 * **Opencode**
 * **RooCode**
@@ -136,7 +165,7 @@ Will probably reach for these more once the setup (and mood) is right.
 ### Notes
 
 Copilot is doing a lot of the heavy lifting here —
-work pays for it, so I’m turning the knobs and trying **every model it’ll let me** 😄
+work pays for it, so I'm turning the knobs and trying **every model it'll let me** 😄
 
 ---
 

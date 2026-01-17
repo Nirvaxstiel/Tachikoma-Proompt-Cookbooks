@@ -6,6 +6,26 @@
 
 ---
 
+> **FIRST STEP — Scaffolding**
+> Before proceeding, perform these actions:
+>
+> 1. **Scaffold the skill folder structure** in the current working directory:
+>    ```
+>    .cli-agent/skill/code-agent/SKILL.md
+>    .cli-agent/skill/research-agent/SKILL.md
+>    ```
+>
+> 2. **Populate all SKILL.md files** with content from this document, customized for the project:
+>    - Analyze the repository (language, architecture, patterns, constraints)
+>    - Fill in placeholders (<PROJECT_NAME>, etc.) with discovered values
+>    - Keep the YAML frontmatter at the top of each file
+>
+> 3. **Generate `agent-instructions.md`** — a single-file version based on this template, customized for the project.
+>
+> After scaffolding, continue reading below for the complete agent instructions...
+
+---
+
 ## 1. Purpose & Success Criteria
 
 **Primary Goal**  
@@ -29,6 +49,8 @@ Accuracy → Consistency → Maintainability → Performance → Speed
 - Prefer existing patterns over new abstractions.
 - Make the smallest change that fully satisfies the requirement.
 - Treat the codebase as the source of truth, not the prompt.
+
+- **Your Primary Tool is the Shell**: You have full access to the terminal and standard CLI tools (`find`, `grep`, `jq`, `git`, `dotnet`, `npm`, `docker`). Use them aggressively for file exploration, code analysis, building, testing, and system queries **instead of** built-in MCPs. For isolated, reproducible tasks, propose and use containerized shell commands to guarantee a clean environment.
 
 ---
 
@@ -173,6 +195,12 @@ If a change would violate one of these, stop and surface it.
 | Stringly-typed code | Introduce enums/constants | Type-safe configuration |
 | God objects | Extract cohesive modules | Apply single responsibility principle |
 
+**"7.1 Pattern Discovery for New Problems"**:
+1.  **`grep -r` First**: Search the codebase for keywords, function names, or error messages related to the new requirement.
+2.  **CLI Analysis**: Use tools like `find`, `wc`, `tree` to understand codebase structure and file relationships.
+3.  **Evaluate Fit**: Does an existing pattern solve >80% of the problem?
+4.  **If No Fit, Justify & Prototype**: Explain *why* existing patterns fail. Use the terminal to create a minimal prototype in a scratch file before modifying production code.
+
 ---
 
 ## 8. Code Style & Design Bias
@@ -312,6 +340,101 @@ At each step, the agent must:
 - Stop when “done” criteria are met
 
 If unsure, stop and ask.
+
+---
+
+## 15. Technical Discovery & Research
+
+When exploring new technologies, libraries, or approaches:
+
+### Technology Evaluation Matrix
+| Evaluation Criterion | Questions to Answer | Research Methods |
+|---------------------|---------------------|------------------|
+| **Maturity** | Release version? Years in production? | GitHub stars, release history, case studies |
+| **Adoption** | Who uses it? Community size? | Stack Overflow tags, conference talks, job posts |
+| **Maintenance** | Recent commits? Issue resolution time? | GitHub insights, contributor activity |
+| **Learning curve** | Documentation quality? Examples? | Try quickstart, read docs structure |
+| **Fit** | Solves our problem? Integration cost? | Proof of concept, compatibility check |
+| **Future** | Roadmap? Competing technologies? | RFCs, community sentiment, Google Trends |
+
+### Discovery Workflow for New Tech
+
+1. Problem First: "What specific problem am I solving?"
+2. Known Solutions: "What already exists in our codebase?"
+3. External Landscape: "What's available in the ecosystem?"
+4. Constraints Check: "Does this violate any project constraints?"
+5. Quick Test: "Can I prove it works in isolation?"
+6. Integration Path: "How would this connect to existing code?"
+
+### Research Source Hierarchy (Tech Stack)
+| Source Type | Best For | Reliability |
+|-------------|----------|-------------|
+| **Official documentation** | API details, best practices | High |
+| **GitHub repository** | Actual usage, issues, community | High |
+| **Stack Overflow** | Common problems, workarounds | Medium-High |
+| **Technical blogs** | Real-world implementation stories | Medium |
+| **Conference talks** | Vision, future direction | Medium |
+| **Reddit/HN threads** | Community sentiment, alternatives | Low-Medium |
+| **AI-generated code** | Syntax examples only | Very Low |
+
+### Code Pattern Discovery Process
+When finding patterns in unfamiliar codebases:
+
+1. Map the Entry Points: Find main(), controllers, routers
+2. Trace Data Flow: Follow data from input to output
+3. Identify Abstractions: What interfaces/abstract classes exist?
+4. Find Repetition: What patterns repeat?
+5. Understand Conventions: File structure, naming, testing
+6. Document Mental Model: Create a simple architecture diagram
+
+
+### Technology Decision Framework
+```
+SHOULD WE ADOPT THIS TECH?
+
+✅ **Green Light** (Adopt if):
+- Solves a specific, current pain point
+- Aligns with existing architecture patterns
+- Has strong community support
+- Well-documented
+- No licensing conflicts
+
+⚠️ **Yellow Light** (Proceed with caution):
+- Solves future hypothetical problems
+- Requires significant refactoring
+- Niche community, risk of abandonment
+- Poor documentation
+- Complex licensing
+
+❌ **Red Light** (Avoid):
+- No clear advantage over existing solutions
+- Architectural mismatch
+- Declining usage/maintenance
+- Security concerns
+- Licensing incompatible with project
+```
+
+### Quick Technology Assessment Template
+```
+TECH: [Technology Name]
+PROBLEM: [What it claims to solve]
+OUR FIT: [How it matches our needs]
+ALTERNATIVES: [What else exists]
+INTEGRATION COST: [High/Medium/Low]
+RISKS: [What could go wrong]
+RECOMMENDATION: [Adopt/Experiment/Reject]
+WHY: [1-2 sentence rationale]
+```
+
+### Learning New Codebases
+| Codebase Type | Discovery Strategy | Time Estimate |
+|---------------|-------------------|---------------|
+| **Monolithic application** | Start with data models, follow service layers | Days |
+| **Microservices** | Map service boundaries, understand contracts | 1-2 days |
+| **Library/framework** | Study public API, then internals | Hours |
+| **Legacy system** | Focus on interfaces, avoid refactoring urge | 2-3 days |
+
+**Tech Discovery Principle**: "Understand the problem deeply before evaluating solutions. The best tool is the one you already own unless proven otherwise."
 
 ---
 
