@@ -6,23 +6,40 @@
 
 ---
 
-> **FIRST STEP — Scaffolding**
-> Before proceeding, perform these actions:
->
-> 1. **Scaffold the skill folder structure** in the current working directory:
->    ```
->    .cli-agent/skill/code-agent/SKILL.md
->    .cli-agent/skill/research-agent/SKILL.md
->    ```
->
-> 2. **Populate all SKILL.md files** with content from this document, customized for the project:
->    - Analyze the repository (language, architecture, patterns, constraints)
->    - Fill in placeholders (<PROJECT_NAME>, etc.) with discovered values
->    - Keep the YAML frontmatter at the top of each file
->
-> 3. **Generate `agent-instructions.md`** — a single-file version based on this template, customized for the project.
->
-> After scaffolding, continue reading below for the complete agent instructions...
+**FIRST STEP — Scaffolding**
+Before proceeding, perform these actions:
+
+1. **Scaffold the skill folder structure** in the current working directory:
+   ```
+   .cli-agent/skill/code-agent/SKILL.md
+   .cli-agent/skill/research-agent/SKILL.md
+   ```
+
+2. **Populate all SKILL.md files** with content from this document, customized for the project:
+   - Analyze the repository (language, architecture, patterns, constraints)
+   - Fill in placeholders (<PROJECT_NAME>, etc.) with discovered values
+   - Keep the YAML frontmatter at the top of each file
+
+3. **Generate `agent-instructions.md`** — a single-file version based on this template, customized for the project.
+
+**SKILL.md Frontmatter Requirement**
+
+All generated `SKILL.md` files **must start** with a YAML frontmatter block defining the skill.
+This frontmatter is required and is part of the agent’s operating contract.
+
+The frontmatter must include, at minimum:
+- `name`
+- `description`
+- `license`
+- `compatibility`
+- `metadata`, including:
+  - `audience`
+  - `workflow`
+
+Failure to include this frontmatter, or omission of required fields, constitutes an invalid `SKILL.md`.
+All remaining content must follow the frontmatter.
+
+After scaffolding, continue reading below for the complete agent instructions...
 
 ---
 
@@ -51,6 +68,35 @@ Accuracy → Consistency → Maintainability → Performance → Speed
 - Treat the codebase as the source of truth, not the prompt.
 
 - **Your Primary Tool is the Shell**: You have full access to the terminal and standard CLI tools (`find`, `grep`, `jq`, `git`, `dotnet`, `npm`, `docker`). Use them aggressively for file exploration, code analysis, building, testing, and system queries **instead of** built-in MCPs. For isolated, reproducible tasks, propose and use containerized shell commands to guarantee a clean environment.
+
+---
+
+## 2.1 Externalized Context Mode (Default)
+
+The agent operates under **Externalized Context Mode** by default.
+
+### Core Assumption
+The agent must assume **incomplete visibility** of the codebase.
+The repository, file system, and tooling are the source of truth — not the prompt.
+
+### Operating Rules
+- Never assume knowledge of files, symbols, or behavior without inspection.
+- Discover structure via indexes (`tree`, `find`, `ls`) before opening files.
+- Read the **smallest relevant file or section** required.
+- Summarize findings and **do not retain raw code mentally** beyond the task.
+- Re-inspect files rather than relying on recalled content.
+
+### Prohibited Behavior
+- Assuming how code works without reading it
+- Requesting or loading large files without justification
+- Holding large code excerpts in working context unnecessarily
+
+### Replacement Behavior
+- Inspect → extract facts → summarize → discard
+- Treat summaries as provisional until validated against source
+- Re-query the codebase when uncertainty arises
+
+This mode is **non-optional** unless explicitly disabled by the user.
 
 ---
 

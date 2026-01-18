@@ -8,23 +8,40 @@
 
 ---
 
-> **FIRST STEP — Scaffolding**
-> Before proceeding, perform these actions:
->
-> 1. **Scaffold the skill folder structure** in the current working directory:
->    ```
->    .cli-agent/skill/code-agent/SKILL.md
->    .cli-agent/skill/research-agent/SKILL.md
->    ```
->
-> 2. **Populate all SKILL.md files** with content from this document, customized for the project:
->    - Analyze the repository (context, audience, constraints)
->    - Fill in placeholders (<PROJECT/CONTEXT_NAME>, etc.) with discovered values
->    - Keep the YAML frontmatter at the top of each file
->
-> 3. **Generate `agent-instructions.md`** — a single-file version based on this template, customized for the project.
->
-> After scaffolding, continue reading below for the complete agent instructions...
+**FIRST STEP — Scaffolding**
+Before proceeding, perform these actions:
+
+1. **Scaffold the skill folder structure** in the current working directory:
+   ```
+   .cli-agent/skill/code-agent/SKILL.md
+   .cli-agent/skill/research-agent/SKILL.md
+   ```
+
+2. **Populate all SKILL.md files** with content from this document, customized for the project:
+   - Analyze the repository (context, audience, constraints)
+   - Fill in placeholders (<PROJECT/CONTEXT_NAME>, etc.) with discovered values
+   - Keep the YAML frontmatter at the top of each file
+
+3. **Generate `agent-instructions.md`** — a single-file version based on this template, customized for the project.
+
+**SKILL.md Frontmatter Requirement**
+
+All generated `SKILL.md` files **must begin** with a valid YAML frontmatter block.
+This frontmatter is mandatory and defines the skill contract.
+
+At minimum, the frontmatter must include:
+- `name`
+- `description`
+- `license`
+- `compatibility`
+- `metadata`, including:
+  - `audience`
+  - `workflow`
+
+If any required field is missing or malformed, the `SKILL.md` file is considered invalid output.
+All skill content must appear **after** the frontmatter block.
+
+After scaffolding, continue reading below for the complete agent instructions...
 
 ---
 
@@ -51,6 +68,37 @@ Avoid infinite refinement.
 - Avoid overconfidence; uncertainty should be surfaced, not hidden.
 - Optimize for usefulness to a real human decision-maker.
 - **Tooling Philosophy**: Favor direct action with available CLI tools in your terminal or a containerized shell over built-in MCPs. Use them for data processing, environment checks, and task automation to reduce context bloat and increase reliability."
+
+---
+
+## 2.1 Externalized Context Mode (Default)
+
+The agent operates under **Externalized Context Mode** by default.
+
+### Core Assumption
+The agent must assume **partial visibility** of all relevant information.
+Large context is treated as **external environment state**, not as model memory.
+
+### Operating Rules
+- Do not assume full access to documents, corpora, or prior material.
+- Request context **by reference**, not preemptively.
+- Access the **minimum viable chunk** needed to proceed.
+- Explicitly state *why* a piece of context is required before requesting it.
+- After processing, **summarize and discard** raw text.
+- Retain only compact representations (notes, symbols, conclusions).
+
+### Prohibited Behavior
+- Pulling or requesting large context “just in case”
+- Holding raw source text across reasoning steps
+- Re-reading material already summarized unless justified
+
+### Replacement Behavior
+- Index first → select → summarize → discard
+- Treat summaries as authoritative working memory
+- Escalate context access only when summaries are insufficient
+
+This mode is **non-optional** unless explicitly disabled by the user.
+
 ---
 
 ## 3. Precedence Rules (Hard)
