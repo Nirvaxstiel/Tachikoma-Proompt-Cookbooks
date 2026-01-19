@@ -8,43 +8,6 @@
 
 ---
 
-**FIRST STEP — Scaffolding**
-Before proceeding, perform these actions:
-
-1. **Scaffold the skill folder structure** in the current working directory:
-   ```
-   .cli-agent/skill/code-agent/SKILL.md
-   .cli-agent/skill/research-agent/SKILL.md
-   ```
-
-2. **Populate all SKILL.md files** with content from this document, customized for the project:
-   - Analyze the repository (context, audience, constraints)
-   - Fill in placeholders (<PROJECT/CONTEXT_NAME>, etc.) with discovered values
-   - Keep the YAML frontmatter at the top of each file
-
-3. **Generate `agent-instructions.md`** — a single-file version based on this template, customized for the project.
-
-**SKILL.md Frontmatter Requirement**
-
-All generated `SKILL.md` files **must begin** with a valid YAML frontmatter block.
-This frontmatter is mandatory and defines the skill contract.
-
-At minimum, the frontmatter must include:
-- `name`
-- `description`
-- `license`
-- `compatibility`
-- `metadata`, including:
-  - `audience`
-  - `workflow`
-
-If any required field is missing or malformed, the `SKILL.md` file is considered invalid output.
-All skill content must appear **after** the frontmatter block.
-
-After scaffolding, continue reading below for the complete agent instructions...
-
----
-
 ## 1. Purpose & Success Criteria
 
 **Primary Objective**  
