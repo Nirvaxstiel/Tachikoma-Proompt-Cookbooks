@@ -89,19 +89,10 @@ In this workflow, you install a "Skill" into your agent's configuration. This gi
 
 This repo is designed to play nice with the **SKILL format**.
 
-<<<<<<< HEAD
 | Tool            | Primary Skill Path                      | File        |
 | :-------------- | :-------------------------------------- | :---------- |
 | **Claude Code** | `.claude/skills/<skill_name>/SKILL.md`  | `AGENTS.md` |
 | **OpenCode**    | `.opencode/skill/<skill_name>/SKILL.md` | `AGENTS.md` |
-||||||| 955dae4
-## Works Best With
-=======
-| Tool            | Primary Skill Path                      | File             |
-| :-------------- | :-------------------------------------- | :--------------- |
-| **Claude Code** | `.claude/skills/<skill_name>/SKILL.md`  | `AGENTS.md`      |
-| **OpenCode**    | `.opencode/skill/<skill_name>/SKILL.md` | `AGENTS.md`      |
->>>>>>> gitlab/master
 
 ---
 
