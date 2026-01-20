@@ -70,6 +70,7 @@ While the **Skill** provides the _logic_ (how to think recursively), the **`AGEN
     - **Generate a project-specific agent file** (e.g., `MY_PROJECT_AGENT.md`).
 5.  **Save that file.**
 6.  **Future Sessions:** Do not use the template. Instead, upload the generated `MY_PROJECT_AGENT.md` at the start of the chat.
+    You can also save this as `AGENTS.md` in your root directory and the agent will pick it up for you.
 
 ---
 
@@ -81,9 +82,9 @@ While the **Skill** provides the _logic_ (how to think recursively), the **`AGEN
 ├── .opencode/                              # Skills formatted for OpenCode
 │   └── skill/
 │   └── agent/
-        └──   rlm-subcall.md
-    └── 01-let-the-agent-do-it              # The "One-Time" templates
-        └──   TACHIKOMA_AGENT_BOOTSTRAP.md
+│       └──   rlm-subcall.md
+│   └── 01-let-the-agent-do-it              # The "One-Time" templates
+│       └──   TACHIKOMA_AGENT_BOOTSTRAP.md
 └── examples/                               # Example implementations
 ```
 
