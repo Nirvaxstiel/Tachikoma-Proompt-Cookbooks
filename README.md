@@ -37,7 +37,7 @@ In this workflow, you install a "Skill" into your agent's configuration. This gi
 
 1.  **Clone this repo**
 2.  Copy `.opencode` and `AGENTS.md` to your project repo
-    - Quick Tip; Avoid putting your agent instruction files into the `.gitignore` (`AGENTS.md`, `.opencode/`, `.claude/`).
+    - Avoid putting your agent instruction files into the `.gitignore` (`AGENTS.md`, `.opencode/`, `.claude/`).
     - Keep them out of the so that the agent can pick them up from the repo root.
 3.  (Optional) Tell the agent to trawl and update project-specific lore to the SKILL.md and AGENTS.md available
     - Use RLM Mode for this too
@@ -89,10 +89,19 @@ In this workflow, you install a "Skill" into your agent's configuration. This gi
 
 This repo is designed to play nice with the **SKILL format**.
 
+<<<<<<< HEAD
 | Tool            | Primary Skill Path                      | File        |
 | :-------------- | :-------------------------------------- | :---------- |
 | **Claude Code** | `.claude/skills/<skill_name>/SKILL.md`  | `AGENTS.md` |
 | **OpenCode**    | `.opencode/skill/<skill_name>/SKILL.md` | `AGENTS.md` |
+||||||| 955dae4
+## Works Best With
+=======
+| Tool            | Primary Skill Path                      | File             |
+| :-------------- | :-------------------------------------- | :--------------- |
+| **Claude Code** | `.claude/skills/<skill_name>/SKILL.md`  | `AGENTS.md`      |
+| **OpenCode**    | `.opencode/skill/<skill_name>/SKILL.md` | `AGENTS.md`      |
+>>>>>>> gitlab/master
 
 ---
 
