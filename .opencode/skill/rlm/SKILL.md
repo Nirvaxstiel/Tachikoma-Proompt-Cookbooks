@@ -8,6 +8,8 @@ allowed-tools:
   - Grep
   - Glob
   - Bash
+  - Todoread
+  - Todowrite
 compatibility:
   - opencode
   - claude-code

@@ -35,23 +35,18 @@ In this workflow, you install a "Skill" into your agent's configuration. This gi
 
 ### Installation
 
-1.  **Clone this repo** or navigate to the `feature/agent-skills` branch.
-2.  **Copy the skill files** to your agent's configuration directory.
+1.  **Clone this repo**
+2.  Copy `.opencode` and `AGENTS.md` to your project repo
+3.  (Optional) Tell the agent to trawl and update project-specific lore to the SKILL.md and AGENTS.md available
+    - Use RLM Mode for this too
+4.  Toggle RLM mode and watch the magic happen
+
+![Example](assets/opencode-rlm-subcall-mode-example.png)
 
 | Platform        | Source Path in Repo | Destination Path on Local Machine                        |
 | :-------------- | :------------------ | :------------------------------------------------------- |
 | **Claude Code** | `.claude/skills/`   | `~/.claude/skills/` or `.claude/skills/` (project-level) |
 | **OpenCode**    | `.opencode/skill/`  | `~/.config/opencode/skill/` or `.opencode/skill/`        |
-
-### Configuration (`AGENTS.md`)
-
-While the **Skill** provides the _logic_ (how to think recursively), the **`AGENTS.md`** file provides the _context_ (what to care about).
-
-1.  Create an `AGENTS.md` file in the root of your project.
-2.  Add project-specific directives, architecture notes, or constraints.
-3.  The RLM Skill will automatically ingest this file as its "Root Instruction" set.
-4.  **For quick analysis:** Use `RLM-subcall mode` by providing a large context file path and query. The agent will automatically chunk and analyze using scripts.
-![Example](assets/opencode-rlm-subcall-mode-example.png)
 
 ---
 
@@ -61,7 +56,7 @@ While the **Skill** provides the _logic_ (how to think recursively), the **`AGEN
 
 ### How to Use
 
-1.  **Pick a template** from the `bootstrap/` folder (e.g., `TACHIKOMA_AGENT_BOOTSTRAP.md`).
+1.  **Pick a template** from the `.opencode/old-bootstrapper` folder (e.g., `TACHIKOMA_AGENT_BOOTSTRAP.md`).
 2.  **Start a new AI session.**
 3.  **Paste the template** into the chat **once**.
 4.  The agent will:
@@ -96,8 +91,6 @@ This repo is designed to play nice with the **SKILL format**.
 | :-------------- | :-------------------------------------- | :--------------- |
 | **Claude Code** | `.claude/skills/<skill_name>/SKILL.md`  | `AGENTS.md`      |
 | **OpenCode**    | `.opencode/skill/<skill_name>/SKILL.md` | `AGENTS.md`      |
-| **Cursor**      | N/A (Uses Rules)                        | `.cursorrules`   |
-| **Windsurf**    | N/A (Uses Rules)                        | `.windsurfrules` |
 
 ---
 
@@ -127,10 +120,10 @@ This repo is designed to play nice with the **SKILL format**.
 
 ### Tools to Watch 👀
 
-| Tier            | Tool     | Notes                                             |
-| --------------- | -------- | ------------------------------------------------- |
-| **Horii Shiet** | Opencode | Yes. I'm actively trying it out more              |
-| **Promising**   | RooCode  | Same — good energy, waiting for the right moment. |
+| Tier            | Tool     | Notes                          |
+| --------------- | -------- | ------------------------------ |
+| **Horii Shiet** | Opencode | I'm actively using it more now |
+| **Promising**   | RooCode  | Pretty good                    |
 
 ---
 
