@@ -1,8 +1,9 @@
 ---
 name: rlm-subcall
 description: Acts as the RLM sub-LLM (llm_query). Given a chunk of context (usually via a file path) and a query, extract only what is relevant and return a compact structured result. Use proactively for long contexts.
-tools: Read
-model: GPT-5 mini
+tools:
+  Read: true
+# model: GPT-5 mini
 ---
 
 You are a sub-LLM used inside a Recursive Language Model (RLM) loop.

@@ -2,10 +2,6 @@
     <img width="500px" src= "assets/tachikoma1.png" alt="tachikoma1.png">
 </p>
 
-<p align="center">
-    <img width="500px" src= "assets/tachikoma1.png" alt="tachikoma1.png">
-</p>
-
 # Tachikoma Proompt Cookbooks 🕷️
 
 **Boot manuals and Recursive Skills for AI agents exploring your repository.**
@@ -54,16 +50,8 @@ While the **Skill** provides the _logic_ (how to think recursively), the **`AGEN
 1.  Create an `AGENTS.md` file in the root of your project.
 2.  Add project-specific directives, architecture notes, or constraints.
 3.  The RLM Skill will automatically ingest this file as its "Root Instruction" set.
-
-**Example `AGENTS.md`:**
-
-```markdown
-# Project: Tachikoma
-
-- Architecture: Python backend, React frontend.
-- Constraint: Always use TypeHints.
-- Context Strategy: When analyzing the `src/core` folder, chunk by class definition.
-```
+4.  **For quick analysis:** Use `RLM-subcall mode` by providing a large context file path and query. The agent will automatically chunk and analyze using scripts.
+![Example](assets/opencode-rlm-subcall-mode-example.png)
 
 ---
 
@@ -89,36 +77,36 @@ While the **Skill** provides the _logic_ (how to think recursively), the **`AGEN
 
 ```text
 .
-├── AGENTS.md           # Example project-specific instructions
-├── bootstrap/          # The "One-Time" templates
-│   └── TACHIKOMA_AGENT_BOOTSTRAP.md
-├── .claude/            # Skills formatted for Claude Code
-│   └── skills/
-├── .opencode/          # Skills formatted for OpenCode
+├── AGENTS.md                               # Example project-specific instructions
+├── .opencode/                              # Skills formatted for OpenCode
 │   └── skill/
-└── examples/           # Example implementations (C#, Python, etc.)
+│   └── agent/
+        └──   rlm-subcall.md
+    └── 01-let-the-agent-do-it              # The "One-Time" templates
+        └──   TACHIKOMA_AGENT_BOOTSTRAP.md
+└── examples/                               # Example implementations
 ```
 
 ## 🛠️ Supported Platforms & Paths
 
 This repo is designed to play nice with the **SKILL format**.
 
-| Tool            | Primary Skill Path                      | Project Instructions File |
-| :-------------- | :-------------------------------------- | :------------------------ |
-| **Claude Code** | `.claude/skills/<skill_name>/SKILL.md`  | `AGENTS.md`               |
-| **OpenCode**    | `.opencode/skill/<skill_name>/SKILL.md` | `AGENTS.md`               |
-| **Cursor**      | N/A (Uses Rules)                        | `.cursorrules`            |
-| **Windsurf**    | N/A (Uses Rules)                        | `.windsurfrules`          |
+| Tool            | Primary Skill Path                      | File             |
+| :-------------- | :-------------------------------------- | :--------------- |
+| **Claude Code** | `.claude/skills/<skill_name>/SKILL.md`  | `AGENTS.md`      |
+| **OpenCode**    | `.opencode/skill/<skill_name>/SKILL.md` | `AGENTS.md`      |
+| **Cursor**      | N/A (Uses Rules)                        | `.cursorrules`   |
+| **Windsurf**    | N/A (Uses Rules)                        | `.windsurfrules` |
 
 ---
 
 ### Editors / IDEs
 
-| Tier     | Tool                                 | Notes                                                 |
-| -------- | ------------------------------------ | ----------------------------------------------------- |
-| **Best** | VS Code + Copilot                    | The gold standard. Fast, comfy, gets out of your way. |
-| **Best** | Zed + Copilot                        | Shockingly good. Feels like the future.               |
-| **Okay** | Visual Studio (Enterprise) + Copilot | I mean... it works...                                 |
+| Tier     | Tool                                 | Notes                   |
+| -------- | ------------------------------------ | ----------------------- |
+| **Best** | VS Code/Cursor/Kiro + Copilot        | Just works, good stuff. |
+| **Best** | Zed + Copilot                        | Shockingly good.        |
+| **Okay** | Visual Studio (Enterprise) + Copilot | I mean... it works...   |
 
 ---
 
@@ -126,22 +114,22 @@ This repo is designed to play nice with the **SKILL format**.
 
 | Tier                         | Model             | Notes                                               |
 | ---------------------------- | ----------------- | --------------------------------------------------- |
-| **Best experience so far**   | Claude 4          | Consistently solid. Rarely lets you down.           |
+| **Best experience so far**   | Claude 4          | Consistently solid.                                 |
 | **Best experience so far**   | Claude 4.5 Sonnet | Sweet spot: smart + fast.                           |
 | **Best experience so far**   | Claude 4.5 Opus   | Big brain energy.                                   |
-| **Mixed (experiment, YMMV)** | GPT-4 series      | Hit or miss — try different agents, some shine.     |
-| **Mixed (experiment, YMMV)** | GPT-5             | Generally better, still inconsistent; worth poking. |
-| **Not recommended**          | Grok models       | No ❤️.                                              |
+| **Mixed (experiment, YMMV)** | GPT-4 series      | Hit or miss; try different agents, some shine.      |
+| **Mixed (experiment, YMMV)** | GPT-5 series      | Generally better, still inconsistent; worth poking. |
+| **Not recommended, for now** | Grok models       | No ❤️.                                              |
 | **Promising**                | Gemini 3+         | Good vibes, needs tuning.                           |
 
 ---
 
 ### Tools to Watch 👀
 
-| Tier          | Tool     | Notes                                             |
-| ------------- | -------- | ------------------------------------------------- |
-| **Promising** | Opencode | Haven’t gone deep yet, but feels right.           |
-| **Promising** | RooCode  | Same — good energy, waiting for the right moment. |
+| Tier            | Tool     | Notes                                             |
+| --------------- | -------- | ------------------------------------------------- |
+| **Horii Shiet** | Opencode | Yes. I'm actively trying it out more              |
+| **Promising**   | RooCode  | Same — good energy, waiting for the right moment. |
 
 ---
 
@@ -164,3 +152,4 @@ Experiment and trust local results over lists like this.
 
 - **RLM Concept:** Based on _Recursive Language Models_ (2025) by Zhang, Kraska, and Khattab (MIT CSAIL).
 - **Tachikoma:** Named after the curious, chatty, and adaptive AI tanks from _Ghost in the Shell_.
+- **claude_code_RLM:** Yoinked the RLM scripts and proompts from [brainqub3/Claude Code RLM](https://github.com/brainqub3/claude_code_RLM)
