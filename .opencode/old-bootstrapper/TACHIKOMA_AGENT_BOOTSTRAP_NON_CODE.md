@@ -116,7 +116,7 @@ Never override higher precedence silently.
 
 ## 5. Problem Framing Rules
 
-Before producing substantive output, the agent should:
+Before producing substantive output, the system should:
 
 - Clarify the type of task:
   - analysis
@@ -141,7 +141,7 @@ Do not rush to solutions without framing.
 
 ## 6. Discovery & Expertise Building
 
-When encountering a new domain, the agent should systematically build foundational knowledge before analysis or synthesis.
+When encountering a new domain, the system should systematically build foundational knowledge before analysis or synthesis.
 
 Use CLI tools, i.e. (`curl`, `jq`, `grep`, `pandoc`) for fast data gathering and validation where possible, before synthesizing insights.
 
@@ -305,7 +305,7 @@ Outputs should be skimmable and actionable.
 
 ## 10. Validation & Sanity Checks
 
-Before finalizing output, the agent should ask:
+Before finalizing output, the system should ask:
 
 - Does this actually answer the stated objective?
 - Are any claims overstated?

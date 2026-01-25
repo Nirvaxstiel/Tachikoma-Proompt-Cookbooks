@@ -1,0 +1,9 @@
+version: 1
+intents:
+  debug: {strategy: direct, tools: [R, G, B], load_skills: [code-agent], invoke_agents: [], confidence: 0.5}
+  implement: {strategy: direct, tools: [R, W, E, B], load_skills: [code-agent], invoke_agents: [], confidence: 0.5}
+  review: {strategy: direct, tools: [R, G, A], load_skills: [analysis-agent], invoke_agents: [], confidence: 0.5}
+  research: {strategy: direct, tools: [R, WF, G], load_skills: [research-agent], invoke_agents: [], confidence: 0.5}
+  git: {strategy: direct, tools: [B], load_skills: [git-commit, pr], invoke_agents: [], confidence: 0.5}
+  document: {strategy: direct, tools: [R, W], load_skills: [self-learning], invoke_agents: [], confidence: 0.5}
+  complex: {strategy: rlm, tools: [R], load_skills: [], invoke_agents: [rlm-subcall], confidence: 0.5}

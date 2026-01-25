@@ -9,29 +9,32 @@
 This repository provides two distinct workflows for enhancing AI agents (Claude Code, OpenCode, etc.):
 
 1.  **Bootstrap Templates:** One-time manuals to help an agent "learn" a specific project.
-2.  **Agent Skills (RLM):** _[NEW]_ Persistent, recursive context management skills that allow agents to handle massive contexts by treating prompts as variables.
+2.  **Agent Skills:** Skills for intent classification, routing, and recursive context management.
 
 ---
 
-## 🧠 Recursive Language Models (RLM)
+## 🧠 Agent & Skill System (RLM & Beyond)
 
-_Inspired by "Recursive Language Models" (Zhang et al., MIT CSAIL)._
+This system routes tasks based on intent classification:
 
-Traditional agents suffer from "Context Rot"—as the chat gets longer, reasoning degrades.
-
-The **Agent Skills** in this repo implement an RLM approach. Instead of stuffing the entire codebase into the context window immediately, these skills teach the agent to:
-
-1.  **Treat Context as Variables:** Chunk prompts and files into an external environment (or variable collection).
-2.  **Recursion:** Programmatically examine, decompose, and recursively call itself over snippets of the prompt.
-3.  **Decomposition:** Break complex queries into sub-calls rather than attempting one massive inference.
+1.  **Classify Intent:** Consult `intent_lookup.yaml` to determine task type
+2.  **Execute:** Route to appropriate handler
+    - `code-agent` skill → Debug, implement, edit tasks
+    - `research-agent` skill → Investigation, finding information
+    - `analysis-agent` skill → Code review, evaluation
+    - `git-commit` / `pr` skills → Version control
+    - `rlm-subcall` agent → Large context chunking
+3.  **Use Built-in Modes:** CLI modes (`plan`, `mode`) for planning and context switching
 
 ---
 
 ## 🚀 Workflow 1: Agent Skills (Recommended)
 
-**Best for:** Daily driving, massive codebases, preventing context rot, and "set it and forget it" configuration.
+Skills that enable intent classification and routing:
 
-In this workflow, you install a "Skill" into your agent's configuration. This gives the agent a permanent ability to manage context recursively.
+1.  **Classify Intent First:** Before any task, consult `intent_lookup.yaml`
+2.  **Execute:** Load the skill or invoke the agent specified in the lookup entry
+3.  **Self-Improve:** Confidence scores update based on execution success
 
 ### Installation
 
@@ -40,10 +43,8 @@ In this workflow, you install a "Skill" into your agent's configuration. This gi
     - Avoid putting your agent instruction files into the `.gitignore` (`AGENTS.md`, `.opencode/`, `.claude/`).
     - Keep them out of the so that the agent can pick them up from the repo root.
 3.  (Optional) Tell the agent to trawl and update project-specific lore to the SKILL.md and AGENTS.md available
-    - Use RLM Mode for this too
-4.  Toggle RLM mode and watch the magic happen
-
-![Example](assets/opencode-rlm-subcall-mode-example.png)
+    - Use built-in modes like `plan` for planning and `mode` for context switching
+4.  The system will classify intents and execute based on the lookup table
 
 | Platform        | Source Path in Repo | Destination Path on Local Machine                        |
 | :-------------- | :------------------ | :------------------------------------------------------- |
@@ -76,12 +77,23 @@ In this workflow, you install a "Skill" into your agent's configuration. This gi
 ```text
 .
 ├── AGENTS.md                               # Example project-specific instructions
-├── .opencode/                              # Skills formatted for OpenCode
-│   └── skill/
-│   └── agent/
-│       └──   rlm-subcall.md
-│   └── 01-let-the-agent-do-it              # The "One-Time" templates
-│       └──   TACHIKOMA_AGENT_BOOTSTRAP.md
+├── .opencode/                              # Skills and agents for OpenCode
+│   ├── agent/
+│   │   ├── intent-director/                # Intent classification agent
+│   │   │   └── AGENT.md
+│   │   └── rlm-subcall.md                  # RLM subagent for large contexts
+│   ├── skill/
+│   │   ├── code-agent/                     # Debug, implement, edit
+│   │   ├── analysis-agent/                 # Code review, evaluation
+│   │   ├── research-agent/                 # Investigation
+│   │   ├── git-commit/                     # Commit changes
+│   │   ├── pr/                             # Pull requests
+│   │   ├── rlm/                            # Recursive context management
+│   │   └── self-learning/                  # Self-improvement
+│   └── runtime/
+│       ├── intent_lookup.yaml              # Intent→strategy lookup
+│       └── PLAN_TO_BUILD_INTENT.md         # Intent persistence across modes
+├── .claude/                                # Skills formatted for Claude Code
 └── examples/                               # Example implementations
 ```
 
@@ -122,10 +134,10 @@ This repo is designed to play nice with the **SKILL format**.
 
 ### Tools to Watch 👀
 
-| Tier            | Tool     | Notes                          |
-| --------------- | -------- | ------------------------------ |
-| **Horii Shiet** | Opencode | I'm actively using it more now |
-| **Promising**   | RooCode  | Pretty good                    |
+| Tier          | Tool     | Notes                                             |
+| ------------- | -------- | ------------------------------------------------- |
+| **Primary**   | Opencode | Built-in modes (plan, mode, agent) for execution |
+| **Promising** | RooCode  | Pretty good                                       |
 
 ---
 
@@ -149,3 +161,4 @@ Experiment and trust local results over lists like this.
 - **RLM Concept:** Based on _Recursive Language Models_ (2025) by Zhang, Kraska, and Khattab (MIT CSAIL).
 - **Tachikoma:** Named after the curious, chatty, and adaptive AI tanks from _Ghost in the Shell_.
 - **claude_code_RLM:** Yoinked the RLM scripts and proompts from [brainqub3/Claude Code RLM](https://github.com/brainqub3/claude_code_RLM)
+- **Intent Delegation:** Self-learning intent classification and subagent routing system (2026)

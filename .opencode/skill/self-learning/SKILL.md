@@ -64,7 +64,7 @@ generate:
   
 Example proposed rule:
 
-When a `docs/` directory contains an `architecture/` subfolder, the agent should load and summarize those files before search.
+When a `docs/` directory contains an `architecture/` subfolder, the skill should load and summarize those files before search.
 
 ### 4) Verification
 
@@ -87,7 +87,7 @@ Generate a **diff or patch** file suitable for inclusion in project context, for
  ...
 +## Auto-load architecture docs
 +When a `docs/architecture/` directory exists,
-+the agent should load those files before inspecting code
++the skill should load those files before inspecting code
 +to improve context quality.
 +
 +This was inferred from repeated inspection patterns in recent tasks.
@@ -135,7 +135,7 @@ Example output:
 
 **Proposed update**: "Auto-load architecture docs rule"
 
-**Rationale**: The agent consistently needed to load `docs/architecture/` before searching. Verified in 3 previous tasks.
+**Rationale**: The system consistently needed to load `docs/architecture/` before searching. Verified in 3 previous tasks.
 
 **Evidence**:
 - Task #345: `docs/architecture/network.md`

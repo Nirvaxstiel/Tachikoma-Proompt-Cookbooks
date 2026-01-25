@@ -20,7 +20,7 @@ compatibility:
 Use this Skill when:
 - The user provides (or references) a very large context file (docs, logs, transcripts, scraped webpages) that won't fit comfortably in chat context.
 - You need to iteratively inspect, search, chunk, and extract information from that context.
-- You can delegate chunk-level analysis to a subagent.
+- You can invoke chunk-level analysis to a subagent.
 
 ## Mental model
 
@@ -68,7 +68,7 @@ If the user didn't supply arguments, ask for:
    PY
    ```
 
-5. Subcall loop (delegate to rlm-subcall)
+5. Subcall loop (invoke rlm-subcall agent)
    - For each chunk file, invoke the rlm-subcall subagent with:
      - the user query,
      - the chunk file path,
