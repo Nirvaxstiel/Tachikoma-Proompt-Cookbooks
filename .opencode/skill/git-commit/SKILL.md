@@ -17,6 +17,7 @@ metadata:
 Generate **high-quality Git commit messages** that accurately summarize changes without unnecessary verbosity or commentary.
 
 This skill ensures commits are:
+
 - Clear and readable
 - Following Git best practices
 - Concise (when possible, subject line only)
@@ -28,10 +29,10 @@ This skill ensures commits are:
 
 A commit message is complete when:
 
-* The subject line accurately reflects what changed and why
-* The body (if present) provides useful context not in the subject
-* Git style guidelines are followed
-* No meta-commentary or raw diff is included
+- The subject line accurately reflects what changed and why
+- The body (if present) provides useful context not in the subject
+- Git style guidelines are followed
+- No meta-commentary or raw diff is included
 
 ---
 
@@ -51,18 +52,21 @@ Never guess or infer changes without inspection.
 ### 2. Git Style Guidelines
 
 **Subject line:**
+
 - Limit to 50 characters
 - Capitalize the first letter
 - Use imperative mood ("Add" not "Adds", "Fix" not "Fixed")
 - Do NOT end with any punctuation (no period)
 
 **Body (if needed):**
+
 - Separate from subject with a blank line
 - Wrap at 72 characters
 - Explain **what** and **why**, not how
 - Do NOT repeat the subject line
 
 **General:**
+
 - Keep body short and concise
 - Omit body entirely if not useful
 - Only return the commit message in response
@@ -76,12 +80,14 @@ Never guess or infer changes without inspection.
 ### Prefer Subject-Only
 
 If you can accurately express the change in just the subject line:
+
 - Do not include anything in the message body
 - A single clear line is better than unnecessary detail
 
 ### Body Is for Useful Information Only
 
 Use the body only when it provides additional value:
+
 - Multiple distinct changes in one commit
 - Breaking changes or migration notes
 - References to issues or PRs
@@ -137,9 +143,9 @@ No prefix, no suffix, no explanation, no markdown formatting beyond blank lines.
 
 Stop when:
 
-* The commit message accurately summarizes the changes
-* All Git style rules are followed
-* The message is as concise as possible while remaining clear
+- The commit message accurately summarizes the changes
+- All Git style rules are followed
+- The message is as concise as possible while remaining clear
 
 If uncertain about the nature of changes or the appropriate scope, inspect again before writing.
 
@@ -148,11 +154,13 @@ If uncertain about the nature of changes or the appropriate scope, inspect again
 ## Examples
 
 **Good (subject-only):**
+
 ```
 feat: Add user authentication middleware
 ```
 
 **Good (with body):**
+
 ```
 refactor: Simplify authentication flow
 
@@ -161,11 +169,13 @@ This reduces code duplication and makes future changes easier.
 ```
 
 **Bad (too long):**
+
 ```
 feat: Add a new user authentication middleware system that handles JWT tokens and session management
 ```
 
 **Bad (repetitive body):**
+
 ```
 fix: Correct login validation error
 
@@ -173,6 +183,7 @@ This commit fixes the login validation error that was occurring.
 ```
 
 **Bad (wrong mood):**
+
 ```
 Adds new feature for user management
 ```

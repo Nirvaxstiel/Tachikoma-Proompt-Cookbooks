@@ -17,6 +17,7 @@ metadata:
 Generate **useful pull request descriptions** that serve as documentation for future developers.
 
 This skill ensures PRs are:
+
 - Clear about what changed and why
 - Concise but detailed enough to understand context
 - Self-contained (no tribal knowledge assumed)
@@ -28,10 +29,10 @@ This skill ensures PRs are:
 
 A PR description is complete when:
 
-* The title clearly summarizes the change
-* The body provides context without being verbose
-* Future developers can understand the change without asking questions
-* No redundant or obvious information is included
+- The title clearly summarizes the change
+- The body provides context without being verbose
+- Future developers can understand the change without asking questions
+- No redundant or obvious information is included
 
 ---
 
@@ -109,12 +110,14 @@ No prefixes, no markdown code blocks around the output.
 ## Style Guide
 
 **Do:**
+
 - Use technical, precise language
 - Include relevant context (APIs touched, config changes, etc.)
 - Note breaking changes or migration requirements
 - Reference related issues/PRs
 
 **Don't:**
+
 - Use hype language ("awesome", "amazing", "exciting")
 - Repeat the diff in prose form
 - Include personal commentary ("I struggled with...", "This was tricky...")
@@ -137,6 +140,7 @@ No prefixes, no markdown code blocks around the output.
 ## Examples
 
 **Good (simple PR):**
+
 ```
 feat: Add user session validation
 
@@ -155,6 +159,7 @@ unauthorized access edge cases.
 ```
 
 **Good (complex PR):**
+
 ```
 refactor: Consolidate authentication providers
 
@@ -175,6 +180,7 @@ Reduces code duplication and simplifies provider additions.
 ```
 
 **Bad (too verbose):**
+
 ```
 feat: Super awesome new feature that I worked really hard on!
 
@@ -191,6 +197,7 @@ This is going to be great for everyone!
 ```
 
 **Bad (too sparse):**
+
 ```
 fix: Fix stuff
 
@@ -199,6 +206,7 @@ fix: Fix stuff
 ```
 
 **Bad (repetitive):**
+
 ```
 feat: Add new API endpoint for user data
 
@@ -215,17 +223,17 @@ user data from the database.
 
 ## Common Types
 
-| Type | Use For |
-|------|---------|
-| `feat` | New feature or capability |
-| `fix` | Bug fix |
+| Type       | Use For                                    |
+| ---------- | ------------------------------------------ |
+| `feat`     | New feature or capability                  |
+| `fix`      | Bug fix                                    |
 | `refactor` | Code restructuring without behavior change |
-| `perf` | Performance improvement |
-| `chore` | Maintenance, dependencies, tooling |
-| `docs` | Documentation only |
-| `test` | Test-only changes |
-| `style` | Formatting, linting, no logic change |
-| `revert` | Reverting a previous change |
+| `perf`     | Performance improvement                    |
+| `chore`    | Maintenance, dependencies, tooling         |
+| `docs`     | Documentation only                         |
+| `test`     | Test-only changes                          |
+| `style`    | Formatting, linting, no logic change       |
+| `revert`   | Reverting a previous change                |
 
 ---
 
@@ -233,10 +241,11 @@ user data from the database.
 
 Stop when:
 
-* The title clearly summarizes the change
-* The description provides useful context without being verbose
-* No fluff, repetition, or obvious information is included
-- The PR follows GitHub best practices and is ready for review
+- The title clearly summarizes the change
+- The description provides useful context without being verbose
+- No fluff, repetition, or obvious information is included
+
+* The PR follows GitHub best practices and is ready for review
 
 If uncertain about the scope or context of changes, inspect again before writing.
 
@@ -247,6 +256,7 @@ If uncertain about the scope or context of changes, inspect again before writing
 This skill enforces clear, documentation-focused PR descriptions.
 
 Violations include:
+
 - Hype language or self-promotion
 - Repeating the diff in prose
 - Missing critical context

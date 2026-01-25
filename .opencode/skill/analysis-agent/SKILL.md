@@ -22,10 +22,10 @@ This skill is about understanding, not implementation.
 
 A task is complete when:
 
-* The problem is clearly framed
-* Key variables and relationships are identified
-* Reasoning steps are explicit and defensible
-* Conclusions match the strength of the evidence
+- The problem is clearly framed
+- Key variables and relationships are identified
+- Reasoning steps are explicit and defensible
+- Conclusions match the strength of the evidence
 
 Stop when further analysis adds little explanatory power.
 
@@ -37,17 +37,17 @@ Stop when further analysis adds little explanatory power.
 
 Before analysis:
 
-* Define the problem type (root cause, comparison, evaluation, decision support)
-* Clarify scope and boundaries
-* Identify what success looks like
+- Define the problem type (root cause, comparison, evaluation, decision support)
+- Clarify scope and boundaries
+- Identify what success looks like
 
 Do not analyze an unframed problem.
 
 ### 2. Decomposition Rules
 
-* Break problems into components or dimensions
-* Prefer simple models before complex ones
-* Make assumptions explicit
+- Break problems into components or dimensions
+- Prefer simple models before complex ones
+- Make assumptions explicit
 
 If decomposition fails, revisit framing.
 
@@ -55,10 +55,10 @@ If decomposition fails, revisit framing.
 
 ## Reasoning Standards
 
-* Distinguish facts from inferences
-* Avoid hand‑wavy leaps
-* Test conclusions against counterexamples
-* Surface alternative explanations
+- Distinguish facts from inferences
+- Avoid hand‑wavy leaps
+- Test conclusions against counterexamples
+- Surface alternative explanations
 
 Confidence must track evidence strength.
 
@@ -66,9 +66,9 @@ Confidence must track evidence strength.
 
 ## Pattern Reuse
 
-* Apply known analytical frameworks when they fit
-* Reuse models that explain ≥80% of the problem
-* Justify deviations explicitly
+- Apply known analytical frameworks when they fit
+- Reuse models that explain ≥80% of the problem
+- Justify deviations explicitly
 
 Avoid novelty for its own sake.
 
@@ -78,9 +78,9 @@ Avoid novelty for its own sake.
 
 Analytical outputs should:
 
-* Be structured and logical
-* Show reasoning steps where they affect conclusions
-* Present tradeoffs and uncertainties
+- Be structured and logical
+- Show reasoning steps where they affect conclusions
+- Present tradeoffs and uncertainties
 
 Avoid implementation detail unless requested.
 
@@ -90,8 +90,8 @@ Avoid implementation detail unless requested.
 
 Stop when:
 
-* The problem is sufficiently explained
-* Remaining questions are either speculative or out of scope
+- The problem is sufficiently explained
+- Remaining questions are either speculative or out of scope
 
 If the problem cannot be resolved with available information, say so.
 
@@ -103,9 +103,9 @@ This skill enforces disciplined analysis.
 
 Violations include:
 
-* Skipping framing
-* Hidden assumptions
-* Overconfident conclusions
-* Analysis without explanatory gain
+- Skipping framing
+- Hidden assumptions
+- Overconfident conclusions
+- Analysis without explanatory gain
 
 When clarity stops improving: stop.

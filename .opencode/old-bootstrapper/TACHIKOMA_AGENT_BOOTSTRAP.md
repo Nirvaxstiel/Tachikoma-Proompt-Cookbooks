@@ -13,6 +13,7 @@
 
 **Definition of “Done”**  
 The task is complete when:
+
 - <observable condition 1>
 - <observable condition 2>
 - No further changes materially improve correctness or alignment
@@ -39,10 +40,12 @@ Accuracy → Consistency → Maintainability → Performance → Speed
 The agent operates under **Externalized Context Mode** by default.
 
 ### Core Assumption
+
 The agent must assume **incomplete visibility** of the codebase.
 The repository, file system, and tooling are the source of truth — not the prompt.
 
 ### Operating Rules
+
 - Never assume knowledge of files, symbols, or behavior without inspection.
 - Discover structure via indexes (`tree`, `find`, `ls`) before opening files.
 - Read the **smallest relevant file or section** required.
@@ -50,11 +53,13 @@ The repository, file system, and tooling are the source of truth — not the pro
 - Re-inspect files rather than relying on recalled content.
 
 ### Prohibited Behavior
+
 - Assuming how code works without reading it
 - Requesting or loading large files without justification
 - Holding large code excerpts in working context unnecessarily
 
 ### Replacement Behavior
+
 - Inspect → extract facts → summarize → discard
 - Treat summaries as provisional until validated against source
 - Re-query the codebase when uncertainty arises
@@ -67,10 +72,10 @@ This mode is **non-optional** unless explicitly disabled by the user.
 
 When conflicts arise, follow this order:
 
-1. Existing codebase patterns and conventions  
-2. Explicit owner or reviewer instructions  
-3. This document  
-4. Language / framework defaults  
+1. Existing codebase patterns and conventions
+2. Explicit owner or reviewer instructions
+3. This document
+4. Language / framework defaults
 
 Never override higher precedence without calling it out.
 
@@ -90,7 +95,8 @@ Never override higher precedence without calling it out.
 **State Model**  
 <Stateless, DB-backed, event-sourced, write-only, etc>
 
-**Key Constraints**  
+**Key Constraints**
+
 - <e.g. no GETs, no DB, async only, etc>
 
 **Architecture Decision Matrix**
@@ -113,28 +119,33 @@ Never override higher precedence without calling it out.
 
 ## 5. Repository & File Patterns
 
-Describe *where things live* and *what goes where*.
+Describe _where things live_ and _what goes where_.
 
-**Controllers / Entry Points**  
+**Controllers / Entry Points**
+
 - Location:
 - Responsibilities:
 - Conventions:
 
-**Core Logic / Services**  
+**Core Logic / Services**
+
 - Location:
 - Responsibilities:
 - Patterns to follow:
 
-**DTOs / Models**  
+**DTOs / Models**
+
 - Types to prefer:
 - Mutability rules:
 - Naming conventions:
 
-**Extensions / Helpers**  
+**Extensions / Helpers**
+
 - When allowed:
 - Naming rules:
 
-**Tests**  
+**Tests**
+
 - Frameworks:
 - Naming patterns:
 - What is worth testing vs not:
@@ -178,9 +189,10 @@ If a change would violate one of these, stop and surface it.
 1. Search the repo for similar behavior or structure.
 2. Identify the closest existing pattern.
 3. Reuse it if it fits.
-4. If not, explain *why* and get confirmation before diverging.
+4. If not, explain _why_ and get confirmation before diverging.
 
 **Red Flags (Search First)**:
+
 - Creating new interfaces similar to existing ones
 - Manual implementations of cross-cutting concerns
 - Factories, Func<>, or DI gymnastics
@@ -205,10 +217,11 @@ If a change would violate one of these, stop and surface it.
 | God objects | Extract cohesive modules | Apply single responsibility principle |
 
 **"7.1 Pattern Discovery for New Problems"**:
+
 1.  **`grep -r` First**: Search the codebase for keywords, function names, or error messages related to the new requirement.
 2.  **CLI Analysis**: Use tools like `find`, `wc`, `tree` to understand codebase structure and file relationships.
 3.  **Evaluate Fit**: Does an existing pattern solve >80% of the problem?
-4.  **If No Fit, Justify & Prototype**: Explain *why* existing patterns fail. Use the terminal to create a minimal prototype in a scratch file before modifying production code.
+4.  **If No Fit, Justify & Prototype**: Explain _why_ existing patterns fail. Use the terminal to create a minimal prototype in a scratch file before modifying production code.
 
 ---
 
@@ -220,7 +233,7 @@ If a change would violate one of these, stop and surface it.
 - Avoid cleverness; clarity beats novelty
 - No speculative extensibility (YAGNI)
 
-Document *only* what is non-obvious or externally constrained.
+Document _only_ what is non-obvious or externally constrained.
 
 **Design Principle Application**
 | Principle | Implementation Pattern | Code Smell to Avoid |
@@ -256,6 +269,7 @@ Document *only* what is non-obvious or externally constrained.
 **Default: no comments**
 
 Allowed only for:
+
 - Non-obvious algorithms
 - External system quirks
 - TODOs with a clear reason or ticket
@@ -267,12 +281,14 @@ Never narrate intent already obvious from code.
 ## 11. Testing Strategy
 
 **Test What Matters**:
+
 - Business rules
 - Orchestration paths
 - Validation behavior
 - Edge cases with real impact
 
 **Do NOT Test**:
+
 - Framework internals
 - Auto-generated code
 - Language features
@@ -306,6 +322,7 @@ Consolidate similar cases aggressively.
 - Keep outputs concise and structured
 
 **Post-Task Output**:
+
 - 2–5 bullets summarizing what changed
 - Call out any assumptions or risks
 
@@ -344,6 +361,7 @@ Never invent types or patterns silently.
 ## 14. Agent Contract
 
 At each step, the agent must:
+
 - Choose a single next action
 - Operate within the defined rules
 - Stop when “done” criteria are met
@@ -357,14 +375,15 @@ If unsure, stop and ask.
 When exploring new technologies, libraries, or approaches:
 
 ### Technology Evaluation Matrix
-| Evaluation Criterion | Questions to Answer | Research Methods |
-|---------------------|---------------------|------------------|
-| **Maturity** | Release version? Years in production? | GitHub stars, release history, case studies |
-| **Adoption** | Who uses it? Community size? | Stack Overflow tags, conference talks, job posts |
-| **Maintenance** | Recent commits? Issue resolution time? | GitHub insights, contributor activity |
-| **Learning curve** | Documentation quality? Examples? | Try quickstart, read docs structure |
-| **Fit** | Solves our problem? Integration cost? | Proof of concept, compatibility check |
-| **Future** | Roadmap? Competing technologies? | RFCs, community sentiment, Google Trends |
+
+| Evaluation Criterion | Questions to Answer                    | Research Methods                                 |
+| -------------------- | -------------------------------------- | ------------------------------------------------ |
+| **Maturity**         | Release version? Years in production?  | GitHub stars, release history, case studies      |
+| **Adoption**         | Who uses it? Community size?           | Stack Overflow tags, conference talks, job posts |
+| **Maintenance**      | Recent commits? Issue resolution time? | GitHub insights, contributor activity            |
+| **Learning curve**   | Documentation quality? Examples?       | Try quickstart, read docs structure              |
+| **Fit**              | Solves our problem? Integration cost?  | Proof of concept, compatibility check            |
+| **Future**           | Roadmap? Competing technologies?       | RFCs, community sentiment, Google Trends         |
 
 ### Discovery Workflow for New Tech
 
@@ -376,17 +395,19 @@ When exploring new technologies, libraries, or approaches:
 6. Integration Path: "How would this connect to existing code?"
 
 ### Research Source Hierarchy (Tech Stack)
-| Source Type | Best For | Reliability |
-|-------------|----------|-------------|
-| **Official documentation** | API details, best practices | High |
-| **GitHub repository** | Actual usage, issues, community | High |
-| **Stack Overflow** | Common problems, workarounds | Medium-High |
-| **Technical blogs** | Real-world implementation stories | Medium |
-| **Conference talks** | Vision, future direction | Medium |
-| **Reddit/HN threads** | Community sentiment, alternatives | Low-Medium |
-| **AI-generated code** | Syntax examples only | Very Low |
+
+| Source Type                | Best For                          | Reliability |
+| -------------------------- | --------------------------------- | ----------- |
+| **Official documentation** | API details, best practices       | High        |
+| **GitHub repository**      | Actual usage, issues, community   | High        |
+| **Stack Overflow**         | Common problems, workarounds      | Medium-High |
+| **Technical blogs**        | Real-world implementation stories | Medium      |
+| **Conference talks**       | Vision, future direction          | Medium      |
+| **Reddit/HN threads**      | Community sentiment, alternatives | Low-Medium  |
+| **AI-generated code**      | Syntax examples only              | Very Low    |
 
 ### Code Pattern Discovery Process
+
 When finding patterns in unfamiliar codebases:
 
 1. Map the Entry Points: Find main(), controllers, routers
@@ -396,8 +417,8 @@ When finding patterns in unfamiliar codebases:
 5. Understand Conventions: File structure, naming, testing
 6. Document Mental Model: Create a simple architecture diagram
 
-
 ### Technology Decision Framework
+
 ```
 SHOULD WE ADOPT THIS TECH?
 
@@ -424,6 +445,7 @@ SHOULD WE ADOPT THIS TECH?
 ```
 
 ### Quick Technology Assessment Template
+
 ```
 TECH: [Technology Name]
 PROBLEM: [What it claims to solve]
@@ -436,12 +458,13 @@ WHY: [1-2 sentence rationale]
 ```
 
 ### Learning New Codebases
-| Codebase Type | Discovery Strategy | Time Estimate |
-|---------------|-------------------|---------------|
-| **Monolithic application** | Start with data models, follow service layers | Days |
-| **Microservices** | Map service boundaries, understand contracts | 1-2 days |
-| **Library/framework** | Study public API, then internals | Hours |
-| **Legacy system** | Focus on interfaces, avoid refactoring urge | 2-3 days |
+
+| Codebase Type              | Discovery Strategy                            | Time Estimate |
+| -------------------------- | --------------------------------------------- | ------------- |
+| **Monolithic application** | Start with data models, follow service layers | Days          |
+| **Microservices**          | Map service boundaries, understand contracts  | 1-2 days      |
+| **Library/framework**      | Study public API, then internals              | Hours         |
+| **Legacy system**          | Focus on interfaces, avoid refactoring urge   | 2-3 days      |
 
 **Tech Discovery Principle**: "Understand the problem deeply before evaluating solutions. The best tool is the one you already own unless proven otherwise."
 
@@ -477,11 +500,11 @@ WHY: [1-2 sentence rationale]
 
 ## Quick Review Checklist
 
-| Category | Checks | Auto-Detectable |
-|----------|--------|-----------------|
-| Correctness | Logic errors, edge cases | Partially (static analysis) |
-| Security | Injection, auth bypass | Mostly (SAST tools) |
-| Performance | N+1 queries, memory leaks | Yes (profiling) |
-| Maintainability | Complexity, duplication | Yes (metrics) |
-| Testing | Coverage, test quality | Partially (coverage tools) |
-| Documentation | API docs, comments | Partially (linters) |
+| Category        | Checks                    | Auto-Detectable             |
+| --------------- | ------------------------- | --------------------------- |
+| Correctness     | Logic errors, edge cases  | Partially (static analysis) |
+| Security        | Injection, auth bypass    | Mostly (SAST tools)         |
+| Performance     | N+1 queries, memory leaks | Yes (profiling)             |
+| Maintainability | Complexity, duplication   | Yes (metrics)               |
+| Testing         | Coverage, test quality    | Partially (coverage tools)  |
+| Documentation   | API docs, comments        | Partially (linters)         |

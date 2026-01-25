@@ -13,7 +13,7 @@ metadata:
 ## Purpose
 
 Invoke this skill **after a task completes successfully** and the output is validated by the user.  
-Its job is to *identify generalizable patterns, conventions, or rules* not yet captured in the project context (`AGENTS.md` or referenced files), verify them with evidence, and **propose safe, human-reviewable updates**.
+Its job is to _identify generalizable patterns, conventions, or rules_ not yet captured in the project context (`AGENTS.md` or referenced files), verify them with evidence, and **propose safe, human-reviewable updates**.
 
 This is a **meta-analysis skill**, not a task-execution skill.
 
@@ -25,7 +25,7 @@ Use this skill when all of the following are true:
 
 1. A user request completed successfully.
 2. The user indicates satisfaction (explicit signal).
-3. There may be *repeatable patterns or project conventions* uncovered during the interaction.
+3. There may be _repeatable patterns or project conventions_ uncovered during the interaction.
 4. The model can find evidence supporting a generalized rule.
 
 If any condition is missing, **do not apply learning**.
@@ -39,6 +39,7 @@ This skill performs the following steps:
 ### 1) History Ingestion
 
 Collect:
+
 - The input prompt or ticket
 - The agent’s actions and outputs
 - Relevant file changes
@@ -48,6 +49,7 @@ Collect:
 ### 2) Pattern Extraction
 
 Search for:
+
 - Recurring directory structures
 - Repeated search or inspection steps
 - Verified code invariants
@@ -58,10 +60,11 @@ Search for:
 
 For each candidate pattern,
 generate:
+
 - A concise description of the rule or convention
 - A justification backed by evidence
 - A potential location for insertion (e.g., `AGENTS.md` or a referenced architecture file)
-  
+
 Example proposed rule:
 
 When a `docs/` directory contains an `architecture/` subfolder, the skill should load and summarize those files before search.
@@ -69,6 +72,7 @@ When a `docs/` directory contains an `architecture/` subfolder, the skill should
 ### 4) Verification
 
 Confirm each hypothesis by extracting supporting facts:
+
 - Confirm directory exists
 - Confirm rule applies more than once
 - Confirm no contradiction with existing contexts
@@ -91,17 +95,17 @@ Generate a **diff or patch** file suitable for inclusion in project context, for
 +to improve context quality.
 +
 +This was inferred from repeated inspection patterns in recent tasks.
-````
+```
 
 ### 6) Presentation for Approval
 
 Create a summary that includes:
 
-* Proposed patches
-* Rationale
-* Evidence list
-* Risks or potential conflicts
-* Confidence score or level
+- Proposed patches
+- Rationale
+- Evidence list
+- Risks or potential conflicts
+- Confidence score or level
 
 Present this summary to the user for **explicit approval** before applying.
 
@@ -109,12 +113,12 @@ Present this summary to the user for **explicit approval** before applying.
 
 ## Safety Rules
 
-This skill *must not*:
+This skill _must not_:
 
-* Modify global agent law (`AGENTS` contract) without review.
-* Change reusable skill behavior.
-* Add speculative conventions without evidence.
-* Apply changes without user confirmation.
+- Modify global agent law (`AGENTS` contract) without review.
+- Change reusable skill behavior.
+- Add speculative conventions without evidence.
+- Apply changes without user confirmation.
 
 ---
 
@@ -155,10 +159,10 @@ Approve? (yes/no)
 
 Stop this skill early if:
 
-* No valid hypotheses are found
-* Evidence is contradictory
-* Confidence is insufficient
-* User feedback indicates this task should not seed context
+- No valid hypotheses are found
+- Evidence is contradictory
+- Confidence is insufficient
+- User feedback indicates this task should not seed context
 
 ---
 

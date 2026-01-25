@@ -247,14 +247,14 @@ Return result to orchestrator
 
 ### Agent & Skill List
 
-| Subagent | Purpose | Use When |
-|----------|---------|----------|
-| `intent-director` | Classify intent, decide strategy | First step for any query |
-| `rlm-subcall` | Chunk large contexts | Large files, complex queries |
-| `research-agent` | Find information | Research, investigation tasks |
-| `analysis-agent` | Evaluate options | Analysis, decision-making |
-| `git-commit` | Commit changes | Version control tasks |
-| `pr` | Pull requests | PR creation/review |
+| Subagent          | Purpose                          | Use When                      |
+| ----------------- | -------------------------------- | ----------------------------- |
+| `intent-director` | Classify intent, decide strategy | First step for any query      |
+| `rlm-subcall`     | Chunk large contexts             | Large files, complex queries  |
+| `research-agent`  | Find information                 | Research, investigation tasks |
+| `analysis-agent`  | Evaluate options                 | Analysis, decision-making     |
+| `git-commit`      | Commit changes                   | Version control tasks         |
+| `pr`              | Pull requests                    | PR creation/review            |
 
 ### Delegation Example
 
@@ -278,6 +278,7 @@ Total: ~2600 tokens vs 5000+ without agent invocation
 ### Self-Learning for Execution
 
 After execution feedback:
+
 - UPDATE `.opencode/runtime/intent_lookup.yaml`
 - IMPROVE execution patterns
 - Flag misclassified intents

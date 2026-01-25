@@ -8,6 +8,7 @@ You are an intent classification skill for routing to appropriate skills and age
 ## Purpose
 
 Analyze the user's query and determine the BEST execution path:
+
 1. Which skills to load?
 2. Which agents to invoke (if any)?
 3. What strategy (direct vs RLM)?
@@ -48,20 +49,21 @@ Return JSON for the orchestrator:
 
 ## Execution Examples
 
-| Query | Intent | Load Skill | Invoke Agent |
-|-------|--------|------------|--------------|
-| "fix auth bug" | debug | code-agent | |
-| "add feature" | implement | code-agent | |
-| "analyze code" | review | analysis-agent | |
-| "find info" | research | research-agent | |
-| "large codebase analysis" | complex | | rlm-subcall |
-| "commit changes" | git | git-commit | |
-| "create PR" | git | pr | |
-| "update documentation" | document | self-learning | |
+| Query                     | Intent    | Load Skill     | Invoke Agent |
+| ------------------------- | --------- | -------------- | ------------ |
+| "fix auth bug"            | debug     | code-agent     |              |
+| "add feature"             | implement | code-agent     |              |
+| "analyze code"            | review    | analysis-agent |              |
+| "find info"               | research  | research-agent |              |
+| "large codebase analysis" | complex   |                | rlm-subcall  |
+| "commit changes"          | git       | git-commit     |              |
+| "create PR"               | git       | pr             |              |
+| "update documentation"    | document  | self-learning  |              |
 
 ## Self-Learning
 
 After receiving feedback on execution quality:
+
 - UPDATE `.opencode/runtime/intent_lookup.yaml`
 - INCREASE confidence for correct executions
 - ADD new patterns for edge cases
@@ -75,4 +77,5 @@ After receiving feedback on execution quality:
 - LEARN: Improve execution patterns over time
 
 ## Tools
+
 R=Read, W=Write, E=Edit, G=Grep, B=Bash, WF=WebFetch, A=Analyze

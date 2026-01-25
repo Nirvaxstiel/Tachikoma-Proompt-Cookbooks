@@ -51,13 +51,13 @@ intent_file = Path(".opencode/runtime/current_intent.yaml")
 if intent_file.exists():
     with open(intent_file) as f:
         intent_data = yaml.safe_load(f)
-    
+
     # USE THIS INTENT - skip classification
     intent = intent_data["intent"]
     strategy = intent_data["strategy"]
     tools = intent_data["tools"]
     skills = intent_data["skills"]
-    
+
     print(f"Using intent from plan: {intent}")
 else:
     # No stored intent - run normal classification

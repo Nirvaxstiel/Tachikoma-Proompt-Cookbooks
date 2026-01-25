@@ -110,11 +110,11 @@ This repo is designed to play nice with the **SKILL format**.
 
 ### Editors / IDEs
 
-| Tier     | Tool                                 | Notes                   |
-| -------- | ------------------------------------ | ----------------------- |
-| **Best** | VS Code/Cursor/Kiro + Copilot        | Just works, good stuff. |
-| **Best** | Zed + Copilot                        | Shockingly good.        |
-| **Okay** | Visual Studio (Enterprise) + Copilot | I mean... it works...   |
+| Tier     | Tool                                 | Notes                    |
+| -------- | ------------------------------------ | ------------------------ |
+| **Best** | Zed + Copilot/Open Code              | Honestly the best so far |
+| **Best** | VS Code/Cursor/Kiro + Copilot        | Just works, good stuff.  |
+| **Okay** | Visual Studio (Enterprise) + Copilot | I mean... it works...    |
 
 ---
 
@@ -122,22 +122,14 @@ This repo is designed to play nice with the **SKILL format**.
 
 | Tier                         | Model             | Notes                                               |
 | ---------------------------- | ----------------- | --------------------------------------------------- |
-| **Best experience so far**   | Claude 4          | Consistently solid.                                 |
-| **Best experience so far**   | Claude 4.5 Sonnet | Sweet spot: smart + fast.                           |
-| **Best experience so far**   | Claude 4.5 Opus   | Big brain energy.                                   |
+| **SOLID**                    | Claude 4.5 Sonnet | Sweet spot: smart + fast.                           |
+| **SOLID**                    | Claude 4.5 Opus   | Big brain energy.                                   |
+| **Shockingly Good**          | GLM 4.7           | Almost as good as Claude 4.5 Sonnet                 |
+| **Shockingly Good**          | Minimax M2        | Very close to GLM 4.7, I switch between the two     |
 | **Mixed (experiment, YMMV)** | GPT-4 series      | Hit or miss; try different agents, some shine.      |
 | **Mixed (experiment, YMMV)** | GPT-5 series      | Generally better, still inconsistent; worth poking. |
 | **Not recommended, for now** | Grok models       | No ❤️.                                              |
 | **Promising**                | Gemini 3+         | Good vibes, needs tuning.                           |
-
----
-
-### Tools to Watch 👀
-
-| Tier          | Tool     | Notes                                             |
-| ------------- | -------- | ------------------------------------------------- |
-| **Primary**   | Opencode | Built-in modes (plan, mode, agent) for execution |
-| **Promising** | RooCode  | Pretty good                                       |
 
 ---
 
