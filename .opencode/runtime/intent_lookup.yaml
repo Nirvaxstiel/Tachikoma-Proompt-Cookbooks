@@ -1,9 +1,140 @@
-version: 1
+version: 2.0
+# Runtime Intent Registry
+# Primary intent mappings are now in AGENTS.md DI registry
+# This file serves as a quick lookup table for runtime use
+
 intents:
-  debug: {strategy: direct, tools: [R, G, B], load_skills: [code-agent], invoke_agents: [], confidence: 0.5}
-  implement: {strategy: direct, tools: [R, W, E, B], load_skills: [code-agent], invoke_agents: [], confidence: 0.5}
-  review: {strategy: direct, tools: [R, G, A], load_skills: [analysis-agent], invoke_agents: [], confidence: 0.5}
-  research: {strategy: direct, tools: [R, WF, G], load_skills: [research-agent], invoke_agents: [], confidence: 0.5}
-  git: {strategy: direct, tools: [B], load_skills: [git-commit, pr], invoke_agents: [], confidence: 0.5}
-  document: {strategy: direct, tools: [R, W], load_skills: [self-learning], invoke_agents: [], confidence: 0.5}
-  complex: {strategy: rlm, tools: [R], load_skills: [], invoke_agents: [rlm-subcall], confidence: 0.5}
+  debug:
+    strategy: direct
+    tools: [Read, Grep, Bash]
+    load_skills: [code-agent]
+    load_modules: [core-contract, coding-standards]
+    invoke_agents: []
+    confidence: 0.7
+    
+  implement:
+    strategy: direct
+    tools: [Read, Write, Edit, Bash]
+    load_skills: [code-agent]
+    load_modules: [core-contract, coding-standards, commenting-rules]
+    invoke_agents: []
+    confidence: 0.7
+    
+  review:
+    strategy: direct
+    tools: [Read, Grep, Bash]
+    load_skills: [analysis-agent]
+    load_modules: [core-contract, coding-standards, delegation-patterns]
+    invoke_agents: []
+    confidence: 0.7
+    
+  research:
+    strategy: direct
+    tools: [Read, WebFetch, Grep]
+    load_skills: [research-agent]
+    load_modules: [core-contract, research-methods]
+    invoke_agents: []
+    confidence: 0.6
+    
+  git:
+    strategy: direct
+    tools: [Bash]
+    load_skills: [git-commit, pr]
+    load_modules: [core-contract, git-workflow]
+    invoke_agents: []
+    confidence: 0.8
+    
+  document:
+    strategy: direct
+    tools: [Read, Write]
+    load_skills: [self-learning]
+    load_modules: [core-contract, commenting-rules]
+    invoke_agents: []
+    confidence: 0.6
+    
+  complex:
+    strategy: rlm
+    tools: [Read]
+    load_skills: []
+    load_modules: [core-contract, delegation-patterns]
+    invoke_agents: [rlm-subcall]
+    confidence: 0.5
+
+# Composite Intent Definitions
+composite_intents:
+  implement-and-test:
+    components: [implement, debug]
+    description: Write code and verify it works
+    module_resolution: union
+    
+  research-and-implement:
+    components: [research, implement]
+    description: Investigate then implement solution
+    module_resolution: union
+    
+  refactor-and-test:
+    components: [implement, debug]
+    description: Refactor code with verification
+    module_resolution: union
+
+# Intent Detection Keywords
+keywords:
+  debug:
+    - "fix"
+    - "debug"
+    - "broken"
+    - "error"
+    - "bug"
+    - "issue"
+    - "not working"
+    
+  implement:
+    - "add"
+    - "implement"
+    - "create"
+    - "write"
+    - "build"
+    - "make"
+    - "feature"
+    
+  review:
+    - "review"
+    - "audit"
+    - "check"
+    - "analyze"
+    - "quality"
+    - "assess"
+    
+  research:
+    - "research"
+    - "find"
+    - "investigate"
+    - "look up"
+    - "search"
+    - "discover"
+    
+  git:
+    - "git"
+    - "commit"
+    - "push"
+    - "pull"
+    - "merge"
+    - "branch"
+    - "pr"
+    - "repository"
+    
+  document:
+    - "document"
+    - "docs"
+    - "readme"
+    - "explain"
+    - "learn"
+    - "remember"
+    
+  complex:
+    - "complex"
+    - "large"
+    - "many files"
+    - "refactor"
+    - "redesign"
+    - "architecture"

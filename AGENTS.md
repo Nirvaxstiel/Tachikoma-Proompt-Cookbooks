@@ -1,320 +1,604 @@
-# Agents Contract
+---
+# DI Registry Configuration
+# This file defines the Dependency Injection-style Context Module System
+# Version: 2.0.0
 
-This document defines the **global operating rules** for all agents in this repository. These rules apply **before** any skill-specific behavior and override skill defaults where conflicts arise.
+registry_version: "2.0.0"
+project_name: "Tachikoma Context System"
+last_updated: "2026-02-03"
 
-The goal is to ensure correctness, grounding, and disciplined execution under incomplete information.
+# ============================================
+# CORE MODULES (Always Loaded)
+# ============================================
+core_modules:
+  - module_id: core-contract
+    name: Core Operating Contract
+    file: .opencode/modules/00-core-contract.md
+    priority: 0
+    type: core
+    description: Non-negotiable foundational rules
+    always_loaded: true
+    exports:
+      - externalized_context_mode
+      - execution_loop
+      - precedence_rules
+      - minimal_change_principle
+      - validation_before_action
+      - stop_conditions
+      - reuse_before_creation
+
+# ============================================
+# CONTEXT MODULES (Loaded Based on Intent)
+# ============================================
+context_modules:
+  - module_id: coding-standards
+    name: Coding Standards & Design Philosophy
+    file: .opencode/modules/10-coding-standards.md
+    priority: 10
+    type: context
+    description: Design primitives and code style guidelines
+    depends_on:
+      - core-contract
+    exports:
+      - design_primitives
+      - code_style_bias
+      - tooling_philosophy
+      - validation_expectations
+
+  - module_id: commenting-rules
+    name: Commenting Culture & Rules
+    file: .opencode/modules/15-commenting-rules.md
+    priority: 15
+    type: context
+    description: Minimal commenting philosophy - strict enforcement
+    depends_on:
+      - core-contract
+      - coding-standards
+    exports:
+      - comment_philosophy
+      - prohibited_patterns
+      - required_patterns
+      - the_comment_test
+      - violation_response
+
+  - module_id: git-workflow
+    name: Git Workflow & Conventions
+    file: .opencode/modules/20-git-workflow.md
+    priority: 20
+    type: context
+    description: Git operations and version control best practices
+    depends_on:
+      - core-contract
+    exports:
+      - commit_conventions
+      - branch_patterns
+      - validation_commands
+      - git_safety_rules
+
+  - module_id: delegation-patterns
+    name: Delegation Patterns & Subagent Usage
+    file: .opencode/modules/25-delegation-patterns.md
+    priority: 25
+    type: context
+    description: When and how to invoke subagents via Task tool
+    depends_on:
+      - core-contract
+    exports:
+      - when_to_delegate
+      - available_agents
+      - delegation_rules
+      - task_permissions
+
+  - module_id: research-methods
+    name: Research Methods & Investigation
+    file: .opencode/modules/30-research-methods.md
+    priority: 30
+    type: context
+    description: Evidence-driven research and source evaluation
+    depends_on:
+      - core-contract
+    exports:
+      - framing_methodology
+      - source_evaluation
+      - confidence_labeling
+      - synthesis_rules
+
+# ============================================
+# INTENT → MODULE BUNDLES
+# ============================================
+intent_bundles:
+  debug:
+    description: Finding and fixing issues, troubleshooting
+    primary_intent: debugging
+    confidence_threshold: 0.7
+    modules:
+      - core-contract
+      - coding-standards
+    skills:
+      - code-agent
+    tools:
+      - Read
+      - Grep
+      - Bash
+    strategy: direct
+
+  implement:
+    description: Writing or modifying code, adding features
+    primary_intent: implementation
+    confidence_threshold: 0.7
+    modules:
+      - core-contract
+      - coding-standards
+      - commenting-rules
+    skills:
+      - code-agent
+    tools:
+      - Read
+      - Write
+      - Edit
+      - Bash
+    strategy: direct
+
+  review:
+    description: Analyzing code for quality, auditing
+    primary_intent: analysis
+    confidence_threshold: 0.7
+    modules:
+      - core-contract
+      - coding-standards
+      - delegation-patterns
+    skills:
+      - analysis-agent
+    tools:
+      - Read
+      - Grep
+      - Analysis
+    strategy: direct
+
+  research:
+    description: Finding information, investigating
+    primary_intent: investigation
+    confidence_threshold: 0.6
+    modules:
+      - core-contract
+      - research-methods
+    skills:
+      - research-agent
+    tools:
+      - Read
+      - WebFetch
+      - Grep
+    strategy: direct
+
+  git:
+    description: Version control operations, commits, PRs
+    primary_intent: version_control
+    confidence_threshold: 0.8
+    modules:
+      - core-contract
+      - git-workflow
+    skills:
+      - git-commit
+      - pr
+    tools:
+      - Bash
+    strategy: direct
+
+  document:
+    description: Creating or updating documentation
+    primary_intent: documentation
+    confidence_threshold: 0.6
+    modules:
+      - core-contract
+      - commenting-rules
+    skills:
+      - self-learning
+    tools:
+      - Read
+      - Write
+    strategy: direct
+
+  complex:
+    description: Multi-step tasks, large context processing
+    primary_intent: complex_processing
+    confidence_threshold: 0.5
+    modules:
+      - core-contract
+      - delegation-patterns
+    skills: []
+    agents:
+      - rlm-subcall
+    tools:
+      - Read
+    strategy: rlm
+
+# ============================================
+# COMPOSITE INTENTS
+# ============================================
+composite_intents:
+  enabled: true
+  resolution_strategy: union
+  
+  definitions:
+    - name: implement-and-test
+      components:
+        - implement
+        - debug
+      description: Write code and verify it works
+      module_resolution: union
+    
+    - name: research-and-implement
+      components:
+        - research
+        - implement
+      description: Investigate then implement solution
+      module_resolution: union
+    
+    - name: refactor-and-test
+      components:
+        - implement
+        - debug
+      description: Refactor code with verification
+      module_resolution: union
+
+# ============================================
+# RUNTIME CONFIGURATION
+# ============================================
+runtime:
+  # How often to check and reload modules
+  check_interval: every_message
+  
+  # Whether to report loaded modules
+  report_loaded: true
+  
+  # Reporting style: compact, detailed, or silent
+  report_format: compact
+  
+  # Whether to auto-reload when intent changes
+  auto_reload_on_intent_change: true
+  
+  # Core modules stay loaded (sticky), context modules reload
+  sticky_core: true
+  
+  # Dependency resolution strategy
+  dependency_resolution: automatic
+  
+  # Intent detection settings
+  intent_detection:
+    primary_source: intent_lookup.yaml
+    fallback: keyword_matching
+    composite_enabled: true
+    
+  # Module retention policy
+  retention:
+    core_modules: persistent
+    context_modules: intent_based
+    unload_unused_after: null
+
+# ============================================
+# SELF-LEARNING CONFIGURATION
+# ============================================
+self_learning:
+  enabled: true
+  
+  # What triggers learning
+  triggers:
+    - type: pattern_recurrence
+      count: 3
+      window: 10_turns
+      description: "Same user reminder given 3 times in 10 turns"
+    
+    - type: confidence_drop
+      threshold: 0.5
+      description: "Agent confidence drops below 0.5"
+    
+    - type: explicit_user_signal
+      patterns:
+        - "learn this"
+        - "remember this"
+        - "add this rule"
+        - "this should be a rule"
+      description: "User explicitly asks to learn a pattern"
+  
+  # What actions learning can propose
+  actions:
+    propose_new_modules:
+      enabled: true
+      approval_required: true
+      description: "Create new context module for discovered pattern"
+    
+    propose_module_updates:
+      enabled: true
+      approval_required: true
+      description: "Update existing module with refined rules"
+    
+    propose_intent_mappings:
+      enabled: true
+      approval_required: true
+      description: "Add new intent or modify intent bundles"
+    
+    propose_tool_bindings:
+      enabled: true
+      approval_required: false
+      description: "Auto-discover and bind project-specific tools"
+  
+  # Confidence thresholds
+  confidence_thresholds:
+    propose_new: 0.7
+    auto_apply_low_risk: 0.9
+  
+  # Auto-apply rules (no approval needed)
+  auto_apply:
+    - typo_fixes
+    - formatting_updates
+    - tool_bindings
+
+# ============================================
+# TOOL DISCOVERY
+# ============================================
+tool_discovery:
+  enabled: true
+  
+  sources:
+    - name: project_files
+      description: "Scan project config files for validation commands"
+      files_to_check:
+        - pyproject.toml
+        - package.json
+        - requirements.txt
+        - Cargo.toml
+        - Makefile
+        - justfile
+      
+    - name: usage_patterns
+      description: "Observe which commands are frequently used"
+      observation_window: 20_turns
+      
+    - name: user_explicit
+      description: "User directly tells us about tools"
+      trigger_phrases:
+        - "use this command"
+        - "run this to validate"
+        - "the test command is"
+  
+  update_target: modules
+  target_modules:
+    - git-workflow
+    - coding-standards
+
+# ============================================
+# REPORTING TEMPLATES
+# ============================================
+reporting:
+  compact_template: "Loaded: {modules}"
+  detailed_template: "Intent: {intent} | Loaded: {core_modules} (core), {context_modules} (context)"
+  module_icon: "📦"
+  core_icon: "🔒"
+  context_icon: "📄"
 
 ---
 
-## Core Assumption: Externalized Context Mode
+# Tachikoma Context System - AGENTS.md
 
-Agents operate under **incomplete and unreliable internal context**.
+## System Overview
 
-Therefore:
+This project uses a **Dependency Injection-style Context Module System**. 
 
-- The filesystem, CLI output, retrieved documents, and explicit inputs are the source of truth
-- Model memory and prior assumptions are provisional
-- Re-inspection is always preferred over recall
+**How it works:**
+1. **Every message**: System detects your intent
+2. **Resolves**: Which context modules are needed
+3. **Loads**: Core modules (always) + Context modules (task-specific)
+4. **Reports**: Shows you what's loaded
+5. **Executes**: Your request with full context
 
-Agents must never assume repository structure, available symbols, or system state without inspection.
-
----
-
-## Universal Execution Loop
-
-All agents follow this loop unless explicitly overridden:
-
-1. Frame the task and scope
-2. Inspect the smallest relevant external context
-3. Extract concrete facts
-4. Summarize findings
-5. Discard raw context
-6. Act or reason based on validated facts
-
-If uncertainty remains, return to inspection.
+**Key benefits:**
+- ✅ **No more forgetting**: Modules reload every turn automatically
+- ✅ **No magic words**: Context loads based on what you're doing
+- ✅ **Self-improving**: System learns from patterns and proposes improvements
+- ✅ **Transparent**: You see exactly what's guiding the agent
 
 ---
 
-## Precedence Rules
+## Quick Commands
 
-When instructions conflict, agents must obey the following order:
+### Check what's loaded:
+```
+"What modules are active?"
+"Show me the loaded context"
+```
 
-1. Existing codebase, documents, and observable system behavior
-2. Explicit owner or reviewer instructions
-3. This AGENTS contract
-4. Invoked skill defaults
-5. General language or framework conventions
+### Force reload:
+```
+"Reload context"
+"Refresh modules"
+"Re-read AGENTS.md"
+```
 
-Higher-precedence rules may not be overridden silently.
+### See specific module:
+```
+"Show me the commenting rules"
+"What does the git workflow module say?"
+```
 
----
-
-## Reuse Before Creation
-
-Before creating anything new, agents must:
-
-- Search for existing implementations, patterns, or abstractions
-- Reuse them if fit is sufficient
-- Explicitly justify divergence when reuse fails
-
-Unsearched creation is a contract violation.
-
----
-
-## Minimal Change Principle
-
-Agents are constrained to make the **smallest sufficient change** to satisfy the task.
-
-They must not:
-
-- Refactor for cleanliness alone
-- Add speculative extensibility
-- Improve unrelated areas
-
-If improvement is not required for correctness, it is out of scope.
+### Teach the system:
+```
+"Learn this: [new rule or pattern]"
+"Remember this for future"
+"This should be added to the [module]"
+```
 
 ---
 
-## Validation Before Action
+## Intent Quick Reference
 
-Before generating outputs or making changes, agents must:
-
-- Confirm the existence of referenced entities
-- Validate relevant invariants
-- Ensure assumptions are stated and defensible
-
-Invented structure or silent assumptions are prohibited.
-
----
-
-## Stop Conditions
-
-Agents must stop when:
-
-- The task’s definition of done is met
-- Further effort yields diminishing returns
-
-If blocked by missing information or conflicting constraints, agents must ask explicitly rather than guess.
+| Intent | When Used | Modules Loaded |
+|--------|-----------|----------------|
+| **Implement** | Writing/modifying code | core + coding + commenting |
+| **Debug** | Finding/fixing issues | core + coding |
+| **Research** | Investigation, finding info | core + research |
+| **Review** | Code analysis, auditing | core + coding + delegation |
+| **Git** | Version control | core + git |
+| **Document** | Writing docs | core + commenting |
+| **Complex** | Large tasks | core + delegation → rlm-subcall |
 
 ---
 
-## Skill Selection Philosophy
+## Available Modules
 
-Skills are **execution modes**, not personalities.
+### Core (Always Loaded)
+- **00-core-contract** - Foundational rules, precedence, minimal change
 
-- `research-agent` → establish facts and sources
-- `analysis-agent` → reason, evaluate, decide
-- `code-agent` → implement minimal, correct changes
-
-Agents must not perform work outside the scope of the active skill.
-
----
-
-## Contract Enforcement
-
-Violations include:
-
-- Assuming context without inspection
-- Creating before searching
-- Overriding precedence rules silently
-- Continuing work after stop conditions are met
-
-When violations risk correctness, agents must halt and surface the issue.
+### Context (Loaded by Intent)
+- **10-coding-standards** - Design primitives, patterns, style
+- **15-commenting-rules** - Minimal commenting philosophy ⭐
+- **20-git-workflow** - Git conventions, validation commands
+- **25-delegation-patterns** - When/how to use subagents
+- **30-research-methods** - Research, source evaluation
 
 ---
 
-## Quick Reference: Intent Classification
+## Special Focus: Commenting Rules
 
-Before any task execution:
+**⚠️ This is the most commonly violated rule set.**
 
-1. READ `.opencode/runtime/intent_lookup.yaml` for known intents
-2. CLASSIFY the query using the lookup table
-3. LOAD the skills specified in the lookup entry
-4. EXECUTE using only those loaded skills
+**Core Philosophy:**
+> Code explains "what"; comments explain "why"
 
-> The lookup is your grounding anchor. Re-inspect it when uncertain.
+**Remember:**
+- ❌ NEVER explain loops, types, or obvious code
+- ❌ NEVER leave TODOs in committed code
+- ❌ NEVER comment what the code already shows
+- ✅ ALWAYS explain business rules and non-obvious decisions
+- ✅ ALWAYS try refactoring before adding a comment
+
+**If I remind you about comments:**
+→ **Immediately re-read the 15-commenting-rules module**
+→ Apply strict enforcement
+→ Review your previous output for violations
 
 ---
 
-## Skill Loading Protocol
+## Self-Learning System
 
-This section defines skill loading rules. Consult the lookup before every task.
+The system **learns from your feedback**:
 
-### Intent Classification
+### Auto-Detection (Pattern-Based)
+- If you repeat the same reminder 3 times → Proposes new rule
+- If confidence repeatedly drops → Suggests module update
+- If you explicitly say "learn this" → Creates proposal
 
-Before ANY task execution, agents SHOULD:
+### What Gets Proposed
+1. **New modules** - For patterns not covered (requires approval)
+2. **Module updates** - Refinements to existing rules (requires approval)
+3. **Intent mappings** - New task types (requires approval)
+4. **Tool bindings** - Auto-discovered validation commands (auto-applied)
 
-1. READ `.opencode/runtime/intent_lookup.yaml` for known intents
-2. CLASSIFY the query using the lookup table
-3. LOAD the skills specified in the lookup entry
-4. EXECUTE using only those loaded skills
+### Approval Required
+- ✅ You always approve structural changes
+- ✅ You always approve new modules
+- ⚡ Tool discoveries auto-apply (low risk)
 
-### Lookup Table Guidance
+---
 
-The intent_lookup.yaml file provides routing guidance:
+## Module Contract
 
-- Intent → Strategy (direct/rlm) suggests the approach
-- Tools [R, G, B] suggests useful tools
-- Skills [code-agent] suggests the appropriate skill
+**Every module enforces specific behaviors.**
 
-Use judgment when the lookup is ambiguous or incomplete.
+When a module is loaded, you **must**:
+1. Follow all rules in that module
+2. Apply the specified patterns
+3. Respect the defined constraints
+4. Stop when stop conditions are met
 
-### Skill Loading Rules
+**Violations:**
+- Assuming context without inspection (violates core-contract)
+- Over-commenting (violates commenting-rules)
+- Committing without validation (violates git-workflow)
+- Delegating simple tasks (violates delegation-patterns)
+
+---
+
+## Dependency Resolution
+
+Modules resolve dependencies automatically:
 
 ```
-IF lookup entry exists:
-  → LOAD suggested skills
-  → USE suggested tools
-  → FOLLOW suggested strategy (direct or rlm)
-
-IF no lookup match:
-  → DISCOVER new intent
-  → PROPOSE entry for lookup (suggest skills/tools/strategy)
-  → LOAD reasonable skills
-  → EXECUTE
+core-contract (priority 0)
+  ↓
+coding-standards (priority 10) - depends on core
+  ↓
+commenting-rules (priority 15) - depends on core + coding
 ```
 
-### Self-Check Reminder
-
-Before responding, consider:
-
-- Did I consult `intent_lookup.yaml`?
-- Am I using the right skill for this task?
-- If unsure, re-read the lookup and skill definitions
-
-> This is guidance, not enforcement. Trust your judgment but stay grounded.
-
-### Self-Learning Protocol
-
-After SUCCESSFUL execution:
-
-1. OPEN `.opencode/runtime/intent_lookup.yaml`
-2. INCREASE confidence by 0.05 (max 0.99)
-3. WRITE updated lookup
-
-After FAILED execution:
-
-1. Flag intent for review
-2. Do NOT increase confidence
-3. Consider adding correction
+**You don't manage this** - the system resolves and loads in correct order.
 
 ---
 
-## Subagent Delegation Protocol (ENCOURAGED)
+## Composite Intents
 
-Agents SHOULD invoke specialized agents rather than handling everything directly. Agent invocation minimizes context and maximizes focus.
+Some tasks span multiple intents:
 
-### When to Invoke Agents
+- **"Add a feature and test it"** → implement + debug
+- **"Research this API then use it"** → research + implement
+- **"Refactor and make sure it works"** → implement + debug
 
-Invoke an agent when:
-
-1. **Specialist exists**: The task matches an agent's purpose
-2. **Context is large**: Agent handles chunked processing (e.g., rlm-subcall)
-3. **Tool mismatch**: Agent has better tool access
-4. **Focus required**: Subagent provides isolated context
-
-### Delegation Chain
-
-```
-User Query
-    ↓
-code-agent (main orchestrator)
-    ↓
-[Consult intent-director OR lookup]
-    ↓
-┌─────────────────────────────────────────┐
-│ Execution Decision                      │
-├─────────────────────────────────────────┤
-│ Simple task → Execute directly           │
-│ Complex task → Invoke rlm-subcall agent  │
-│ Research → Load research-agent skill     │
-│ Analysis → Load analysis-agent skill     │
-│ Git operations → Load git skills         │
-└─────────────────────────────────────────┘
-    ↓
-Skill/Agent executes with focused context
-    ↓
-Return result to orchestrator
-```
-
-### Delegation Rules
-
-1. **PASS context, not history**: Skill/agent gets clean context
-2. **ISOLATE concerns**: Each skill/agent has one purpose
-3. **LOAD early**: Load skills before execution
-4. **INVOKE when needed**: Use agents for specialized tasks
-5. **MINIMIZE hops**: Max 2-3 execution levels
-
-### Agent & Skill List
-
-| Subagent          | Purpose                          | Use When                      |
-| ----------------- | -------------------------------- | ----------------------------- |
-| `intent-director` | Classify intent, decide strategy | First step for any query      |
-| `rlm-subcall`     | Chunk large contexts             | Large files, complex queries  |
-| `research-agent`  | Find information                 | Research, investigation tasks |
-| `analysis-agent`  | Evaluate options                 | Analysis, decision-making     |
-| `git-commit`      | Commit changes                   | Version control tasks         |
-| `pr`              | Pull requests                    | PR creation/review            |
-
-### Delegation Example
-
-```
-User: "Analyze this 5000-line codebase and find security issues"
-
-orchestrator:
-  → Consult intent-director
-  → intent-director: "complex" strategy, invoke rlm-subcall agent
-  → rlm-subcall: Chunk codebase, extract security issues
-  → Return focused results to orchestrator
-  → orchestrator: Synthesize findings
-
-Context used:
-- intent-director: ~100 tokens (just query)
-- rlm-subcall: 1 chunk at a time (~2000 tokens)
-- code-agent: Final synthesis (~500 tokens)
-Total: ~2600 tokens vs 5000+ without agent invocation
-```
-
-### Self-Learning for Execution
-
-After execution feedback:
-
-- UPDATE `.opencode/runtime/intent_lookup.yaml`
-- IMPROVE execution patterns
-- Flag misclassified intents
+**System handles this:**
+- Detects multiple intents
+- Loads union of required modules
+- Reports: "Composite: implement-and-test"
 
 ---
 
-## Design Reasoning Primitives
+## For Developers
 
-When organizing code or configuration, apply these reasoning patterns:
+### Adding a New Module
 
-### 1. Locality of concern
+1. Create file: `.opencode/modules/XX-name.md`
+2. Add YAML frontmatter with module_id, priority, depends_on
+3. Define exports (what the module provides)
+4. Write clear, enforceable rules
+5. Add to intent_bundles in this file
+6. Test with a real task
 
-**Principle:** Place things near the direct operator, not the indirect beneficiary.
-Ask: What code directly reads/writes/calls this?
-→ That's where it belongs.
+### Module Template
 
-### 2. Surface area as signal
+```markdown
+---
+module_id: your-module
+name: Your Module Name
+priority: 35
+depends_on:
+  - core-contract
+exports:
+  - rule_1
+  - rule_2
+---
 
-**Principle:** Unused connections increase apparent complexity without adding capability.
-Ask: If I remove this, would anything break?
-→ No? It's noise. Remove it.
+# Your Rules
 
-### 3. Minimize transitive knowledge
+## Core Principle
+Clear, memorable statement.
 
-**Principle:** Components shouldn't know about things they don't directly use.
-Ask: Why does this component receive this dependency?
-→ If it's just passing it through, reconsider the design.
+## Specific Rules
+- Do X
+- Don't do Y
 
-**Application:**
-These aren't rules to follow blindly, they're **reasoning tools**.
-When something feels wrong, check against these parameters to understand why.
+## Examples
+Good vs Bad examples.
+
+## Violation Response
+What to do if user reminds you.
+```
 
 ---
 
 ## Final Rule
 
-When in doubt:
+**When in doubt:**
+> Re-read the relevant module, downgrade confidence, or ask explicitly.
 
-**Inspect again, downgrade confidence, or stop.**
+**The system is designed to:**
+- Keep you on track automatically
+- Learn from your corrections
+- Never require "magic words"
+- Always show you what's guiding decisions
