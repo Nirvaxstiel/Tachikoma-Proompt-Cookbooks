@@ -30,7 +30,7 @@ Every message, the agent perks up, figures out what you're doing, and loads the 
 **What changes based on what you're doing:**
 | Intent | What Loads |
 |--------|-----------|
-| **Implement** | Core + coding standards + commenting rules |
+| **Implement** | Core + coding standards + commenting rules + workflow management + task tracking |
 | **Debug** | Core + coding standards |
 | **Research** | Core + research methods |
 | **Review** | Core + coding standards + delegation patterns |
@@ -62,24 +62,13 @@ Every message, the agent perks up, figures out what you're doing, and loads the 
 your-project/
 ├── AGENTS.md                          # DI Registry (config + modules)
 └── .opencode/
-    ├── modules/                       # Context modules (00, 10, 15, 20, 25, 30)
-    │   ├── 00-core-contract.md        # Foundational rules
-    │   ├── 10-coding-standards.md     # Design primitives
-    │   ├── 15-commenting-rules.md     # Minimal commenting ⭐
-    │   ├── 20-git-workflow.md         # Git conventions
-    │   ├── 25-delegation-patterns.md  # When to use subagents
-    │   └── 30-research-methods.md     # Research framework
-    ├── skills/                        # Specialized skills
-    │   ├── code-agent/                # Debug, implement, edit
-    │   ├── analysis-agent/            # Code review
-    │   ├── research-agent/            # Investigation
-    │   ├── git-commit/                # Commit messages
-    │   ├── pr/                        # Pull requests
-    │   ├── rlm/                       # Recursive context management
-    │   └── self-learning/             # Self-improvement
-    └── runtime/
-        └── intent_lookup.yaml         # Quick intent lookup
+    ├── modules/                       # Context modules (10 modules)
+    ├── skills/                        # Specialized skills (10 skills)
+    ├── agents/                        # Subagents for complex tasks
+    └── runtime/                       # Runtime configuration
 ```
+
+See the [full framework structure](#-framework-structure) below for details.
 
 ### Customizing for Your Project
 
@@ -110,34 +99,20 @@ Edit `AGENTS.md` → Add to `intent_bundles` section
 
 ```text
 tachikoma-proompt-cookbooks/
-├── AGENTS.md                    # DI Registry configuration (YAML + docs)
-├── .opencode/
-│   ├── modules/                 # Context modules (core + task-specific)
-│   │   ├── 00-core-contract.md           # Non-negotiable foundational rules
-│   │   ├── 10-coding-standards.md        # Design primitives, patterns, style
-│   │   ├── 15-commenting-rules.md        # Minimal commenting philosophy ⭐
-│   │   ├── 20-git-workflow.md            # Git conventions, validation commands
-│   │   ├── 25-delegation-patterns.md     # When/how to use subagents
-│   │   └── 30-research-methods.md         # Research, source evaluation
-│   ├── skills/                  # Specialized agent skills
-│   │   ├── code-agent/                    # Debug, implement, edit
-│   │   ├── analysis-agent/                # Code review, evaluation
-│   │   ├── research-agent/                # Investigation
-│   │   ├── git-commit/                    # Commit messages
-│   │   ├── pr/                            # Pull requests
-│   │   ├── rlm/                           # Recursive context management
-│   │   └── self-learning/                 # Self-improvement
-│   ├── agents/                  # Subagents for complex tasks
-│   │   ├── intent-director/AGENT.md       # Intent classification
-│   │   └── rlm-subcall.md                 # Large context chunking
-│   ├── runtime/                # Runtime configuration
-│   │   ├── intent_lookup.yaml             # Quick intent lookup table
-│   │   └── PLAN_TO_BUILD_INTENT.md        # Intent persistence
-│   └── old-bootstrapper/        # Legacy one-time templates
-│       ├── TACHIKOMA_AGENT_BOOTSTRAP.md   # Code repos
-│       └── TACHIKOMA_AGENT_BOOTSTRAP_NON_CODE.md  # Non-code repos
-└── examples/                   # Example implementations
+├── AGENTS.md                    # DI Registry configuration
+├── README.md                    # This file
+└── .opencode/
+    ├── modules/                 # Context modules (10 modules)
+    ├── skills/                  # Specialized skills (10 skills)
+    ├── agents/                  # Subagents for complex tasks
+    └── runtime/                 # Runtime configuration
 ```
+
+See each directory's README for detailed listings:
+
+- [Modules](./.opencode/modules/) - Core and context modules
+- [Skills](./.opencode/skills/) - Specialized skills
+- [Agents](./.opencode/agents/) - Subagents for complex tasks
 
 ## 🎯 What This Actually Does
 
@@ -153,6 +128,10 @@ tachikoma-proompt-cookbooks/
 - **Git Workflow**: Conventional commits, validation commands, safety rules
 - **Delegation Patterns**: When to use subagents, what to delegate
 - **Research Methods**: Evidence-driven, source evaluation, confidence labeling
+- **Workflow Management**: 6-phase spec-driven development workflow with quality gates
+- **Task Tracking**: Progressive 3-file tracking system for accountability
+- **Agent Orchestration**: Sequential agent workflows with guided handoffs
+- **Prompt Safety**: Comprehensive safety frameworks, bias mitigation, and compliance
 
 ### Composite Intents
 
@@ -161,6 +140,7 @@ Some tasks need multiple modules:
 - "Add feature and test it" → `implement` + `debug` modules load
 - "Research this API then use it" → `research` + `implement` modules load
 - "Refactor and verify" → `implement` + `debug` modules load
+- "Build production feature" → `implement` + `workflow management` + `task tracking` modules load
 
 ### Self-Learning
 
@@ -172,6 +152,14 @@ The system watches for patterns and gets smarter over time:
 - Auto-discovers validation commands (npm test, pytest, etc.)
 
 You approve changes; agent implements. It's like training a tiny assistant.
+
+### Specialized Skills
+
+Pre-built workflows for common tasks:
+
+- **Code Review**: Structured review with priority-based classification (CRITICAL/IMPORTANT/SUGGESTION)
+- **Prompt Engineer**: Comprehensive safety frameworks, bias mitigation, and responsible AI usage
+- **Security Audit**: OWASP-based vulnerability assessment and security best practices
 
 ## 🛠️ Compatibility
 

@@ -99,14 +99,79 @@ context_modules:
       - core-contract
     exports:
       - framing_methodology
-      - source_evaluation
-      - confidence_labeling
-      - synthesis_rules
+       - source_evaluation
+       - confidence_labeling
+       - synthesis_rules
+ 
+  - module_id: workflow-management
+    name: Spec-Driven Workflow Management
+    file: .opencode/modules/35-workflow-management.md
+    priority: 35
+    type: context
+    description: Production-grade 6-phase development workflow with quality gates, confidence-based adaptation, and automated technical debt tracking.
+    depends_on:
+      - core-contract
+      - coding-standards
+    exports:
+      - six_phase_workflow
+      - confidence_based_adaptation
+      - quality_gates
+      - technical_debt_automation
+      - documentation_templates
 
-# ============================================
-# INTENT → MODULE BUNDLES
-# ============================================
-intent_bundles:
+  - module_id: task-tracking
+    name: Progressive Task Tracking System
+    file: .opencode/modules/40-task-tracking.md
+    priority: 40
+    type: context
+    description: Three-file progressive tracking system (plan/details/changes) with MANDATORY updates and divergent-change logging for accountability.
+    depends_on:
+      - core-contract
+      - coding-standards
+      - workflow-management
+    exports:
+      - three_file_tracking_system
+      - mandatory_update_protocol
+      - divergent_change_tracking
+      - release_summary_format
+
+  - module_id: agent-orchestration
+    name: Agent Orchestration & Handoffs
+    file: .opencode/modules/45-agent-orchestration.md
+    priority: 45
+    type: context
+    description: Sequential agent workflows with handoffs, wrapper prompts for sub-agent invocation, dynamic parameters, and tool delegation ceilings.
+    depends_on:
+      - core-contract
+      - coding-standards
+      - delegation-patterns
+    exports:
+      - agent_handoffs_configuration
+      - sub_agent_wrapper_pattern
+      - dynamic_parameters_system
+      - tool_delegation_management
+
+  - module_id: prompt-safety
+    name: Prompt Engineering Safety & Compliance
+    file: .opencode/modules/50-prompt-safety.md
+    priority: 50
+    type: context
+    description: Comprehensive prompt engineering best practices, safety frameworks, bias mitigation, and responsible AI usage with checklists and red-teaming protocols.
+    depends_on:
+      - core-contract
+      - coding-standards
+    exports:
+      - prompt_engineering_patterns
+      - safety_checklists
+      - bias_mitigation_strategies
+      - red_teaming_protocols
+      - compliance_frameworks
+      - testing_and_validation
+ 
+ # ============================================
+ # INTENT → MODULE BUNDLES
+ # ============================================
+ intent_bundles:
   debug:
     description: Finding and fixing issues, troubleshooting
     primary_intent: debugging
