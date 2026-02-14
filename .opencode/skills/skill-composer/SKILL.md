@@ -16,8 +16,6 @@ tags:
 
 > **Purpose**: Compositional Skill Synthesis - Dynamically compose your existing skills to handle complex, multi-step tasks that no single skill can solve alone.
 
-**Research Basis**: Based on "Agentic Proposing" (arXiv:2602.03279) - a 4B proposer agent can dynamically select and compose modular reasoning skills, achieving 91.6% accuracy by synthesizing capabilities rather than using monolithic approaches.
-
 ---
 
 ## What This Skill Does
@@ -230,21 +228,6 @@ Skill Composer activates when:
 
 ---
 
-## Performance Characteristics
-
-Based on research (arXiv:2602.03279):
-
-| Approach | Accuracy | Latency | Cost |
-|----------|----------|---------|------|
-| Single skill | 65% | 1x | $0.05 |
-| Skill Composer (sequential) | 85% | 2-3x | $0.15 |
-| Skill Composer (parallel) | 91% | 1.5x | $0.20 |
-| Manual orchestration | 75% | 5x | $0.35 |
-
-**Key Insight**: Compositional approach beats monolithic and manual orchestration.
-
----
-
 ## Example Compositions
 
 ### Example 1: Feature Implementation
@@ -336,22 +319,6 @@ Too many skills in sequence. Solution:
 - Parallelize independent skills
 - Break into smaller compositions
 - Increase timeout threshold
-
----
-
-## Research Citation
-
-This skill implements findings from:
-
-> **"Agentic Proposing: Synthesizing Novel Capabilities via Modular Skill Composition"**  
-> arXiv:2602.03279 (February 2025)  
-> Key finding: A 4B proposer agent dynamically composes modular skills, achieving 91.6% accuracy on AIME25 by synthesizing 11,000 high-quality trajectories, outperforming massive human-curated datasets.
-
-**Why it works**: Modular composition beats monolithic approaches because:
-1. Each skill is optimized for its domain
-2. Composition follows task structure
-3. State passing maintains context
-4. Parallel execution reduces latency
 
 ---
 

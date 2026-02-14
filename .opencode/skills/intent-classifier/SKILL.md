@@ -74,6 +74,25 @@ I analyze user queries and return a structured classification that helps the orc
 
 ---
 
+## Skill Chain Detection
+
+Detect when multiple skills are needed:
+
+### Multi-Verb Patterns (Need Sequential Chain)
+- "research AND implement" → [research-agent, code-agent]
+- "review AND fix" → [analysis-agent, code-agent]
+- "research AND test" → [research-agent, code-agent, verifier-code-agent]
+
+### High-Stakes Patterns (Need Verification Chain)
+- "secure", "auth", "payment", "encryption" → [code-agent, verifier-code-agent]
+- "critical", "production", "mission-critical" → [code-agent, verifier-code-agent, reflection-orchestrator]
+
+### Multi-Perspective Patterns (Need Parallel Chain)
+- "review thoroughly" → [analysis-agent (security), analysis-agent (performance)]
+- "comprehensive analysis" → [analysis-agent, research-agent]
+
+---
+
 ## Output Format
 
 Return **JSON only** with this schema:
@@ -83,11 +102,16 @@ Return **JSON only** with this schema:
   "intent": "debug|implement|review|research|git|document|complex|unclear",
   "confidence": 0.0-1.0,
   "reasoning": "Brief explanation of why this intent was chosen",
-  "suggested_action": "skill|subagent|direct|ask",
+  "suggested_action": "skill|subagent|direct|ask|skill_chain",
   "keywords_matched": ["keyword1", "keyword2"],
   "alternative_intents": [
     {"intent": "other", "confidence": 0.3}
-  ]
+  ],
+  "skill_chain": {
+    "needed": true|false,
+    "chain": ["skill1", "skill2", "skill3"],
+    "mode": "sequential|parallel"
+  }
 }
 ```
 
@@ -286,11 +310,9 @@ The orchestrator (tachikoma) uses this skill by:
 
 ---
 
-## Performance Notes
+## Notes
 
-- This skill is **fast** - no I/O operations, just pattern matching
-- Classification should complete in < 100ms
-- No external dependencies or tool calls needed
+- This skill uses fast pattern matching - no I/O operations needed
 - Pure reasoning based on query text and patterns
 
 ---

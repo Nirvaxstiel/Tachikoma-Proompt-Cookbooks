@@ -145,6 +145,116 @@ routes:
     strategy: direct
     notes: Use for context cleanup, token reduction, efficiency tuning
 
+  # Verify: Generator-Verifier-Reviser pattern for high-reliability tasks
+  verify:
+    description: High-reliability code generation with verification loop
+    confidence_threshold: 0.6
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+    skill: verifier-code-agent
+    tools:
+      - Read
+      - Write
+      - Edit
+      - Bash
+    strategy: direct
+    notes: "Use for: complex implementations, security-critical code, high-stakes fixes. Based on Aletheia architecture (arXiv:2602.10177)"
+
+  # Reflect: Explicit self-verification and reflection
+  reflect:
+    description: Self-critique and adversarial verification for outputs
+    confidence_threshold: 0.6
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+    skill: reflection-orchestrator
+    tools:
+      - Read
+      - Write
+      - Edit
+    strategy: direct
+    notes: Use for complex reasoning, high-stakes decisions, confidence verification. Based on vibe-proving (arXiv:2602.03837)
+
+  # Edit-Optimize: Model-aware edit format selection
+  edit-optimize:
+    description: Model-specific edit format for maximum success
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+    skill: model-aware-editor
+    tools:
+      - Read
+      - Write
+      - Edit
+    strategy: direct
+    notes: Use when experiencing edit failures, working with multiple models. Based on harness research (Can.ac Feb 2026)
+
+# ============================================
+# SKILL CHAINS (Multi-Skill Orchestration)
+# ============================================
+skill_chains:
+  # High-reliability implementation chain
+  implement-verify:
+    description: "Implementation with verification loop"
+    skills:
+      - code-agent
+      - verifier-code-agent
+      - formatter
+    mode: sequential
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+
+  # Research-then-implement chain  
+  research-implement:
+    description: "Research followed by implementation"
+    skills:
+      - research-agent
+      - context7
+      - code-agent
+      - formatter
+    mode: sequential
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+
+  # High-stakes security chain
+  security-implement:
+    description: "Security-critical implementation"
+    skills:
+      - context7
+      - code-agent
+      - verifier-code-agent
+      - reflection-orchestrator
+    mode: sequential
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+
+  # Review with reflection
+  deep-review:
+    description: "In-depth code review with self-verification"
+    skills:
+      - analysis-agent
+      - reflection-orchestrator
+    mode: sequential
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+
+  # Complex research chain
+  complex-research:
+    description: "Multi-source research with verification"
+    skills:
+      - research-agent
+      - context7
+      - reflection-orchestrator
+    mode: sequential
+    context_modules:
+      - 00-core-contract
+      - 30-research-methods
+
 # ============================================
 # COMPOSITE INTENTS
 # ============================================

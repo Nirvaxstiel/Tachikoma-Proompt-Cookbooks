@@ -25,9 +25,22 @@ This system uses a **primary orchestrator** pattern where Tachikoma (the primary
 
 For detailed architecture and flow, see [AGENTS.md](./AGENTS.md).
 
-<p align="center">
-    <img width="700px" src= "assets/tachikoma-primary-agent.png" alt="tachikoma-primary-agent.png">
-</p>
+---
+
+## 🎨 Themes
+
+Two Ghost in the Shell inspired themes for OpenCode terminal:
+
+| Theme | View | Dark | Light |
+| ----- | ---- | ---- | ----- |
+| ghost-in-the-shell | Start Page | ![start](assets/tachikoma-dark-theme-gits-solid.png) | ![start](assets/tachikoma-light-theme-gits.png) |
+| lucent-ghost-in-the-shell | Start Page | ![start](assets/tachikoma-dark-theme-gits-lucent.png) | ![start](assets/tachikoma-light-theme-gits.png) |
+| ghost-in-the-shell | Menu | ![menu](assets/tachikoma-dark-theme-gits-solid-menu.png) | ![menu](assets/tachikoma-light-theme-gits-menu.png) |
+| lucent-ghost-in-the-shell | Menu | ![menu](assets/tachikoma-dark-theme-gits-lucent-menu.png) | ![menu](assets/tachikoma-light-theme-gits-menu.png) |
+| ghost-in-the-shell | Chat | ![chat](assets/tachikoma-dark-theme-gits-solid-chat.png) | ![chat](assets/tachikoma-light-theme-gits-chat.png) |
+| lucent-ghost-in-the-shell | Chat | ![chat](assets/tachikoma-dark-theme-gits-lucent-chat.png) | ![chat](assets/tachikoma-light-theme-gits-chat.png) |
+
+> **Note:** Light mode for both themes uses solid colors — transparency doesn't work well in light mode, so it's a solid colour for both lucent and solid themes.
 
 ---
 
@@ -193,9 +206,10 @@ Experiment and trust local results over lists like this.
 ## Credits
 
 ### Research & Papers
-- **Tool-Augmented LLMs** (arXiv:2601.02663) - Tool use improves accuracy 47.5% → 67.5% but adds 40x latency. Basis for cost-aware routing.
+- **Tool-Augmented LLMs** (arXiv:2601.02663) - Tool use can improve accuracy but adds latency. Basis for cost-aware routing. (Specific numbers not yet verified - see RESEARCH_VERIFICATION.md)
 - **Agentic Proposing** (arXiv:2602.03279) - 4B proposer dynamically composes modular skills. 91.6% accuracy. Basis for skill-composer.
-- **MIT RLM** - Adaptive chunking gives 2-5x efficiency on million-token tasks. Basis for rlm-optimized.
+- **Can.ac Harness Problem** (Feb 2026) - Edit format can improve success rates up to 10x. Verified: Grok 6.7%→68.3%, Gemini +8%. Basis for model-aware-editor.
+- **MIT RLM** - Adaptive chunking for large contexts. Basis for rlm-optimized.
 
 ### Code & Concepts
 - **RLM Concept**: Based on _Recursive Language Models_ (2025) by Zhang, Kraska, and Khattab (MIT CSAIL)
