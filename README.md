@@ -4,38 +4,103 @@
 
 # Tachikoma Proompt Cookbooks 🕷️
 
-**Boot manuals and Recursive Skills for AI agents exploring your repository.**
+**Agent coordination system for AI-assisted development.**
 
-Drop this into any repo and watch your agent grow a mind of its own:
+A modular framework that helps AI agents understand your project structure, follow your conventions, and route tasks to appropriate specialists.
 
-1.  **Dependency Injection Context System**: Modular rules that load based on what you're doing
-2.  **Intent Classification**: Auto-detects task type and loads the right brain cells
-3.  **Self-Learning**: System learns from your feedback, curious little thing
+**Core Concepts:**
 
-**Like the AI tanks from Ghost in the Shell, but for code.**
+1.  **Orchestrator Pattern**: Primary agent (Tachikoma) coordinates all activity
+2.  **Intent-Based Routing**: Classifies requests and routes to appropriate skills/subagents  
+3.  **Context Modules**: Project-specific rules that load based on task type
+4.  **Self-Learning**: Tracks patterns and suggests improvements
+
+Named after the adaptive AI tanks from *Ghost in the Shell* — always learning, always asking questions.
 
 ---
 
-## 🧠 Dependency Injection Context System
+## 🧠 How It Works
 
-Every message, the agent perks up, figures out what you're doing, and loads the right brain modules:
+This system uses a **primary orchestrator** pattern where Tachikoma (the primary agent) handles all incoming requests, classifies them, and routes to the appropriate specialist.
 
-**How it works:**
+### Architecture Overview
 
-1.  **Detect intent**: Are you debugging? Implementing? Researching?
-2.  **Load modules**: Core rules (always) + Context modules (task-specific)
-3.  **Execute**: Your request with full context, auto-validating as needed
-4.  **Report**: Shows you what's loaded (no black box magic)
+```
+User Request
+    ↓
+Tachikoma (Primary Agent)
+    ↓
+Intent Classification (skill)
+    ↓
+Route Decision (config-driven)
+    ↓
+    ├── Simple Task → Skill (e.g., code-agent)
+    ├── Complex Task → Subagent (e.g., rlm-subcall)
+    └── Ambiguous → Ask user for clarification
+```
 
-**What changes based on what you're doing:**
-| Intent | What Loads |
-|--------|-----------|
-| **Implement** | Core + coding standards + commenting rules + workflow management + task tracking |
-| **Debug** | Core + coding standards |
-| **Research** | Core + research methods |
-| **Review** | Core + coding standards + delegation patterns |
-| **Git** | Core + git workflow conventions |
-| **Complex tasks** | Core + delegation patterns → rlm-subcall agent |
+### Request Processing Flow
+
+1.  **Receive**: Tachikoma receives the user request
+2.  **Classify**: Loads `intent-classifier` skill to determine intent and confidence
+3.  **Load Context**: Reads relevant context modules from `.opencode/context/`
+4.  **Route**: Checks `.opencode/config/intent-routes.yaml` for routing rules
+5.  **Execute**: Either handles directly (skills) or delegates (subagents)
+6.  **Report**: Returns results with routing details and confidence levels
+
+### Intent Routing Table
+
+| Intent | Context Modules Loaded | Execution Target | Use Case |
+|--------|----------------------|------------------|----------|
+| **debug** | core-contract, coding-standards | code-agent skill | Fixing bugs and errors |
+| **implement** | core-contract, coding-standards, commenting-rules | code-agent skill | Writing new code |
+| **research** | core-contract, research-methods | research-agent skill | Finding information |
+| **review** | core-contract, coding-standards | analysis-agent skill | Code analysis |
+| **git** | core-contract, git-workflow | git-commit / pr skills | Version control |
+| **complex** | core-contract | rlm-subcall subagent | Large context processing |
+
+**Note:** The orchestrator loads context modules in priority order (lower numbers first) before executing any task.
+
+---
+
+## 📝 Planning vs Implementation
+
+Tachikoma has full tool access (read, write, edit, bash). Depending on your workflow preference:
+
+### Option A: Plan First (Recommended for complex work)
+
+**When to use:** Large features, refactoring, or when you want to review before executing
+
+1. **Start with OpenCode's built-in Plan agent** (or your IDE's planning mode)
+   - Read-only analysis
+   - Explore the codebase
+   - Create implementation plan
+   - No risk of accidental changes
+
+2. **When ready to implement, press Tab and switch to Tachikoma**
+   - Tachikoma receives the plan
+   - Executes with context modules loaded
+   - Can make changes, run commands, delegate to subagents
+
+**Benefits:** 
+- Peace of mind during exploration
+- Review plan before committing to changes
+- Clear separation between analysis and implementation
+
+### Option B: Let Tachikoma Handle Everything
+
+**When to use:** Simple tasks, quick fixes, or when you're confident in the approach
+
+1. **Stay on Tachikoma from the start**
+   - Tachikoma classifies your request
+   - Loads appropriate context
+   - Routes to skills or subagents automatically
+   - Executes immediately
+
+**Benefits:**
+- Faster for straightforward tasks
+- No context switching
+- Full automation
 
 ---
 
@@ -60,38 +125,105 @@ Every message, the agent perks up, figures out what you're doing, and loads the 
 
 ```
 your-project/
-├── AGENTS.md                          # DI Registry (config + modules)
+├── AGENTS.md                          # Universal context and system overview
 └── .opencode/
-    ├── modules/                       # Context modules (10 modules)
-    ├── skills/                        # Specialized skills (10 skills)
-    ├── agents/                        # Subagents for complex tasks
-    └── runtime/                       # Runtime configuration
+    ├── agents/                        # Agent definitions
+    │   ├── tachikoma.md              # Primary orchestrator (always-on)
+    │   └── subagents/                # Specialized subagents
+    │       └── core/
+    │           └── rlm-subcall.md    # Large context processor
+    ├── skills/                        # Specialized skills (11 skills)
+    │   ├── intent-classifier/        # Intent detection
+    │   ├── code-agent/               # Implementation
+    │   ├── analysis-agent/           # Code review
+    │   ├── research-agent/           # Investigation
+    │   ├── git-commit/               # Git operations
+    │   ├── pr/                       # Pull requests
+    │   ├── workflow-management/      # 6-phase workflow
+    │   └── task-tracking/            # Task management
+    ├── context/                       # Context modules (reference docs)
+    │   ├── 00-core-contract.md
+    │   ├── 10-coding-standards.md
+    │   ├── 15-commenting-rules.md
+    │   ├── 20-git-workflow.md
+    │   ├── 30-research-methods.md
+    │   └── 50-prompt-safety.md
+    └── config/                        # Routing configuration
+        └── intent-routes.yaml         # Intent → action mapping
 ```
 
 See the [full framework structure](#-framework-structure) below for details.
 
 ### Customizing for Your Project
 
-The system is opinionated but adaptable:
+**Adding Project-Specific Rules:**
 
-**Add project-specific rules:**
+Create a new context module in `.opencode/context/`:
 
 ```bash
-# Create a new module
-echo "module_id: my-project-rules
+# Create context module with appropriate priority (40-60 range)
+cat > .opencode/context/40-my-project.md << 'EOF'
+---
+module_id: my-project-rules
+name: My Project Patterns
 priority: 40
-depends_on: [core-contract, coding-standards]" > .opencode/modules/40-my-project.md
+depends_on:
+  - core-contract
+  - coding-standards
+---
+
+# My Project Specific Rules
+
+## Testing Requirements
+Always run `npm test` before committing.
+
+## Naming Conventions
+- Components: PascalCase
+- Utilities: camelCase  
+- Constants: UPPER_CASE
+
+## Project Structure
+src/
+  components/    # React components
+  utils/         # Helper functions
+  types/         # TypeScript definitions
+EOF
 ```
 
-**Add custom intents:**
-Edit `AGENTS.md` → Add to `intent_bundles` section
+**Adding Custom Intents:**
 
-**Teach new patterns:**
+Edit `.opencode/config/intent-routes.yaml`:
+
+```yaml
+routes:
+  my-custom-intent:
+    description: Description of what this intent means
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 40-my-project
+    skill: code-agent
+    tools:
+      - Read
+      - Write
+      - Bash
+```
+
+**Providing Feedback:**
+
+The system monitors interactions for learning opportunities:
 
 ```
-"Learn this: Always run `npm run lint` before committing"
-→ System proposes adding to git-workflow module
+User: "Learn this: Always run lint before committing"
+System: Detects pattern → Proposes adding to git-workflow context
+User: Approves → Updates git-workflow.md
 ```
+
+**Confidence Thresholds:**
+
+Adjust routing sensitivity in `intent-routes.yaml`:
+- High threshold (>0.8): Strict routing, more user clarification
+- Low threshold (<0.5): Permissive routing, may misroute
 
 ---
 
@@ -99,67 +231,141 @@ Edit `AGENTS.md` → Add to `intent_bundles` section
 
 ```text
 tachikoma-proompt-cookbooks/
-├── AGENTS.md                    # DI Registry configuration
+├── AGENTS.md                    # Universal context and system overview
 ├── README.md                    # This file
 └── .opencode/
-    ├── modules/                 # Context modules (10 modules)
-    ├── skills/                  # Specialized skills (10 skills)
-    ├── agents/                  # Subagents for complex tasks
-    └── runtime/                 # Runtime configuration
+    ├── agents/                  # Agent definitions
+    │   ├── tachikoma.md         # Primary orchestrator (always-on)
+    │   └── subagents/           # Specialized subagents
+    │       └── core/
+    │           └── rlm-subcall.md
+    ├── skills/                  # Specialized skills (11 skills)
+    │   ├── intent-classifier/   # Intent classification
+    │   ├── code-agent/          # Implementation
+    │   ├── analysis-agent/      # Code review
+    │   ├── research-agent/      # Investigation
+    │   ├── git-commit/          # Git operations
+    │   ├── pr/                  # Pull requests
+    │   ├── workflow-management/ # 6-phase workflow
+    │   └── task-tracking/       # Task management
+    ├── context/                 # Context modules (reference docs)
+    │   ├── 00-core-contract.md
+    │   ├── 10-coding-standards.md
+    │   ├── 15-commenting-rules.md
+    │   ├── 20-git-workflow.md
+    │   ├── 30-research-methods.md
+    │   └── 50-prompt-safety.md
+    ├── config/                  # Configuration
+    │   └── intent-routes.yaml   # Intent routing
+    └── runtime/                 # Runtime state
 ```
 
 See each directory's README for detailed listings:
 
-- [Modules](./.opencode/modules/) - Core and context modules
-- [Skills](./.opencode/skills/) - Specialized skills
-- [Agents](./.opencode/agents/) - Subagents for complex tasks
+- [Agents](./.opencode/agents/) - Primary agent and subagents
+- [Skills](./.opencode/skills/) - Specialized capabilities
+- [Context](./.opencode/context/) - Reference modules
 
-## 🎯 What This Actually Does
+## 🎯 System Components
 
-### Core Modules (Always Loaded)
+### Primary Agent (Tachikoma)
 
-- **Core Contract**: Minimal change, validation before action, stop conditions
-- Loads first, establishes the rules of engagement
+Located at `.opencode/agents/tachikoma.md`, this is the main entry point that coordinates all activity:
 
-### Context Modules (Intent-Based)
+**Responsibilities:**
+- Intent classification via `intent-classifier` skill
+- Context module loading based on classified intent
+- Route determination via `intent-routes.yaml` config
+- Skill/subagent invocation
+- Result synthesis and reporting
 
-- **Coding Standards**: Design primitives, patterns, style bias
-- **Commenting Rules**: No obvious comments, explain business rules only
-- **Git Workflow**: Conventional commits, validation commands, safety rules
-- **Delegation Patterns**: When to use subagents, what to delegate
-- **Research Methods**: Evidence-driven, source evaluation, confidence labeling
-- **Workflow Management**: 6-phase spec-driven development workflow with quality gates
-- **Task Tracking**: Progressive 3-file tracking system for accountability
-- **Agent Orchestration**: Sequential agent workflows with guided handoffs
-- **Prompt Safety**: Comprehensive safety frameworks, bias mitigation, and compliance
+**Configuration:**
+- Mode: `primary` (TAB-switchable agent)
+- Temperature: `0` (deterministic)
+- Full tool access with task invocation permissions
 
-### Composite Intents
+### Context Modules
 
-Some tasks need multiple modules:
+Reference documentation in `.opencode/context/` that defines project standards:
 
-- "Add feature and test it" → `implement` + `debug` modules load
-- "Research this API then use it" → `research` + `implement` modules load
-- "Refactor and verify" → `implement` + `debug` modules load
-- "Build production feature" → `implement` + `workflow management` + `task tracking` modules load
+| Module | File | Purpose | Load Priority |
+|--------|------|---------|---------------|
+| Core Contract | `00-core-contract.md` | Foundational rules, precedence, minimal change | 0 (always first) |
+| Coding Standards | `10-coding-standards.md` | Design patterns, style guidelines | 10 |
+| Commenting Rules | `15-commenting-rules.md` | Comment philosophy and requirements | 15 |
+| Git Workflow | `20-git-workflow.md` | Commit conventions, validation commands | 20 |
+| Research Methods | `30-research-methods.md` | Investigation methodology | 30 |
+| Prompt Safety | `50-prompt-safety.md` | Safety frameworks and compliance | 50 |
 
-### Self-Learning
+**Usage:** Tachikoma loads these in priority order before executing any task. Lower priority numbers load first.
 
-The system watches for patterns and gets smarter over time:
+### Skills
 
-- You repeat the same reminder 3 times → proposes new rule
-- You say "learn this" → creates module proposal
-- Agent confidence drops → suggests module update
-- Auto-discovers validation commands (npm test, pytest, etc.)
+Executable capabilities in `.opencode/skills/` that perform specific tasks:
 
-You approve changes; agent implements. It's like training a tiny assistant.
+| Skill | Location | Purpose |
+|-------|----------|---------|
+| Intent Classifier | `intent-classifier/SKILL.md` | Classify user queries into intents |
+| Code Agent | `code-agent/SKILL.md` | Implementation and debugging |
+| Analysis Agent | `analysis-agent/SKILL.md` | Code review and evaluation |
+| Research Agent | `research-agent/SKILL.md` | Investigation and fact-finding |
+| Git Commit | `git-commit/SKILL.md` | Git operations |
+| PR | `pr/SKILL.md` | Pull request creation |
+| Workflow Management | `workflow-management/SKILL.md` | 6-phase development workflow |
+| Task Tracking | `task-tracking/SKILL.md` | Task management system |
 
-### Specialized Skills
+**Invocation:** Tachikoma reads the SKILL.md file and applies its patterns to the current task.
 
-Pre-built workflows for common tasks:
+### Subagents
 
-- **Code Review**: Structured review with priority-based classification (CRITICAL/IMPORTANT/SUGGESTION)
-- **Prompt Engineer**: Comprehensive safety frameworks, bias mitigation, and responsible AI usage
-- **Security Audit**: OWASP-based vulnerability assessment and security best practices
+Specialized agents in `.opencode/agents/subagents/` for isolated or complex work:
+
+| Subagent | Location | Use Case |
+|----------|----------|----------|
+| RLM Subcall | `core/rlm-subcall.md` | Large context processing (>2000 tokens) |
+
+**Invocation:** Via `task(subagent_type="rlm-subcall", ...)` from Tachikoma.
+
+### Configuration
+
+**`.opencode/config/intent-routes.yaml`** - Defines routing logic:
+
+```yaml
+routes:
+  debug:
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+    skill: code-agent
+    
+  implement:
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+      - 15-commenting-rules
+    skill: code-agent
+```
+
+### Self-Learning Mechanisms
+
+The system includes feedback loops for improvement:
+
+1. **Pattern Detection**: Identifies repeated user corrections
+2. **Confidence Tracking**: Monitors classification accuracy
+3. **Tool Discovery**: Auto-detects project validation commands
+4. **Proposal Generation**: Suggests context module updates
+
+**Note:** All learning proposals require user approval before implementation.
+
+### Pre-Built Workflows
+
+Additional specialized skills included:
+
+- **Code Review**: Priority-based review classification
+- **Prompt Engineer**: Safety and bias mitigation patterns
+- **Security Audit**: OWASP-based vulnerability scanning
 
 ## 🛠️ Compatibility
 

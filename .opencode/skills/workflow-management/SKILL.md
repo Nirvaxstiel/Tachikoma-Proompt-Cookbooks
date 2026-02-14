@@ -1,19 +1,15 @@
 ---
-module_id: workflow-management
-name: Spec-Driven Workflow Management
-version: 2.0.0
+name: workflow-management
 description: Production-grade 6-phase development workflow with quality gates, confidence-based adaptation, and automated technical debt tracking.
-priority: 35
-type: context
-depends_on:
-  - core-contract
-  - coding-standards
-exports:
-  - six_phase_workflow
-  - confidence_based_adaptation
-  - quality_gates
-  - technical_debt_automation
-  - documentation_templates
+version: 2.0.0
+author: tachikoma
+type: skill
+category: development
+tags:
+  - workflow
+  - process
+  - quality-gates
+  - documentation
 ---
 
 # Spec-Driven Workflow Management

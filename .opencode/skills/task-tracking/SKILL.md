@@ -1,19 +1,15 @@
 ---
-module_id: task-tracking
-name: Progressive Task Tracking System
-version: 2.0.0
+name: task-tracking
 description: Three-file progressive tracking system (plan/details/changes) with MANDATORY updates and divergent-change logging for accountability.
-priority: 40
-type: context
-depends_on:
-  - core-contract
-  - coding-standards
-  - workflow-management
-exports:
-  - three_file_tracking_system
-  - mandatory_update_protocol
-  - divergent_change_tracking
-  - release_summary_format
+version: 2.0.0
+author: tachikoma
+type: skill
+category: development
+tags:
+  - tracking
+  - task-management
+  - accountability
+  - documentation
 ---
 
 # Progressive Task Tracking System

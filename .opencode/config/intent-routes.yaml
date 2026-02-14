@@ -1,0 +1,195 @@
+# Intent Routing Configuration
+# Defines how Tachikoma orchestrator routes tasks based on classified intent
+# Version: 1.0.0
+
+# ============================================
+# INTENT ROUTES
+# ============================================
+routes:
+  # Debug: Finding and fixing issues
+  debug:
+    description: Finding and fixing issues, troubleshooting
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+    skill: code-agent
+    tools:
+      - Read
+      - Grep
+      - Bash
+    strategy: direct
+    notes: Use for bugs, errors, and broken functionality
+
+  # Implement: Writing or modifying code
+  implement:
+    description: Writing or modifying code, adding features
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+      - 15-commenting-rules
+    skill: code-agent
+    tools:
+      - Read
+      - Write
+      - Edit
+      - Bash
+    strategy: direct
+    notes: Use for new features, components, and implementations
+
+  # Review: Code analysis and auditing
+  review:
+    description: Analyzing code for quality, auditing
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+      - 30-research-methods
+    skill: analysis-agent
+    tools:
+      - Read
+      - Grep
+    strategy: direct
+    notes: Use for code quality checks, security audits, and analysis
+
+  # Research: Investigation and information gathering
+  research:
+    description: Finding information, investigating
+    confidence_threshold: 0.6
+    context_modules:
+      - 00-core-contract
+      - 30-research-methods
+    skill: research-agent
+    tools:
+      - Read
+      - WebFetch
+      - Grep
+    strategy: direct
+    notes: Use for learning APIs, understanding code, exploring solutions
+
+  # Git: Version control operations
+  git:
+    description: Version control operations, commits, PRs
+    confidence_threshold: 0.8
+    context_modules:
+      - 00-core-contract
+      - 20-git-workflow
+    skill: git-commit
+    tools:
+      - Bash
+    strategy: direct
+    notes: Use for commits, branches, PRs, and git operations
+
+  # Document: Documentation tasks
+  document:
+    description: Creating or updating documentation
+    confidence_threshold: 0.6
+    context_modules:
+      - 00-core-contract
+      - 15-commenting-rules
+    skill: self-learning
+    tools:
+      - Read
+      - Write
+    strategy: direct
+    notes: Use for README updates, docs, and comments
+
+  # Complex: Large context or multi-step tasks
+  complex:
+    description: Multi-step tasks, large context processing
+    confidence_threshold: 0.5
+    context_modules:
+      - 00-core-contract
+    subagent: rlm-subcall
+    tools:
+      - Read
+    strategy: rlm
+    notes: Use for large codebases, bulk operations, complex analysis
+
+  # Unclear: When intent cannot be determined
+  unclear:
+    description: Ambiguous or unclear user intent
+    confidence_threshold: 0.0
+    context_modules:
+      - 00-core-contract
+    action: ask
+    notes: Ask user for clarification
+
+# ============================================
+# COMPOSITE INTENTS
+# ============================================
+composite:
+  enabled: true
+  resolution_strategy: union
+  
+  definitions:
+    - name: implement-and-test
+      components:
+        - implement
+        - debug
+      description: Write code and verify it works
+      
+    - name: research-and-implement
+      components:
+        - research
+        - implement
+      description: Investigate then implement solution
+      
+    - name: refactor-and-test
+      components:
+        - implement
+        - debug
+      description: Refactor code with verification
+
+# ============================================
+# FALLBACK RULES
+# ============================================
+fallback:
+  # When confidence is below threshold
+  low_confidence:
+    action: ask
+    message: "I'm not sure how to categorize this request. Could you clarify what you're trying to do?"
+  
+  # When no route matches
+  no_match:
+    action: ask
+    message: "I don't recognize this type of task. Please describe your goal in different terms."
+  
+  # When skill/agent is unavailable
+  unavailable:
+    action: escalate
+    message: "The requested resource is unavailable. Trying alternative approach..."
+
+# ============================================
+# ROUTING BEHAVIOR
+# ============================================
+behavior:
+  # Always load core-contract first
+  always_load_core: true
+  
+  # Maximum number of context modules to load
+  max_context_modules: 5
+  
+  # When to delegate vs handle directly
+  delegation_threshold:
+    tokens: 2000
+    confidence: 0.7
+  
+  # Whether to report routing decisions to user
+  report_routing: true
+  
+  # Whether to include alternative intents in reports
+  report_alternatives: true
+
+# ============================================
+# CONTEXT MODULE PRIORITY
+# ============================================
+# Lower number = higher priority (loaded first)
+module_priority:
+  00-core-contract: 0
+  10-coding-standards: 10
+  15-commenting-rules: 15
+  20-git-workflow: 20
+  30-research-methods: 30
+  50-prompt-safety: 50
