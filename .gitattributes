@@ -1,0 +1,44 @@
+# Git Attributes - Cross-platform line endings
+# https://git-scm.com/book/en/v2/Customizing-Git-Git-Attributes
+
+# Normalize line endings to LF in the repository
+* text=auto
+
+# Force LF for specific file types that should always be Unix-style
+*.sh           text eol=lf
+*.bash         text eol=lf
+*.md           text eol=lf
+*.yaml         text eol=lf
+*.yml          text eol=lf
+*.json         text eol=lf
+*.js           text eol=lf
+*.ts           text eol=lf
+*.py           text eol=lf
+*.rb           text eol=lf
+*.go           text eol=lf
+*.rs           text eol=lf
+
+# Binary files - don't touch
+*.png          binary
+*.jpg          binary
+*.jpeg         binary
+*.gif          binary
+*.ico          binary
+*.pdf          binary
+*.zip          binary
+*.tar          binary
+*.gz           binary
+
+# Executable scripts (if any)
+*.sh           executable
+
+# Documentation
+*.md           text
+*.txt          text
+
+# Config files
+*.yaml         text
+*.yml          text
+*.toml         text
+*.ini          text
+*.cfg          text
