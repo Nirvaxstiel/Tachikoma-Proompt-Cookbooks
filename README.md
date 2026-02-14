@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="500px" src= "assets/tachikoma1.png" alt="tachikoma1.png">
+    <img width="300px" src= "assets/tachikoma1.png" alt="tachikoma1.png">
 </p>
 
 # Tachikoma Proompt Cookbooks 🕷️
@@ -24,6 +24,10 @@ Named after the adaptive AI tanks from *Ghost in the Shell* — always learning,
 This system uses a **primary orchestrator** pattern where Tachikoma (the primary agent) handles all incoming requests, classifies them, and routes to the appropriate specialist.
 
 For detailed architecture and flow, see [AGENTS.md](./AGENTS.md).
+
+<p align="center">
+    <img width="700px" src= "assets/tachikoma-primary-agent.png" alt="tachikoma-primary-agent.png">
+</p>
 
 ---
 
