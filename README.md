@@ -139,8 +139,11 @@ your-project/
     │   ├── research-agent/           # Investigation
     │   ├── git-commit/               # Git operations
     │   ├── pr/                       # Pull requests
-    │   ├── workflow-management/      # 6-phase workflow
-    │   └── task-tracking/            # Task management
+    │   ├── workflow-management/      # 7-phase workflow
+    │   ├── task-tracking/            # Task management
+    │   ├── context-manager/          # Context operations
+    │   ├── context7/                 # Live documentation
+    │   └── formatter/                # Code quality cleanup
     ├── context/                       # Context modules (reference docs)
     │   ├── 00-core-contract.md
     │   ├── 10-coding-standards.md
@@ -246,7 +249,7 @@ tachikoma-proompt-cookbooks/
     │   ├── research-agent/      # Investigation
     │   ├── git-commit/          # Git operations
     │   ├── pr/                  # Pull requests
-    │   ├── workflow-management/ # 6-phase workflow
+    │   ├── workflow-management/ # 7-phase workflow
     │   └── task-tracking/       # Task management
     ├── context/                 # Context modules (reference docs)
     │   ├── 00-core-contract.md
@@ -311,8 +314,11 @@ Executable capabilities in `.opencode/skills/` that perform specific tasks:
 | Research Agent | `research-agent/SKILL.md` | Investigation and fact-finding |
 | Git Commit | `git-commit/SKILL.md` | Git operations |
 | PR | `pr/SKILL.md` | Pull request creation |
-| Workflow Management | `workflow-management/SKILL.md` | 6-phase development workflow |
+| Workflow Management | `workflow-management/SKILL.md` | 7-phase development workflow |
 | Task Tracking | `task-tracking/SKILL.md` | Task management system |
+| Context Manager | `context-manager/SKILL.md` | Context discovery and extraction (0 tokens) |
+| Context7 | `context7/SKILL.md` | Live documentation fetch |
+| Formatter | `formatter/SKILL.md` | Code quality cleanup |
 
 **Invocation:** Tachikoma reads the SKILL.md file and applies its patterns to the current task.
 

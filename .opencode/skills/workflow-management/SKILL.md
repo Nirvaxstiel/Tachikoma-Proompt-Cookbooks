@@ -20,7 +20,7 @@ Production-grade workflow system bridging requirements to implementation with sy
 
 **Never skip phases.** Each phase must complete before proceeding. Use documentation as source of truth.
 
-## Six-Phase Workflow Loop
+## Seven-Phase Workflow Loop
 
 ### Phase 1: ANALYZE
 
@@ -134,7 +134,35 @@ Production-grade workflow system bridging requirements to implementation with sy
 
 ---
 
-### Phase 5: REFLECT
+### Phase 5: CLEANUP
+
+**Objective:**
+- Automated code quality cleanup to ensure production-ready code
+
+**Checklist:**
+- [ ] Run formatter skill
+  - Invoke: `bash .opencode/skills/formatter/router.sh cleanup`
+- [ ] Review cleanup results
+  - Debug code removed (console.log, debugger)
+  - Code formatted (Prettier, Black, gofmt, etc.)
+  - Imports optimized
+  - Linting issues fixed
+  - Type checking passed
+- [ ] Document any manual fixes needed
+  - If type errors can't be auto-fixed, note them for manual review
+- [ ] Verify no breaking changes from cleanup
+
+**Tools Used:**
+- **Formatter skill** - Automated cleanup pipeline
+  - Supports: Node.js, Python, Go, Rust
+  - Actions: format, lint, organize imports, type check
+
+**Critical Constraint:**
+- **Do not proceed until cleanup is complete and code is production-ready**
+
+---
+
+### Phase 6: REFLECT
 
 **Objective:**
 - Improve codebase, update documentation, and analyze performance
@@ -158,7 +186,7 @@ Production-grade workflow system bridging requirements to implementation with sy
 
 ---
 
-### Phase 6: HANDOFF
+### Phase 7: HANDOFF
 
 **Objective:**
 - Package work for review and deployment, and transition to next task
