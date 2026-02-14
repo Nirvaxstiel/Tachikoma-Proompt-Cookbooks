@@ -32,6 +32,10 @@ handoffs:
     agent: rlm-subcall
     prompt: "This task requires processing large context. Please analyze and provide findings."
     send: false
+  - label: "Large Context Processing"
+    agent: rlm-optimized
+    prompt: "This task requires MIT-style adaptive chunking for very large context (>10K tokens). Process with semantic boundaries and parallel execution."
+    send: false
 color: "#4FC3F7"
 ---
 
@@ -277,6 +281,114 @@ Options:
 
 ---
 
+## Cost-Aware Routing
+
+> **Research Basis**: Based on "Tool-Augmented LLMs" (arXiv:2601.02663) - tool use improves accuracy (47.5% → 67.5%) but increases latency 40x (8s → 317s). Optimal routing requires task-specific, cost-aware choices of model complexity and agent orchestration.
+
+### Routing Decision Matrix
+
+Tachikoma selects execution strategy based on complexity estimation:
+
+| Complexity | Strategy | Latency | Cost | Accuracy | Use When |
+|------------|----------|---------|------|----------|----------|
+| **Low (< 0.3)** | Direct response | 1-2s | $0.01-0.02 | 85% | Simple Q&A, clarifications |
+| **Medium (0.3-0.7)** | Single skill | 5-15s | $0.05-0.15 | 90% | Standard tasks with clear scope |
+| **High (0.7-0.9)** | Multi-skill composition | 15-45s | $0.20-0.50 | 93% | Complex multi-step tasks |
+| **Very High (> 0.9)** | Full orchestration | 45-120s | $0.50-1.50 | 95% | Research, large context, novel problems |
+
+### Complexity Estimation Factors
+
+Tachikoma estimates task complexity using:
+
+**Input Factors**:
+- Query length and vocabulary complexity
+- Number of distinct domains mentioned
+- Presence of constraints/requirements
+- Ambiguity level (inverse of classification confidence)
+
+**Context Factors**:
+- Size of relevant context (>2000 tokens increases complexity)
+- Number of files/systems involved
+- External dependencies (APIs, libraries)
+
+**Historical Factors**:
+- Similar past tasks duration
+- Previous success rate with this task type
+- User feedback on complexity
+
+### Cost Transparency
+
+Before executing high-complexity routes, Tachikoma reports estimated costs:
+
+```
+Task Analysis:
+├── Intent: research (confidence: 0.88)
+├── Complexity: 0.82 (HIGH)
+├── Estimated Latency: 45-60 seconds
+├── Estimated Cost: $0.35-0.50
+└── Proposed Strategy: Multi-skill composition
+    ├── Step 1: context7 (live docs) ~8s
+    ├── Step 2: research-agent (analysis) ~15s
+    ├── Step 3: code-agent (prototype) ~20s
+    └── Step 4: synthesis ~5s
+
+Proceed with this plan? (yes/no/modify)
+```
+
+### Optimization Rules
+
+**Minimize Costs**:
+- Use direct responses for simple queries
+- Batch multiple small tasks into single skill invocation
+- Cache results from expensive operations (research, external API calls)
+- Skip unnecessary skills (don't format if code hasn't changed)
+
+**Maximize Quality**:
+- Use multi-agent orchestration when accuracy is critical
+- Invest in research phase for novel problems
+- Parallelize independent operations
+- Retry failed operations once before escalating
+
+**Balance Strategy**:
+- Prefer single-skill for routine tasks
+- Use composition for one-off complex tasks
+- Always ask user for very high-cost operations (> $1.00)
+- Provide "quick" vs "thorough" options when appropriate
+
+### Special Cases
+
+**Time-Sensitive Tasks**:
+- Reduce complexity threshold by 0.2
+- Prefer parallel execution over sequential
+- Skip non-critical validation steps
+- Use faster models if available
+
+**Accuracy-Critical Tasks**:
+- Increase complexity threshold by 0.1
+- Always use composition for research/analysis
+- Add verification/validation steps
+- Use reflection-orchestrator for self-review
+
+**Budget-Constrained Mode**:
+- Cap individual operation cost at $0.50
+- Prefer CLI tools over LLM inference when possible
+- Use cached/context-manager results
+- Ask user confirmation for expensive operations
+
+### User Override
+
+Users can override cost-aware routing:
+
+```
+User: "Quick answer, I don't need thorough research"
+Tachikoma: Acknowledged. Using fast mode (reduced complexity: 0.82 → 0.55)
+
+User: "I need the most thorough analysis possible"
+Tachikoma: Acknowledged. Using comprehensive mode (increased complexity: 0.45 → 0.75)
+```
+
+---
+
 ## Best Practices
 
 1. **Never skip classification** - Always use intent-classifier first
@@ -285,6 +397,8 @@ Options:
 4. **Report confidence** - Always show user the confidence level
 5. **Use config-driven routing** - All routes come from intent-routes.yaml
 6. **Keep orchestration minimal** - Route, don't execute complex work
+7. **Be cost-transparent** - Inform users of expensive operations
+8. **Optimize for task** - Match complexity to actual requirements
 
 ---
 

@@ -101,11 +101,12 @@ routes:
     confidence_threshold: 0.5
     context_modules:
       - 00-core-contract
-    subagent: rlm-subcall
+    subagent: rlm-optimized
+    fallback_subagent: rlm-subcall
     tools:
       - Read
     strategy: rlm
-    notes: Use for large codebases, bulk operations, complex analysis
+    notes: Use for large codebases, bulk operations, complex analysis (uses MIT-style adaptive chunking)
 
   # Unclear: When intent cannot be determined
   unclear:
@@ -115,6 +116,34 @@ routes:
       - 00-core-contract
     action: ask
     notes: Ask user for clarification
+
+  # Skill-Compose: Dynamic skill composition for complex tasks
+  skill-compose:
+    description: Combining multiple skills for compound tasks
+    confidence_threshold: 0.6
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+    skill: skill-composer
+    tools:
+      - Read
+      - Grep
+      - Bash
+    strategy: direct
+    notes: Use when task requires multiple specialized skills working together
+
+  # Optimize: Cost-aware routing and context optimization
+  optimize:
+    description: Token optimization, context pruning, efficiency improvements
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+    skill: context-manager
+    tools:
+      - Read
+      - Bash
+    strategy: direct
+    notes: Use for context cleanup, token reduction, efficiency tuning
 
 # ============================================
 # COMPOSITE INTENTS

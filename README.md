@@ -131,8 +131,9 @@ your-project/
     │   ├── tachikoma.md              # Primary orchestrator (always-on)
     │   └── subagents/                # Specialized subagents
     │       └── core/
-    │           └── rlm-subcall.md    # Large context processor
-    ├── skills/                        # Specialized skills (11 skills)
+    │           ├── rlm-subcall.md    # Large context processor
+    │           └── rlm-optimized.md # MIT-style adaptive chunking
+    ├── skills/                        # Specialized skills (13 skills)
     │   ├── intent-classifier/        # Intent detection
     │   ├── code-agent/               # Implementation
     │   ├── analysis-agent/           # Code review
@@ -143,7 +144,8 @@ your-project/
     │   ├── task-tracking/            # Task management
     │   ├── context-manager/          # Context operations
     │   ├── context7/                 # Live documentation
-    │   └── formatter/                # Code quality cleanup
+    │   ├── formatter/                # Code quality cleanup
+    │   └── skill-composer/           # Dynamic skill composition
     ├── context/                       # Context modules (reference docs)
     │   ├── 00-core-contract.md
     │   ├── 10-coding-standards.md
@@ -242,7 +244,7 @@ tachikoma-proompt-cookbooks/
     │   └── subagents/           # Specialized subagents
     │       └── core/
     │           └── rlm-subcall.md
-    ├── skills/                  # Specialized skills (11 skills)
+    ├── skills/                  # Specialized skills (13 skills)
     │   ├── intent-classifier/   # Intent classification
     │   ├── code-agent/          # Implementation
     │   ├── analysis-agent/      # Code review
@@ -250,7 +252,11 @@ tachikoma-proompt-cookbooks/
     │   ├── git-commit/          # Git operations
     │   ├── pr/                  # Pull requests
     │   ├── workflow-management/ # 7-phase workflow
-    │   └── task-tracking/       # Task management
+    │   ├── task-tracking/       # Task management
+    │   ├── context-manager/     # Context operations
+    │   ├── context7/            # Live documentation
+    │   ├── formatter/           # Code quality cleanup
+    │   └── skill-composer/     # Dynamic skill composition
     ├── context/                 # Context modules (reference docs)
     │   ├── 00-core-contract.md
     │   ├── 10-coding-standards.md
@@ -319,6 +325,7 @@ Executable capabilities in `.opencode/skills/` that perform specific tasks:
 | Context Manager | `context-manager/SKILL.md` | Context discovery and extraction (0 tokens) |
 | Context7 | `context7/SKILL.md` | Live documentation fetch |
 | Formatter | `formatter/SKILL.md` | Code quality cleanup |
+| Skill Composer | `skill-composer/SKILL.md` | Dynamic skill composition |
 
 **Invocation:** Tachikoma reads the SKILL.md file and applies its patterns to the current task.
 
@@ -328,9 +335,10 @@ Specialized agents in `.opencode/agents/subagents/` for isolated or complex work
 
 | Subagent | Location | Use Case |
 |----------|----------|----------|
-| RLM Subcall | `core/rlm-subcall.md` | Large context processing (>2000 tokens) |
+| RLM Subcall | `core/rlm-subcall.md` | Large context processing (base RLM) |
+| RLM Optimized | `core/rlm-optimized.md` | Large context with MIT-style adaptive chunking (2-5x efficiency) |
 
-**Invocation:** Via `task(subagent_type="rlm-subcall", ...)` from Tachikoma.
+**Invocation:** Via `task(subagent_type="rlm-subcall", ...)` or `task(subagent_type="rlm-optimized", ...)` from Tachikoma.
 
 ### Configuration
 
