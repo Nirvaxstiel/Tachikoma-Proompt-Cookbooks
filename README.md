@@ -11,11 +11,11 @@ A modular framework that helps AI agents understand your project structure, foll
 **Core Concepts:**
 
 1.  **Orchestrator Pattern**: Primary agent (Tachikoma) coordinates all activity
-2.  **Intent-Based Routing**: Classifies requests and routes to appropriate skills/subagents  
+2.  **Intent-Based Routing**: Classifies requests and routes to appropriate skills/subagents
 3.  **Context Modules**: Project-specific rules that load based on task type
 4.  **Self-Learning**: Tracks patterns and suggests improvements
 
-Named after the adaptive AI tanks from *Ghost in the Shell* — always learning, always asking questions.
+Named after the adaptive AI tanks from _Ghost in the Shell_ — always learning, always asking questions.
 
 ---
 
@@ -25,9 +25,22 @@ This system uses a **primary orchestrator** pattern where Tachikoma (the primary
 
 For detailed architecture and flow, see [AGENTS.md](./AGENTS.md).
 
-<p align="center">
-    <img width="700px" src= "assets/tachikoma-primary-agent.png" alt="tachikoma-primary-agent.png">
-</p>
+---
+
+## 🎨 Themes
+
+Two Ghost in the Shell inspired themes for OpenCode terminal:
+
+| Theme                     | View       | Dark                                                      | Light                                               |
+| ------------------------- | ---------- | --------------------------------------------------------- | --------------------------------------------------- |
+| ghost-in-the-shell        | Start Page | ![start](assets/tachikoma-dark-theme-gits-solid.png)      | ![start](assets/tachikoma-light-theme-gits.png)     |
+| lucent-ghost-in-the-shell | Start Page | ![start](assets/tachikoma-dark-theme-gits-lucent.png)     | ![start](assets/tachikoma-light-theme-gits.png)     |
+| ghost-in-the-shell        | Menu       | ![menu](assets/tachikoma-dark-theme-gits-solid-menu.png)  | ![menu](assets/tachikoma-light-theme-gits-menu.png) |
+| lucent-ghost-in-the-shell | Menu       | ![menu](assets/tachikoma-dark-theme-gits-lucent-menu.png) | ![menu](assets/tachikoma-light-theme-gits-menu.png) |
+| ghost-in-the-shell        | Chat       | ![chat](assets/tachikoma-dark-theme-gits-solid-chat.png)  | ![chat](assets/tachikoma-light-theme-gits-chat.png) |
+| lucent-ghost-in-the-shell | Chat       | ![chat](assets/tachikoma-dark-theme-gits-lucent-chat.png) | ![chat](assets/tachikoma-light-theme-gits-chat.png) |
+
+> **Note:** Light mode for both themes uses solid colors — transparency doesn't work well in light mode, so it's a solid colour for both lucent and solid themes.
 
 ---
 
@@ -55,10 +68,14 @@ your-project/
 ├── AGENTS.md                          # Universal context
 └── .opencode/
     ├── agents/                        # Agent definitions
-    ├── skills/                        # 13 specialized skills
-    ├── context/                      # Context modules
-    └── config/
-        └── intent-routes.yaml         # Intent → action mapping
+    │   └── subagents/                 # Specialized subagents
+    ├── skills/                        # Specialized skills
+    ├── context/                       # Context modules
+    ├── config/
+    │   └── intent-routes.yaml         # Intent → action mapping
+    ├── themes/                        # Agent themes
+    ├── instructions/                  # Agent bootstrap templates
+    └── runtime/                       # Runtime configuration
 ```
 
 See [context/navigation.md](./.opencode/context/navigation.md) for full structure.
@@ -127,13 +144,13 @@ User: Approves → Updates context
 
 ## 📚 Documentation
 
-| Guide | Where |
-|-------|-------|
-| Full architecture | [AGENTS.md](./AGENTS.md) |
-| Skills reference | [skills/README.md](./.opencode/skills/README.md) |
-| Context modules | [navigation.md](./.opencode/context/navigation.md) |
-| Routing config | [intent-routes.yaml](./.opencode/config/intent-routes.yaml) |
-| Individual skills | `.opencode/skills/*/SKILL.md` |
+| Guide             | Where                                                       |
+| ----------------- | ----------------------------------------------------------- |
+| Full architecture | [AGENTS.md](./AGENTS.md)                                    |
+| Skills reference  | [skills/README.md](./.opencode/skills/README.md)            |
+| Context modules   | [navigation.md](./.opencode/context/navigation.md)          |
+| Routing config    | [intent-routes.yaml](./.opencode/config/intent-routes.yaml) |
+| Individual skills | `.opencode/skills/*/SKILL.md`                               |
 
 ---
 
@@ -193,14 +210,17 @@ Experiment and trust local results over lists like this.
 ## Credits
 
 ### Research & Papers
-- **Tool-Augmented LLMs** (arXiv:2601.02663) - Tool use improves accuracy 47.5% → 67.5% but adds 40x latency. Basis for cost-aware routing.
+
+- **Tool-Augmented LLMs** (arXiv:2601.02663) - Tool use can improve accuracy but adds latency. Basis for cost-aware routing. (Specific numbers not yet verified - see RESEARCH_VERIFICATION.md)
 - **Agentic Proposing** (arXiv:2602.03279) - 4B proposer dynamically composes modular skills. 91.6% accuracy. Basis for skill-composer.
-- **MIT RLM** - Adaptive chunking gives 2-5x efficiency on million-token tasks. Basis for rlm-optimized.
+- **Can.ac Harness Problem** (Feb 2026) - Edit format can improve success rates up to 10x. Verified: Grok 6.7%→68.3%, Gemini +8%. Basis for model-aware-editor.
+- **MIT RLM** - Adaptive chunking for large contexts. Basis for rlm-optimized.
 
 ### Code & Concepts
+
 - **RLM Concept**: Based on _Recursive Language Models_ (2025) by Zhang, Kraska, and Khattab (MIT CSAIL)
 - **claude_code_RLM**: Yoinked the RLM scripts and proompts from [brainqub3/Claude Code RLM](https://github.com/brainqub3/claude_code_RLM)
-- **Tachikoma**: Named after the curious, chatty, and adaptive AI tanks from *Ghost in the Shell* — always learning, always asking questions
+- **Tachikoma**: Named after the curious, chatty, and adaptive AI tanks from _Ghost in the Shell_ — always learning, always asking questions
 
 ## License
 

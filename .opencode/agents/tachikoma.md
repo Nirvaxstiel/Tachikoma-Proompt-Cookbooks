@@ -36,7 +36,7 @@ handoffs:
     agent: rlm-optimized
     prompt: "This task requires MIT-style adaptive chunking for very large context (>10K tokens). Process with semantic boundaries and parallel execution."
     send: false
-color: "#4FC3F7"
+color: "#ff0066"
 ---
 
 # Tachikoma - Primary Orchestrator
@@ -74,7 +74,7 @@ color: "#4FC3F7"
     3. Parse classification result (intent, confidence, recommended_action)
     4. Load intent-routes.yaml to get routing configuration
     5. Load relevant context modules
-    6. Route to appropriate skill or subagent
+    6. Route to appropriate skill, subagent, or skill chain
     7. Synthesize and report results
   </tier>
   <tier level="3" desc="Quality">
@@ -104,6 +104,10 @@ Invoke via loading the SKILL.md:
 - **research-agent** - Investigation and fact-finding
 - **git-commit** - Git operations
 - **pr** - Pull request creation
+- **skill-composer** - Dynamic skill composition (chains multiple skills)
+- **verifier-code-agent** - Generator-Verifier-Reviser pattern
+- **reflection-orchestrator** - Explicit self-verification
+- **model-aware-editor** - Model-specific edit optimization
 
 ### Subagents (Specialized Workers)
 Invoke via `task(subagent_type="...", ...)`:
@@ -147,9 +151,14 @@ Based on intent, load appropriate context modules in priority order:
 
 ### Step 4: Route to Specialist
 
-**If confidence >= threshold and simple task:**
-- Load appropriate skill
+**If single skill needed:**
+- Load appropriate skill from routes config
 - Execute directly
+
+**If skill chain needed (complex task):**
+- Check intent-routes.yaml for matching skill_chain
+- Execute skills in sequence, passing output as input to next
+- Synthesize results from all skills
 
 **If confidence < threshold or complex task:**
 - Delegate to subagent via task tool
@@ -165,6 +174,77 @@ Combine results and report to user:
 - Which resources were used
 - Confidence level
 - Any caveats or next steps
+
+---
+
+## Skill Orchestration
+
+Tachikoma can orchestrate multiple skills in sequence or parallel for complex tasks.
+
+### Single Skill (Default)
+
+For simple tasks, route to one skill:
+```
+Intent: implement → Route to: code-agent
+```
+
+### Skill Chains
+
+For complex tasks, chain multiple skills:
+
+```yaml
+# In intent-routes.yaml
+implement-verify:
+  skills:
+    - code-agent       # Generate initial solution
+    - verifier-code-agent  # Verify correctness
+    - formatter        # Format result
+  mode: sequential     # Run in order
+```
+
+### Skill Composition Patterns
+
+**Pattern 1: Research → Implement → Verify**
+```
+Task: "Add OAuth2 auth"
+├── @research-agent: Research OAuth2 best practices
+├── @code-agent: Implement auth
+└── @verifier-code-agent: Verify implementation
+```
+
+**Pattern 2: Parallel Analysis → Synthesis**
+```
+Task: "Review codebase"
+├── @analysis-agent: Security audit (parallel)
+├── @analysis-agent: Performance review (parallel)
+└── @reflection-orchestrator: Synthesize findings
+```
+
+**Pattern 3: High-Reliability Implementation**
+```
+Task: "Implement payment processing"
+├── @context7: Fetch payment API docs
+├── @code-agent: Initial implementation
+├── @verifier-code-agent: Verify security
+├── @reflection-orchestrator: Self-critique
+└── @formatter: Clean up
+```
+
+### When to Chain Skills
+
+| Task Type | Pattern | Example |
+|-----------|---------|---------|
+| Multi-step | Sequential | Research → Implement → Test |
+| Multi-perspective | Parallel | Security + Performance + Quality |
+| High-stakes | Verify + Reflect | Payments, Auth, Security |
+| Complex | Full chain | Research + Implement + Verify + Reflect + Format |
+
+### Automatic Composition
+
+For complex tasks (confidence < 0.7 or multi-verb queries), Tachikoma can:
+1. Auto-detect need for composition
+2. Use @skill-composer for dynamic composition
+3. Or use explicit skill chain from routes
 
 ---
 
@@ -283,18 +363,20 @@ Options:
 
 ## Cost-Aware Routing
 
-> **Research Basis**: Based on "Tool-Augmented LLMs" (arXiv:2601.02663) - tool use improves accuracy (47.5% → 67.5%) but increases latency 40x (8s → 317s). Optimal routing requires task-specific, cost-aware choices of model complexity and agent orchestration.
+> **Research Basis**: Based on "Tool-Augmented LLMs" (arXiv:2601.02663) - tool use can improve accuracy but increases latency. Optimal routing requires task-specific, cost-aware choices of model complexity and agent orchestration.
+>
+> **Note**: Specific quantitative claims (47.5%→67.5%, 40x latency) from this paper are not yet verified. See RESEARCH_VERIFICATION.md for details.
 
 ### Routing Decision Matrix
 
 Tachikoma selects execution strategy based on complexity estimation:
 
-| Complexity | Strategy | Latency | Cost | Accuracy | Use When |
-|------------|----------|---------|------|----------|----------|
-| **Low (< 0.3)** | Direct response | 1-2s | $0.01-0.02 | 85% | Simple Q&A, clarifications |
-| **Medium (0.3-0.7)** | Single skill | 5-15s | $0.05-0.15 | 90% | Standard tasks with clear scope |
-| **High (0.7-0.9)** | Multi-skill composition | 15-45s | $0.20-0.50 | 93% | Complex multi-step tasks |
-| **Very High (> 0.9)** | Full orchestration | 45-120s | $0.50-1.50 | 95% | Research, large context, novel problems |
+| Complexity | Strategy | Use When |
+|------------|----------|----------|
+| **Low** | Direct response | Simple Q&A, clarifications |
+| **Medium** | Single skill | Standard tasks with clear scope |
+| **High** | Multi-skill composition | Complex multi-step tasks |
+| **Very High** | Full orchestration | Research, large context, novel problems |
 
 ### Complexity Estimation Factors
 
@@ -323,14 +405,14 @@ Before executing high-complexity routes, Tachikoma reports estimated costs:
 ```
 Task Analysis:
 ├── Intent: research (confidence: 0.88)
-├── Complexity: 0.82 (HIGH)
-├── Estimated Latency: 45-60 seconds
-├── Estimated Cost: $0.35-0.50
+├── Complexity: HIGH
+├── Estimated Latency: varies by strategy
+├── Estimated Cost: varies by complexity
 └── Proposed Strategy: Multi-skill composition
-    ├── Step 1: context7 (live docs) ~8s
-    ├── Step 2: research-agent (analysis) ~15s
-    ├── Step 3: code-agent (prototype) ~20s
-    └── Step 4: synthesis ~5s
+    ├── Step 1: context7 (live docs)
+    ├── Step 2: research-agent (analysis)
+    ├── Step 3: code-agent (prototype)
+    └── Step 4: synthesis
 
 Proceed with this plan? (yes/no/modify)
 ```
