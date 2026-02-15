@@ -44,9 +44,54 @@ Two Ghost in the Shell inspired themes for OpenCode terminal:
 
 ---
 
-## 🚀 Installation (Drop-in Framework)
+## 🚀 Installation
 
-### Quick Setup
+### Quick Setup (Bootstrap)
+
+The easiest way — one command copies everything you need:
+
+```bash
+# Install from GitHub (master branch)
+curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/tachikoma-install.sh | bash
+
+# Or install to a specific directory
+curl -sS ... | bash -s -- -C /path/to/your/project
+```
+
+**Options:**
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-b, --branch` | Branch to install from | `master` |
+| `-C, --cwd` | Target directory | Current dir |
+| `--gitlab` | Use GitLab instead of GitHub | GitHub |
+
+**Examples:**
+
+```bash
+# Install specific branch
+curl -sS ... | bash -s -- -b develop
+
+# Install from GitLab
+curl -sS ... | bash -s -- --gitlab
+
+# Download script first, then run
+curl -sS -o tachikoma-install.sh https://raw.githubusercontent.com/.../tachikoma-install.sh
+chmod +x tachikoma-install.sh
+./tachikoma-install.sh -b master
+```
+
+**Check available branches:**
+
+```bash
+git ls-remote --heads https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks.git
+```
+
+---
+
+### Manual Setup
+
+If you prefer to copy files manually:
 
 1.  **Copy to your repo:**
 
@@ -77,6 +122,8 @@ your-project/
     ├── instructions/                  # Agent bootstrap templates
     └── runtime/                       # Runtime configuration
 ```
+
+> **Note:** The bootstrap script automatically skips bulky generated files (`node_modules/`, `package.json`, `bun.lock`, `.gitignore`) — these are regenerated when you run `opencode`.
 
 See [context/navigation.md](./.opencode/context/navigation.md) for full structure.
 
