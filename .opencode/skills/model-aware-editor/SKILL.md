@@ -14,19 +14,21 @@ tools:
 
 # Model-Aware Editor
 
+> **Key Research**: "The Harness Problem" (Can.ac, Feb 2026) - Edit format can improve LLM coding success by up to **10x**
 > **Notation**: `@skill-name` means "invoke that skill and wait for completion" - for skill chaining
 
 ## Core Concept
 
 Different models work best with different edit formats. This skill selects the optimal format based on the detected model:
 
-| Model Family | Best Format |
-|-------------|-------------|
-| Claude | `str_replace` (exact) |
-| Gemini | `str_replace` + fuzzy whitespace |
-| GPT | `apply_patch` (OpenAI diff) |
-| Grok | `hashline` (content-based) |
-| Others | Fallback + retry |
+| Model Family | Best Format | Benchmark Improvement |
+|-------------|-------------|----------------------|
+| Claude | `str_replace` (exact) | Baseline |
+| Gemini | `str_replace` + fuzzy whitespace | +8% (verified) |
+| GPT | `apply_patch` (OpenAI diff) | 26%→59% (Aider benchmarks) |
+| Grok | `hashline` (content-based) | 6.7%→68.3% (**10x improvement**) |
+
+**Key Insight**: The "harness" (edit format) is often the bottleneck, not the model itself. A better edit format can outperform model upgrades.
 
 ## When to Use
 

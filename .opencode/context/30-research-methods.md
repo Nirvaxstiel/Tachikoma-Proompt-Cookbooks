@@ -1,7 +1,7 @@
 ---
 module_id: research-methods
 name: Research Methods & Investigation
-version: 2.0.0
+version: 2.1.0
 description: Evidence-driven research, source evaluation, and synthesis methods. Loaded for research and investigation tasks.
 priority: 30
 type: context
@@ -13,6 +13,7 @@ exports:
   - confidence_labeling
   - synthesis_rules
   - stop_conditions
+  - ai_assistance_taxonomy
 ---
 
 # Research Methods & Investigation
@@ -229,3 +230,86 @@ This module enforces disciplined research under uncertainty.
 
 **When unsure:**
 > Downgrade confidence or stop. Never present speculation as fact.
+
+---
+
+## AI-Assisted Research Taxonomy
+
+### Classification of AI Contributions (Based on arXiv:2602.10177)
+
+When AI assists in research, classify the contribution level:
+
+| Level | Name | Description | Example |
+|-------|------|-------------|---------|
+| **Level 0** | Autonomous (Auxiliary) | AI performs specific sub-tasks | Data processing, literature search |
+| **Level 1** | Autonomous (Contributory) | AI makes independent contributions | Solving intermediate lemmas, generating examples |
+| **Level 2** | Human + AI Collaboration | Human and AI work together | "Vibe-proving" cycles, iterative refinement |
+| **Level 3** | Major Advance | AI enables breakthrough | Novel methodology enabled by AI |
+| **Level 4** | Landmark Breakthrough | AI as primary driver | AI-generated proof of open problem |
+
+### Research Methodologies from Gemini Deep Think
+
+#### 1. Generator-Verifier-Reviser Loop (Aletheia)
+
+For mathematical/scientific reasoning:
+
+```
+┌────────────┐    ┌───────────┐    ┌───────────┐
+│ GENERATOR │───▶│ VERIFIER  │───▶│  REVISE   │
+│ (produce) │    │  (check)  │    │  (fix)    │
+└────────────┘    └───────────┘    └───────────┘
+       │                │                │
+       │              PASS              │
+       │               │                │
+       ▼               ▼                ▼
+   ┌────────────────────────────────────┐
+   │         OUTPUT RESULT              │
+   └────────────────────────────────────┘
+```
+
+Key insight: The verifier should be able to admit failure - admitting "cannot solve" improves efficiency.
+
+#### 2. Vibe-Proving (Advisor Model)
+
+For theoretical research:
+
+- Human provides intuition/direction
+- AI explores proof space
+- Human validates "vibes" (does the approach feel right?)
+- Iterative refinement through "vibe checks"
+
+#### 3. Balanced Prompting
+
+When exploring open questions:
+
+> Request proof OR refutation simultaneously
+
+This prevents confirmation bias - the model must consider both possibilities.
+
+#### 4. Cross-Domain Synthesis
+
+AI can bridge disparate fields:
+- Apply measure theory to discrete algorithms
+- Use topology for economic theory
+- Connect physics methods to pure math
+
+---
+
+## Test-Time Scaling Considerations
+
+### When to Invest More Compute
+
+Based on inference-time scaling research:
+
+| Scenario | Recommendation |
+|----------|----------------|
+| Simple task, clear answer | Minimal reasoning |
+| Complex reasoning required | Increase reasoning tokens |
+| Novel problem domain | Research + verification loop |
+| High-stakes output | Full verification chain |
+
+### Efficiency vs Accuracy Tradeoff
+
+- **ARC-AGI measures**: Intelligence efficiency = performance / cost
+- Higher reasoning time → asymptotic performance gains
+- Diminishing returns after certain threshold

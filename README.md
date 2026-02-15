@@ -184,7 +184,9 @@ This framework works with OpenCode and the [SKILLs](https://agentskills.io/speci
 | **SOLID**                    | Claude 4.5 Sonnet | Sweet spot: smart + fast.                                          |
 | **SOLID**                    | Claude 4.5 Opus   | Big brain energy.                                                  |
 | **Shockingly Good**          | GLM 4.7           | Almost as good as Claude 4.5 Sonnet                                |
-| **Shockingly Good**          | Minimax M2        | Very close to GLM 4.7, I switch between the two                    |
+| **Shockingly Good**          | Minimax M2        | Very close to GLM 4.7, I switch between the two                   |
+| **State of the Art**         | Gemini 3 Deep Think | ARC-AGI-2: 84.6%, Codeforces: 3455 Elo, IMO Gold level           |
+| **State of the Art**         | o1/o3 Pro         | Advanced reasoning, excellent for complex tasks                   |
 | **Mixed (experiment, YMMV)** | GPT-4 series      | Hit or miss; try different agents, some shine.                     |
 | **Mixed (experiment, YMMV)** | GPT-5 series      | Generally better, still inconsistent; worth poking.                |
 | **Not recommended, for now** | Grok models       | No ❤️.                                                             |
@@ -214,6 +216,9 @@ Experiment and trust local results over lists like this.
 - **Tool-Augmented LLMs** (arXiv:2601.02663) - Tool use can improve accuracy but adds latency. Basis for cost-aware routing. (Specific numbers not yet verified - see RESEARCH_VERIFICATION.md)
 - **Agentic Proposing** (arXiv:2602.03279) - 4B proposer dynamically composes modular skills. 91.6% accuracy. Basis for skill-composer.
 - **Can.ac Harness Problem** (Feb 2026) - Edit format can improve success rates up to 10x. Verified: Grok 6.7%→68.3%, Gemini +8%. Basis for model-aware-editor.
+- **Gemini Deep Think: Mathematics** (arXiv:2602.10177) - Aletheia agent (Generator-Verifier-Reviser) achieves 90% on IMO-ProofBench, autonomous math research. Basis for verifier-code-agent.
+- **Gemini Deep Think: Science** (arXiv:2602.03837) - "Vibe-proving" methodology, Advisor model, balanced prompting. Basis for reflection-orchestrator.
+- **ARC-AGI Benchmark** (arcprize.org) - Measures intelligence efficiency (performance vs cost). Gemini 3 Deep Think: 84.6% on ARC-AGI-2.
 - **MIT RLM** - Adaptive chunking for large contexts. Basis for rlm-optimized.
 
 ### Code & Concepts

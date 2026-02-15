@@ -159,7 +159,7 @@ routes:
       - Edit
       - Bash
     strategy: direct
-    notes: "Use for: complex implementations, security-critical code, high-stakes fixes. Based on Aletheia architecture (arXiv:2602.10177)"
+    notes: "Use for: complex implementations, security-critical code, high-stakes fixes. Based on Aletheia architecture (arXiv:2602.10177) - achieved 90% on IMO-ProofBench"
 
   # Reflect: Explicit self-verification and reflection
   reflect:
@@ -174,7 +174,7 @@ routes:
       - Write
       - Edit
     strategy: direct
-    notes: Use for complex reasoning, high-stakes decisions, confidence verification. Based on vibe-proving (arXiv:2602.03837)
+    notes: Use for complex reasoning, high-stakes decisions, confidence verification. Based on vibe-proving (arXiv:2602.03837) - includes balanced prompting (proof OR refutation)
 
   # Edit-Optimize: Model-aware edit format selection
   edit-optimize:
