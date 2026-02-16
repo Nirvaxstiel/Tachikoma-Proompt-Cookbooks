@@ -1,10 +1,12 @@
 # Skill Chains
 
-Multi-skill orchestration for complex workflows.
+Link multiple skills together for complex workflows.
 
 ## What Are Skill Chains?
 
-Skill chains link multiple skills together in sequence, where the output of one skill becomes the input for the next. This enables sophisticated workflows that go beyond what any single skill can accomplish.
+Skill chains link multiple skills in sequence. The output of one skill becomes the input for the next. This enables sophisticated workflows beyond what any single skill can accomplish.
+
+Think of it as an assembly line: each skill does its part, passes it along, and the next skill refines it further.
 
 ## Why Use Chains?
 
@@ -12,6 +14,7 @@ Skill chains link multiple skills together in sequence, where the output of one 
 - One perspective only
 - Fixed approach
 - No verification step
+- Errors propagate silently
 
 **Chain Advantages:**
 - Multiple verification stages
@@ -21,7 +24,7 @@ Skill chains link multiple skills together in sequence, where the output of one 
 
 ## Available Skill Chains
 
-### 1. implement-verify
+### implement-verify
 
 **Description:** Implementation with verification loop
 
@@ -47,7 +50,7 @@ User: "Implement authentication system"
 → Result: Generated code, verified for issues, formatted
 ```
 
-### 2. research-implement
+### research-implement
 
 **Description:** Research followed by implementation
 
@@ -74,7 +77,7 @@ User: "Add OAuth2 authentication with Google"
 → Result: Researched OAuth2 flows, fetched docs, implemented
 ```
 
-### 3. security-implement
+### security-implement
 
 **Description:** Security-critical implementation with maximum verification
 
@@ -101,7 +104,7 @@ User: "Implement JWT token handling"
 → Result: Secure, verified, self-validated implementation
 ```
 
-### 4. deep-review
+### deep-review
 
 **Description:** In-depth code review with self-verification
 
@@ -126,7 +129,7 @@ User: "Review this payment module thoroughly"
 → Result: Analysis + adversarial self-verification
 ```
 
-### 5. complex-research
+### complex-research
 
 **Description:** Multi-source research with verification
 
@@ -221,7 +224,7 @@ Skill chains provide reliability at the cost of latency:
 
 ## Creating Custom Chains
 
-You can define custom chains in `intent-routes.yaml`:
+Define custom chains in `intent-routes.yaml`:
 
 ```yaml
 skill_chains:
@@ -246,6 +249,6 @@ If a chain fails:
 
 ## See Also
 
-- [Composite Intents](/explanation/composite-intents) - Multi-intent workflows
-- [Skills Reference](/reference/skills) - Individual skill documentation
-- [Intent Routing](/explanation/intent-routing) - Configuration details
+- [Composite Intents](/capabilities/composite-intents) - Multi-intent workflows
+- [Skill Execution](/capabilities/skill-execution) - Individual skill documentation
+- [Intent Routing](/capabilities/intent-routing) - Configuration details

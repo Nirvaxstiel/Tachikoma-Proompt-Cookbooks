@@ -14,86 +14,62 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/getting-started' },
       {
-        text: 'Explanation',
+        text: 'Concepts',
         items: [
-          { text: 'Overview', link: '/explanation/overview' },
-          { text: 'Architecture', link: '/explanation/architecture' },
-          { text: 'Intent Routing', link: '/explanation/intent-routing' },
-          { text: 'Skill Chains', link: '/explanation/skill-chains' },
-          { text: 'Composite Intents', link: '/explanation/composite-intents' },
+          { text: 'Overview', link: '/concepts/overview' },
+          { text: 'Architecture', link: '/concepts/architecture' },
         ]
       },
       {
-        text: 'How-To',
+        text: 'Capabilities',
         items: [
-          { text: 'Add Skill', link: '/how-to/add-skill' },
-          { text: 'Add Intent', link: '/how-to/add-intent' },
-          { text: 'Customize', link: '/how-to/customize' },
-        ]
-      },
-      {
-        text: 'Reference',
-        items: [
-          { text: 'Skills', link: '/reference/skills' },
-          { text: 'Subagents', link: '/reference/subagents' },
-          { text: 'Context Modules', link: '/reference/context' },
-        ]
-      },
-      {
-        text: 'Guides',
-        items: [
-          { text: 'Understanding Changes', link: '/guides/understanding-changes' },
-          { text: 'Massive Refactor', link: '/guides/massive-refactor' },
+          { text: 'Intent Routing', link: '/capabilities/intent-routing' },
+          { text: 'Context Management', link: '/capabilities/context-management' },
+          { text: 'Skill Execution', link: '/capabilities/skill-execution' },
+          { text: 'Skill Chains', link: '/capabilities/skill-chains' },
+          { text: 'Composite Intents', link: '/capabilities/composite-intents' },
+          { text: 'Subagents', link: '/capabilities/subagents' },
+          { text: 'Customize', link: '/capabilities/customization/overview' },
         ]
       },
       {
         text: 'Research',
         items: [
-          { text: 'Sources & Papers', link: '/research/index' },
+          { text: 'Overview', link: '/research/overview' },
         ]
       },
     ],
 
     // Sidebar
     sidebar: {
-      '/explanation/': [
+      '/concepts/': [
         {
-          text: 'Explanation',
+          text: 'Concepts',
           items: [
-            { text: 'Overview', link: '/explanation/overview' },
-            { text: 'Architecture', link: '/explanation/architecture' },
-            { text: 'Intent Routing', link: '/explanation/intent-routing' },
-            { text: 'Skill Chains', link: '/explanation/skill-chains' },
-            { text: 'Composite Intents', link: '/explanation/composite-intents' },
+            { text: 'Overview', link: '/concepts/overview' },
+            { text: 'Architecture', link: '/concepts/architecture' },
           ]
         }
       ],
-      '/how-to/': [
+      '/capabilities/': [
         {
-          text: 'How-To Guides',
+          text: 'Capabilities',
           items: [
-            { text: 'Add Skill', link: '/how-to/add-skill' },
-            { text: 'Add Intent', link: '/how-to/add-intent' },
-            { text: 'Customize', link: '/how-to/customize' },
+            { text: 'Intent Routing', link: '/capabilities/intent-routing' },
+            { text: 'Context Management', link: '/capabilities/context-management' },
+            { text: 'Skill Execution', link: '/capabilities/skill-execution' },
+            { text: 'Skill Chains', link: '/capabilities/skill-chains' },
+            { text: 'Composite Intents', link: '/capabilities/composite-intents' },
+            { text: 'Subagents', link: '/capabilities/subagents' },
           ]
-        }
-      ],
-      '/reference/': [
+        },
         {
-          text: 'Reference',
+          text: 'Customization',
           items: [
-            { text: 'Skills', link: '/reference/skills' },
-            { text: 'Subagents', link: '/reference/subagents' },
-            { text: 'Context Modules', link: '/reference/context' },
-          ]
-        }
-      ],
-      '/guides/': [
-        {
-          text: 'Guides',
-          items: [
-            { text: 'Understanding Changes', link: '/guides/understanding-changes' },
-            { text: 'Massive Refactor', link: '/guides/massive-refactor' },
+            { text: 'Overview', link: '/capabilities/customization/overview' },
+            { text: 'Add Skill', link: '/capabilities/customization/add-skill' },
+            { text: 'Add Intent', link: '/capabilities/customization/add-intent' },
+            { text: 'Context Modules', link: '/capabilities/customization/context-modules' },
           ]
         }
       ],
@@ -101,7 +77,7 @@ export default defineConfig({
         {
           text: 'Research',
           items: [
-            { text: 'Sources & Papers', link: '/research/index' },
+            { text: 'Overview', link: '/research/overview' },
           ]
         }
       ],

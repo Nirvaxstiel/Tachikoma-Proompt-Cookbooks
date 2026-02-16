@@ -58,6 +58,6 @@ project/
 
 ## Next
 
-- [How It Works](/explanation/overview)
-- [Add Skill](/how-to/add-skill)
-- [Customize](/how-to/customize)
+- [How It Works](/concepts/overview)
+- [Add Skill](/capabilities/customization/add-skill)
+- [Customize](/capabilities/customization/overview)

@@ -4,7 +4,9 @@ Specialized workers for complex, large-context tasks.
 
 ## Overview
 
-While skills handle routine tasks, subagents tackle problems that exceed normal context limits or require sophisticated multi-step reasoning. Think of subagents as "agents within agents" - they operate with their own context window and reasoning pipeline.
+Skills handle routine work. Subagents tackle problems that exceed normal context limits or require sophisticated multi-step reasoning.
+
+Think of skills as specialists (fast, focused, routine) and subagents as researchers (thorough, complex, deep).
 
 ## Available Subagents
 
@@ -20,17 +22,17 @@ While skills handle routine tasks, subagents tackle problems that exceed normal 
 
 **How It Works:**
 The RLM (Recursive Language Model) approach treats context as an environment:
-1. **Adaptive Chunking** - Breaks large context into semantic units
-2. **Context as Environment** - Each chunk becomes part of the "world state"
-3. **Selective Loading** - Only relevant chunks loaded into active context
-4. **Iterative Refinement** - Results synthesized across chunks
+1. **Adaptive Chunking** — Breaks large context into semantic units
+2. **Context as Environment** — Each chunk becomes part of the "world state"
+3. **Selective Loading** — Only relevant chunks loaded into active context
+4. **Iterative Refinement** — Results synthesized across chunks
 
 **Performance:**
 - 2-5x efficiency improvement over naive full-context loading
 - 91% accuracy on 10M token tasks (arXiv:2512.24601)
 - Handles 10M+ token contexts effectively
 
-**Example Use Cases:**
+**Example:**
 ```
 User: "Analyze my entire codebase for security issues"
 → Intent: complex
@@ -84,23 +86,24 @@ Synthesize Results → Return Summary
 
 ## Best Practices
 
-1. **Don't Overuse** - Subagents add latency. Use skills for routine tasks.
-2. **Clear Objectives** - Give subagents specific, measurable goals
-3. **Review Output** - Always review subagent findings before acting
-4. **Fallback Awareness** - Know that rlm-subcall kicks in if rlm-optimized fails
+1. **Don't Overuse** — Subagents add latency. Use skills for routine tasks.
+2. **Clear Objectives** — Give subagents specific, measurable goals
+3. **Review Output** — Always review subagent findings before acting
+4. **Fallback Awareness** — Know that rlm-subcall kicks in if rlm-optimized fails
 
 ## When to Use What
 
 ```
 Task Complexity Assessment:
-├── Simple (1 file, <100 lines) → skill: code-agent
-├── Medium (1-5 files) → skill: code-agent
+├── Simple (1 file, <100 lines)     → skill: code-agent
+├── Medium (1-5 files)              → skill: code-agent
 ├── Complex (5+ files, >2000 tokens) → subagent: rlm-optimized
-└── Very Complex (entire codebase) → subagent: rlm-subcall
+└── Very Complex (entire codebase)    → subagent: rlm-subcall
 ```
 
 ## See Also
 
-- [Skill Chains](/explanation/skill-chains) - Chain skills sequentially
-- [Complex Intent](/explanation/intent-routing) - Route configuration
-- [Research - RLM](/research/index) - Technical background
+- [Skill Execution](/capabilities/skill-execution) - How skills work
+- [Skill Chains](/capabilities/skill-chains) - Chain skills sequentially
+- [Intent Routing](/capabilities/intent-routing) - Route configuration
+- [Research Overview](/research/overview) - RLM technical background

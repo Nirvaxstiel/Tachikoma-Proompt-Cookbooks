@@ -11,7 +11,7 @@ hero:
       link: /getting-started
     - theme: alt
       text: How It Works
-      link: /explanation/overview
+      link: /concepts/overview
 
 features:
   - title: Intent Routing

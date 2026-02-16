@@ -2,6 +2,8 @@
 
 Agent orchestration system — traffic controller for AI coding tasks.
 
+Think of it as a dispatcher for your AI assistant. Instead of throwing every request at one general-purpose model, Tachikoma figures out what you need and routes it to the right specialist.
+
 ## At a Glance
 
 1. **Classify** — What are you asking?
@@ -12,6 +14,8 @@ Agent orchestration system — traffic controller for AI coding tasks.
 ## Core Concepts
 
 ### Intent Classification
+
+Tachikoma figures out what you want before doing anything. This prevents the "do the thing" problem where AI has no idea what you're actually asking for.
 
 **Core Intents:**
 - `debug` — Fix issues
@@ -36,10 +40,12 @@ Agent orchestration system — traffic controller for AI coding tasks.
 - `implement-and-test` — Build then verify
 - `refactor-and-test` — Refactor then verify
 
-See [Composite Intents](/explanation/composite-intents) for multi-step workflows.
+See [Composite Intents](/capabilities/composite-intents) for multi-step workflows.
 
 ### Context Modules
-Priority-loaded rules:
+
+Project rules loaded by priority. This is how Tachikoma knows your project's conventions without you having to explain them every time.
+
 - `core-contract` — Always first
 - `coding-standards` — Code patterns
 - `commenting-rules` — Comments
@@ -47,14 +53,20 @@ Priority-loaded rules:
 - `research-methods` — Investigation
 - `prompt-safety` — Safety
 
+See [Context Management](/capabilities/context-management) for details.
+
 ### Skills vs Subagents
 
 | Type | Use When |
 |------|----------|
-| Skill | Simple, fast |
-| Subagent | Complex, large context |
+| Skill | Simple, fast tasks |
+| Subagent | Complex tasks with large context |
+
+Skills are like specialists — focused, fast, handle routine work. Subagents are like researchers — handle complex, multi-step problems that need more context.
 
 ## Research Basis
+
+We're not making this up. These techniques come from real research:
 
 | Paper/Source | Finding | Application |
 |--------------|---------|-------------|
@@ -65,14 +77,14 @@ Priority-loaded rules:
 | Vibe-Proving (arXiv:2602.03837) | Balanced prompting prevents confirmation bias | reflection-orchestrator |
 | Can.ac Harness Problem | Edit format matters as much as model | model-aware-editor |
 
-See [Research](/research/index) for details.
+See [Research](/research/overview) for details.
 
-## Why
+## Why Use It
 
-- Consistency — Same rules for everyone
-- Transparency — See confidence scores
-- Efficiency — Match complexity to task
-- Extensibility — Drop in new skills/intents
+- **Consistency** — Same rules for everyone
+- **Transparency** — See confidence scores
+- **Efficiency** — Match complexity to task
+- **Extensibility** — Drop in new skills/intents
 
 ## Named After
 
