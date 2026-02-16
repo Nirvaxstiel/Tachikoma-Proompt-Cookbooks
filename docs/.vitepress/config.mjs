@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'Tachikoma',
   description: 'Agent orchestration system for AI-assisted development',
+  base: '/Tachikoma-Proompt-Cookbooks/',
   
   themeConfig: {
     // Logo
@@ -12,12 +13,16 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/getting-started' },
-      { 
+      { text: 'Deployment', link: '/deployment' },
+      { text: 'Deployment', link: '/deployment' },
+      {
         text: 'Explanation',
         items: [
           { text: 'Overview', link: '/explanation/overview' },
           { text: 'Architecture', link: '/explanation/architecture' },
           { text: 'Intent Routing', link: '/explanation/intent-routing' },
+          { text: 'Skill Chains', link: '/explanation/skill-chains' },
+          { text: 'Composite Intents', link: '/explanation/composite-intents' },
         ]
       },
       { 
@@ -28,12 +33,12 @@ export default defineConfig({
           { text: 'Customize', link: '/how-to/customize' },
         ]
       },
-      { 
+      {
         text: 'Reference',
         items: [
           { text: 'Skills', link: '/reference/skills' },
+          { text: 'Subagents', link: '/reference/subagents' },
           { text: 'Context Modules', link: '/reference/context' },
-          { text: 'Config', link: '/api/config-reference' },
         ]
       },
       { 
@@ -60,6 +65,8 @@ export default defineConfig({
             { text: 'Overview', link: '/explanation/overview' },
             { text: 'Architecture', link: '/explanation/architecture' },
             { text: 'Intent Routing', link: '/explanation/intent-routing' },
+            { text: 'Skill Chains', link: '/explanation/skill-chains' },
+            { text: 'Composite Intents', link: '/explanation/composite-intents' },
           ]
         }
       ],
@@ -78,6 +85,7 @@ export default defineConfig({
           text: 'Reference',
           items: [
             { text: 'Skills', link: '/reference/skills' },
+            { text: 'Subagents', link: '/reference/subagents' },
             { text: 'Context Modules', link: '/reference/context' },
           ]
         }

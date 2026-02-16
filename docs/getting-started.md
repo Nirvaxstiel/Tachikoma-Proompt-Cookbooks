@@ -44,7 +44,7 @@ project/
 ├── AGENTS.md              # Universal context
 └── .opencode/
     ├── agents/            # tachikoma + subagents
-    ├── skills/            # 13 skills
+    ├── skills/            # 20 skills
     ├── context/           # 6 modules
     └── config/
         └── intent-routes.yaml

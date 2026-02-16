@@ -12,6 +12,8 @@ Agent orchestration system — traffic controller for AI coding tasks.
 ## Core Concepts
 
 ### Intent Classification
+
+**Core Intents:**
 - `debug` — Fix issues
 - `implement` — Write code
 - `review` — Analyze code
@@ -19,6 +21,22 @@ Agent orchestration system — traffic controller for AI coding tasks.
 - `git` — Version control
 - `document` — Docs
 - `complex` — Large context
+
+**Extended Intents:**
+- `refactor` — Restructure code
+- `skill-compose` — Dynamic skill composition
+- `optimize` — Context/token optimization
+- `verify` — High-reliability generation
+- `reflect` — Self-critique and verification
+- `edit-optimize` — Model-aware edit format
+- `unclear` — Fallback for ambiguous requests
+
+**Composite Intents:**
+- `research-and-implement` — Research then build
+- `implement-and-test` — Build then verify
+- `refactor-and-test` — Refactor then verify
+
+See [Composite Intents](/explanation/composite-intents) for multi-step workflows.
 
 ### Context Modules
 Priority-loaded rules:
@@ -38,11 +56,14 @@ Priority-loaded rules:
 
 ## Research Basis
 
-| Paper | Finding | Application |
-|-------|---------|-------------|
+| Paper/Source | Finding | Application |
+|--------------|---------|-------------|
 | Tool-Augmented LLMs | +20% accuracy, 40x latency | Cost-aware routing |
 | Agentic Proposing | 91.6% accuracy with modular skills | skill-composer |
 | MIT RLM | 2-5x efficiency on large context | rlm-optimized |
+| Aletheia (arXiv:2602.10177) | 90% on IMO-ProofBench with verification loop | verifier-code-agent |
+| Vibe-Proving (arXiv:2602.03837) | Balanced prompting prevents confirmation bias | reflection-orchestrator |
+| Can.ac Harness Problem | Edit format matters as much as model | model-aware-editor |
 
 See [Research](/research/index) for details.
 
