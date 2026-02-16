@@ -46,7 +46,24 @@ Two Ghost in the Shell inspired themes for OpenCode terminal:
 
 ## 🚀 Installation (Drop-in Framework)
 
-### Quick Setup
+### Quick Setup (Recommended)
+
+Use the install script for one-line setup:
+
+```bash
+# Install to current directory
+curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s --
+
+# Install to specific directory
+curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s -- -C /path/to/project
+
+# Install specific branch
+curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s -- -b develop
+```
+
+### Manual Setup
+
+If you prefer manual installation:
 
 1.  **Copy to your repo:**
 
@@ -60,6 +77,18 @@ Two Ghost in the Shell inspired themes for OpenCode terminal:
     - Up to you if you want to commit them to your repo.
 
 3.  **That's it.** The system wakes up and starts learning immediately.
+
+### Updating
+
+If you used the install script, update easily:
+
+```bash
+# Run the local install script
+./.opencode/tachikoma-install.sh
+
+# Or specify a branch
+./.opencode/tachikoma-install.sh -b develop
+```
 
 ### What Gets Copied
 

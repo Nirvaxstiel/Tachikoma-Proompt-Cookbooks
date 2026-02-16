@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Tachikoma Bootstrap Script
-# Usage: curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/tachikoma-install.sh | bash -s -- [OPTIONS]
+# Usage: curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s -- [OPTIONS]
 #
 
 set -e
@@ -30,11 +30,11 @@ print_usage() {
 Tachikoma Bootstrap Installer
 
 Usage:
-    curl -sS https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/tachikoma-install.sh | bash -s -- [OPTIONS]
+    curl -sS https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/.opencode/tachikoma-install.sh | bash -s -- [OPTIONS]
 
     OR download and run:
 
-    curl -sS -o tachikoma-install.sh https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/tachikoma-install.sh
+    curl -sS -o tachikoma-install.sh https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/.opencode/tachikoma-install.sh
     chmod +x tachikoma-install.sh
     ./tachikoma-install.sh [OPTIONS]
 
@@ -116,6 +116,52 @@ if [ -n "$TARGET_DIR" ]; then
     cd "$TARGET_DIR"
 fi
 
+# Guard: Check if we're running from inside .opencode/ and navigate to parent
+CURRENT_DIR="$(pwd)"
+CURRENT_DIR_NAME="$(basename "$CURRENT_DIR")"
+
+if [ "$CURRENT_DIR_NAME" = ".opencode" ]; then
+    log_info "Detected execution from within .opencode/, moving to parent directory"
+    cd ..
+elif [[ "$CURRENT_DIR" == */.opencode/* ]] || [[ "$CURRENT_DIR" == */.opencode ]]; then
+    # We're somewhere inside a .opencode directory structure
+    # Navigate to the parent of the .opencode folder
+    log_info "Detected execution from within .opencode structure, moving to project root"
+    # Find the parent of .opencode by removing the .opencode part and everything after
+    while [ "$CURRENT_DIR_NAME" != ".opencode" ] && [ "$CURRENT_DIR" != "/" ]; do
+        cd ..
+        CURRENT_DIR="$(pwd)"
+        CURRENT_DIR_NAME="$(basename "$CURRENT_DIR")"
+    done
+    # Now we're at the .opencode folder, move up one more level
+    if [ "$CURRENT_DIR_NAME" = ".opencode" ]; then
+        cd ..
+    fi
+fi
+
+# Guard: Detect if script path contains .opencode (for: bash A/B/.opencode/script.sh)
+# Try to determine the script's actual directory
+SCRIPT_PATH="$0"
+if [ "$SCRIPT_PATH" != "bash" ] && [ -f "$SCRIPT_PATH" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+    SCRIPT_DIR_NAME="$(basename "$SCRIPT_DIR")"
+
+    if [ "$SCRIPT_DIR_NAME" = ".opencode" ]; then
+        # Script is in a .opencode directory, navigate to its parent
+        SCRIPT_PARENT="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+        if [ -d "$SCRIPT_PARENT" ]; then
+            log_info "Detected script located in .opencode/, using parent as install target"
+            cd "$SCRIPT_PARENT"
+        fi
+    fi
+fi
+
+# Guard: Validate we're not about to create nested .opencode/.opencode
+if [ -d ".opencode/.opencode" ]; then
+    log_warn "Detected nested .opencode/.opencode - cleaning up"
+    rm -rf ".opencode/.opencode"
+fi
+
 # Determine archive URL
 if [ "$USE_GITLAB" = true ]; then
     ARCHIVE_URL="https://gitlab.com/${REPO_OWNER}/${REPO_NAME}/-/archive/${BRANCH}/${REPO_NAME}-${BRANCH}.tar.gz"
@@ -185,8 +231,13 @@ fi
 
 # Copy .opencode directory
 if [ -d ".opencode" ]; then
-    # Remove existing .opencode first
-    rm -rf "${INSTALL_DIR}/.opencode"
+    # Remove existing .opencode first (Windows-safe: move to temp, then remove)
+    if [ -d "${INSTALL_DIR}/.opencode" ]; then
+        # Move to temp location first to avoid "device busy" on Windows
+        OLD_OPENCODE_BACKUP="${TEMP_DIR}/.opencode.old.$$"
+        mv "${INSTALL_DIR}/.opencode" "$OLD_OPENCODE_BACKUP" 2>/dev/null || true
+        rm -rf "$OLD_OPENCODE_BACKUP" 2>/dev/null || true
+    fi
 
     # Copy .opencode
     cp -r ".opencode" "${INSTALL_DIR}/"
@@ -223,27 +274,35 @@ fi
 # Generate raw URL for update command
 if [ "$USE_GITLAB" = true ]; then
     RAW_BASE="https://gitlab.com/${REPO_OWNER}/${REPO_NAME}/-/raw/${BRANCH}"
-    SOURCE_URL="https://gitlab.com/${REPO_OWNER}/${REPO_NAME}/-/raw/${BRANCH}/tachikoma-install.sh"
+    SOURCE_URL="https://gitlab.com/${REPO_OWNER}/${REPO_NAME}/-/raw/${BRANCH}/.opencode/tachikoma-install.sh"
 else
     RAW_BASE="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}"
-    SOURCE_URL="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/tachikoma-install.sh"
+    SOURCE_URL="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/.opencode/tachikoma-install.sh"
 fi
 
-# Copy the install script to the target directory for easier updates
+# Final validation: Ensure INSTALL_DIR doesn't end with /.opencode
+INSTALL_DIR_NAME="$(basename "$INSTALL_DIR")"
+if [ "$INSTALL_DIR_NAME" = ".opencode" ]; then
+    log_error "Cannot install into .opencode directory itself"
+    log_error "Please run this script from the project root, not from within .opencode/"
+    exit 1
+fi
+
+# Copy the install script to the .opencode directory for easier updates
 # Always try to get latest version, fallback to existing if download fails
-if curl -sSL --fail --connect-timeout 10 "$SOURCE_URL" -o "${INSTALL_DIR}/tachikoma-install.sh.new" 2>/dev/null; then
+if curl -sSL --fail --connect-timeout 10 "$SOURCE_URL" -o "${INSTALL_DIR}/.opencode/tachikoma-install.sh.new" 2>/dev/null; then
     # Download succeeded - replace old version
-    mv "${INSTALL_DIR}/tachikoma-install.sh.new" "${INSTALL_DIR}/tachikoma-install.sh"
-    chmod +x "${INSTALL_DIR}/tachikoma-install.sh"
-    log_success "tachikoma-install.sh"
-elif [ -f "${INSTALL_DIR}/tachikoma-install.sh" ]; then
+    mv "${INSTALL_DIR}/.opencode/tachikoma-install.sh.new" "${INSTALL_DIR}/.opencode/tachikoma-install.sh"
+    chmod +x "${INSTALL_DIR}/.opencode/tachikoma-install.sh"
+    log_success ".opencode/tachikoma-install.sh"
+elif [ -f "${INSTALL_DIR}/.opencode/tachikoma-install.sh" ]; then
     # Download failed but we have existing version - keep it
     log_info "Update script present (using local)"
 elif [ -f "$0" ] && [ "$0" != "bash" ]; then
     # No existing, try local $0
-    cp "$0" "${INSTALL_DIR}/tachikoma-install.sh"
-    chmod +x "${INSTALL_DIR}/tachikoma-install.sh"
-    log_success "tachikoma-install.sh"
+    cp "$0" "${INSTALL_DIR}/.opencode/tachikoma-install.sh"
+    chmod +x "${INSTALL_DIR}/.opencode/tachikoma-install.sh"
+    log_success ".opencode/tachikoma-install.sh"
 else
     log_warn "Could not secure update mechanism"
 fi
@@ -258,7 +317,7 @@ echo ""
 echo -e "${WHITE}To update:${NC}"
 echo ""
 echo -e "${DIM}  # Option 1: Run the script directly${NC}"
-echo -e "  ${CYAN}./${MAGENTA}tachikoma-install.sh${NC} -b ${BRANCH}"
+echo -e "  ${CYAN}./${MAGENTA}.opencode/tachikoma-install.sh${NC} -b ${BRANCH}"
 echo ""
 echo -e "${DIM}  # Option 2: Quick curl${NC}"
 echo -e "  ${CYAN}curl${NC} -sS ${SOURCE_URL} | bash -s -- -b ${BRANCH}"
