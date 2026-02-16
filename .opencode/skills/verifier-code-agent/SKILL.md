@@ -18,6 +18,7 @@ tools:
 
 # Verifier-Enhanced Code Agent
 > **Key Innovation**: Generator-Verifier-Reviser loop for reliable code generation
+> **Research Basis**: Based on Aletheia (Google DeepMind, arXiv:2602.10177) - achieved 90% on IMO-ProofBench
 > **Notation**: `@skill-name` means "invoke that skill and wait for completion" - for skill chaining
 
 ## Core Concept

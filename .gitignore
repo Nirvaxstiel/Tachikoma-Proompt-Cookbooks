@@ -419,3 +419,12 @@ FodyWeavers.xsd
 
 # Temporary docs
 /temp-docs
+
+# Bun (docs folder)
+bun.lockb
+docs/node_modules/
+docs/bun.lockb
+docs/.vitepress/cache/
+
+# Node.js (root - for framework if needed)
+node_modules/
