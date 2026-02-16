@@ -1,12 +1,13 @@
 ---
 module_id: coding-standards
 name: Coding Standards & Design Philosophy
-version: 2.0.0
+version: 2.1.0
 description: Design primitives, patterns, and code style guidelines. Loaded for all coding tasks.
 priority: 10
 type: context
 depends_on:
   - core-contract
+coupled_with: commenting-rules  # MUST co-load with 12-commenting-rules
 exports:
   - design_primitives
   - code_style_bias
@@ -17,6 +18,10 @@ exports:
 ---
 
 # Coding Standards & Design Philosophy
+
+> **COUPLING RULE:** This module is **inseparable** from `12-commenting-rules.md`.  
+> When coding-standards loads, commenting-rules **MUST** also load.  
+> They form a unified pair for all code-related tasks.
 
 ## Design Primitives
 
@@ -169,6 +174,24 @@ If blocked by missing information or conflicting constraints, **ask explicitly**
 
 ---
 
+## Context Module Coupling
+
+### Mandatory Co-Loading
+
+When this module (`10-coding-standards`) is loaded, `12-commenting-rules` **MUST** also be loaded.
+
+**Why:**
+- Coding without commenting guidelines produces chatty, unmaintainable code
+- They form a unified "code quality" pair
+- Separating them leads to violations in practice
+
+**Enforcement:**
+- `intent-routes.yaml` explicitly lists both for all coding intents
+- Tachikoma validates coupling before executing
+- Violations are logged and flagged
+
+---
+
 ## Module Contract
 
 This module enforces disciplined code design and implementation.
@@ -180,3 +203,10 @@ This module enforces disciplined code design and implementation.
 - Continuing after "done" criteria are met
 
 **When in doubt: inspect again, then stop.**
+
+---
+
+**Version:** 2.1.0  
+**Updated:** 2026-02-16  
+**Priority:** 10 (tightly coupled with commenting-rules at priority 12)  
+**Status:** Active
