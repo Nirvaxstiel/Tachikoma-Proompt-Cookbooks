@@ -58,5 +58,5 @@ fallback:
 
 ## See Also
 
-- [Config Reference](/api/config-reference)
+- [Context Modules](/reference/context)
 - [Add Intent](/how-to/add-intent)
