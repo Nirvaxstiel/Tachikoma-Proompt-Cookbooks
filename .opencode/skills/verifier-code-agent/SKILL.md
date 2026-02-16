@@ -66,9 +66,69 @@ For this task:
 Task: {user_requirement}
 ```
 
-### Phase 2: VERIFY
+### Phase 2: VERIFY (Enhanced) ⭐ PHASE 2.3
 
-After generation, systematically check:
+Use the verification engine for systematic checks (Phase 2.3 implementation):
+
+```python
+from verification_engine import VerificationEngine
+
+# Initialize verification engine
+engine = VerificationEngine()
+
+# Run comprehensive verification
+results = engine.verify(generated_code, requirements)
+
+if results['overall_pass']:
+    # Verification passed, output result
+    return generated_code
+else:
+    # Verification failed, revise based on failed criteria
+    print(f"Verification failed with {results['confidence']:.0%} confidence")
+    print("Failed criteria:")
+    for criterion, result in results['criteria'].items():
+        if not result['pass']:
+            print(f"  - {criterion}: {result['message']}")
+
+    # Revise code based on failed criteria
+    revise_code(generated_code, results['criteria'])
+```
+
+**Verification Criteria** (Phase 2.3):
+
+1. **Syntax**: Parse and validate code structure
+   - Python: `ast.parse(code)` check
+   - JavaScript/TypeScript/Go: Syntax validation
+   - Result: Pass/Fail with line number if error
+
+2. **Logic**: Self-verification questions
+   - "Does this code directly solve the stated problem?"
+   - "What assumptions is this code making about inputs?"
+   - "What edge cases could break this code?"
+   - "Are there any unhandled error conditions?"
+   - "Is code doing something unexpected or clever?"
+
+3. **Integration**: Check integration with existing codebase
+   - Validate imports exist in project
+   - Check function signature mismatches
+   - Verify no dependency conflicts
+
+4. **Edge Cases**: Common failure patterns
+   - Empty input handling
+   - Null/None handling
+   - Max/min boundary values
+   - Exception handling
+   - File operations
+
+5. **Security**: Basic security checks
+   - SQL injection patterns
+   - Command injection
+   - Path traversal
+   - Hardcoded secrets
+
+**Legacy Verification** (fallback when verification engine unavailable):
+
+If verification engine import fails, fall back to manual checks:
 
 1. **Syntax Verification**
    - Run: `python -m py_compile {file}` or equivalent
@@ -217,3 +277,61 @@ When completing a task:
 ---
 
 **Note**: This skill prioritizes correctness over speed. For quick fixes, use the standard code-agent skill directly.
+
+---
+
+## Telemetry Integration ⭐ PHASE 1
+
+The verifier-code-agent skill now logs metrics for data-driven optimization:
+
+```python
+from .opencode.core.telemetry-logger import get_telemetry
+
+# Get telemetry instance
+telemetry = get_telemetry()
+
+# Log GVR loop iterations
+telemetry.log_skill_invocation(
+    skill_name='verifier-code-agent',
+    tokens=total_tokens_used,
+    duration_ms=total_duration,
+    success=final_result['overall_pass'],
+    iterations=num_iterations,
+    additional_data={
+        'verification_criteria': list(verification_results.keys()),
+        'failed_criteria': [k for k, v in verification_results.items() if not v['pass']],
+        'max_iterations_reached': num_iterations >= 3
+    }
+)
+
+# Log edit attempts with format tracking
+telemetry.log_edit_attempt(
+    model=model_name,
+    format_type=edit_format_used,
+    success=edit_succeeded,
+    attempts=num_edit_attempts,
+    tokens_used=edit_tokens,
+    duration_ms=edit_duration
+)
+```
+
+**When to log**:
+- After each GENERATE phase
+- After each VERIFY phase
+- After each REVISE phase
+- After final output (pass or escalate)
+
+**Benefits**:
+- GVR loop optimization: Learn best iteration strategies
+- Verification analytics: Track which checks fail most
+- Format performance: Compare edit formats for revisions
+- Success rate tracking: Monitor 90% target from research
+
+**Telemetry Dashboard**:
+```bash
+# View verification statistics
+python .opencode/core/telemetry-logger.py stats --skill verifier-code-agent
+
+# View format success rates for your model
+python .opencode/core/telemetry-logger.py stats --model glm-4.7
+```

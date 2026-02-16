@@ -1,0 +1,273 @@
+# Confidence-Based Escalation Configuration
+# Routes tasks based on confidence scores
+# Purpose: +15% reliability through appropriate escalation
+
+escalation_rules:
+  # Low confidence threshold: < 0.7
+  low_confidence:
+    threshold: 0.7
+    action: add_verification
+    route_to: verifier-code-agent
+    description: "Confidence below threshold, adding verification layer"
+
+  # Very low confidence threshold: < 0.5
+  very_low_confidence:
+    threshold: 0.5
+    action: ask_user
+    reason: "Confidence too low for autonomous action"
+    description: "Confidence too low for autonomous action, requires human input"
+
+  # High confidence threshold: > 0.9
+  high_confidence:
+    threshold: 0.9
+    action: proceed_direct
+    reason: "High confidence, no verification needed"
+    description: "High confidence, proceeding directly without verification"
+
+# Task difficulty multipliers
+# Adjust thresholds based on task complexity
+task_difficulty_multipliers:
+  simple:
+    multiplier: 1.0
+    description: "Straightforward tasks (fix typo, add comment, rename variable)"
+    examples:
+      - "fix typo in file"
+      - "add comment explaining logic"
+      - "rename variable to match convention"
+
+  medium:
+    multiplier: 1.1
+    description: "Standard tasks (add feature, refactor function, update doc)"
+    examples:
+      - "add new feature for user authentication"
+      - "refactor function for better readability"
+      - "update documentation for API endpoint"
+
+  complex:
+    multiplier: 1.2
+    description: "Complex tasks (implement system, migrate codebase, optimize architecture)"
+    examples:
+      - "implement new authentication system"
+      - "migrate entire codebase to new pattern"
+      - "optimize architecture for performance"
+
+  critical:
+    multiplier: 1.3
+    description: "Critical tasks (security fix, data migration, payment integration)"
+    examples:
+      - "fix security vulnerability in authentication"
+      - "migrate production database to new schema"
+      - "implement payment processing system"
+
+# Confidence thresholds by task difficulty
+confidence_thresholds:
+  default: 0.7
+  simple: 0.6 # Easier to be confident for simple tasks
+  medium: 0.7
+  complex: 0.8 # Harder to be confident for complex tasks
+  critical: 0.9 # Need high confidence for critical tasks
+
+# Intent-specific rules (optional overrides)
+intent_rules:
+  debug:
+    default_threshold: 0.7
+    description: "Debug tasks need moderate confidence"
+    notes: "Debug can be uncertain, verification helpful"
+
+  implement:
+    default_threshold: 0.7
+    description: "Implementation tasks need moderate confidence"
+    notes: "New code requires verification, especially for complex features"
+
+  review:
+    default_threshold: 0.8
+    description: "Review tasks need higher confidence for autonomous action"
+    notes: "Analysis should be thorough, verification adds value"
+
+  research:
+    default_threshold: 0.6
+    description: "Research tasks have lower confidence threshold (exploratory)"
+    notes: "Research inherently has uncertainty, user feedback needed"
+
+  git:
+    default_threshold: 0.8
+    description: "Git operations need higher confidence"
+    notes: "Version control changes should be verified"
+
+  document:
+    default_threshold: 0.6
+    description: "Documentation tasks have lower threshold"
+    notes: "Documentation updates are lower risk"
+
+  complex:
+    default_threshold: 0.5
+    description: "Complex tasks have lowest threshold (always escalate)"
+    notes: "Complex tasks always get verification or human review"
+
+# Escalation paths
+escalation_paths:
+  # Path 1: Verification loop
+  verify:
+    skills:
+      - verifier-code-agent
+      - reflection-orchestrator
+    description: "Run through Generator-Verifier-Reviser loop"
+
+  # Path 2: Human review
+  human_review:
+    description: "Ask user to review and provide guidance"
+    questions:
+      - "Does this approach meet your requirements?"
+      - "Are there any concerns about the implementation?"
+      - "Would you like me to proceed differently?"
+
+  # Path 3: Direct execution
+  direct:
+    description: "Execute task directly without additional verification"
+    use_when:
+      - "High confidence on simple task"
+      - "Low-risk operation"
+      - "User explicitly requests direct execution"
+
+# Learning from telemetry
+telemetry_adaptive:
+  enabled: true
+  description: "Use historical success rates to adjust thresholds"
+
+  # Adjust thresholds based on actual success rates
+  adjustment_factors:
+    # If success rate is high (>0.9), lower threshold by 0.05
+    # If success rate is low (<0.7), raise threshold by 0.05
+    # Adjustments limited to +/-0.15 from base threshold
+
+  minimum_samples: 10 # Need at least 10 samples before adjusting
+  confidence_interval: 0.95 # 95% confidence interval for estimates
+
+# Risk assessment
+risk_assessment:
+  # Factors that increase required confidence
+  risk_factors:
+    security_impact:
+      weight: 0.3
+      description: "Security-critical changes require higher confidence"
+      threshold_adjustment: +0.1
+
+    data_loss_risk:
+      weight: 0.25
+      description: "Changes that could lose data require higher confidence"
+      threshold_adjustment: +0.1
+
+    breaking_change:
+      weight: 0.2
+      description: "Breaking changes require higher confidence"
+      threshold_adjustment: +0.15
+
+    public_api:
+      weight: 0.15
+      description: "Public API changes require higher confidence"
+      threshold_adjustment: +0.1
+
+    high_file_count:
+      weight: 0.1
+      description: "Many files being changed requires higher confidence"
+      threshold_adjustment: +0.05
+      threshold_adjustment_per_file: 0.01
+      files: 5 # After 5 files, increase threshold by 0.01 each
+
+# Logging and monitoring
+monitoring:
+  log_all_decisions: true
+  log_threshold_breaches: true
+  log_escalations: true
+  log_user_feedback: true
+
+  # Metrics to track
+  metrics:
+    - "intent_distribution"
+    - "confidence_by_intent"
+    - "escalation_rate"
+    - "user_override_rate"
+    - "success_rate_by_confidence"
+    - "time_to_escalation"
+
+# Human-in-the-loop triggers
+human_triggers:
+  # When to always ask user
+  always_ask:
+    - "production_deployment"
+    - "data_migration"
+    - "payment_integration"
+    - "security_critical_fix"
+
+  # When to ask if confidence is low
+  ask_if_confidence_low:
+    threshold: 0.4
+    triggers:
+      - "database_schema_change"
+      - "authentication_changes"
+      - "file_system_operations"
+
+# Escalation timeout settings
+timeouts:
+  # How long to wait for user response before auto-proceeding (seconds)
+  user_response_timeout: 300 # 5 minutes
+
+  # How many verification attempts before escalating
+  max_verification_attempts: 3
+
+  # How many times to re-route before asking user
+  max_re_route_attempts: 2
+
+# Confidence scoring guidance
+confidence_guidance:
+  # How to calculate confidence
+  factors:
+    pattern_match_quality:
+      weight: 0.4
+      description: "How well does the user query match known patterns?"
+
+    context_sufficiency:
+      weight: 0.3
+      description: "Is the context sufficient to make a decision?"
+
+    information_clarity:
+      weight: 0.2
+      description: "Is the user's request clear and unambiguous?"
+
+    task_specificity:
+      weight: 0.1
+      description: "Is the task specific enough to execute directly?"
+
+  # Confidence calculation formula
+  formula: |
+    confidence = (pattern_match_quality * 0.4) +
+                (context_sufficiency * 0.3) +
+                (information_clarity * 0.2) +
+                (task_specificity * 0.1)
+
+# Examples
+examples:
+  - user_query: "fix the bug in authentication"
+    expected_intent: debug
+    expected_difficulty: medium
+    expected_threshold: 0.8 # 0.7 * 1.1 multiplier
+    expected_action: "add_verification"
+
+  - user_query: "add a comment"
+    expected_intent: implement
+    expected_difficulty: simple
+    expected_threshold: 0.6 # 0.6 base (no multiplier)
+    expected_action: "proceed_direct"
+
+  - user_query: "implement payment system"
+    expected_intent: implement
+    expected_difficulty: critical
+    expected_threshold: 1.17 # 0.9 * 1.3 multiplier
+    expected_action: "ask_user"
+    risk_factors: ["security_impact", "data_loss_risk"]
+
+  - user_query: "do the thing"
+    expected_intent: unclear
+    expected_difficulty: unknown
+    expected_threshold: 0.0
+    expected_action: "ask_user"

@@ -1,0 +1,49 @@
+{
+  "skills": {
+    "code-agent": {
+      "invocations": 1,
+      "total_tokens": 5000,
+      "total_duration_ms": 2500,
+      "success_count": 1,
+      "total_iterations": 1,
+      "last_used": "2026-02-16T19:38:40.068260",
+      "history": [
+        {
+          "timestamp": "2026-02-16T19:38:40.068260",
+          "tokens": 5000,
+          "duration_ms": 2500,
+          "success": true,
+          "iterations": 1
+        }
+      ]
+    }
+  },
+  "edits": {
+    "glm-4.7": {
+      "format_success": {
+        "hashline": {
+          "attempts": 1,
+          "successes": 1,
+          "total_tokens": 1200,
+          "total_duration_ms": 800
+        },
+        "str_replace": {
+          "attempts": 2,
+          "successes": 0,
+          "total_tokens": 2500,
+          "total_duration_ms": 1500
+        }
+      },
+      "format_usage": {
+        "hashline": 1,
+        "str_replace": 1
+      },
+      "total_attempts": 3,
+      "total_success": 1
+    }
+  },
+  "rlm": {},
+  "intents": {},
+  "created_at": "2026-02-16T19:38:40.068260",
+  "last_updated": "2026-02-16T19:38:40.068260"
+}

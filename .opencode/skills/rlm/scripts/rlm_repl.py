@@ -46,6 +46,13 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+# Import parallel and adaptive processing (Phase 1.3 and 2.1)
+try:
+    from ..parallel_processor import ParallelWaveProcessor, get_parallel_processor
+    from ..adaptive_chunker import AdaptiveChunker, get_adaptive_chunker
+    PARALLEL_AVAILABLE = True
+except ImportError:
+    PARALLEL_AVAILABLE = False
 
 DEFAULT_STATE_PATH = Path(".opencode/rlm_state/state.pkl")
 DEFAULT_MAX_OUTPUT_CHARS = 8000
@@ -413,6 +420,132 @@ def build_parser() -> argparse.ArgumentParser:
     p_exec.set_defaults(func=cmd_exec)
 
     return p
+
+
+# === PARALLEL PROCESSING HELPERS (Phase 1.3) ===
+
+def process_chunks_parallel(
+    chunks: List[str],
+    query: str,
+    subagent_callback: callable
+) -> Dict[str, Any]:
+    """Process chunks in parallel waves (Phase 1.3 implementation)
+
+    Args:
+        chunks: List of chunk file paths
+        query: Query/question for processing
+        subagent_callback: Function to call for each chunk
+
+    Returns:
+        Processing results dictionary
+    """
+    if not PARALLEL_AVAILABLE:
+        print("WARNING: parallel_processor not available, falling back to sequential")
+        return process_chunks_sequential(chunks, query, subagent_callback)
+
+    processor = get_parallel_processor(max_concurrent=5)
+    return processor.process_all_chunks_sync(
+        all_chunk_paths=chunks,
+        query=query,
+        subagent_callback=subagent_callback
+    )
+
+
+def process_chunks_sequential(
+    chunks: List[str],
+    query: str,
+    subagent_callback: callable
+) -> Dict[str, Any]:
+    """Process chunks sequentially (fallback when parallel unavailable)
+
+    Args:
+        chunks: List of chunk file paths
+        query: Query/question for processing
+        subagent_callback: Function to call for each chunk
+
+    Returns:
+        Processing results dictionary
+    """
+    results = []
+    for chunk_path in chunks:
+        try:
+            result = subagent_callback({
+                'chunk_file': chunk_path,
+                'query': query
+            })
+            results.append({
+                'chunk_id': Path(chunk_path).stem,
+                'success': True,
+                'result': result
+            })
+        except Exception as e:
+            results.append({
+                'chunk_id': Path(chunk_path).stem,
+                'success': False,
+                'error': str(e)
+            })
+
+    return {
+        'total_chunks': len(chunks),
+        'processed_chunks': len(results),
+        'results': results
+    }
+
+
+# === ADAPTIVE CHUNKING HELPERS (Phase 2.1) ===
+
+def create_chunks_adaptive(
+    content: str,
+    max_chunks: int = None,
+    output_dir: str = None
+) -> List[str]:
+    """Create chunks using semantic boundary detection (Phase 2.1 implementation)
+
+    Args:
+        content: Content to chunk
+        max_chunks: Maximum number of chunks
+        output_dir: Output directory for chunk files
+
+    Returns:
+        List of chunk file paths
+    """
+    if not PARALLEL_AVAILABLE:
+        print("WARNING: adaptive_chunker not available, falling back to fixed-size")
+        return write_chunks(output_dir, size=200000, overlap=0)
+
+    chunker = get_adaptive_chunker()
+    return chunker.create_chunks_file(
+        content=content,
+        output_dir=output_dir,
+        max_chunks=max_chunks
+    )
+
+
+def update_chunking_performance(processing_time_ms: int):
+    """Update chunk size based on performance (Phase 2.1 implementation)
+
+    Args:
+        processing_time_ms: Time taken to process chunks
+    """
+    if not PARALLEL_AVAILABLE:
+        print("WARNING: adaptive_chunker not available, skipping performance update")
+        return
+
+    chunker = get_adaptive_chunker()
+    chunker.adjust_chunk_size(processing_time_ms)
+
+
+def get_chunking_stats() -> Dict[str, Any]:
+    """Get current chunking statistics (Phase 2.1 implementation)
+
+    Returns:
+        Dictionary with chunking statistics
+    """
+    if not PARALLEL_AVAILABLE:
+        return {'error': 'adaptive_chunker not available'}
+
+    chunker = get_adaptive_chunker()
+    return chunker.get_stats()
 
 
 def main(argv: List[str]) -> int:

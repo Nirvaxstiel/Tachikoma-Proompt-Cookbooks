@@ -111,6 +111,13 @@ Return **JSON only** with this schema:
     "needed": true|false,
     "chain": ["skill1", "skill2", "skill3"],
     "mode": "sequential|parallel"
+  },
+  "confidence_routing": {
+    "action": "proceed|verify|ask_user",
+    "route_to": "skill_name|subagent_name|null",
+    "reason": "Confidence 0.75 < 0.80 for complex task, adding verification",
+    "difficulty": "simple|medium|complex|critical",
+    "verification_needed": true|false
   }
 }
 ```
@@ -127,6 +134,12 @@ Return **JSON only** with this schema:
   - `ask`: Need user clarification
 - **keywords_matched**: Pattern keywords that triggered this classification
 - **alternative_intents**: Other possible intents with lower confidence
+- **confidence_routing**: ⭐ PHASE 2.2 - Confidence-based routing information
+  - **action**: `proceed`, `verify`, or `ask_user`
+  - **route_to**: Which skill/agent to route to (if action is `verify`)
+  - **reason**: Explanation of routing decision
+  - **difficulty**: Classified task difficulty (simple, medium, complex, critical)
+  - **verification_needed**: Whether verification is required
 
 ---
 

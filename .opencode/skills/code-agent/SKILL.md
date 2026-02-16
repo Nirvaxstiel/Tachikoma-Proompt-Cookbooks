@@ -235,3 +235,49 @@ Violations include:
 - Continuing after "done" criteria are met
 
 When in doubt: inspect again, then stop.
+
+---
+
+## Telemetry Integration ⭐ PHASE 1
+
+The code-agent skill now logs metrics for data-driven optimization:
+
+```python
+from .opencode.core.telemetry-logger import get_telemetry
+
+# Get telemetry instance
+telemetry = get_telemetry()
+
+# Log skill invocation
+telemetry.log_skill_invocation(
+    skill_name='code-agent',
+    tokens=token_count,
+    duration_ms=duration,
+    success=task_succeeded,
+    iterations=retry_count,
+    additional_data={
+        'files_changed': len(changed_files),
+        'edit_formats_used': format_types,
+        'task_complexity': 'medium'
+    }
+)
+```
+
+**When to log**:
+- After completing a task (success or failure)
+- Track: tokens used, duration, success rate, iterations
+- Log: files changed, edit formats used, task complexity
+
+**Benefits**:
+- Data-driven optimization: Learn which approaches work best
+- Performance monitoring: Track speed and reliability
+- Success rate analysis: Identify improvement opportunities
+
+**Telemetry Dashboard**:
+```bash
+# View code-agent statistics
+python .opencode/core/telemetry-logger.py stats --skill code-agent
+
+# View overall summary
+python .opencode/core/telemetry-logger.py stats --summary
+```

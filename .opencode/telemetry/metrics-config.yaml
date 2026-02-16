@@ -1,0 +1,272 @@
+# Telemetry Metrics Configuration
+# Tracks skill performance, edit success rates, and RLM efficiency
+# Purpose: Data-driven optimization to improve reliability by +10-15%
+
+enabled: true
+storage: ".opencode/telemetry/metrics.json"
+retention_days: 30
+
+# ============================================
+# SKILL METRICS
+# ============================================
+track:
+  skills:
+    - name: code-agent
+      description: "Code implementation and bug fixes"
+      metrics:
+        - invocations
+        - avg_tokens
+        - avg_duration_ms
+        - success_rate
+        - last_used
+        - avg_iterations  # For retry loops
+
+    - name: verifier-code-agent
+      description: "Generator-Verifier-Reviser pattern"
+      metrics:
+        - invocations
+        - avg_tokens
+        - avg_duration_ms
+        - verification_pass_rate
+        - avg_iterations
+        - last_used
+
+    - name: model-aware-editor
+      description: "Model-specific edit format selection"
+      metrics:
+        - invocations
+        - avg_tokens
+        - avg_duration_ms
+        - success_rate
+        - format_usage_distribution
+        - last_used
+
+    - name: rlm
+      description: "Recursive Language Model for large context"
+      metrics:
+        - invocations
+        - avg_chunks_processed
+        - avg_duration_ms
+        - parallel_vs_sequential_ratio
+        - last_used
+
+    - name: research-agent
+      description: "Investigation and information gathering"
+      metrics:
+        - invocations
+        - avg_tokens
+        - avg_duration_ms
+        - success_rate
+        - last_used
+
+    - name: analysis-agent
+      description: "Code analysis and auditing"
+      metrics:
+        - invocations
+        - avg_tokens
+        - avg_duration_ms
+        - success_rate
+        - last_used
+
+    - name: reflection-orchestrator
+      description: "Self-verification and reflection"
+      metrics:
+        - invocations
+        - avg_tokens
+        - avg_duration_ms
+        - self_correction_rate
+        - last_used
+
+  # ============================================
+  # EDIT FORMAT METRICS
+  # ============================================
+  edits:
+    - model_type: claude-opus-4
+      description: "Claude Opus 4"
+      format_success:
+        str_replace: 0.92
+        hashline: 0.95
+        patch: 0.68
+        str_replace_fuzzy: 0.88
+
+    - model_type: claude-sonnet-4
+      description: "Claude Sonnet 4"
+      format_success:
+        str_replace: 0.95
+        hashline: 0.90
+        patch: 0.72
+        str_replace_fuzzy: 0.92
+
+    - model_type: gpt-4o
+      description: "GPT-4o"
+      format_success:
+        apply_patch: 0.94
+        str_replace: 0.85
+        hashline: 0.78
+        str_replace_fuzzy: 0.80
+
+    - model_type: gpt-4-turbo
+      description: "GPT-4 Turbo"
+      format_success:
+        apply_patch: 0.91
+        str_replace: 0.82
+        hashline: 0.75
+        str_replace_fuzzy: 0.77
+
+    - model_type: grok-2
+      description: "Grok 2 (xAI)"
+      format_success:
+        hashline: 0.68
+        str_replace: 0.25
+        patch: 0.18
+        str_replace_fuzzy: 0.20
+
+    - model_type: glm-4.7
+      description: "GLM 4.7"
+      format_success:
+        hashline: 0.89
+        str_replace: 0.72
+        patch: 0.54
+        str_replace_fuzzy: 0.70
+
+    - model_type: gemini-2.5-pro
+      description: "Gemini 2.5 Pro"
+      format_success:
+        str_replace_fuzzy: 0.93
+        str_replace: 0.90
+        hashline: 0.82
+        patch: 0.70
+
+  # ============================================
+  # RLM METRICS
+  # ============================================
+  rlm:
+    - chunk_sizes_used: "List of chunk sizes used"
+    - processing_times_per_chunk: "Average time to process each chunk"
+    - parallel_vs_sequential_efficiency: "Speedup ratio"
+    - total_tokens_processed: "Total tokens across all chunks"
+    - chunk_accuracy: "Percentage of chunks that contributed to answer"
+
+  # ============================================
+  # INTENT ROUTING METRICS
+  # ============================================
+  intents:
+    - name: debug
+      metrics:
+        - classification_accuracy
+        - avg_confidence
+        - route_correctness
+        - escalation_rate
+
+    - name: implement
+      metrics:
+        - classification_accuracy
+        - avg_confidence
+        - route_correctness
+        - escalation_rate
+
+    - name: review
+      metrics:
+        - classification_accuracy
+        - avg_confidence
+        - route_correctness
+        - escalation_rate
+
+    - name: research
+      metrics:
+        - classification_accuracy
+        - avg_confidence
+        - route_correctness
+        - escalation_rate
+
+    - name: git
+      metrics:
+        - classification_accuracy
+        - avg_confidence
+        - route_correctness
+        - escalation_rate
+
+    - name: complex
+      metrics:
+        - classification_accuracy
+        - avg_confidence
+        - route_correctness
+        - escalation_rate
+
+# ============================================
+# AGGREGATION SETTINGS
+# ============================================
+aggregation:
+  # Time windows for calculating averages
+  time_windows:
+    - name: hour
+      seconds: 3600
+    - name: day
+      seconds: 86400
+    - name: week
+      seconds: 604800
+    - name: month
+      seconds: 2592000
+
+  # Percentiles to calculate
+  percentiles:
+    - 50  # Median
+    - 75  # Q3
+    - 90  # P90
+    - 95  # P95
+    - 99  # P99
+
+# ============================================
+# ALERTING THRESHOLDS
+# ============================================
+alerts:
+  # Low success rate alerts
+  skill_success_rate_threshold: 0.70
+  edit_success_rate_threshold: 0.60
+
+  # High latency alerts (milliseconds)
+  skill_latency_threshold_ms:
+    code-agent: 30000
+    verifier-code-agent: 60000
+    research-agent: 45000
+    rlm: 120000
+    default: 30000
+
+  # High token usage alerts
+  token_threshold: 100000
+
+# ============================================
+# DATA RETENTION
+# ============================================
+retention:
+  metrics_file: ".opencode/telemetry/metrics.json"
+  max_file_size_mb: 50
+  rotation_strategy: "compress"
+
+  # Retention periods for different metric types
+  skill_metrics_days: 90
+  edit_metrics_days: 180
+  rlm_metrics_days: 30
+  intent_metrics_days: 180
+
+# ============================================
+# PRIVACY SETTINGS
+# ============================================
+privacy:
+  anonymize_content: true
+  store_user_queries: false
+  store_code_snippets: false
+
+  # What to log
+  log_timestamps: true
+  log_durations: true
+  log_token_counts: true
+  log_success_fail: true
+  log_error_types: true
+
+  # What to exclude
+  exclude:
+    - user_personal_info
+    - api_keys
+    - passwords
+    - file_paths  # Optional: set to false to include file paths
