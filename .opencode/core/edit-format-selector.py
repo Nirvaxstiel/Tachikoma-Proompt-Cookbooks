@@ -390,8 +390,6 @@ class EditFormatSelector:
             try:
                 # Import hashline processor dynamically to avoid circular imports
                 import importlib.util
-                import os
-                import sys
 
                 hashline_path = os.path.join(
                     os.path.dirname(os.path.dirname(__file__)),
@@ -432,13 +430,11 @@ class EditFormatSelector:
 
         elif format_type in [EditFormat.STR_REPLACE, EditFormat.STR_REPLACE_FUZZY]:
             # Use Edit tool (str_replace format)
-            # This would be integrated with the actual Edit tool
+            # This would be integrated with actual Edit tool
             # For now, we'll use hashline as a proxy
             try:
                 # Import hashline processor dynamically
                 import importlib.util
-                import os
-                import sys
 
                 hashline_path = os.path.join(
                     os.path.dirname(os.path.dirname(__file__)),

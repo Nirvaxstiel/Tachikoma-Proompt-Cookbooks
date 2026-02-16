@@ -11,18 +11,20 @@ Key Features:
 - 91.33% accuracy vs fixed-size baselines
 """
 
+import json
 import re
-from typing import List, Tuple, Dict, Optional, Any
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class ContentType(Enum):
     """Content types for semantic chunking"""
-    JSON = 'json'
-    MARKDOWN = 'markdown'
-    LOG = 'log'
-    CODE = 'code'
-    TEXT = 'text'
+
+    JSON = "json"
+    MARKDOWN = "markdown"
+    LOG = "log"
+    CODE = "code"
+    TEXT = "text"
 
 
 class AdaptiveChunker:
@@ -33,7 +35,7 @@ class AdaptiveChunker:
         initial_chunk_size: int = 50000,
         min_chunk_size: int = 50000,
         max_chunk_size: int = 200000,
-        optimal_processing_time_ms: int = 10000
+        optimal_processing_time_ms: int = 10000,
     ):
         """
         Initialize adaptive chunker
@@ -63,24 +65,24 @@ class AdaptiveChunker:
         content_stripped = content.strip()
 
         # JSON detection (object or array)
-        if re.match(r'^\{.*\}$', content_stripped, re.DOTALL):
+        if re.match(r"^\{.*\}$", content_stripped, re.DOTALL):
             return ContentType.JSON
-        if re.match(r'^\[.*\]$', content_stripped, re.DOTALL):
+        if re.match(r"^\[.*\]$", content_stripped, re.DOTALL):
             return ContentType.JSON
 
         # Markdown detection (hashtag headings)
-        if re.match(r'^#{1,6}\s', content_stripped):
+        if re.match(r"^#{1,6}\s", content_stripped):
             return ContentType.MARKDOWN
 
         # Log detection (timestamps)
-        if re.match(r'^\[\d{4}-\d{2}-\d{2}]', content_stripped):
+        if re.match(r"^\[\d{4}-\d{2}-\d{2}]", content_stripped):
             return ContentType.LOG
 
         # Code detection (common programming patterns)
         code_patterns = [
-            r'^(import|def|class|from|function|const|let|var|interface|type)\s+',
-            r'^(public|private|protected|async|await)\s+',
-            r'^(if|for|while|switch|try|catch|return)\s*\(',
+            r"^(import|def|class|from|function|const|let|var|interface|type)\s+",
+            r"^(public|private|protected|async|await)\s+",
+            r"^(if|for|while|switch|try|catch|return)\s*\(",
         ]
         for pattern in code_patterns:
             if re.match(pattern, content_stripped):
@@ -90,9 +92,7 @@ class AdaptiveChunker:
         return ContentType.TEXT
 
     def find_semantic_boundaries(
-        self,
-        content: str,
-        content_type: ContentType
+        self, content: str, content_type: ContentType
     ) -> List[int]:
         """
         Find natural split points based on content type
@@ -108,25 +108,52 @@ class AdaptiveChunker:
 
         if content_type == ContentType.MARKDOWN:
             # Split at ## and ### headings (not #, too frequent)
-            matches = list(re.finditer(r'^#{2,4}\s+', content, re.MULTILINE))
+            matches = list(re.finditer(r"^#{2,4}\s+", content, re.MULTILINE))
             boundaries.extend([m.start() for m in matches])
 
         elif content_type == ContentType.JSON:
-            # Split at top-level objects (simplified - look for newlines before { or [)
-            # This is a basic implementation - real JSON parsing would be more robust
-            matches = list(re.finditer(r'\n(?=\{|\[)', content))
-            boundaries.extend([m.start() for m in matches])
+            # Split at top-level objects using JSON parser
+            try:
+                data = json.loads(content)
+
+                # If it's an array, split at each element
+                if isinstance(data, list):
+                    # Track positions of each array element
+                    offset = 0
+                    for i, item in enumerate(data):
+                        # Serialize item to find its position
+                        item_str = json.dumps(item, separators=(",", ":"))
+                        # Find this item in the original content (simplified)
+                        item_pos = content.find(item_str, offset)
+                        if item_pos != -1 and i > 0:
+                            boundaries.append(item_pos)
+                        offset = item_pos + len(item_str)
+
+                # If it's an object, split at each top-level key
+                elif isinstance(data, dict):
+                    offset = 0
+                    for i, (key, value) in enumerate(data.items()):
+                        # Serialize key-value to find its position
+                        kv_str = f'"{key}":{json.dumps(value, separators=(",", ":"))}'
+                        kv_pos = content.find(kv_str, offset)
+                        if kv_pos != -1 and i > 0:
+                            boundaries.append(kv_pos)
+                        offset = kv_pos + len(kv_str)
+            except (json.JSONDecodeError, Exception):
+                # Fallback to regex-based splitting if JSON parsing fails
+                matches = list(re.finditer(r"\n(?=\{|\[)", content))
+                boundaries.extend([m.start() for m in matches])
 
         elif content_type == ContentType.LOG:
             # Split at timestamps
-            matches = list(re.finditer(r'^\[\d{4}-\d{2}-\d{2}]', content, re.MULTILINE))
+            matches = list(re.finditer(r"^\[\d{4}-\d{2}-\d{2}]", content, re.MULTILINE))
             boundaries.extend([m.start() for m in matches])
 
         elif content_type == ContentType.CODE:
             # Split at function/class/method definitions
             patterns = [
-                r'^(def |class |function |class |interface |type |struct )',
-                r'^(public |private |protected |static |async )\s+(def |class |function )',
+                r"^(def |class |function |class |interface |type |struct )",
+                r"^(public |private |protected |static |async )\s+(def |class |function )",
             ]
             for pattern in patterns:
                 matches = list(re.finditer(pattern, content, re.MULTILINE))
@@ -134,7 +161,7 @@ class AdaptiveChunker:
 
         elif content_type == ContentType.TEXT:
             # Split at paragraphs (double newlines)
-            matches = list(re.finditer(r'\n\n+', content))
+            matches = list(re.finditer(r"\n\n+", content))
             boundaries.extend([m.start() for m in matches])
 
         # Add end boundary
@@ -143,11 +170,7 @@ class AdaptiveChunker:
         # Remove duplicates and sort
         return sorted(set(boundaries))
 
-    def _split_large_chunk(
-        self,
-        chunk: str,
-        max_size: int
-    ) -> List[Tuple[str, int]]:
+    def _split_large_chunk(self, chunk: str, max_size: int) -> List[Tuple[str, int]]:
         """
         Split chunk that's too large
 
@@ -160,15 +183,13 @@ class AdaptiveChunker:
         """
         chunks = []
         for i in range(0, len(chunk), max_size):
-            sub_chunk = chunk[i:i + max_size]
+            sub_chunk = chunk[i : i + max_size]
             chunks.append((sub_chunk, i // max_size))
 
         return chunks
 
     def create_adaptive_chunks(
-        self,
-        content: str,
-        max_chunks: Optional[int] = None
+        self, content: str, max_chunks: Optional[int] = None
     ) -> List[Tuple[str, int]]:
         """
         Create adaptive chunks based on content type
@@ -184,7 +205,10 @@ class AdaptiveChunker:
         boundaries = self.find_semantic_boundaries(content, content_type)
 
         chunks = []
-        for i in range(len(boundaries) - 1):
+
+        # Use while loop for explicit index control (merging logic)
+        i = 0
+        while i < len(boundaries) - 1:
             start = boundaries[i]
             end = boundaries[i + 1]
             chunk = content[start:end]
@@ -196,17 +220,20 @@ class AdaptiveChunker:
                 # Content is dense, split further
                 sub_chunks = self._split_large_chunk(chunk, self.chunk_size)
                 chunks.extend(sub_chunks)
+                i += 1
             elif chunk_len < self.chunk_size * 0.5:
                 # Merge with next if too small
                 if i < len(boundaries) - 2:
-                    merged = chunk + content[end:boundaries[i + 2]]
+                    merged = chunk + content[end : boundaries[i + 2]]
                     chunks.append((merged, len(chunks)))
-                    # Skip next iteration since we merged
-                    i += 1
+                    # Skip next boundary since we merged
+                    i += 2
                 else:
                     chunks.append((chunk, len(chunks)))
+                    i += 1
             else:
                 chunks.append((chunk, len(chunks)))
+                i += 1
 
         # Limit to max_chunks if specified
         if max_chunks and len(chunks) > max_chunks:
@@ -267,34 +294,33 @@ class AdaptiveChunker:
         """
         if not self.processing_times:
             return {
-                'current_chunk_size': self.chunk_size,
-                'min_chunk_size': self.min_chunk_size,
-                'max_chunk_size': self.max_chunk_size,
-                'optimal_time_ms': self.optimal_time,
-                'adjustments_made': 0,
-                'avg_processing_time_ms': 0,
-                'processing_times': [],
-                'size_adjustments': 0
+                "current_chunk_size": self.chunk_size,
+                "min_chunk_size": self.min_chunk_size,
+                "max_chunk_size": self.max_chunk_size,
+                "optimal_time_ms": self.optimal_time,
+                "adjustments_made": 0,
+                "avg_processing_time_ms": 0,
+                "processing_times": [],
+                "size_adjustments": 0,
             }
 
         avg_time = sum(self.processing_times) / len(self.processing_times)
 
         return {
-            'current_chunk_size': self.chunk_size,
-            'min_chunk_size': self.min_chunk_size,
-            'max_chunk_size': self.max_chunk_size,
-            'optimal_time_ms': self.optimal_time,
-            'adjustments_made': len(self.processing_times),
-            'avg_processing_time_ms': avg_time,
-            'processing_times': self.processing_times,
-            'size_adjustments': len([t for t in self.processing_times if t < 5000 or t > 15000])
+            "current_chunk_size": self.chunk_size,
+            "min_chunk_size": self.min_chunk_size,
+            "max_chunk_size": self.max_chunk_size,
+            "optimal_time_ms": self.optimal_time,
+            "adjustments_made": len(self.processing_times),
+            "avg_processing_time_ms": avg_time,
+            "processing_times": self.processing_times,
+            "size_adjustments": len(
+                [t for t in self.processing_times if t < 5000 or t > 15000]
+            ),
         }
 
     def create_chunks_file(
-        self,
-        content: str,
-        output_dir: str,
-        prefix: str = 'chunk'
+        self, content: str, output_dir: str, prefix: str = "chunk"
     ) -> List[str]:
         """
         Create chunk files for RLM processing
@@ -318,8 +344,8 @@ class AdaptiveChunker:
         # Write each chunk to a file
         chunk_paths = []
         for i, (chunk_content, idx) in enumerate(chunks):
-            chunk_path = os.path.join(output_dir, f'{prefix}_{idx:03d}.txt')
-            with open(chunk_path, 'w', encoding='utf-8') as f:
+            chunk_path = os.path.join(output_dir, f"{prefix}_{idx:03d}.txt")
+            with open(chunk_path, "w", encoding="utf-8") as f:
                 f.write(chunk_content)
             chunk_paths.append(chunk_path)
 
@@ -336,24 +362,24 @@ class AdaptiveChunker:
             Human-readable type name
         """
         type_names = {
-            ContentType.JSON: 'JSON',
-            ContentType.MARKDOWN: 'Markdown',
-            ContentType.LOG: 'Log',
-            ContentType.CODE: 'Code',
-            ContentType.TEXT: 'Plain Text'
+            ContentType.JSON: "JSON",
+            ContentType.MARKDOWN: "Markdown",
+            ContentType.LOG: "Log",
+            ContentType.CODE: "Code",
+            ContentType.TEXT: "Plain Text",
         }
-        return type_names.get(content_type, 'Unknown')
+        return type_names.get(content_type, "Unknown")
 
 
 # Singleton instance
 _chunker_instance = None
-_instance_lock = None  # Lazy import
+_instance_lock = None  # Will be imported when needed
 
 
 def get_adaptive_chunker(
     initial_chunk_size: int = 50000,
     min_chunk_size: int = 50000,
-    max_chunk_size: int = 200000
+    max_chunk_size: int = 200000,
 ) -> AdaptiveChunker:
     """
     Get singleton adaptive chunker instance
@@ -369,38 +395,44 @@ def get_adaptive_chunker(
     global _chunker_instance
 
     if _chunker_instance is None:
+        # Note: Lock is not used here for simplicity
+        # In multi-threaded environments, add import threading and use lock
         _chunker_instance = AdaptiveChunker(
             initial_chunk_size=initial_chunk_size,
             min_chunk_size=min_chunk_size,
-            max_chunk_size=max_chunk_size
+            max_chunk_size=max_chunk_size,
         )
 
     return _chunker_instance
 
 
 # CLI interface for testing
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
     import sys
 
-    parser = argparse.ArgumentParser(
-        description='Adaptive Chunker for RLM'
-    )
-    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    parser = argparse.ArgumentParser(description="Adaptive Chunker for RLM")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Detect command
-    detect_parser = subparsers.add_parser('detect', help='Detect content type')
-    detect_parser.add_argument('content', help='Content to analyze')
+    detect_parser = subparsers.add_parser("detect", help="Detect content type")
+    detect_parser.add_argument("content", help="Content to analyze")
 
     # Chunk command
-    chunk_parser = subparsers.add_parser('chunk', help='Create adaptive chunks')
-    chunk_parser.add_argument('filepath', help='File to chunk')
-    chunk_parser.add_argument('--output', '-o', default='.opencode/rlm_state/chunks', help='Output directory')
-    chunk_parser.add_argument('--max-chunks', type=int, default=None, help='Maximum number of chunks')
-    chunk_parser.add_argument('--initial-size', type=int, default=50000, help='Initial chunk size')
+    chunk_parser = subparsers.add_parser("chunk", help="Create adaptive chunks")
+    chunk_parser.add_argument("filepath", help="File to chunk")
+    chunk_parser.add_argument(
+        "--output", "-o", default=".opencode/rlm_state/chunks", help="Output directory"
+    )
+    chunk_parser.add_argument(
+        "--max-chunks", type=int, default=None, help="Maximum number of chunks"
+    )
+    chunk_parser.add_argument(
+        "--initial-size", type=int, default=50000, help="Initial chunk size"
+    )
 
     # Stats command
-    stats_parser = subparsers.add_parser('stats', help='Get chunker statistics')
+    stats_parser = subparsers.add_parser("stats", help="Get chunker statistics")
 
     args = parser.parse_args()
 
@@ -408,21 +440,24 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(1)
 
-    chunker = AdaptiveChunker(initial_chunk_size=args.initial_size if hasattr(args, 'initial_size') else 50000)
+    chunker = AdaptiveChunker(
+        initial_chunk_size=args.initial_size if hasattr(args, "initial_size") else 50000
+    )
 
-    if args.command == 'detect':
+    if args.command == "detect":
         content_type = chunker.detect_content_type(args.content)
         type_name = chunker.get_content_type_name(content_type)
         print(f"Content Type: {type_name}")
         print(f"Enum: {content_type.value}")
 
-    elif args.command == 'chunk':
+    elif args.command == "chunk":
         import os
+
         if not os.path.exists(args.filepath):
             print(f"Error: File not found: {args.filepath}", file=sys.stderr)
             sys.exit(1)
 
-        with open(args.filepath, 'r', encoding='utf-8') as f:
+        with open(args.filepath, "r", encoding="utf-8") as f:
             content = f.read()
 
         content_type = chunker.detect_content_type(content)
@@ -433,21 +468,19 @@ if __name__ == '__main__':
         print(f"Chunk Size: {chunker.chunk_size:,} characters")
 
         chunk_paths = chunker.create_chunks_file(
-            content=content,
-            output_dir=args.output,
-            prefix='chunk'
+            content=content, output_dir=args.output, prefix="chunk"
         )
 
         print(f"Created {len(chunk_paths)} chunks")
         print(f"Output directory: {args.output}")
 
-    elif args.command == 'stats':
+    elif args.command == "stats":
         stats = chunker.get_stats()
         print(f"\nChunker Statistics:")
         print(f"  Current chunk size: {stats['current_chunk_size']:,} characters")
         print(f"  Min chunk size: {stats['min_chunk_size']:,} characters")
         print(f"  Max chunk size: {stats['max_chunk_size']:,} characters")
-        print(f"  Optimal time: {stats['optimal_time_ms']/1000:.1f}s")
+        print(f"  Optimal time: {stats['optimal_time_ms'] / 1000:.1f}s")
         print(f"  Adjustments made: {stats['adjustments_made']}")
-        print(f"  Avg processing time: {stats['avg_processing_time_ms']/1000:.1f}s")
+        print(f"  Avg processing time: {stats['avg_processing_time_ms'] / 1000:.1f}s")
         print(f"  Size adjustments: {stats['size_adjustments']}")

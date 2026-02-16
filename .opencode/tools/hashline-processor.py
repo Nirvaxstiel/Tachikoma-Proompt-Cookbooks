@@ -19,7 +19,7 @@ class HashlineProcessor:
     """Process files with hashline format for edit operations"""
 
     def __init__(self):
-        self.hash_length = 2  # Number of characters for content hash
+        self.hash_length = 4  # Number of characters for content hash (16M possibilities)
 
     def _hash_line(self, line: str) -> str:
         """Generate 2-char hash for a single line"""
@@ -34,7 +34,7 @@ class HashlineProcessor:
             line_number: 1-based line number
 
         Returns:
-            Hashline reference string (e.g., "22:f1|")
+            Hashline reference string (e.g., "22:a3f1|")
 
         Raises:
             ValueError: If line_number is out of range
@@ -67,9 +67,9 @@ class HashlineProcessor:
 
             Output:
                 [
-                    "1:a3|function hello() {",
-                    "2:f1|  return "world";",
-                    "3:0e|}"
+                    "1:a3f1|function hello() {",
+                    "2:f1a2|  return "world";",
+                    "3:0e3d|}"
                 ]
         """
         if not os.path.exists(filepath):
@@ -98,7 +98,7 @@ class HashlineProcessor:
 
         Args:
             filepath: Path to file to edit
-            target_hash: Hashline reference (e.g., "22:f1")
+            target_hash: Hashline reference (e.g., "22:a3f1")
             new_content: New line content (without newline)
             verify_hash: Whether to verify hash matches current file
 
@@ -170,7 +170,7 @@ class HashlineProcessor:
 
         Example:
             find_hash_line('/tmp/test.py', 'return "world"')
-            Returns: "2:f1|"
+            Returns: "2:f1a2|"
         """
         if not os.path.exists(filepath):
             raise FileNotFoundError(f"File not found: {filepath}")
@@ -235,6 +235,7 @@ class HashlineProcessor:
             'total_lines': len(hashlines),
             'total_chars': sum(len(h) for h in hashlines),
             'hash_length': self.hash_length,
+            'hash_space_size': 16 ** self.hash_length,  # Total possible hashes
             'avg_line_length': sum(len(h) for h in hashlines) / len(hashlines) if hashlines else 0,
             'first_hash': hashlines[0].split('|')[0] if hashlines else None,
             'last_hash': hashlines[-1].split('|')[0] if hashlines else None,
@@ -304,7 +305,7 @@ if __name__ == '__main__':
     # Edit command
     edit_parser = subparsers.add_parser('edit', help='Edit file using hashline')
     edit_parser.add_argument('filepath', help='File path to edit')
-    edit_parser.add_argument('hash', help='Hashline reference (e.g., "22:f1")')
+    edit_parser.add_argument('hash', help='Hashline reference (e.g., "22:a3f1")')
     edit_parser.add_argument('content', help='New line content')
 
     # Verify command

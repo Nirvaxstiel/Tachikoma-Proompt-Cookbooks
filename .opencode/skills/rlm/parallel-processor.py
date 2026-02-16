@@ -20,8 +20,8 @@ import json
 import os
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Dict, Any, Callable, Optional
 from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
 
 
 class ParallelWaveProcessor:
@@ -31,7 +31,7 @@ class ParallelWaveProcessor:
         self,
         max_concurrent: int = 5,
         min_confidence_for_completion: float = 0.8,
-        min_high_confidence_chunks: int = 3
+        min_high_confidence_chunks: int = 3,
     ):
         """
         Initialize parallel wave processor
@@ -44,7 +44,7 @@ class ParallelWaveProcessor:
         self.max_concurrent = max_concurrent
         self.min_confidence = min_confidence_for_completion
         self.min_high_confidence_chunks = min_high_confidence_chunks
-        self.executor = ThreadPoolExecutor(max_workers=max_concurrent)
+        self._executor = None  # Lazy initialization
 
     def extract_chunk_id(self, chunk_path: str) -> str:
         """
@@ -56,13 +56,13 @@ class ParallelWaveProcessor:
         Returns:
             Chunk ID (filename without extension)
         """
-        return os.path.basename(chunk_path).replace('.txt', '').replace('.json', '')
+        return os.path.basename(chunk_path).replace(".txt", "").replace(".json", "")
 
     def process_chunk(
         self,
         chunk_path: str,
         query: str,
-        subagent_callback: Callable[[Dict[str, Any]], Dict[str, Any]]
+        subagent_callback: Callable[[Dict[str, Any]], Dict[str, Any]],
     ) -> Dict[str, Any]:
         """
         Process single chunk with rlm-subcall subagent
@@ -77,7 +77,7 @@ class ParallelWaveProcessor:
         """
         try:
             # Read chunk content
-            with open(chunk_path, 'r', encoding='utf-8') as f:
+            with open(chunk_path, "r", encoding="utf-8") as f:
                 chunk_content = f.read()
 
             # Call subagent with chunk
@@ -85,34 +85,38 @@ class ParallelWaveProcessor:
             max_content_length = 5000
             truncated_content = chunk_content[:max_content_length]
 
-            result = subagent_callback({
-                'chunk_file': chunk_path,
-                'chunk_content': truncated_content,
-                'query': query,
-                'chunk_size': len(chunk_content)
-            })
+            result = subagent_callback(
+                {
+                    "chunk_file": chunk_path,
+                    "chunk_content": truncated_content,
+                    "query": query,
+                    "chunk_size": len(chunk_content),
+                }
+            )
 
             return {
-                'chunk_id': self.extract_chunk_id(chunk_path),
-                'success': True,
-                'result': result,
-                'timestamp': datetime.now().isoformat(),
-                'tokens_processed': len(truncated_content.split())  # Approximate
+                "chunk_id": self.extract_chunk_id(chunk_path),
+                "success": True,
+                "result": result,
+                "timestamp": datetime.now().isoformat(),
+                "tokens_processed": len(
+                    truncated_content.split()
+                ),  # Word count approximation
             }
         except Exception as e:
             return {
-                'chunk_id': self.extract_chunk_id(chunk_path),
-                'success': False,
-                'error': str(e),
-                'timestamp': datetime.now().isoformat(),
-                'tokens_processed': 0
+                "chunk_id": self.extract_chunk_id(chunk_path),
+                "success": False,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+                "tokens_processed": 0,
             }
 
     async def process_chunk_async(
         self,
         chunk_path: str,
         query: str,
-        subagent_callback: Callable[[Dict[str, Any]], Any]
+        subagent_callback: Callable[[Dict[str, Any]], Any],
     ) -> Dict[str, Any]:
         """
         Async version of process_chunk
@@ -126,40 +130,44 @@ class ParallelWaveProcessor:
             Dictionary with processing result
         """
         try:
-            with open(chunk_path, 'r', encoding='utf-8') as f:
+            with open(chunk_path, "r", encoding="utf-8") as f:
                 chunk_content = f.read()
 
             max_content_length = 5000
             truncated_content = chunk_content[:max_content_length]
 
-            result = await subagent_callback({
-                'chunk_file': chunk_path,
-                'chunk_content': truncated_content,
-                'query': query,
-                'chunk_size': len(chunk_content)
-            })
+            result = await subagent_callback(
+                {
+                    "chunk_file": chunk_path,
+                    "chunk_content": truncated_content,
+                    "query": query,
+                    "chunk_size": len(chunk_content),
+                }
+            )
 
             return {
-                'chunk_id': self.extract_chunk_id(chunk_path),
-                'success': True,
-                'result': result,
-                'timestamp': datetime.now().isoformat(),
-                'tokens_processed': len(truncated_content.split())
+                "chunk_id": self.extract_chunk_id(chunk_path),
+                "success": True,
+                "result": result,
+                "timestamp": datetime.now().isoformat(),
+                "tokens_processed": len(
+                    truncated_content.split()
+                ),  # Word count approximation
             }
         except Exception as e:
             return {
-                'chunk_id': self.extract_chunk_id(chunk_path),
-                'success': False,
-                'error': str(e),
-                'timestamp': datetime.now().isoformat(),
-                'tokens_processed': 0
+                "chunk_id": self.extract_chunk_id(chunk_path),
+                "success": False,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+                "tokens_processed": 0,
             }
 
     async def process_wave_async(
         self,
         chunk_paths: List[str],
         query: str,
-        subagent_callback: Callable[[Dict[str, Any]], Any]
+        subagent_callback: Callable[[Dict[str, Any]], Any],
     ) -> List[Dict[str, Any]]:
         """
         Process wave of chunks in parallel (async version)
@@ -173,7 +181,7 @@ class ParallelWaveProcessor:
             List of processing results
         """
         # Limit to max_concurrent chunks
-        wave_chunk_paths = chunk_paths[:self.max_concurrent]
+        wave_chunk_paths = chunk_paths[: self.max_concurrent]
 
         # Create tasks for parallel processing
         tasks = [
@@ -188,13 +196,15 @@ class ParallelWaveProcessor:
         processed_results = []
         for result in results:
             if isinstance(result, Exception):
-                processed_results.append({
-                    'chunk_id': 'unknown',
-                    'success': False,
-                    'error': str(result),
-                    'timestamp': datetime.now().isoformat(),
-                    'tokens_processed': 0
-                })
+                processed_results.append(
+                    {
+                        "chunk_id": "unknown",
+                        "success": False,
+                        "error": str(result),
+                        "timestamp": datetime.now().isoformat(),
+                        "tokens_processed": 0,
+                    }
+                )
             else:
                 processed_results.append(result)
 
@@ -204,7 +214,7 @@ class ParallelWaveProcessor:
         self,
         chunk_paths: List[str],
         query: str,
-        subagent_callback: Callable[[Dict[str, Any]], Dict[str, Any]]
+        subagent_callback: Callable[[Dict[str, Any]], Dict[str, Any]],
     ) -> List[Dict[str, Any]]:
         """
         Process wave of chunks in parallel (sync version)
@@ -218,19 +228,17 @@ class ParallelWaveProcessor:
             List of processing results
         """
         # Limit to max_concurrent chunks
-        wave_chunk_paths = chunk_paths[:self.max_concurrent]
+        wave_chunk_paths = chunk_paths[: self.max_concurrent]
 
-        # Process chunks in parallel using ThreadPoolExecutor
+        # Process chunks in parallel using ThreadPoolExecutor with context manager
+        # This ensures proper cleanup of threads after each wave
         results = []
 
         with ThreadPoolExecutor(max_workers=self.max_concurrent) as executor:
             # Submit all tasks
             future_to_chunk = {
                 executor.submit(
-                    self.process_chunk,
-                    path,
-                    query,
-                    subagent_callback
+                    self.process_chunk, path, query, subagent_callback
                 ): path
                 for path in wave_chunk_paths
             }
@@ -242,13 +250,15 @@ class ParallelWaveProcessor:
                     result = future.result()
                     results.append(result)
                 except Exception as e:
-                    results.append({
-                        'chunk_id': self.extract_chunk_id(chunk_path),
-                        'success': False,
-                        'error': str(e),
-                        'timestamp': datetime.now().isoformat(),
-                        'tokens_processed': 0
-                    })
+                    results.append(
+                        {
+                            "chunk_id": self.extract_chunk_id(chunk_path),
+                            "success": False,
+                            "error": str(e),
+                            "timestamp": datetime.now().isoformat(),
+                            "tokens_processed": 0,
+                        }
+                    )
 
         return results
 
@@ -267,8 +277,9 @@ class ParallelWaveProcessor:
 
         # Check for high-confidence results
         high_confidence = [
-            r for r in results
-            if r['success'] and self._extract_confidence(r) > self.min_confidence
+            r
+            for r in results
+            if r["success"] and self._extract_confidence(r) > self.min_confidence
         ]
 
         # Require minimum number of high-confidence chunks
@@ -285,16 +296,16 @@ class ParallelWaveProcessor:
             Confidence score (0.0 to 1.0)
         """
         # Try different confidence field names
-        confidence = result.get('result', {}).get('confidence', 0.0)
+        confidence = result.get("result", {}).get("confidence", 0.0)
 
         if isinstance(confidence, (int, float)):
             return float(confidence)
 
         # Try nested structures
-        if isinstance(result.get('result'), dict):
-            for key in ['confidence', 'certainty', 'score', 'probability']:
-                if key in result['result']:
-                    val = result['result'][key]
+        if isinstance(result.get("result"), dict):
+            for key in ["confidence", "certainty", "score", "probability"]:
+                if key in result["result"]:
+                    val = result["result"][key]
                     if isinstance(val, (int, float)):
                         return float(val)
 
@@ -304,7 +315,7 @@ class ParallelWaveProcessor:
         self,
         all_chunk_paths: List[str],
         query: str,
-        subagent_callback: Callable[[Dict[str, Any]], Any]
+        subagent_callback: Callable[[Dict[str, Any]], Any],
     ) -> Dict[str, Any]:
         """
         Process all chunks in waves until answer found (async version)
@@ -323,7 +334,7 @@ class ParallelWaveProcessor:
 
         # Split into waves of max_concurrent chunks
         for i in range(0, len(all_chunk_paths), self.max_concurrent):
-            wave = all_chunk_paths[i:i + self.max_concurrent]
+            wave = all_chunk_paths[i : i + self.max_concurrent]
             waves.append(wave)
 
         # Process waves sequentially, chunks in parallel
@@ -337,26 +348,26 @@ class ParallelWaveProcessor:
                 break
 
         # Calculate statistics
-        successful_results = [r for r in all_results if r['success']]
-        total_tokens = sum(r.get('tokens_processed', 0) for r in all_results)
+        successful_results = [r for r in all_results if r["success"]]
+        total_tokens = sum(r.get("tokens_processed", 0) for r in all_results)
 
         return {
-            'total_waves': len(waves),
-            'processed_waves': processed_waves,
-            'total_chunks': len(all_chunk_paths),
-            'processed_chunks': len(all_results),
-            'successful_chunks': len(successful_results),
-            'results': all_results,
-            'tokens_processed': total_tokens,
-            'early_termination': processed_waves < len(waves),
-            'confidence_threshold': self.min_confidence
+            "total_waves": len(waves),
+            "processed_waves": processed_waves,
+            "total_chunks": len(all_chunk_paths),
+            "processed_chunks": len(all_results),
+            "successful_chunks": len(successful_results),
+            "results": all_results,
+            "tokens_processed": total_tokens,
+            "early_termination": processed_waves < len(waves),
+            "confidence_threshold": self.min_confidence,
         }
 
     def process_all_chunks(
         self,
         all_chunk_paths: List[str],
         query: str,
-        subagent_callback: Callable[[Dict[str, Any]], Dict[str, Any]]
+        subagent_callback: Callable[[Dict[str, Any]], Dict[str, Any]],
     ) -> Dict[str, Any]:
         """
         Process all chunks in waves until answer found (sync version)
@@ -375,7 +386,7 @@ class ParallelWaveProcessor:
 
         # Split into waves of max_concurrent chunks
         for i in range(0, len(all_chunk_paths), self.max_concurrent):
-            wave = all_chunk_paths[i:i + self.max_concurrent]
+            wave = all_chunk_paths[i : i + self.max_concurrent]
             waves.append(wave)
 
         # Process waves sequentially, chunks in parallel
@@ -389,19 +400,19 @@ class ParallelWaveProcessor:
                 break
 
         # Calculate statistics
-        successful_results = [r for r in all_results if r['success']]
-        total_tokens = sum(r.get('tokens_processed', 0) for r in all_results)
+        successful_results = [r for r in all_results if r["success"]]
+        total_tokens = sum(r.get("tokens_processed", 0) for r in all_results)
 
         return {
-            'total_waves': len(waves),
-            'processed_waves': processed_waves,
-            'total_chunks': len(all_chunk_paths),
-            'processed_chunks': len(all_results),
-            'successful_chunks': len(successful_results),
-            'results': all_results,
-            'tokens_processed': total_tokens,
-            'early_termination': processed_waves < len(waves),
-            'confidence_threshold': self.min_confidence
+            "total_waves": len(waves),
+            "processed_waves": processed_waves,
+            "total_chunks": len(all_chunk_paths),
+            "processed_chunks": len(all_results),
+            "successful_chunks": len(successful_results),
+            "results": all_results,
+            "tokens_processed": total_tokens,
+            "early_termination": processed_waves < len(waves),
+            "confidence_threshold": self.min_confidence,
         }
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -412,10 +423,10 @@ class ParallelWaveProcessor:
             Dictionary with processor configuration and stats
         """
         return {
-            'max_concurrent': self.max_concurrent,
-            'min_confidence_for_completion': self.min_confidence,
-            'min_high_confidence_chunks': self.min_high_confidence_chunks,
-            'active_workers': self.executor._max_workers if hasattr(self.executor, '_max_workers') else self.max_concurrent
+            "max_concurrent": self.max_concurrent,
+            "min_confidence_for_completion": self.min_confidence,
+            "min_high_confidence_chunks": self.min_high_confidence_chunks,
+            "active_workers": self.max_concurrent,
         }
 
 
@@ -425,8 +436,7 @@ _instance_lock = threading.Lock()
 
 
 def get_parallel_processor(
-    max_concurrent: int = 5,
-    min_confidence: float = 0.8
+    max_concurrent: int = 5, min_confidence: float = 0.8
 ) -> ParallelWaveProcessor:
     """
     Get singleton parallel processor instance
@@ -442,84 +452,84 @@ def get_parallel_processor(
 
     if _processor_instance is None:
         with _instance_lock:
-            if _processor_instance is None:  # Double-check
+            if _processor_instance is None:  # Double-check locking
                 _processor_instance = ParallelWaveProcessor(
                     max_concurrent=max_concurrent,
-                    min_confidence_for_completion=min_confidence
+                    min_confidence_for_completion=min_confidence,
                 )
 
     return _processor_instance
 
 
 # CLI interface for testing
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
     import sys
 
-    parser = argparse.ArgumentParser(
-        description='Parallel Wave Processor for RLM'
-    )
-    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    parser = argparse.ArgumentParser(description="Parallel Wave Processor for RLM")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Test command
-    test_parser = subparsers.add_parser('test', help='Test parallel processing')
+    test_parser = subparsers.add_parser("test", help="Test parallel processing")
 
     test_parser.add_argument(
-        '--chunks',
-        type=int,
-        default=10,
-        help='Number of chunks to simulate'
+        "--chunks", type=int, default=10, help="Number of chunks to simulate"
     )
     test_parser.add_argument(
-        '--max-concurrent',
-        type=int,
-        default=5,
-        help='Maximum concurrent chunks'
+        "--max-concurrent", type=int, default=5, help="Maximum concurrent chunks"
     )
 
     args = parser.parse_args()
 
-    if args.command == 'test':
+    if args.command == "test":
         print("Testing Parallel Wave Processor...")
 
         # Create test chunks
-        test_dir = '.opencode/rlm_state/test_chunks'
+        test_dir = ".opencode/rlm_state/test_chunks"
         os.makedirs(test_dir, exist_ok=True)
 
         for i in range(args.chunks):
-            chunk_path = os.path.join(test_dir, f'chunk_{i:03d}.txt')
-            with open(chunk_path, 'w') as f:
+            chunk_path = os.path.join(test_dir, f"chunk_{i:03d}.txt")
+            with open(chunk_path, "w") as f:
                 f.write(f"Test chunk content {i}\n" * 100)
 
         # Get all chunk paths
-        chunk_paths = sorted([
-            os.path.join(test_dir, f)
-            for f in os.listdir(test_dir)
-            if f.endswith('.txt')
-        ])
+        chunk_paths = sorted(
+            [
+                os.path.join(test_dir, f)
+                for f in os.listdir(test_dir)
+                if f.endswith(".txt")
+            ]
+        )
 
         processor = ParallelWaveProcessor(max_concurrent=args.max_concurrent)
 
         # Mock callback
         def mock_callback(data):
             return {
-                'confidence': 0.9 if '5' in data['chunk_id'] else 0.6,
-                'answer': f"Answer from {data['chunk_id']}"
+                "confidence": 0.9 if "5" in data["chunk_id"] else 0.6,
+                "answer": f"Answer from {data['chunk_id']}",
             }
 
         # Process chunks
         import time
+
         start = time.time()
         results = processor.process_all_chunks(chunk_paths, "test query", mock_callback)
         duration = time.time() - start
 
-        print(f"\nProcessed {results['processed_chunks']} chunks in {results['processed_waves']} waves")
+        print(
+            f"\nProcessed {results['processed_chunks']} chunks in {results['processed_waves']} waves"
+        )
         print(f"Time: {duration:.2f}s")
         print(f"Early termination: {results['early_termination']}")
-        print(f"Successful chunks: {results['successful_chunks']}/{results['processed_chunks']}")
+        print(
+            f"Successful chunks: {results['successful_chunks']}/{results['processed_chunks']}"
+        )
 
         # Cleanup
         import shutil
+
         shutil.rmtree(test_dir)
 
     else:
