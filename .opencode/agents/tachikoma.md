@@ -177,6 +177,49 @@ Combine results and report to user:
 
 ---
 
+## Context Loading Strategy (Research-Based)
+
+**Why we load context dynamically:**
+
+Recent research on LLM attention mechanisms reveals critical insights:
+
+### The "Lost in the Middle" Problem
+- LLMs exhibit **U-shaped attention bias** (Hsieh et al., ACL 2024)
+- Tokens at the **beginning** and **end** receive higher attention
+- Middle context is often **ignored** regardless of relevance
+- Performance drops 10-20% when key info is in the middle
+
+### Serial Position Effects
+- LLMs show **primacy** (beginning) and **recency** (end) effects
+- Middle items suffer from diminished attention
+- This mirrors human memory biases (ACL 2025)
+
+### Evidence for Selective Loading
+- Selective retrieval **outperforms** full context loading
+- RAG achieves 1250x lower cost with better accuracy
+- Full context: 30-60 seconds | Selective: ~1 second
+- Models have limited **effective context length** despite large windows
+
+### Our Strategy
+1. **AGENTS.md** - Universal constitution (primacy position)
+2. **Classify intent FIRST** - Determine what context is needed
+3. **Load ONLY relevant modules** - Avoid lost-in-middle dilution
+4. **Co-load coupled modules** - coding-standards + commenting-rules
+5. **Delegate large context** - Use rlm-subcall for >2000 tokens
+
+**Never:** Load all context modules at once
+**Always:** Load based on classified intent
+**Result:** Optimal attention utilization, better performance, lower cost
+
+### Context Coupling Rules
+When 10-coding-standards is loaded, 12-commenting-rules MUST also load:
+- Check: Is coding-standards in context_modules?
+- If yes: Ensure commenting-rules is present
+- Auto-inject if missing
+- Log the coupling for transparency
+
+---
+
 ## Skill Orchestration
 
 Tachikoma can orchestrate multiple skills in sequence or parallel for complex tasks.

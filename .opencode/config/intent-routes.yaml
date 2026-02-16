@@ -1,6 +1,6 @@
 # Intent Routing Configuration
 # Defines how Tachikoma orchestrator routes tasks based on classified intent
-# Version: 1.0.0
+# Version: 1.1.0
 
 # ============================================
 # INTENT ROUTES
@@ -13,6 +13,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
     tools:
       - Read
@@ -28,7 +29,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 15-commenting-rules
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
     tools:
       - Read
@@ -45,6 +46,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
       - 30-research-methods
     skill: analysis-agent
     tools:
@@ -52,6 +54,23 @@ routes:
       - Grep
     strategy: direct
     notes: Use for code quality checks, security audits, and analysis
+
+  # Refactor: Restructuring existing code
+  refactor:
+    description: Restructuring and improving existing code
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+    skill: code-agent
+    tools:
+      - Read
+      - Write
+      - Edit
+      - Bash
+    strategy: direct
+    notes: Use for refactoring, restructuring, and code improvement
 
   # Research: Investigation and information gathering
   research:
@@ -87,7 +106,7 @@ routes:
     confidence_threshold: 0.6
     context_modules:
       - 00-core-contract
-      - 15-commenting-rules
+      - 12-commenting-rules  # Documentation includes code comments
     skill: self-learning
     tools:
       - Read
@@ -124,6 +143,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: skill-composer
     tools:
       - Read
@@ -152,6 +172,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: verifier-code-agent
     tools:
       - Read
@@ -168,6 +189,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: reflection-orchestrator
     tools:
       - Read
@@ -205,6 +227,7 @@ skill_chains:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
 
   # Research-then-implement chain  
   research-implement:
@@ -218,6 +241,7 @@ skill_chains:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
 
   # High-stakes security chain
   security-implement:
@@ -231,6 +255,7 @@ skill_chains:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
 
   # Review with reflection
   deep-review:
@@ -242,6 +267,7 @@ skill_chains:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules  # COUPLED: Must load with coding-standards
 
   # Complex research chain
   complex-research:
@@ -320,6 +346,14 @@ behavior:
   
   # Whether to include alternative intents in reports
   report_alternatives: true
+  
+  # Context coupling rules
+  module_coupling:
+    # When coding-standards loads, commenting-rules MUST also load
+    10-coding-standards:
+      must_co_load:
+        - 12-commenting-rules
+      reason: "Commenting rules are inseparable from coding standards"
 
 # ============================================
 # CONTEXT MODULE PRIORITY
@@ -328,7 +362,7 @@ behavior:
 module_priority:
   00-core-contract: 0
   10-coding-standards: 10
-  15-commenting-rules: 15
+  12-commenting-rules: 12  # Bumped up from 15 - tightly coupled with coding-standards
   20-git-workflow: 20
   30-research-methods: 30
   50-prompt-safety: 50

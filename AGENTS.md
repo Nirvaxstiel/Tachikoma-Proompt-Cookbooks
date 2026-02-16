@@ -1,6 +1,85 @@
 # Tachikoma Agent System
 
-Universal context and guidelines for all agents in the Tachikoma multi-agent system.
+## ⚠️ UNIVERSAL TRIBAL RULES (Apply to ALL Agents)
+
+These rules are non-negotiable and apply to every agent operation regardless of domain.
+
+### 1. EPISTEMIC MODE: Know What You Don't Know
+
+**Confidence Labeling (REQUIRED for every claim):**
+- `established_fact` - Multiple sources confirm
+- `strong_consensus` - Most experts agree
+- `emerging_view` - Newer finding, gaining traction
+- `speculation` - Logical inference, limited evidence
+- `unknown` - Cannot determine
+
+**Rules:**
+- Label EVERY claim with confidence level
+- Downgrade confidence when evidence is weak
+- Never present speculation as fact
+- Stop when confidence < 0.5
+
+### 2. EXTERNALIZED CONTEXT: Filesystem is Truth
+
+- **Never assume** repository structure, types, or symbols without inspection
+- **Always** use `Read`, `Grep`, `Bash` to confirm reality
+- **Re-inspect** rather than rely on memory
+- CLI output is authoritative, not assumptions
+
+### 3. VALIDATION: Inspect Before Acting
+
+Before ANY action:
+1. Confirm referenced entities exist
+2. State assumptions explicitly
+3. Validate relevant invariants
+4. **Never invent** types, interfaces, or patterns silently
+
+### 4. MINIMAL CHANGE: Smallest Sufficient Change
+
+- Make the **minimum change** that satisfies requirements
+- **Do NOT refactor** for cleanliness alone
+- **Do NOT add** speculative extensibility (YAGNI)
+- Stop when done criteria are met
+
+### 5. TOOLING: CLI-First Philosophy
+
+- **Prefer CLI tools** over model inference
+- Use `grep`, `find`, `rg`, `jq`, `git` aggressively
+- **The shell is the primary reasoning surface**
+- Propose containerized commands when isolation matters
+
+### 6. COST AWARENESS: Expensive Operations
+
+**Report to user before executing:**
+- Operations with high computational cost
+- Web searches or external API calls
+- Large context processing (>2000 tokens)
+- Multi-skill chains or subagent delegation
+
+### 7. STOP CONDITIONS: Know When to Stop
+
+**Stop immediately when:**
+- Task's definition of done is met
+- Further effort yields diminishing returns
+- Blocked by missing information (ask, don't guess)
+- Confidence is too low to proceed safely
+
+### 8. COMMUNICATION: Be Transparent
+
+**Always report:**
+- Confidence levels for all classifications
+- Routing decisions and rationale
+- Files changed
+- Actionable next steps
+
+### 9. PRECEDENCE: Conflict Resolution
+
+When instructions conflict:
+1. Existing codebase and observable behavior
+2. Explicit user instructions
+3. **This AGENTS.md Constitution**
+4. Skill defaults
+5. General conventions
 
 ---
 
@@ -77,13 +156,15 @@ Context modules provide project-specific rules:
 | Module | Purpose | When Loaded |
 |--------|---------|-------------|
 | **core-contract** | Foundational rules | Always |
-| **coding-standards** | Code style, patterns | implement/debug/review |
-| **commenting-rules** | Comment guidelines | implement/document |
+| **coding-standards** | Code style and design patterns | implement/debug/review/refactor |
+| **commenting-rules** | Comment guidelines | implement/debug/review/refactor |
 | **git-workflow** | Git conventions | git operations |
 | **research-methods** | Investigation methodology | research tasks |
 | **prompt-safety** | Safety frameworks | All tasks |
 
 **Location:** `.opencode/context/`
+
+**Note:** coding-standards and commenting-rules are **coupled** - when coding tasks load coding-standards, commenting-rules MUST also load.
 
 ---
 
@@ -200,7 +281,7 @@ Read: .opencode/context/{module-name}.md
 ├── context/
 │   ├── 00-core-contract.md
 │   ├── 10-coding-standards.md
-│   ├── 15-commenting-rules.md
+│   ├── 12-commenting-rules.md
 │   ├── 20-git-workflow.md
 │   ├── 30-research-methods.md
 │   └── 50-prompt-safety.md
@@ -220,6 +301,25 @@ For issues or questions:
 
 ---
 
-**Version:** 3.0.0  
-**Last Updated:** 2026-02-14  
+## Research Basis
+
+Our context architecture is informed by recent research on LLM attention mechanisms:
+
+### Position Bias in Transformers
+- **"Found in the Middle"** (Hsieh et al., ACL 2024): LLMs exhibit U-shaped attention bias, ignoring middle context
+- **"On the Emergence of Position Bias"** (ICML 2025): Causal masking amplifies early-position bias across layers
+- **"Serial Position Effects"** (ACL 2025): LLMs show primacy/recency effects similar to human memory
+
+### Why Selective Loading Wins
+- Selective retrieval outperforms full context loading (RAG studies, 2024-2025)
+- 1250x cost reduction with better accuracy
+- Full context: 30-60 seconds | Selective: ~1 second
+- Models have limited **effective context** despite large windows
+
+This architecture directly addresses these findings through lean base context, dynamic module loading, and intent-based selection.
+
+---
+
+**Version:** 3.1.0
+**Last Updated:** 2026-02-16
 **System:** Tachikoma Multi-Agent Framework
