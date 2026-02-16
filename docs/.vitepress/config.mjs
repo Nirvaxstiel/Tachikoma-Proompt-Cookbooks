@@ -4,17 +4,15 @@ export default defineConfig({
   title: 'Tachikoma',
   description: 'Agent orchestration system for AI-assisted development',
   base: '/Tachikoma-Proompt-Cookbooks/',
-  
+
   themeConfig: {
     // Logo
     logo: '/favicon.ico',
-    
+
     // Navigation
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/getting-started' },
-      { text: 'Deployment', link: '/deployment' },
-      { text: 'Deployment', link: '/deployment' },
       {
         text: 'Explanation',
         items: [
@@ -25,7 +23,7 @@ export default defineConfig({
           { text: 'Composite Intents', link: '/explanation/composite-intents' },
         ]
       },
-      { 
+      {
         text: 'How-To',
         items: [
           { text: 'Add Skill', link: '/how-to/add-skill' },
@@ -41,14 +39,14 @@ export default defineConfig({
           { text: 'Context Modules', link: '/reference/context' },
         ]
       },
-      { 
+      {
         text: 'Guides',
         items: [
           { text: 'Understanding Changes', link: '/guides/understanding-changes' },
           { text: 'Massive Refactor', link: '/guides/massive-refactor' },
         ]
       },
-      { 
+      {
         text: 'Research',
         items: [
           { text: 'Sources & Papers', link: '/research/index' },

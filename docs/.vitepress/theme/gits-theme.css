@@ -1,0 +1,305 @@
+/**
+ * GITS (Ghost In The Shell) Theme for VitePress
+ * Custom color scheme based on Ghost In The Shell theme
+ */
+
+:root {
+  --vp-c-bg: #f5f7fa;
+  --vp-c-bg-alt: #fafbfc;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #fafbfc;
+
+  --vp-c-text-1: #2c3e50;
+  --vp-c-text-2: #627385;
+  --vp-c-text-3: #8896a8;
+
+  --vp-c-brand-1: #00a86b;
+  --vp-c-brand-2: #009660;
+  --vp-c-brand-3: #007755;
+  --vp-c-brand-soft: rgba(0, 168, 107, 0.14);
+
+  --vp-c-default-1: #627385;
+  --vp-c-default-2: #7a8a9a;
+  --vp-c-default-3: #95a4b4;
+  --vp-c-default-soft: rgba(98, 115, 133, 0.14);
+
+  --vp-c-tip-1: #0077b6;
+  --vp-c-tip-2: #006298;
+  --vp-c-tip-3: #004e7a;
+  --vp-c-tip-soft: rgba(0, 119, 182, 0.14);
+
+  --vp-c-note-1: #0077b6;
+  --vp-c-note-2: #006298;
+  --vp-c-note-3: #004e7a;
+  --vp-c-note-soft: rgba(0, 119, 182, 0.14);
+
+  --vp-c-success-1: #00a86b;
+  --vp-c-success-2: #009660;
+  --vp-c-success-3: #007755;
+  --vp-c-success-soft: rgba(0, 168, 107, 0.14);
+
+  --vp-c-warning-1: #f57c00;
+  --vp-c-warning-2: #d66a00;
+  --vp-c-warning-3: #b75900;
+  --vp-c-warning-soft: rgba(245, 124, 0, 0.14);
+
+  --vp-c-danger-1: #d90066;
+  --vp-c-danger-2: #c0005c;
+  --vp-c-danger-3: #a6004d;
+  --vp-c-danger-soft: rgba(217, 0, 102, 0.14);
+
+  --vp-c-important-1: #0077b6;
+  --vp-c-important-2: #006298;
+  --vp-c-important-3: #004e7a;
+  --vp-c-important-soft: rgba(0, 119, 182, 0.14);
+
+  --vp-c-border: #d4dce6;
+  --vp-c-divider: #e8ecf1;
+  --vp-c-gutter: #e8ecf1;
+}
+
+.VPButton.brand,
+.VPNavBarTitle {
+  text-shadow: 0 0 15px rgba(0, 168, 107, 0.2), 0 0 8px rgba(217, 0, 102, 0.15);
+  background: linear-gradient(135deg, #00a86b 0%, #009660 50%, #d90066 100%);
+  background-size: 200% 200%;
+  animation: gits-gradient-light 3s ease infinite;
+}
+
+@keyframes gits-gradient-light {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.VPNavBarTitle,
+a.text-brand {
+  background: linear-gradient(90deg, #00a86b, #d90066, #00a86b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+a:hover {
+  text-shadow: 0 0 10px rgba(217, 0, 102, 0.4), 0 0 5px rgba(0, 168, 107, 0.3);
+}
+
+.vp-code-group {
+  border-left: 3px solid #d90066;
+  border-right: 3px solid #00a86b;
+  box-shadow: 0 0 8px rgba(217, 0, 102, 0.1), inset 0 0 15px rgba(0, 168, 107, 0.02);
+}
+
+.VPSidebarItem .link.active {
+  border-left: 3px solid #d90066;
+  background: linear-gradient(90deg, rgba(217, 0, 102, 0.08) 0%, rgba(0, 168, 107, 0.04) 100%);
+  box-shadow: inset 0 0 15px rgba(217, 0, 102, 0.04);
+}
+
+.VPHome .VPHomeHero {
+  background: linear-gradient(180deg, rgba(0, 168, 107, 0.02) 0%, rgba(217, 0, 102, 0.015) 50%, transparent 70%);
+  position: relative;
+}
+
+.VPHome .VPHomeHero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(217, 0, 102, 0.02) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.VPButton.brand:hover,
+.VPButton.alt:hover {
+  box-shadow: 0 0 10px rgba(217, 0, 102, 0.3), 0 0 4px rgba(0, 168, 107, 0.2);
+}
+
+h1,
+h2,
+h3 {
+  border-bottom: 1px solid rgba(217, 0, 102, 0.15);
+  padding-bottom: 8px;
+}
+
+code:not([class*="language-"]) {
+  background: linear-gradient(135deg, rgba(217, 0, 102, 0.1), rgba(0, 168, 107, 0.08));
+  border: 1px solid rgba(217, 0, 102, 0.2);
+  box-shadow: 0 0 4px rgba(217, 0, 102, 0.15);
+}
+
+.dark {
+  --vp-c-bg: #0a0e14;
+  --vp-c-bg-alt: #0d1117;
+  --vp-c-bg-elv: #13171f;
+  --vp-c-bg-soft: #13171f;
+
+  --vp-c-text-1: #b3e5fc;
+  --vp-c-text-2: #6b8e9e;
+  --vp-c-text-3: #4a5f6d;
+
+  --vp-c-brand-1: #00ff9f;
+  --vp-c-brand-2: #00e68f;
+  --vp-c-brand-3: #00cc80;
+  --vp-c-brand-soft: rgba(0, 255, 159, 0.16);
+
+  --vp-c-default-1: #6b8e9e;
+  --vp-c-default-2: #5a6e7d;
+  --vp-c-default-3: #4a5f6d;
+  --vp-c-default-soft: rgba(107, 142, 158, 0.16);
+
+  --vp-c-tip-1: #26c6da;
+  --vp-c-tip-2: #23b4ca;
+  --vp-c-tip-3: #20a2b8;
+  --vp-c-tip-soft: rgba(38, 198, 218, 0.16);
+
+  --vp-c-note-1: #26c6da;
+  --vp-c-note-2: #23b4ca;
+  --vp-c-note-3: #20a2b8;
+  --vp-c-note-soft: rgba(38, 198, 218, 0.16);
+
+  --vp-c-success-1: #00ff9f;
+  --vp-c-success-2: #00e68f;
+  --vp-c-success-3: #00cc80;
+  --vp-c-success-soft: rgba(0, 255, 159, 0.16);
+
+  --vp-c-warning-1: #ffa726;
+  --vp-c-warning-2: #e69523;
+  --vp-c-warning-3: #cc8320;
+  --vp-c-warning-soft: rgba(255, 167, 38, 0.16);
+
+  --vp-c-danger-1: #ff0066;
+  --vp-c-danger-2: #e6005c;
+  --vp-c-danger-3: #cc0052;
+  --vp-c-danger-soft: rgba(255, 0, 102, 0.16);
+
+  --vp-c-important-1: #26c6da;
+  --vp-c-important-2: #23b4ca;
+  --vp-c-important-3: #20a2b8;
+  --vp-c-important-soft: rgba(38, 198, 218, 0.16);
+
+  --vp-c-border: #1a2332;
+  --vp-c-divider: #1a2332;
+  --vp-c-gutter: #0a0e14;
+}
+
+.dark .VPButton.brand,
+.dark .VPNavBarTitle {
+  text-shadow: 0 0 20px rgba(0, 255, 159, 0.3), 0 0 10px rgba(255, 0, 102, 0.2);
+  background: linear-gradient(135deg, #00ff9f 0%, #00e68f 50%, #ff0066 100%);
+  background-size: 200% 200%;
+  animation: gits-gradient 3s ease infinite;
+}
+
+@keyframes gits-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.dark .VPNavBarTitle,
+.dark a.text-brand {
+  background: linear-gradient(90deg, #00ff9f, #ff0066, #00ff9f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark a:hover {
+  text-shadow: 0 0 15px rgba(255, 0, 102, 0.6), 0 0 8px rgba(0, 255, 159, 0.4);
+}
+
+.dark .vp-code-group {
+  border-left: 3px solid #ff0066;
+  border-right: 3px solid #00ff9f;
+  box-shadow: 0 0 10px rgba(255, 0, 102, 0.15), inset 0 0 20px rgba(0, 255, 159, 0.03);
+}
+
+.dark .VPSidebarItem .link.active {
+  border-left: 3px solid #ff0066;
+  background: linear-gradient(90deg, rgba(255, 0, 102, 0.1) 0%, rgba(0, 255, 159, 0.05) 100%);
+  box-shadow: inset 0 0 20px rgba(255, 0, 102, 0.05);
+}
+
+.dark .VPHome .VPHomeHero {
+  background: linear-gradient(180deg, rgba(0, 255, 159, 0.03) 0%, rgba(255, 0, 102, 0.02) 50%, transparent 70%);
+  position: relative;
+}
+
+.dark .VPHome .VPHomeHero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 0, 102, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.dark .VPButton.brand:hover,
+.dark .VPButton.alt:hover {
+  box-shadow: 0 0 15px rgba(255, 0, 102, 0.4), 0 0 5px rgba(0, 255, 159, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--vp-c-bg-alt);
+  box-shadow: inset 0 0 5px rgba(255, 0, 102, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff0066 0%, #00ff9f 50%, #ff0066 100%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #e6005c 0%, #00e68f 50%, #e6005c 100%);
+  box-shadow: 0 0 10px rgba(255, 0, 102, 0.5);
+}
+
+.dark h1,
+.dark h2,
+.dark h3 {
+  border-bottom: 1px solid rgba(255, 0, 102, 0.2);
+  padding-bottom: 8px;
+}
+
+.dark code:not([class*="language-"]) {
+  background: linear-gradient(135deg, rgba(255, 0, 102, 0.15), rgba(0, 255, 159, 0.1));
+  border: 1px solid rgba(255, 0, 102, 0.3);
+  box-shadow: 0 0 5px rgba(255, 0, 102, 0.2);
+}
+
+:not(.dark) ::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px rgba(217, 0, 102, 0.03);
+}
+
+:not(.dark) ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #d90066 0%, #00a86b 50%, #d90066 100%);
+  border-radius: 4px;
+}
+
+:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #c0005c 0%, #009660 50%, #c0005c 100%);
+  box-shadow: 0 0 8px rgba(217, 0, 102, 0.3);
+}
+
+:not(.dark) h1,
+:not(.dark) h2,
+:not(.dark) h3 {
+  border-bottom: 1px solid rgba(217, 0, 102, 0.15);
+  padding-bottom: 8px;
+}
+
+:not(.dark) code:not([class*="language-"]) {
+  background: linear-gradient(135deg, rgba(217, 0, 102, 0.1), rgba(0, 168, 107, 0.08));
+  border: 1px solid rgba(217, 0, 102, 0.2);
+  box-shadow: 0 0 4px rgba(217, 0, 102, 0.15);
+}
