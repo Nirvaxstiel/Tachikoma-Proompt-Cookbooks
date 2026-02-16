@@ -109,7 +109,7 @@ export default defineConfig({
 
     // Social links
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/your-repo' }
+      { icon: 'github', link: 'https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks' }
     ],
 
     // Footer
@@ -121,7 +121,7 @@ export default defineConfig({
     // Edit link
     editLink: {
       text: 'Edit this page on GitHub',
-      pattern: 'https://github.com/your-repo/edit/main/docs/:path'
+      pattern: 'https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/edit/master/docs/:path'
     },
 
     // Search
