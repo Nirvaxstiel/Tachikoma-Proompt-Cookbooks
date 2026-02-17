@@ -2,31 +2,37 @@
 
 Link multiple skills together for complex workflows.
 
-## What Are Skill Chains?
+## What This Is
 
-Skill chains link multiple skills in sequence. The output of one skill becomes the input for the next. This enables sophisticated workflows beyond what any single skill can accomplish.
+Skill chains link multiple skills in sequence. The output of one skill becomes input for the next. This enables sophisticated workflows beyond what any single skill can accomplish.
 
 Think of it as an assembly line: each skill does its part, passes it along, and the next skill refines it further.
 
-## Why Use Chains?
+## How It Works
 
-**Single Skill Limitations:**
-- One perspective only
-- Fixed approach
-- No verification step
-- Errors propagate silently
+1. **Intent is classified** — Tachikoma figures out what you want
+2. **Route specifies chain** — Intent routes can define skill chains for complex intents
+3. **Skills execute in sequence** — Output of skill A → input for skill B
+4. **Results are synthesized** — Combined result from all skills
 
-**Chain Advantages:**
-- Multiple verification stages
-- Progressive refinement
-- Error catching at each step
-- Higher reliability for critical tasks
+## Why Skill Chains Matter
+
+Without skill chains:
+- **Single perspective** — One skill with its biases
+- **No verification** — Errors propagate silently
+- **Fixed approach** — Can't adapt to task complexity
+
+With skill chains:
+- **Multiple perspectives** — Different skills have different strengths
+- **Progressive refinement** — Each skill improves the output
+- **Error catching** — Verification skills catch what generators missed
+- **Higher reliability** — For critical tasks, this matters
 
 ## Available Skill Chains
 
 ### implement-verify
 
-**Description:** Implementation with verification loop
+**Purpose:** Implementation with verification loop
 
 **Skills:** `code-agent` → `verifier-code-agent` → `formatter`
 
@@ -52,7 +58,7 @@ User: "Implement authentication system"
 
 ### research-implement
 
-**Description:** Research followed by implementation
+**Purpose:** Research followed by implementation
 
 **Skills:** `research-agent` → `context7` → `code-agent` → `formatter`
 
@@ -79,7 +85,7 @@ User: "Add OAuth2 authentication with Google"
 
 ### security-implement
 
-**Description:** Security-critical implementation with maximum verification
+**Purpose:** Security-critical implementation with maximum verification
 
 **Skills:** `context7` → `code-agent` → `verifier-code-agent` → `reflection-orchestrator`
 
@@ -106,7 +112,7 @@ User: "Implement JWT token handling"
 
 ### deep-review
 
-**Description:** In-depth code review with self-verification
+**Purpose:** In-depth code review with self-verification
 
 **Skills:** `analysis-agent` → `reflection-orchestrator`
 
@@ -131,7 +137,7 @@ User: "Review this payment module thoroughly"
 
 ### complex-research
 
-**Description:** Multi-source research with verification
+**Purpose:** Multi-source research with verification
 
 **Skills:** `research-agent` → `context7` → `reflection-orchestrator`
 
@@ -157,7 +163,7 @@ User: "Research best database for our use case"
 
 ## Configuration
 
-Skill chains are defined in `intent-routes.yaml`:
+Skill chains are defined in `.opencode/config/intent-routes.yaml`:
 
 ```yaml
 skill_chains:
@@ -171,6 +177,7 @@ skill_chains:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules
 ```
 
 ## Chain Modes
@@ -222,9 +229,29 @@ Skill chains provide reliability at the cost of latency:
 - ✓ Low risk if imperfect
 - ✓ Budget constraints
 
+## Research Basis
+
+### Modular Beats Monolithic
+
+**Research:** Agentic Proposing (arXiv:2602.03279)
+- 4B proposer model + modular skills = 91.6% accuracy
+- Modular beats monolithic
+
+**Application:** Each skill in Tachikoma is focused and specialized. Chaining them achieves better results than one giant skill.
+
+### Verification Improves Quality
+
+**Research:** Aletheia (arXiv:2602.10177)
+- Generator-Verifier-Reviser: 90% accuracy vs. 67% base
+- Verification catches issues generator missed
+
+**Application:** `verifier-code-agent` and `reflection-orchestrator` skills implement verification patterns.
+
+---
+
 ## Creating Custom Chains
 
-Define custom chains in `intent-routes.yaml`:
+Define custom chains in `.opencode/config/intent-routes.yaml`:
 
 ```yaml
 skill_chains:

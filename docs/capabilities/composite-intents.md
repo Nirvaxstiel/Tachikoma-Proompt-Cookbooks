@@ -2,29 +2,32 @@
 
 Handle complex requests with multiple intents.
 
-## What Are Composite Intents?
+## What This Is
 
 Sometimes your request contains multiple distinct tasks. Composite intents detect these multi-part requests and execute them together in the right order.
 
 This saves you from having to split complex requests into multiple messages.
 
-## Why Composites?
+## How It Works
 
-**Example Request:**
-```
-"Research how to implement JWT authentication, then implement it"
-```
+1. **User makes complex request** — "research X then implement it"
+2. **Intent classifier detects multiple intents** — Finds `research` + `implement`
+3. **Composites decompose** — Breaks into component intents
+4. **Intents execute in order** — Research first, then implement
+5. **Results synthesize** — Combined result from all components
 
-This contains TWO intents:
-1. `research` - Learn about JWT
-2. `implement` - Write the code
+## Why Composite Intents Matter
 
-Without composites, we'd have to:
-- Choose one intent (lose information)
-- Ask you to split the request (friction)
-- Guess which part you want (risky)
+Without composite detection:
+- **Choose one intent** — Lose information (only research OR only implement)
+- **Ask to split** — Friction, interrupts flow
+- **Guess which part** — Risky, might do the wrong thing
 
-With composites, Tachikoma handles both automatically.
+With composite detection:
+- **Automatic decomposition** — Detects multi-part requests
+- **Orderly execution** — Executes components in logical order
+- **Combined context** — Merges context modules from all components
+- **Synthesized results** — One cohesive response
 
 ## Available Composite Intents
 
@@ -32,7 +35,7 @@ With composites, Tachikoma handles both automatically.
 
 **Components:** `research` + `implement`
 
-**Description:** Investigate a topic, then implement the solution
+**Purpose:** Investigate a topic, then implement the solution
 
 **Use When:**
 - You say "research X, then implement"
@@ -53,7 +56,7 @@ User: "Research best React state management library and implement it"
 
 **Components:** `implement` + `debug`
 
-**Description:** Write code and verify it works
+**Purpose:** Write code and verify it works
 
 **Use When:**
 - You say "implement X and test it"
@@ -74,7 +77,7 @@ User: "Implement API endpoint and test it works"
 
 **Components:** `implement` + `debug`
 
-**Description:** Refactor code with verification
+**Purpose:** Refactor code with verification
 
 **Use When:**
 - You say "refactor X and ensure it still works"
@@ -91,21 +94,9 @@ User: "Refactor authentication module and ensure tests pass"
 → Result: Cleaner code with preserved functionality
 ```
 
-## How Composites Work
-
-```
-User Request → Intent Classifier → Detect Multiple Intents?
-    ↓
-YES → Decompose → Execute Intent 1 → Execute Intent 2 → Synthesize
-    ↓
-Return Combined Result
-```
-
-The intent classifier analyzes your request and detects when multiple intents are present. It then breaks down the request, executes each intent with the appropriate skills and context, and synthesizes the results.
-
 ## Configuration
 
-Composite intents are defined in `intent-routes.yaml`:
+Composite intents are defined in `.opencode/config/intent-routes.yaml`:
 
 ```yaml
 composite:
@@ -118,6 +109,18 @@ composite:
         - research
         - implement
       description: Investigate then implement solution
+
+    - name: implement-and-test
+      components:
+        - implement
+        - debug
+      description: Write code and verify it works
+
+    - name: refactor-and-test
+      components:
+        - implement
+        - debug
+      description: Refactor code with verification
 ```
 
 ## Detection
@@ -173,9 +176,23 @@ Composites cost more than single intents but less than separate requests:
 | Composite | 1.5-2x |
 | Two separate requests | 2x |
 
+## Composites vs Skill Chains
+
+| Feature | Composite Intents | Skill Chains |
+|---------|------------------|--------------|
+| **What** | Multiple user intents | Multiple skills for one intent |
+| **Execution** | Intent → Intent | Skill → Skill → Skill |
+| **Use case** | User has multi-part request | One intent needs verification |
+| **Example** | Research + Implement | Generate → Verify → Format |
+
+**When to use what:**
+- You say "do X then Y" → **Composite**
+- Task needs verification steps → **Skill Chain**
+- Both apply → Use both (composite can call skill chain)
+
 ## Creating Custom Composites
 
-Add to `intent-routes.yaml`:
+Add to `.opencode/config/intent-routes.yaml`:
 
 ```yaml
 composite:
@@ -192,24 +209,10 @@ composite:
 
 ## Best Practices
 
-1. **Keep it Simple** — Max 2-3 components per composite
-2. **Logical Order** — Components should make sense in sequence
-3. **Clear Documentation** — Describe what each composite does
-4. **Test Edge Cases** — What happens if component 1 fails?
-
-## Composites vs Skill Chains
-
-| Feature | Composite Intents | Skill Chains |
-|---------|------------------|--------------|
-| What | Multiple user intents | Multiple skills for one intent |
-| Execution | Intent → Intent | Skill → Skill → Skill |
-| Use Case | User has multi-part request | One intent needs verification |
-| Example | Research + Implement | Generate → Verify → Format |
-
-**When to use what:**
-- You say "do X then Y" → **Composite**
-- Task needs verification steps → **Skill Chain**
-- Both apply → Use both (composite can call skill chain)
+1. **Keep it simple** — Max 2-3 components per composite
+2. **Logical order** — Components should make sense in sequence
+3. **Clear documentation** — Describe what each composite does
+4. **Test edge cases** — What happens if component 1 fails?
 
 ## Troubleshooting
 

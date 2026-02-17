@@ -180,7 +180,7 @@ routes:
       - Edit
       - Bash
     strategy: direct
-    notes: "Use for: complex implementations, security-critical code, high-stakes fixes. Based on Aletheia architecture (arXiv:2602.10177) - achieved 90% on IMO-ProofBench"
+    notes: "Use for: complex implementations, security-critical code, high-stakes fixes."
 
   # Reflect: Explicit self-verification and reflection
   reflect:
@@ -196,7 +196,7 @@ routes:
       - Write
       - Edit
     strategy: direct
-    notes: Use for complex reasoning, high-stakes decisions, confidence verification. Based on vibe-proving (arXiv:2602.03837) - includes balanced prompting (proof OR refutation)
+    notes: Use for complex reasoning, high-stakes decisions, and confidence verification.
 
   # Edit-Optimize: Model-aware edit format selection
   edit-optimize:
@@ -210,7 +210,7 @@ routes:
       - Write
       - Edit
     strategy: direct
-    notes: Use when experiencing edit failures, working with multiple models. Based on harness research (Can.ac Feb 2026)
+    notes: Use when experiencing edit failures or working with multiple models.
 
 # ============================================
 # SKILL CHAINS (Multi-Skill Orchestration)

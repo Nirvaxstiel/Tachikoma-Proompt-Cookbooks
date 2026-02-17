@@ -1,20 +1,34 @@
 # Intent Routing
 
-How Tachikoma figures out what you want and routes it to the right place.
+## What & Why
+
+Intent routing is the mechanism that takes your request, figures out what type of task it is, and matches it to the appropriate skill, subagent, or skill chain. This is defined in `.opencode/config/intent-routes.yaml`.
+
+Without intent routing, you get the "do thing" problem (one model has to guess what you mean), wrong tool usage (using a generalist for a specialist task), and lost context (loading everything and losing important info in the middle). With intent routing, you get no guessing (know what you want before doing anything), the right specialist (each skill is optimized for its domain), selective context (only load what's relevant, not everything), and confidence transparency (see how certain Tachikoma is about the classification).
+
+## Example
+
+```
+User: "Implement authentication system"
+→ Tachikoma:
+  1. Classifies: intent=implement, confidence=0.88
+  2. Loads: coding-standards + commenting-rules context
+  3. Routes to: code-agent skill
+  4. Returns: Authentication implemented
+```
 
 ## How It Works
 
-1. User makes request
-2. Intent classifier analyzes
-3. Routes match intent → skill
-4. Context loads
-5. Skill executes
+1. **User makes request** — You say something
+2. **Intent classifier analyzes** — What do you want to do?
+3. **Routes match intent → specialist** — Find the right tool
+4. **Context loads** — Load project rules relevant to this task
+5. **Skill executes** — Do the work
+6. **Result returns** — What happened + confidence
 
-The classifier isn't magic. It uses pattern matching, keyword analysis, and some heuristics to figure out what you're asking for. If it's not sure (low confidence), it asks instead of guessing. Much better than "do the thing" → broken build.
+## Configuration
 
-## Config
-
-Edit `intent-routes.yaml`:
+Routes are defined in `.opencode/config/intent-routes.yaml`:
 
 ```yaml
 routes:
@@ -23,23 +37,28 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
+      - 12-commenting-rules
     confidence_threshold: 0.7
 
   complex:
     subagent: rlm-optimized
+    fallback_subagent: rlm-subcall
     confidence_threshold: 0.5
 ```
 
-## Options
+## Route Options
 
-| Option | What |
-|--------|------|
-| `skill` | Skill to invoke |
-| `subagent` | Subagent to invoke |
-| `context_modules` | Which modules to load |
-| `confidence_threshold` | 0-1, when to auto-route |
+| Option | What It Does | Required? |
+|--------|---------------|-----------|
+| `skill` | Which skill handles this intent | Yes (unless subagent) |
+| `subagent` | Which subagent handles this intent | Yes (unless skill) |
+| `context_modules` | Which context modules to load | Yes |
+| `confidence_threshold` | Minimum confidence to auto-route (0-1) | Yes |
+| `tools` | Specific tools to make available | No |
+| `strategy` | Execution strategy (`direct`, `rlm`) | No |
+| `notes` | Human-readable notes | No |
 
-## Confidence Threshold
+## Confidence Thresholds
 
 Confidence is Tachikoma's certainty about what you want.
 
@@ -49,26 +68,275 @@ Confidence is Tachikoma's certainty about what you want.
 
 **Practical advice:** Keep it at 0.7. High enough to avoid bad guesses, low enough to not be annoying.
 
-## Fallback
+## Confidence-Based Escalation
 
-When confidence is low, Tachikoma doesn't just guess. It asks:
+The `.opencode/config/confidence-routes.yaml` file configures confidence-based behavior:
+
+```yaml
+escalation_rules:
+  low_confidence:
+    threshold: 0.7
+    action: add_verification
+    route_to: verifier-code-agent
+
+  very_low_confidence:
+    threshold: 0.5
+    action: ask_user
+    reason: "Confidence too low for autonomous action"
+```
+
+This adds a second layer of intelligence: if confidence < 0.7, add verification before executing. If confidence < 0.5, ask for clarification.
+
+## Fallback Behavior
+
+When confidence is low or no route matches, Tachikoma doesn't guess:
 
 ```yaml
 fallback:
   low_confidence:
     action: ask
-    message: "I need to clarify your request. What are you trying to do?"
+    message: "I'm not sure how to categorize this request. Could you clarify what you're trying to do?"
+
+  no_match:
+    action: ask
+    message: "I don't recognize this type of task. Please describe your goal in different terms."
+```
+
+Better to ask than to break something.
+
+## Available Intents
+
+### Core Intents
+
+| Intent | Description | Skill |
+|--------|-------------|---------|
+| `debug` | Fix issues | `code-agent` |
+| `implement` | Write code | `code-agent` |
+| `review` | Analyze code | `analysis-agent` |
+| `research` | Find info | `research-agent` |
+| `git` | Version control | `git-commit` |
+| `document` | Documentation tasks | `self-learning` |
+
+### Extended Intents
+
+| Intent | Description | Skill |
+|--------|-------------|---------|
+| `refactor` | Restructure code | `code-agent` |
+| `skill-compose` | Combine skills | `skill-composer` |
+| `optimize` | Context/token optimization | `context-manager` |
+| `verify` | High-reliability generation | `verifier-code-agent` |
+| `reflect` | Self-critique and verification | `reflection-orchestrator` |
+| `edit-optimize` | Model-aware edit format | `model-aware-editor` |
+
+### Special Intents
+
+| Intent | Description | Behavior |
+|--------|-------------|-----------|
+| `complex` | Large context tasks | Delegate to `rlm-optimized` |
+| `unclear` | Ambiguous requests | Ask for clarification |
+
+## Context Coupling
+
+Some context modules are coupled — if you load one, Tachikoma automatically loads the other:
+
+```yaml
+module_coupling:
+  10-coding-standards:
+    must_co_load:
+      - 12-commenting-rules
+    reason: "Commenting rules are inseparable from coding standards"
+```
+
+**Why:** Coding tasks almost always need both. Tachikoma ensures this happens automatically. You don't have to remember to include both.
+
+## Real-World Examples
+
+### Example 1: Adding a Custom Intent
+
+Let's say you have a custom skill for database migrations. Add it to `intent-routes.yaml`:
+
+```yaml
+routes:
+  database-migration:
+    description: Plan and execute database migrations
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 42-workflow-conventions
+    skill: database-migration-manager
+    tools:
+      - Read
+      - Write
+      - Bash
+    strategy: direct
+    notes: Use for DB schema changes, migrations, and rollbacks
+```
+
+Then update the intent classifier to recognize migration requests:
+
+```markdown
+### Database Migration Patterns
+- Keywords: `migrate`, `migration`, `schema change`, `database update`, `sql migration`
+- Indicators: User mentions tables, schemas, SQL changes, or database versions
+```
+
+**Usage:**
+```
+User: "Migrate the user table to add email_verified column"
+→ Intent: database-migration (confidence: 0.89)
+→ Loads: core-contract + workflow-conventions
+→ Routes to: database-migration-manager skill
+→ Result: Migration planned and executed
+```
+
+### Example 2: Skill Chain for Security
+
+For security-critical tasks, use a skill chain:
+
+```yaml
+skill_chains:
+  security-implementation:
+    description: "Implementation with security verification"
+    skills:
+      - context7          # Fetch latest security docs
+      - code-agent        # Implement changes
+      - verifier-code-agent  # Verify implementation
+      - security-audit    # Audit for vulnerabilities
+    mode: sequential
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+      - 12-commenting-rules
+```
+
+Add to routes:
+```yaml
+routes:
+  security-implement:
+    description: Security-critical implementations
+    confidence_threshold: 0.6
+    skill_chain: security-implementation
+```
+
+**Usage:**
+```
+User: "Implement password reset with secure tokens"
+→ Intent: security-implement
+→ Executes skill chain:
+  1. context7: Fetches OWASP password reset guidelines
+  2. code-agent: Implements password reset
+  3. verifier-code-agent: Verifies implementation is correct
+  4. security-audit: Audits for vulnerabilities
+→ Result: Secure implementation with verification
+```
+
+### Example 3: Multi-Perspective Analysis
+
+For thorough code review, use parallel skills:
+
+```yaml
+skill_chains:
+  comprehensive-review:
+    description: "Multi-perspective code review"
+    skills:
+      - analysis-agent    # Code quality analysis
+      - security-audit    # Security review (parallel)
+      - performance-review  # Performance review (parallel)
+    mode: parallel
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+```
+
+Add to routes:
+```yaml
+routes:
+  comprehensive-review:
+    description: Thorough multi-perspective code review
+    confidence_threshold: 0.7
+    skill_chain: comprehensive-review
+```
+
+**Usage:**
+```
+User: "Do a comprehensive review of the payment module"
+→ Intent: comprehensive-review
+→ Executes in parallel:
+  - analysis-agent: Reviews code quality
+  - security-audit: Checks for security issues
+  - performance-review: Analyzes performance
+→ Synthesizes findings from all three
+→ Result: Comprehensive report with all perspectives
+```
+
+### Example 4: Complex Task with Confidence Escalation
+
+For high-stakes tasks, configure confidence-based escalation:
+
+```yaml
+routes:
+  production-deploy:
+    description: Deploy to production
+    confidence_threshold: 0.8  # High threshold for safety
+    context_modules:
+      - 00-core-contract
+      - 42-workflow-conventions
+    skill: deployment-workflow
+    strategy: direct
+
+confidence_routing:
+  production-deploy:
+    action: verify
+    route_to: verifier-code-agent
+    verification_required: true
+    difficulty: critical
+```
+
+**Usage:**
+```
+User: "Deploy version 2.0.0 to production"
+→ Intent: production-deploy
+→ Confidence: 0.75 (below threshold of 0.8)
+→ Action: Escalate to verifier-code-agent first
+→ Verifier: Validates deployment plan
+→ If verified: Proceed with deployment
+→ If not verified: Ask for clarification
+```
+
+### Example 5: Custom Intent with Conditional Context
+
+Load different context modules based on project type:
+
+```yaml
+routes:
+  test-code:
+    description: Run or write tests
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+      - conditional:
+        - if: project_type == "react"
+          load: 43-testing-conventions
+        - if: project_type == "python"
+          load: 43-python-testing-standards
+    skill: code-agent
 ```
 
 ## Pro Tips
 
-1. Always include `core-contract` — it has the universal rules
-2. Keep threshold at 0.7 — balance between safety and speed
-3. Use fallback rules — better to ask than to break something
-4. Test with real queries — classifier improves with patterns
+1. **Always include `core-contract`** — It has universal rules that everything needs
+2. **Keep threshold at 0.7** — Balance between safety and speed
+3. **Use fallback rules** — Better to ask than to break something
+4. **Test with real queries** — Intent classifier improves with pattern matching
+5. **Add to confidence routes** — Configure escalation for your project's needs
+6. **Document your routes** — Use the `notes` field to explain when each route applies
+7. **Use skill chains** — For complex, multi-step workflows
+8. **Leverage parallel skills** — For multi-perspective analysis
 
 ## See Also
 
 - [Context Management](/capabilities/context-management) - What context modules do
 - [Add Intent](/capabilities/customization/add-intent) - How to extend routing
 - [Concepts Overview](/concepts/overview) - Why we classify first
+- [Architecture](/concepts/architecture) - How routing fits into the pipeline

@@ -17,8 +17,8 @@ tools:
 
 # Reflection Orchestrator
 
-> **Key Pattern**: "Vibe-proving" - adversarial self-correction through iterative refinement
-> **Research Basis**: Based on Gemini Deep Think research (Google, arXiv:2602.03837) - collaborative reasoning with balanced prompting
+Implements explicit self-verification and reflection for reliable outputs with adversarial self-correction methodology.
+
 > **Notation**: `@skill-name` means "invoke that skill and wait for completion" - for skill chaining
 
 ## Core Concept

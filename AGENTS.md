@@ -86,24 +86,20 @@ When instructions conflict:
 ## System Architecture
 
 ```
-Tachikoma Multi-Agent System
-├── Primary Agent (tachikoma)
-│   └── Always-on orchestrator, routes all requests
-├── Subagents (specialized workers)
-│   └── rlm-subcall (large context processing)
-└── Skills (capabilities)
-    ├── intent-classifier
-    ├── code-agent
-    ├── analysis-agent
-    ├── research-agent
-    ├── git-commit
-    ├── pr
-    ├── workflow-management
-    └── task-tracking
+.opencode/
+├── agents/                      # Primary agent orchestrator
+│   └── tachikoma.md             # Always-on coordinator, routes all requests
+├── agents/subagents/            # Specialized subagent workers
+│   └── core/                    # Core subagents
+│       └── rlm-subcall.md       # Large context processor (RLM)
+├── skills/                      # Capability modules (loaded on-demand)
+├── context/                     # Project-specific context modules
+├── config/                      # Configuration files
+└── runtime/                     # Runtime support files
 ```
 
 **How it works:**
-1. User speaks to **tachikoma** (primary agent)
+1. User speaks to **tachikoma** (primary agent in `agents/tachikoma.md`)
 2. Tachikoma classifies intent using **intent-classifier** skill
 3. Tachikoma loads appropriate **context modules** and **skills**
 4. Tachikoma routes to subagent if needed (e.g., rlm-subcall)
@@ -265,28 +261,26 @@ Read: .opencode/context/{module-name}.md
 ```
 .opencode/
 ├── agents/
-│   └── tachikoma.md              # Primary orchestrator
-├── agents/subagents/
-│   └── core/
-│       └── rlm-subcall.md        # Large context processor
-├── skills/
-│   ├── intent-classifier/
-│   ├── code-agent/
-│   ├── analysis-agent/
-│   ├── research-agent/
-│   ├── git-commit/
-│   ├── pr/
-│   ├── workflow-management/
-│   └── task-tracking/
-├── context/
+│   ├── tachikoma.md              # Primary orchestrator
+│   └── subagents/
+│       └── core/                 # Core subagents
+│           ├── rlm-subcall.md   # Large context processor (RLM)
+│           └── rlm-optimized.md  # RLM-optimized version
+├── skills/                      # Capability modules (loaded on-demand)
+├── context/                     # Project-specific context modules
 │   ├── 00-core-contract.md
 │   ├── 10-coding-standards.md
 │   ├── 12-commenting-rules.md
 │   ├── 20-git-workflow.md
 │   ├── 30-research-methods.md
-│   └── 50-prompt-safety.md
-└── config/
-    └── intent-routes.yaml
+│   ├── 50-prompt-safety.md
+│   └── navigation.md
+├── config/
+│   └── intent-routes.yaml       # Intent routing configuration
+├── core/                        # Core functionality
+├── instructions/                 # System instructions
+├── runtime/                     # Runtime support
+└── tools/                       # Support tools
 ```
 
 ---

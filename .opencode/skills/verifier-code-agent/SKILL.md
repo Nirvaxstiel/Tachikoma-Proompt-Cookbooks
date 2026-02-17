@@ -17,13 +17,14 @@ tools:
 ---
 
 # Verifier-Enhanced Code Agent
-> **Key Innovation**: Generator-Verifier-Reviser loop for reliable code generation
-> **Research Basis**: Based on Aletheia (Google DeepMind, arXiv:2602.10177) - achieved 90% on IMO-ProofBench
+
+Implements Generator-Verifier-Reviser pattern for reliable code generation with iterative verification and revision.
+
 > **Notation**: `@skill-name` means "invoke that skill and wait for completion" - for skill chaining
 
 ## Core Concept
 
-Single-pass code generation assumes outputs are correct. This skill implements a verification loop that dramatically improves reliability:
+Single-pass code generation assumes outputs are correct. This skill implements a verification loop that significantly improves reliability:
 
 ```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐

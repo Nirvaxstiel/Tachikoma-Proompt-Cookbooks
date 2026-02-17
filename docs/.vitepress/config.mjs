@@ -6,10 +6,8 @@ export default defineConfig({
   base: '/Tachikoma-Proompt-Cookbooks/',
 
   themeConfig: {
-    // Logo
     logo: '/favicon.ico',
 
-    // Navigation
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/getting-started' },
@@ -29,7 +27,10 @@ export default defineConfig({
           { text: 'Skill Chains', link: '/capabilities/skill-chains' },
           { text: 'Composite Intents', link: '/capabilities/composite-intents' },
           { text: 'Subagents', link: '/capabilities/subagents' },
+          { text: 'Skills Specification', link: '/capabilities/skills-specification' },
+          { text: 'Skill Templates', link: '/capabilities/skill-templates' },
           { text: 'Customize', link: '/capabilities/customization/overview' },
+          { text: 'Troubleshooting', link: '/troubleshooting' },
         ]
       },
       {
@@ -40,8 +41,16 @@ export default defineConfig({
       },
     ],
 
-    // Sidebar
     sidebar: {
+      '/': [
+        {
+          text: 'Documentation',
+          items: [
+            { text: 'Getting Started', link: '/getting-started' },
+            { text: 'Troubleshooting', link: '/troubleshooting' },
+          ]
+        }
+      ],
       '/concepts/': [
         {
           text: 'Concepts',
@@ -61,6 +70,8 @@ export default defineConfig({
             { text: 'Skill Chains', link: '/capabilities/skill-chains' },
             { text: 'Composite Intents', link: '/capabilities/composite-intents' },
             { text: 'Subagents', link: '/capabilities/subagents' },
+            { text: 'Skills Specification', link: '/capabilities/skills-specification' },
+            { text: 'Skill Templates', link: '/capabilities/skill-templates' },
           ]
         },
         {
@@ -68,6 +79,7 @@ export default defineConfig({
           items: [
             { text: 'Overview', link: '/capabilities/customization/overview' },
             { text: 'Add Skill', link: '/capabilities/customization/add-skill' },
+            { text: 'Add Agent', link: '/capabilities/customization/add-agent' },
             { text: 'Add Intent', link: '/capabilities/customization/add-intent' },
             { text: 'Context Modules', link: '/capabilities/customization/context-modules' },
           ]
@@ -83,35 +95,29 @@ export default defineConfig({
       ],
     },
 
-    // Social links
     socialLinks: [
       { icon: 'github', link: 'https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks' }
     ],
 
-    // Footer
     footer: {
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2026 Tachikoma'
     },
 
-    // Edit link
     editLink: {
       text: 'Edit this page on GitHub',
       pattern: 'https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/edit/master/docs/:path'
     },
 
-    // Search
     search: {
       provider: 'local'
     },
 
-    // Outline
     outline: {
       level: [2, 3]
     }
   },
 
-  // Markdown configuration
   markdown: {
     lineNumbers: true
   }

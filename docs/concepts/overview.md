@@ -1,91 +1,147 @@
 # What is Tachikoma?
 
-Agent orchestration system — traffic controller for AI coding tasks.
+A smart dispatcher for your AI assistant that routes requests to the right specialist.
 
-Think of it as a dispatcher for your AI assistant. Instead of throwing every request at one general-purpose model, Tachikoma figures out what you need and routes it to the right specialist.
+## What and Why
 
-## At a Glance
+Instead of throwing every request at one general-purpose model, Tachikoma:
+- **Classifies your request** - Figures out what you want to do
+- **Routes to the right specialist** - Uses the best tool for the job
+- **Loads relevant context** - Brings in project-specific rules
 
-1. **Classify** — What are you asking?
-2. **Load** — Load project rules (context)
-3. **Route** — Send to right skill/subagent
-4. **Return** — Result + confidence score
+### Why This Matters
 
-## Core Concepts
+**Without Tachikoma:**
+- One model tries to do everything
+- Works for simple tasks, fails at complex ones
+- Frequent confusion and hallucinations
+- Slower, less reliable
 
-### Intent Classification
+**With Tachikoma:**
+- Specialists handle what they're good at
+- Consistent, high-quality results
+- Fewer mistakes and hallucinations
+- Faster and more efficient
 
-Tachikoma figures out what you want before doing anything. This prevents the "do the thing" problem where AI has no idea what you're actually asking for.
+## Example
 
-**Core Intents:**
-- `debug` — Fix issues
-- `implement` — Write code
-- `review` — Analyze code
-- `research` — Find info
-- `git` — Version control
-- `document` — Docs
-- `complex` — Large context
+```
+User: "Fix authentication bug"
+    ↓
+Tachikoma:
+  1. Classifies: debug intent (confidence: 95%)
+  2. Loads: coding-standards context
+  3. Routes to: code-agent skill
+  4. Returns: Bug fixed
+```
 
-**Extended Intents:**
-- `refactor` — Restructure code
-- `skill-compose` — Dynamic skill composition
-- `optimize` — Context/token optimization
-- `verify` — High-reliability generation
-- `reflect` — Self-critique and verification
-- `edit-optimize` — Model-aware edit format
-- `unclear` — Fallback for ambiguous requests
+## How It Works
 
-**Composite Intents:**
-- `research-and-implement` — Research then build
-- `implement-and-test` — Build then verify
-- `refactor-and-test` — Refactor then verify
+1. **Classify** - What are you asking?
+2. **Load** - Load project rules (context modules)
+3. **Route** - Send to the right skill or subagent
+4. **Return** - Result + confidence score
 
-See [Composite Intents](/capabilities/composite-intents) for multi-step workflows.
+## Core Intents
 
-### Context Modules
+| Intent | What It Means | Example |
+|--------|---------------|---------|
+| `debug` | Fix issues | "fix bug", "why is this broken" |
+| `implement` | Write code | "add feature", "create component" |
+| `review` | Analyze code | "review this code", "check for issues" |
+| `research` | Find info | "find docs", "research API" |
+| `git` | Version control | "commit changes", "create PR" |
+| `document` | Documentation | "update README", "write docs" |
+| `complex` | Large context | "refactor entire codebase", "analyze all files" |
 
-Project rules loaded by priority. This is how Tachikoma knows your project's conventions without you having to explain them every time.
+## Extended Intents
 
-- `core-contract` — Always first
-- `coding-standards` — Code patterns
-- `commenting-rules` — Comments
-- `git-workflow` — Git conventions
-- `research-methods` — Investigation
-- `prompt-safety` — Safety
+| Intent | Description | Skill |
+|--------|-------------|---------|
+| `refactor` | Restructure code | [code-agent](capabilities/skill-execution.md) |
+| `skill-compose` | Combine skills | [skill-composer](capabilities/skill-chains.md) |
+| `optimize` | Context/token optimization | [context-manager](capabilities/context-management.md) |
+| `verify` | High-reliability generation | [verifier-code-agent](capabilities/skill-execution.md) |
+| `reflect` | Self-critique and verification | [reflection-orchestrator](capabilities/skill-execution.md) |
+| `edit-optimize` | Model-aware edit format | [model-aware-editor](capabilities/skill-execution.md) |
 
-See [Context Management](/capabilities/context-management) for details.
+See [Intent Routing](capabilities/intent-routing.md) for complete configuration.
 
-### Skills vs Subagents
+## Composite Intents
 
-| Type | Use When |
-|------|----------|
-| Skill | Simple, fast tasks |
-| Subagent | Complex tasks with large context |
+For multi-step tasks, intents can be combined:
 
-Skills are like specialists — focused, fast, handle routine work. Subagents are like researchers — handle complex, multi-step problems that need more context.
+| Composite | Components | When It Triggers |
+|-----------|-------------|-------------------|
+| `research-and-implement` | research + implement | "research X, then implement" |
+| `implement-and-test` | implement + debug | "implement X and test it" |
+| `refactor-and-test` | implement + debug | "refactor X and ensure tests pass" |
+
+## Context Modules
+
+Project-specific rules that Tachikoma loads automatically:
+
+| Module | Priority | Purpose |
+|--------|----------|---------|
+| `core-contract` | 0 | Universal rules (always first) |
+| `coding-standards` | 10 | Code patterns |
+| `commenting-rules` | 15 | Comments |
+| `git-workflow` | 20 | Git conventions |
+| `research-methods` | 30 | Investigation methodology |
+
+See [Context Modules](capabilities/customization/context-modules.md) to add your own.
+
+## Skills vs Subagents
+
+| Type | Use When | Description |
+|------|----------|-------------|
+| **Skill** | Simple, fast tasks | Routine work, normal context |
+| **Subagent** | Complex tasks | Large context, multi-step reasoning |
+
+See [Subagents](capabilities/subagents.md) for details.
+
+## System Architecture
+
+```
+User Request
+    ↓
+Tachikoma (Primary Agent)
+    ↓
+Intent Classification
+    ↓
+Route → Skill or Subagent
+    ↓
+Load Context Modules
+    ↓
+Execute
+    ↓
+Return Results
+```
+
+See [Architecture](architecture.md) for detailed system design.
 
 ## Research Basis
 
-We're not making this up. These techniques come from real research:
+Tachikoma is built on research-backed patterns from peer-reviewed papers.
 
-| Paper/Source | Finding | Application |
-|--------------|---------|-------------|
-| Tool-Augmented LLMs | +20% accuracy, 40x latency | Cost-aware routing |
-| Agentic Proposing | 91.6% accuracy with modular skills | skill-composer |
-| MIT RLM | 2-5x efficiency on large context | rlm-optimized |
-| Aletheia (arXiv:2602.10177) | 90% on IMO-ProofBench with verification loop | verifier-code-agent |
-| Vibe-Proving (arXiv:2602.03837) | Balanced prompting prevents confirmation bias | reflection-orchestrator |
-| Can.ac Harness Problem | Edit format matters as much as model | model-aware-editor |
+Key findings include:
+- **Position Bias** — Selective context loading addresses U-shaped attention bias
+- **Tool-Augmented LLMs** — Cost-aware routing balances speed and accuracy
+- **Modular Skills** — Specialized components beat monolithic approaches
+- **Verification Loops** — Self-verification improves reliability for complex tasks
 
-See [Research](/research/overview) for details.
-
-## Why Use It
-
-- **Consistency** — Same rules for everyone
-- **Transparency** — See confidence scores
-- **Efficiency** — Match complexity to task
-- **Extensibility** — Drop in new skills/intents
+See [Research Overview](research/overview.md) for complete references and detailed findings.
 
 ## Named After
 
-Tachikoma — curious AI tanks from *Ghost in the Shell*. Always learning.
+**Tachikoma** — curious AI tanks from *Ghost in the Shell*. Always learning.
+
+---
+
+## Next Steps
+
+- [Getting Started](../getting-started.md) - Install and setup
+- [Skill Execution](capabilities/skill-execution.md) - How skills work
+- [Intent Routing](capabilities/intent-routing.md) - How routing works
+- [Skills Specification](capabilities/skills-specification.md) - Agent Skills format
+- [Create Custom Skill](capabilities/customization/add-skill.md) - Add your own capabilities

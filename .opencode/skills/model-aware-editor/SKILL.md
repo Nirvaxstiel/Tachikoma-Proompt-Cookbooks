@@ -14,7 +14,8 @@ tools:
 
 # Model-Aware Editor
 
-> **Key Research**: "The Harness Problem" (Can.ac, Feb 2026) - Edit format can improve LLM coding success by up to **10x**
+Selects optimal edit format per model to maximize success rates.
+
 > **Notation**: `@skill-name` means "invoke that skill and wait for completion" - for skill chaining
 
 ## Core Concept
@@ -127,7 +128,7 @@ processor.apply_hashline_edit('file.py', '22:f1', 'return "Hello, World!"')
 ```
 
 **Impact**: +8-61% edit success rate, -20-61% output tokens
-- Grok: 6.7% → 68.3% (10x improvement)
+- Grok: 6.7% → 68.3% (significant improvement)
 - GLM: 46-50% → 54-64% (+8-14%)
 - Claude/GPT: Already high, minor improvements
 
@@ -269,7 +270,7 @@ result = selector.execute_with_retry(
 ```
 
 **Model Recommendations** (auto-detected):
-- **Grok**: hashline (50% confidence) - 10x improvement
+- **Grok**: hashline (50% confidence) - significant improvement
 - **GLM**: hashline (85% confidence) - +8-14% improvement
 - **Claude**: str_replace (95% confidence) - 92-95% success rate
 - **Gemini**: str_replace_fuzzy (85% confidence) - 93% success rate

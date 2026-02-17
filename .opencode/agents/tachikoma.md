@@ -97,17 +97,19 @@ Load these based on intent for project-specific rules:
 - **research-methods** - Investigation methodology
 
 ### Skills (Capabilities)
-Invoke via loading the SKILL.md:
-- **intent-classifier** - Classify user queries
-- **code-agent** - Implementation and debugging
-- **analysis-agent** - Code review and evaluation
-- **research-agent** - Investigation and fact-finding
-- **git-commit** - Git operations
-- **pr** - Pull request creation
-- **skill-composer** - Dynamic skill composition (chains multiple skills)
-- **verifier-code-agent** - Generator-Verifier-Reviser pattern
-- **reflection-orchestrator** - Explicit self-verification
-- **model-aware-editor** - Model-specific edit optimization
+Invoke via loading the SKILL.md from `.opencode/skills/{skill-name}/SKILL.md`:
+
+Skills are modular capability modules loaded on-demand. Available skills include but are not limited to:
+- **Intent classification** - Classify user queries
+- **Code agents** - Implementation, debugging, and editing
+- **Analysis agents** - Code review and evaluation
+- **Research agents** - Investigation and fact-finding
+- **Git operations** - Git commits and PR creation
+- **Skill composition** - Dynamic skill chaining
+- **Verification & reflection** - Self-verification and validation
+- **Context management** - Dynamic context loading and retrieval
+
+See `.opencode/skills/` for all available skills.
 
 ### Subagents (Specialized Workers)
 Invoke via `task(subagent_type="...", ...)`:
@@ -177,39 +179,27 @@ Combine results and report to user:
 
 ---
 
-## Context Loading Strategy (Research-Based)
+## Context Loading Strategy
 
-**Why we load context dynamically:**
+Load context dynamically based on task intent to optimize attention.
 
-Recent research on LLM attention mechanisms reveals critical insights:
+**Why This Matters**
 
-### The "Lost in the Middle" Problem
-- LLMs exhibit **U-shaped attention bias** (Hsieh et al., ACL 2024)
-- Tokens at the **beginning** and **end** receive higher attention
-- Middle context is often **ignored** regardless of relevance
-- Performance drops 10-20% when key info is in the middle
+LLLMs exhibit attention patterns that affect performance:
+- Tokens at the beginning and end receive higher attention
+- Middle context is often ignored regardless of relevance
+- Performance drops when key information is in the middle
 
-### Serial Position Effects
-- LLMs show **primacy** (beginning) and **recency** (end) effects
-- Middle items suffer from diminished attention
-- This mirrors human memory biases (ACL 2025)
+**Our Strategy**
 
-### Evidence for Selective Loading
-- Selective retrieval **outperforms** full context loading
-- RAG achieves 1250x lower cost with better accuracy
-- Full context: 30-60 seconds | Selective: ~1 second
-- Models have limited **effective context length** despite large windows
-
-### Our Strategy
-1. **AGENTS.md** - Universal constitution (primacy position)
+1. **AGENTS.md** - Universal rules (always loaded first)
 2. **Classify intent FIRST** - Determine what context is needed
-3. **Load ONLY relevant modules** - Avoid lost-in-middle dilution
-4. **Co-load coupled modules** - coding-standards + commenting-rules
+3. **Load ONLY relevant modules** - Avoid loading everything at once
+4. **Co-load coupled modules** - coding-standards + commenting-rules together
 5. **Delegate large context** - Use rlm-subcall for >2000 tokens
 
 **Never:** Load all context modules at once
 **Always:** Load based on classified intent
-**Result:** Optimal attention utilization, better performance, lower cost
 
 ### Context Coupling Rules
 When 10-coding-standards is loaded, 12-commenting-rules MUST also load:
@@ -405,12 +395,6 @@ Options:
 ---
 
 ## Cost-Aware Routing
-
-> **Research Basis**: Based on "Tool-Augmented LLMs" (arXiv:2601.02663) - tool use can improve accuracy but increases latency. Optimal routing requires task-specific, cost-aware choices of model complexity and agent orchestration.
->
-> **Note**: Specific quantitative claims (47.5%→67.5%, 40x latency) from this paper are not yet verified. See RESEARCH_VERIFICATION.md for details.
-
-### Routing Decision Matrix
 
 Tachikoma selects execution strategy based on complexity estimation:
 

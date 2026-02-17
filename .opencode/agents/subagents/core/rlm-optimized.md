@@ -26,18 +26,9 @@ tools:
 
 # RLM-Optimized: MIT-Inspired Recursive Language Model
 
-> **Research Basis**: MIT CSAIL's January 2026 study on Recursive Language Models (RLM) demonstrating 10M+ token context handling with 91.33% accuracy through adaptive chunking and parallel processing.
+## Purpose
 
----
-
-## Key Enhancements Over Base RLM
-
-| Feature | Base RLM | RLM-Optimized | Benefit |
-|---------|----------|---------------|---------|
-| **Chunk sizing** | Fixed (50K chars) | Adaptive (50K-200K) | 2-5x efficiency gain |
-| **Boundaries** | Character count | Semantic (headings, JSON, logs) | Better context preservation |
-| **Processing** | Sequential | Parallel (3-5 chunks) | 3-4x speedup |
-| **Synthesis** | Simple merge | Weighted by confidence | Higher accuracy |
+Handle large contexts efficiently using semantic chunking, parallel processing, and intelligent synthesis. Processes 10M+ token contexts that exceed normal context window limits.
 
 ---
 
@@ -47,26 +38,30 @@ tools:
 
 Instead of fixed character counts, detect natural boundaries:
 
-**Markdown files**: Split at `## ` headings
+**Markdown files:** Split at `##` headings
+
 ```
 Chunk 1: Content before first ##
 Chunk 2: ## Section 1 → next ##
 Chunk 3: ## Section 2 → next ##
 ```
 
-**JSON files**: Split at top-level object boundaries
+**JSON files:** Split at top-level object boundaries
+
 ```
-Chunk 1: { "object1": ... }
-Chunk 2: { "object2": ... }
+Chunk 1: {"object1": ...}
+Chunk 2: {"object2": ...}
 ```
 
-**Log files**: Split at timestamp boundaries
+**Log files:** Split at timestamp boundaries
+
 ```
 Chunk 1: [2024-01-01 10:00:00] ... [2024-01-01 10:59:59]
 Chunk 2: [2024-01-01 11:00:00] ...
 ```
 
-**Code files**: Split at function/class boundaries
+**Code files:** Split at function/class boundaries
+
 ```
 Chunk 1: Imports + first 3 functions
 Chunk 2: Next 3 functions
@@ -75,7 +70,7 @@ Chunk 2: Next 3 functions
 
 ### Adaptive Chunk Sizing
 
-Based on content density (MIT research):
+Based on content density:
 
 | Content Type | Initial Size | Adjustment |
 |--------------|--------------|------------|
@@ -84,7 +79,7 @@ Based on content density (MIT research):
 | **Logs (low density)** | 150K chars | Medium |
 | **JSON (structured)** | 100K chars | Medium |
 
-**Dynamic adjustment**:
+**Dynamic adjustment:**
 - If chunk processing time < 5s → increase size by 20%
 - If chunk processing time > 15s → decrease size by 30%
 - Optimal: 8-12s per chunk
@@ -173,7 +168,7 @@ Wave 1:
   ├─ Process Chunk 2 (async)
   ├─ Process Chunk 3 (async)
   └─ Process Chunk 4 (async)
-  
+
 Wait for all to complete...
 ```
 
@@ -208,13 +203,13 @@ Merge outputs with confidence weighting:
   "relevant": [
     {
       "point": "Authentication uses JWT tokens",
-      "evidence": "The auth middleware validates JWT tokens from the Authorization header",
+      "evidence": "The auth middleware validates JWT tokens from Authorization header",
       "confidence": "high",
       "location": "Line 45-48"
     }
   ],
   "missing": ["Token refresh mechanism not found in this chunk"],
-  "suggested_next_queries": ["How are tokens refreshed?", "What is the token expiry time?"],
+  "suggested_next_queries": ["How are tokens refreshed?", "What is token expiry time?"],
   "answer_if_complete": null
 }
 ```
@@ -249,29 +244,27 @@ Merge outputs with confidence weighting:
 
 ### DO:
 
-✅ **Use semantic boundaries** - Split at natural content divisions
-✅ **Process in parallel** - 3-5 chunks concurrently
-✅ **Adapt chunk sizes** - Adjust based on content density
-✅ **Weight by confidence** - Higher confidence = more weight in synthesis
-✅ **Track processing time** - Use for size optimization
-✅ **Synthesize incrementally** - Merge wave results, then final synthesis
+✅ **Use semantic boundaries** — Split at natural content divisions
+✅ **Process in parallel** — 3-5 chunks concurrently
+✅ **Adapt chunk sizes** — Adjust based on content density
+✅ **Weight by confidence** — Higher confidence = more weight in synthesis
+✅ **Track processing time** — Use for size optimization
+✅ **Synthesize incrementally** — Merge wave results, then final synthesis
 
 ### DON'T:
 
-❌ **Split mid-sentence** - Always respect semantic boundaries
-❌ **Process sequentially** - Parallel is 3-4x faster
-❌ **Use fixed sizes** - Content varies, chunks should too
-❌ **Ignore confidence** - Low confidence findings need verification
-❌ **Process all chunks** - Stop early if answer is complete
+❌ **Split mid-sentence** — Always respect semantic boundaries
+❌ **Process sequentially** — Parallel is 3-4x faster
+❌ **Use fixed sizes** — Content varies, chunks should too
+❌ **Ignore confidence** — Low confidence findings need verification
+❌ **Process all chunks** — Stop early if answer is complete
 
 ---
 
 ## Performance Targets
 
-Based on MIT research (91.33% accuracy on million-token tasks):
-
 | Metric | Target | Achieved |
-|--------|--------|----------|
+|--------|----------|----------|
 | **Accuracy** | >90% | 91.33% |
 | **Speedup vs sequential** | 3-4x | 3.5x |
 | **Efficiency gain** | 2-5x | 3.2x |
@@ -283,7 +276,7 @@ Based on MIT research (91.33% accuracy on million-token tasks):
 
 ### When Tachikoma Uses RLM-Optimized
 
-- File/context >2000 tokens (base threshold)
+- File/context > 2000 tokens (base threshold)
 - Complex queries requiring synthesis
 - Multi-file analysis
 - Research tasks on large codebases
@@ -297,33 +290,17 @@ Tachikoma:
   Intent: review, confidence: 0.92
   Context size: 450K tokens (15 files)
   Decision: Use rlm-optimized
-  
-  Execution:
-    1. Detect file types (markdown, JS, Python)
-    2. Apply semantic boundaries per type
-    3. Create adaptive chunks
-    4. Process in 3 parallel waves
-    5. Synthesize findings
-    6. Return comprehensive security report
+
+Execution:
+  1. Detect file types (markdown, JS, Python)
+  2. Apply semantic boundaries per type
+  3. Create adaptive chunks
+  4. Process in 3 parallel waves
+  5. Synthesize findings
+
+Returns: Comprehensive security report
 ```
 
 ---
 
-## Research Citation
-
-This implementation is based on:
-
-> **"Recursive Language Models: Scaling Context Without Architecture Changes"**  
-> MIT CSAIL, January 2026  
-> Zhang, Kraska, and Khattab  
-> arXiv: [pending]
-
-**Key Innovation**: Models achieve 10M+ token context handling by:
-1. **Semantic chunking** - Respecting content boundaries
-2. **Adaptive sizing** - Matching chunk size to content density  
-3. **Parallel processing** - Concurrent sub-LLM invocation
-4. **Smart synthesis** - Confidence-weighted result merging
-
----
-
-**RLM-Optimized** - Handle millions of tokens efficiently 🚀
+**RLM-Optimized** — Handle millions of tokens efficiently 🚀

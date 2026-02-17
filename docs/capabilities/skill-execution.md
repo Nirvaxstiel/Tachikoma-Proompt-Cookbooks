@@ -2,13 +2,38 @@
 
 How Tachikoma uses skills to get work done.
 
-## What Are Skills?
+## What This Is
 
-Skills are modular capabilities. Small, focused, composable. Think of them as specialized tools rather than one giant "do everything" model.
+Skills are modular capabilities. Small, focused, composable. Each skill is a specialist optimized for a specific type of work.
 
-Skills excel at routine tasks. For complex, large-context work, Tachikoma uses subagents (see [Subagents](/capabilities/subagents)).
+Think of skills as specialist tools rather than one giant "do everything" model.
 
-## Core Skills
+## How It Works
+
+1. **Intent is classified** — Tachikoma figures out what you want
+2. **Route specifies the skill** — Intent routes define which skill handles each intent
+3. **Skill's SKILL.md loads** — Instructions, boundaries, and tools for that skill
+4. **Skill executes** — Does the work following its instructions
+5. **Result returns** — What happened
+
+## Why Skills Matter
+
+Without skills:
+- **Generalist limitations** — One model tries to do everything, good at nothing
+- **No boundaries** — Model might do things you didn't ask for
+- **Inconsistent behavior** — Each session might work differently
+
+With skills:
+- **Specialized excellence** — Each skill is optimized for its domain
+- **Clear boundaries** — SKILL.md defines what the skill should and shouldn't do
+- **Consistent behavior** — Same rules every time
+- **Composable** — Skills can be chained for complex tasks
+
+## Available Skills
+
+### Core Skills
+
+Handle the bulk of everyday work.
 
 | Skill | Use When | Description |
 |-------|----------|-------------|
@@ -16,9 +41,9 @@ Skills excel at routine tasks. For complex, large-context work, Tachikoma uses s
 | `analysis-agent` | Review code | Code analysis and quality assessment |
 | `research-agent` | Find info | Investigation and information gathering |
 
-These handle the bulk of everyday work.
+### Utility Skills
 
-## Utility Skills
+Helper skills that support core skills.
 
 | Skill | What | Description |
 |-------|------|-------------|
@@ -29,26 +54,25 @@ These handle the bulk of everyday work.
 | `context7` | Live docs | Live documentation via Context7 API |
 | `formatter` | Code cleanup | Code quality cleanup and formatting |
 
-Helper skills that support the core skills.
+### Workflow Skills
 
-## Workflow Skills
+Skills that manage processes rather than performing tasks directly.
 
 | Skill | What | Description |
 |-------|------|-------------|
 | `workflow-management` | 7-phase workflow | Production-grade development workflow |
 | `task-tracking` | Task management | Progressive tracking system |
-| `rlm` | Recursive Language Model | Large context processing via adaptive chunking |
 | `self-learning` | Self-improvement | Pattern recognition and system improvement |
 
-Skills that manage processes rather than performing tasks directly.
+### Advanced Skills
 
-## Advanced Skills
+For high-stakes or complex work.
 
-### verifier-code-agent
+#### verifier-code-agent
 
-**Purpose:** High-reliability code generation with verification loops
+**Purpose:** High-reliability code generation with verification loop
 
-**Based on:** Aletheia (Google DeepMind, arXiv:2602.10177) - achieved 90% on IMO-ProofBench
+**Based on:** Aletheia (Google DeepMind, arXiv:2602.10177) — achieved 90% on IMO-ProofBench
 
 **Pattern:**
 ```
@@ -61,20 +85,20 @@ Problem → Generator → Candidate → Verifier → [Pass | Revise | Restart]
 - High-stakes fixes
 - When correctness is paramount
 
-**Maximum Iterations:** 3 (then escalate)
+**Maximum iterations:** 3 (then escalate)
 
-### reflection-orchestrator
+#### reflection-orchestrator
 
 **Purpose:** Explicit self-verification through adversarial critique
 
-**Based on:** Vibe-Proving (Google, arXiv:2602.03837) - balanced prompting prevents confirmation bias
+**Based on:** Vibe-Proving (Google, arXiv:2602.03837) — balanced prompting prevents confirmation bias
 
 **Pattern:**
 ```
 1. Initial Output → 2. Self-Critique → 3. Revision → 4. Verification
 ```
 
-**Key Techniques:**
+**Key techniques:**
 - Balanced prompting (proof OR refutation)
 - Adversarial questioning
 - Explicit uncertainty labeling
@@ -84,18 +108,18 @@ Problem → Generator → Candidate → Verifier → [Pass | Revise | Restart]
 - High-stakes decisions
 - After verifier-code-agent completes
 
-### model-aware-editor
+#### model-aware-editor
 
 **Purpose:** Model-specific edit format optimization
 
-**Based on:** The Harness Problem (Can.ac, Feb 2026) - edit format can improve success 10x
+**Based on:** The Harness Problem (Can.ac, Feb 2026) — edit format can improve success 10x
 
-**Supported Formats:**
-- `str_replace` (Claude, Gemini) - exact match
-- `apply_patch` (GPT) - OpenAI-style diff
-- `hashline` (Universal) - content-hash anchoring
+**Supported formats:**
+- `str_replace` (Claude, Gemini) — exact match
+- `apply_patch` (GPT) — OpenAI-style diff
+- `hashline` (Universal) — content-hash anchoring
 
-**Performance Gains:**
+**Performance gains:**
 - Grok: 6.7% → 68.3% (10x improvement)
 - Gemini: +8% over baseline
 - All models: Reduced retry loops
@@ -105,21 +129,9 @@ Problem → Generator → Candidate → Verifier → [Pass | Revise | Restart]
 - High edit failure rates
 - Critical changes requiring reliability
 
-### rlm
+### Specialized Skills
 
-**Purpose:** Recursive Language Model for large context
-
-**Based on:** MIT RLM architecture (arXiv:2512.24601)
-
-**Features:**
-- Adaptive chunking
-- Context as environment
-- 2-5x efficiency gains
-- Handles 10M+ tokens
-
-**Use Case:** Via `complex` intent or skill chains
-
-## Specialized Skills
+Domain-specific skills for specialized tasks.
 
 | Skill | What | Description |
 |-------|------|-------------|
@@ -127,7 +139,13 @@ Problem → Generator → Candidate → Verifier → [Pass | Revise | Restart]
 | `prompt-engineer` | Safety/bias | Prompt engineering best practices |
 | `security-audit` | OWASP scanning | Security audit workflow |
 
-Domain-specific skills for specialized tasks.
+### Subagent Skills
+
+Skills that handle subagent coordination.
+
+| Skill | What | Description |
+|-------|------|-------------|
+| `rlm` | RLM coordination | Recursive Language Model orchestration |
 
 ## Skill Structure
 
@@ -137,9 +155,9 @@ skills/skill-name/
 └── router.sh     # CLI (optional)
 ```
 
-Each skill has a `SKILL.md` that defines its behavior.
-
 ## SKILL.md Format
+
+Each skill has a SKILL.md that defines its behavior:
 
 ```yaml
 ---

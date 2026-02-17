@@ -244,7 +244,7 @@ When AI assists in research, classify the contribution level:
 | **Level 0** | Autonomous (Auxiliary) | AI performs specific sub-tasks | Data processing, literature search |
 | **Level 1** | Autonomous (Contributory) | AI makes independent contributions | Solving intermediate lemmas, generating examples |
 | **Level 2** | Human + AI Collaboration | Human and AI work together | "Vibe-proving" cycles, iterative refinement |
-| **Level 3** | Major Advance | AI enables breakthrough | Novel methodology enabled by AI |
+ | **Level 3** | Major Advance | Significant contribution | Novel methodology |
 | **Level 4** | Landmark Breakthrough | AI as primary driver | AI-generated proof of open problem |
 
 ### Research Methodologies from Gemini Deep Think
