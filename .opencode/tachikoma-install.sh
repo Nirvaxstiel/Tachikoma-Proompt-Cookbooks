@@ -18,7 +18,7 @@ REPO_NAME="Tachikoma-Proompt-Cookbooks"
 # Ghost in the Shell theme colors
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'
-MAGENTA='\033[38;5;197m'   # GITS crimson/pink
+MAGENTA='\033[38;5;197m'
 ORANGE='\033[0;33m'
 RED='\033[0;31m'
 WHITE='\033[1;37m'
@@ -80,6 +80,50 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Check for Python availability
+check_python() {
+    if command -v python3 &> /dev/null; then
+        echo "python3"
+    elif command -v python &> /dev/null; then
+        echo "python"
+    else
+        echo ""
+    fi
+}
+
+# Ask user about pre-packaged Python
+ask_use_packaged_python() {
+    echo ""
+    log_highlight "━━━ PYTHON DETECTION ━━━"
+    echo ""
+    log_warn "No Python installation detected on your system."
+    echo ""
+    echo -e "A pre-packaged Python 3.10 is included in ${MAGENTA}assets/Python310/${NC}"
+    echo ""
+    echo -e "This allows Tachikoma to work out of the box without requiring"
+    echo -e "you to install Python separately."
+    echo ""
+    echo -e "${WHITE}Would you like to use the pre-packaged Python?${NC}"
+    echo ""
+    echo -e "  ${GREEN}Y${NC} / ${GREEN}y${NC}  - Yes, use pre-packaged Python (recommended)"
+    echo -e "  ${RED}n${NC} / ${RED}N${NC}  - No, I'll handle Python myself"
+    echo ""
+    echo -en "${CYAN}Choice${NC} [Y/n]: "
+    read -r choice
+
+    case "$choice" in
+        [yY][eE][sS]|[yY])
+            echo "yes"
+            ;;
+        [nN][oO]|[nN])
+            echo "no"
+            ;;
+        *)
+            echo "yes"  # Default to yes
+            ;;
+    esac
+}
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -125,7 +169,6 @@ if [ "$CURRENT_DIR_NAME" = ".opencode" ]; then
     cd ..
 elif [[ "$CURRENT_DIR" == */.opencode/* ]] || [[ "$CURRENT_DIR" == */.opencode ]]; then
     # We're somewhere inside a .opencode directory structure
-    # Navigate to the parent of the .opencode folder
     log_info "Detected execution from within .opencode structure, moving to project root"
     # Find the parent of .opencode by removing the .opencode part and everything after
     while [ "$CURRENT_DIR_NAME" != ".opencode" ] && [ "$CURRENT_DIR" != "/" ]; do
@@ -147,7 +190,6 @@ if [ "$SCRIPT_PATH" != "bash" ] && [ -f "$SCRIPT_PATH" ]; then
     SCRIPT_DIR_NAME="$(basename "$SCRIPT_DIR")"
 
     if [ "$SCRIPT_DIR_NAME" = ".opencode" ]; then
-        # Script is in a .opencode directory, navigate to its parent
         SCRIPT_PARENT="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
         if [ -d "$SCRIPT_PARENT" ]; then
             log_info "Detected script located in .opencode/, using parent as install target"
@@ -156,34 +198,45 @@ if [ "$SCRIPT_PATH" != "bash" ] && [ -f "$SCRIPT_PATH" ]; then
     fi
 fi
 
-# Guard: Validate we're not about to create nested .opencode/.opencode
 if [ -d ".opencode/.opencode" ]; then
     log_warn "Detected nested .opencode/.opencode - cleaning up"
     rm -rf ".opencode/.opencode"
 fi
 
-# Determine archive URL
 if [ "$USE_GITLAB" = true ]; then
     ARCHIVE_URL="https://gitlab.com/${REPO_OWNER}/${REPO_NAME}/-/archive/${BRANCH}/${REPO_NAME}-${BRANCH}.tar.gz"
     SOURCE_NAME="GitLab"
 else
-    # GitHub format: works for both branches and tags
     ARCHIVE_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/${BRANCH}.tar.gz"
     SOURCE_NAME="GitHub"
 fi
 
-# Save the actual target directory (after potential cd)
 INSTALL_DIR="$(pwd)"
+
+# Check for Python and handle pre-packaged option
+USE_PACKAGED_PYTHON=""
+DETECTED_PYTHON=$(check_python)
+
+if [ -z "$DETECTED_PYTHON" ]; then
+    # No Python detected, ask user
+    if [ -d "assets/Python310" ] && [ -f "assets/Python310/python.exe" ]; then
+        USE_PACKAGED_PYTHON=$(ask_use_packaged_python)
+    else
+        log_warn "Pre-packaged Python not found in assets/Python310/"
+        USE_PACKAGED_PYTHON="no"
+    fi
+else
+    log_info "Found Python: ${GREEN}$DETECTED_PYTHON${NC}"
+    USE_PACKAGED_PYTHON="no"
+fi
 
 log_info "Installing from ${SOURCE_NAME} (${BRANCH})"
 log_info "Target: ${INSTALL_DIR}"
 
-# Check if running in a git repository
 if [ ! -d ".git" ]; then
     log_warn "Not in a git repo"
 fi
 
-# Create temp directory
 TEMP_DIR=$(mktemp -d)
 trap "rm -rf $TEMP_DIR" EXIT
 
@@ -191,13 +244,11 @@ cd "$TEMP_DIR"
 
 log_info "Acquiring data..."
 
-# Download the archive
 if ! curl -sSL "$ARCHIVE_URL" -o "repo.tar.gz"; then
     log_error "Failed to acquire data. Branch '${BRANCH}' may not exist."
     exit 1
 fi
 
-# Check if the downloaded file is actually a tarball (not a 404 page)
 if ! tar -tzf "repo.tar.gz" > /dev/null 2>&1; then
     log_error "Failed to extract. Branch '${BRANCH}' may not exist."
     exit 1
@@ -205,10 +256,8 @@ fi
 
 log_info "Extracting..."
 
-# Extract tarball
 tar -xzf "repo.tar.gz"
 
-# Find the extracted directory
 EXTRACTED_DIR=$(ls -d */ 2>/dev/null | head -1)
 
 if [ -z "$EXTRACTED_DIR" ]; then
@@ -221,7 +270,6 @@ cd "$EXTRACTED_DIR"
 echo ""
 log_highlight "━━━ TACHIKOMA ━━━"
 
-# Copy AGENTS.md
 if [ -f "AGENTS.md" ]; then
     cp "AGENTS.md" "${INSTALL_DIR}/AGENTS.md"
     log_success "AGENTS.md"
@@ -229,24 +277,39 @@ else
     log_warn "AGENTS.md not found"
 fi
 
-# Copy .opencode directory
 if [ -d ".opencode" ]; then
-    # Remove existing .opencode first (Windows-safe: move to temp, then remove)
     if [ -d "${INSTALL_DIR}/.opencode" ]; then
-        # Move to temp location first to avoid "device busy" on Windows
         OLD_OPENCODE_BACKUP="${TEMP_DIR}/.opencode.old.$$"
         mv "${INSTALL_DIR}/.opencode" "$OLD_OPENCODE_BACKUP" 2>/dev/null || true
         rm -rf "$OLD_OPENCODE_BACKUP" 2>/dev/null || true
     fi
 
-    # Copy .opencode
     cp -r ".opencode" "${INSTALL_DIR}/"
 
-    # Remove files we don't need
-    rm -rf "${INSTALL_DIR}/.opencode/node_modules" 2>/dev/null || true
-    rm -f "${INSTALL_DIR}/.opencode/package.json" 2>/dev/null || true
-    rm -f "${INSTALL_DIR}/.opencode/bun.lock" 2>/dev/null || true
-    rm -f "${INSTALL_DIR}/.opencode/.gitignore" 2>/dev/null || true
+    # Always remove unnecessary files (plus conditional items based on Python choice)
+    CLEANUP_PATHS=(
+        "${INSTALL_DIR}/.opencode/node_modules"
+        "${INSTALL_DIR}/.opencode/package.json"
+        "${INSTALL_DIR}/.opencode/bun.lock"
+        "${INSTALL_DIR}/.opencode/.gitignore"
+    )
+
+    # Add assets/plugins if user rejected packaged Python
+    if [ "$USE_PACKAGED_PYTHON" = "no" ]; then
+        CLEANUP_PATHS+=(
+            "${INSTALL_DIR}/.opencode/assets"
+            "${INSTALL_DIR}/.opencode/plugins"
+        )
+        log_info "Skipped assets/ and plugins/ (not using packaged Python)"
+    else
+        log_success ".opencode/assets/"
+        log_success ".opencode/plugins/"
+    fi
+
+    # Clean up all paths at once (errors ignored with || true)
+    for path in "${CLEANUP_PATHS[@]}"; do
+        rm -rf "$path" 2>/dev/null || true
+    done
 
     log_success ".opencode/"
 else
@@ -259,6 +322,10 @@ if [ ! -f "${INSTALL_DIR}/.opencode/.gitignore" ]; then
 # Dependencies
 node_modules/
 bun.lock
+
+# Packaged runtime (Python, Node, etc.)
+assets/
+plugins/
 
 # IDE
 .vscode/
@@ -312,6 +379,19 @@ echo -e "${MAGENTA}┏━━━━━━━━━━━━━━━━━━━�
 echo -e "${MAGENTA}┃${NC}   ${WHITE}Installation complete${NC}          ${MAGENTA}┃${NC}"
 echo -e "${MAGENTA}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${NC}"
 echo ""
+
+if [ "$USE_PACKAGED_PYTHON" = "no" ] && [ -z "$DETECTED_PYTHON" ]; then
+    echo -e "${ORANGE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${ORANGE}┃${NC}  ${WHITE}Python setup required${NC}                    ${ORANGE}┃${NC}"
+    echo -e "${ORANGE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo -e "You chose not to use the pre-packaged Python."
+    echo -e "Make sure Python is installed and available in your PATH."
+    echo ""
+    echo -e "${DIM}Verify with:${NC} ${CYAN}python --version${NC}"
+    echo ""
+fi
+
 echo -e "Run ${MAGENTA}opencode${NC} to start"
 echo ""
 echo -e "${WHITE}To update:${NC}"
