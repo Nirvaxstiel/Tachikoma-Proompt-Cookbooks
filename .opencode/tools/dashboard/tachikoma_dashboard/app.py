@@ -1,19 +1,19 @@
 """Main TUI application for the Tachikoma dashboard."""
 
-from textual.app import App, ComposeResult
-from textual.containers import Vertical
-from textual.widgets import Header, Footer, Static
 from textual import work
+from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.containers import Vertical
+from textual.widgets import Footer, Header, Static
 
 from . import db
-from .models import Session, SessionTree, build_session_tree, SessionStatus
+from .models import Session, SessionStatus, SessionTree, build_session_tree
 from .widgets import (
-    render_session_tree,
-    render_details,
-    render_skills,
     render_aggregation,
+    render_details,
     render_empty_state,
+    render_session_tree,
+    render_skills,
     render_todos,
 )
 
@@ -180,12 +180,12 @@ class DashboardApp(App):
     def update_todos(self) -> None:
         """Update the todos panel."""
         todos_widget = self.query_one("#todos", Static)
-        
+
         if self.selected_session_id:
             todos = db.get_todos(self.selected_session_id)
         else:
             todos = []
-        
+
         todos_widget.update(render_todos(todos))
 
     def update_aggregation(self) -> None:
@@ -220,13 +220,10 @@ class DashboardApp(App):
     def action_toggle_filter(self) -> None:
         """Toggle filter by current working directory."""
         import os
-        
+
         if self.cwd_filter:
-            # Clear filter
             self.cwd_filter = None
         else:
-            # Set filter to current working directory
             self.cwd_filter = os.getcwd()
-        
-        # Refresh sessions with new filter
+
         self.refresh_sessions()

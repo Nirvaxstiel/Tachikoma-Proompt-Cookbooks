@@ -1,159 +1,152 @@
-"""Database queries for OpenCode session data."""
+"""
+Database queries for OpenCode sessions.
+"""
 
-import sqlite3
 import os
 from pathlib import Path
 from typing import Optional
 
-from .models import Session, Todo, SessionStats
+from .models import Session, SessionStats, Todo
+from .query import MESSAGE, SESSION, TODO, QueryBuilder, json_extract
 
 DB_PATH = ".local/share/opencode/opencode.db"
 
 
-def get_db_path() -> Path:
-    """Get the path to the OpenCode database."""
+def _db_path() -> Path:
     return Path(os.path.expanduser("~")) / DB_PATH
 
 
+def _builder() -> QueryBuilder | None:
+    if not _db_path().exists():
+        return None
+    return QueryBuilder(str(_db_path()))
+
+
 def get_sessions(cwd: Optional[str] = None) -> list[Session]:
-    """Get sessions from OpenCode database."""
-    db_path = get_db_path()
-    
-    if not db_path.exists():
+    b = _builder()
+    if b is None:
         return []
 
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-
-    query = """
-        SELECT id, parent_id, project_id, title, directory, time_created, time_updated 
-        FROM session WHERE 1=1
-    """
-    params: list[str] = []
-
-    if cwd:
-        query += " AND directory = ?"
-        params.append(cwd)
-
-    query += " ORDER BY time_updated DESC"
-
-    cursor = conn.execute(query, params)
-    rows = cursor.fetchall()
-    conn.close()
+    where = {"directory": cwd} if cwd else None
+    rows = b.select(SESSION, order_by="-time_updated", where=where)
 
     return [
         Session(
-            id=row["id"],
-            parent_id=row["parent_id"],
-            project_id=row["project_id"],
-            title=row["title"],
-            directory=row["directory"],
-            time_created=row["time_created"],
-            time_updated=row["time_updated"],
+            id=r["id"],
+            parent_id=r["parent_id"],
+            project_id=r["project_id"],
+            title=r["title"],
+            directory=r["directory"],
+            time_created=r["time_created"],
+            time_updated=r["time_updated"],
         )
-        for row in rows
+        for r in rows
     ]
 
 
+def get_session_by_id(session_id: str) -> Optional[Session]:
+    b = _builder()
+    if b is None:
+        return None
+
+    rows = b.select(SESSION, where={"id": session_id}, limit=1)
+    if not rows:
+        return None
+
+    r = rows[0]
+    return Session(
+        id=r["id"],
+        parent_id=r["parent_id"],
+        project_id=r["project_id"],
+        title=r["title"],
+        directory=r["directory"],
+        time_created=r["time_created"],
+        time_updated=r["time_updated"],
+    )
+
+
+def get_session_message_count(session_id: str) -> int:
+    b = _builder()
+    if b is None:
+        return 0
+    return b.count(MESSAGE, {"session_id": session_id})
+
+
+def get_session_tool_call_count(session_id: str) -> int:
+    """Count assistant messages (contain tool calls)."""
+    import sqlite3
+
+    b = _builder()
+    if b is None:
+        return 0
+
+    with b._conn() as conn:
+        r = conn.execute(
+            """
+            SELECT COUNT(*) FROM message
+            WHERE session_id = ?
+            AND json_valid(data) = 1
+            AND json_extract(data, '$.role') = 'assistant'
+        """,
+            (session_id,),
+        ).fetchone()
+        return r[0] if r else 0
+
+
+def get_last_user_message(session_id: str) -> Optional[str]:
+    b = _builder()
+    if b is None:
+        return None
+
+    with b._conn() as conn:
+        r = conn.execute(
+            """
+            SELECT data FROM message
+            WHERE session_id = ?
+            AND json_valid(data) = 1
+            AND json_extract(data, '$.role') = 'user'
+            ORDER BY time_created DESC
+            LIMIT 1
+        """,
+            (session_id,),
+        ).fetchone()
+
+        if r:
+            return json_extract(r, "$.format.body")
+        return None
+
+
 def get_session_stats(session_id: str) -> SessionStats:
-    """Get stats for a specific session (message count, tool calls, last user message)."""
-    db_path = get_db_path()
-    
-    if not db_path.exists():
-        return SessionStats(message_count=0, tool_call_count=0, last_user_message=None)
-
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-
-    # Get message count
-    cursor = conn.execute(
-        "SELECT COUNT(*) FROM message WHERE session_id = ?",
-        (session_id,)
-    )
-    message_count = cursor.fetchone()[0]
-
-    # Get tool call count - messages with assistant role that have tool calls in their JSON data
-    # The data column contains JSON with parts array - tool calls are parts with type "tool"
-    # For simplicity, we count assistant messages (they typically have tool calls)
-    cursor = conn.execute(
-        """SELECT COUNT(*) FROM message 
-           WHERE session_id = ? AND json_valid(data) = 1 
-           AND json_extract(data, '$.role') = 'assistant'""",
-        (session_id,)
-    )
-    tool_call_count = cursor.fetchone()[0]
-
-    # Get last user message - look for role = 'user' in the JSON data
-    cursor = conn.execute(
-        """SELECT json_extract(data, '$.format.body') as text 
-           FROM message 
-           WHERE session_id = ? AND json_valid(data) = 1 
-           AND json_extract(data, '$.role') = 'user'
-           ORDER BY time_created DESC LIMIT 1""",
-        (session_id,)
-    )
-    row = cursor.fetchone()
-    last_user_message = row["text"] if row and row["text"] else None
-
-    conn.close()
-
     return SessionStats(
-        message_count=message_count,
-        tool_call_count=tool_call_count,
-        last_user_message=last_user_message
+        message_count=get_session_message_count(session_id),
+        tool_call_count=get_session_tool_call_count(session_id),
+        last_user_message=get_last_user_message(session_id),
     )
 
 
 def get_todos(session_id: str) -> list[Todo]:
-    """Get todos for a specific session."""
-    db_path = get_db_path()
-
-    if not db_path.exists():
+    b = _builder()
+    if b is None:
         return []
 
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-
-    cursor = conn.execute(
-        "SELECT session_id, content, status, priority, position, time_created "
-        "FROM todo WHERE session_id = ?",
-        (session_id,),
-    )
-
-    rows = cursor.fetchall()
-    conn.close()
+    rows = b.select(TODO, where={"session_id": session_id}, order_by="position")
 
     return [
         Todo(
-            session_id=row["session_id"],
-            content=row["content"],
-            status=row["status"],
-            priority=row["priority"],
-            position=row["position"],
-            time_created=row["time_created"],
+            session_id=r["session_id"],
+            content=r["content"],
+            status=r["status"],
+            priority=r["priority"],
+            position=r["position"],
+            time_created=r["time_created"],
         )
-        for row in rows
+        for r in rows
     ]
 
 
 def get_session_count(cwd: Optional[str] = None) -> int:
-    """Get total session count."""
-    db_path = get_db_path()
-
-    if not db_path.exists():
+    b = _builder()
+    if b is None:
         return 0
-
-    conn = sqlite3.connect(db_path)
-
-    query = "SELECT COUNT(*) FROM session"
-    params: list[str] = []
-
-    if cwd:
-        query += " WHERE directory = ?"
-        params.append(cwd)
-
-    cursor = conn.execute(query, params)
-    count = cursor.fetchone()[0]
-    conn.close()
-
-    return count
+    where = {"directory": cwd} if cwd else None
+    return b.count(SESSION, where)

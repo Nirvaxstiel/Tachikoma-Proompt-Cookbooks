@@ -1,9 +1,9 @@
 """Widgets for the Tachikoma dashboard."""
 
-from rich.text import Text
 from rich.style import Style
+from rich.text import Text
 
-from .models import SessionTree, SessionStatus, Session, SessionStats, Todo
+from .models import Session, SessionStats, SessionStatus, SessionTree, Todo
 
 # GITS Theme colors
 GITS_BG = "#0a0e14"
@@ -50,17 +50,22 @@ def render_session_tree(trees: list[SessionTree], selected_id: str | None = None
     # Header
     header = Text()
     header.append(" Status   ", style=Style(bold=True, color=GITS_CYAN))
-    header.append("Session                                        ", style=Style(bold=True, color=GITS_CYAN))
+    header.append(
+        "Session                                        ", style=Style(bold=True, color=GITS_CYAN)
+    )
     header.append("Directory", style=Style(bold=True, color=GITS_CYAN))
-    
+
     lines = [header]
     lines.append(Text("-" * 80, style=Style(color=GITS_MUTED)))
 
     def add_rows(tree: SessionTree, depth: int = 0) -> None:
-        indent = "  " * depth
         icon_char, icon_color = get_status_icon(tree.status)
         title = tree.session.title[:40] if len(tree.session.title) > 40 else tree.session.title
-        directory = tree.session.directory[:30] if len(tree.session.directory) > 30 else tree.session.directory
+        directory = (
+            tree.session.directory[:30]
+            if len(tree.session.directory) > 30
+            else tree.session.directory
+        )
 
         row = Text()
         row.append(f" {icon_char}  ", style=Style(color=icon_color))
@@ -71,7 +76,7 @@ def render_session_tree(trees: list[SessionTree], selected_id: str | None = None
         else:
             row.append(f"{title}  ", style=Style(color=GITS_TEXT))
             row.append(f"{directory}", style=Style(color=GITS_TEXT))
-        
+
         lines.append(row)
 
         for child in tree.children:
@@ -94,16 +99,33 @@ def render_details(session: Session | None, stats: SessionStats | None = None) -
     # Get stats or use defaults
     msg_count = stats.message_count if stats else 0
     tool_count = stats.tool_call_count if stats else 0
-    last_msg = truncate_message(stats.last_user_message) if stats and stats.last_user_message else "--"
+    last_msg = (
+        truncate_message(stats.last_user_message) if stats and stats.last_user_message else "--"
+    )
 
     lines = [
-        Text() + Text("Selected: ", style=Style(bold=True, color=GITS_CYAN)) + Text(session.title, style=Style(color=GITS_TEXT)),
-        Text() + Text("Status: ", style=Style(bold=True, color=GITS_CYAN)) + Text(f"{icon_char} ", style=Style(color=icon_color)) + Text(session.status.value, style=Style(color=GITS_TEXT)),
-        Text() + Text("Duration: ", style=Style(bold=True, color=GITS_CYAN)) + Text(duration, style=Style(color=GITS_TEXT)),
-        Text() + Text("CWD: ", style=Style(bold=True, color=GITS_CYAN)) + Text(session.directory, style=Style(color=GITS_TEXT)),
-        Text() + Text("Tool Calls: ", style=Style(bold=True, color=GITS_CYAN)) + Text(str(tool_count), style=Style(color=GITS_GREEN)),
-        Text() + Text("Messages: ", style=Style(bold=True, color=GITS_CYAN)) + Text(str(msg_count), style=Style(color=GITS_GREEN)),
-        Text() + Text("Last User: ", style=Style(bold=True, color=GITS_CYAN)) + Text(last_msg, style=Style(color=GITS_TEXT)),
+        Text()
+        + Text("Selected: ", style=Style(bold=True, color=GITS_CYAN))
+        + Text(session.title, style=Style(color=GITS_TEXT)),
+        Text()
+        + Text("Status: ", style=Style(bold=True, color=GITS_CYAN))
+        + Text(f"{icon_char} ", style=Style(color=icon_color))
+        + Text(session.status.value, style=Style(color=GITS_TEXT)),
+        Text()
+        + Text("Duration: ", style=Style(bold=True, color=GITS_CYAN))
+        + Text(duration, style=Style(color=GITS_TEXT)),
+        Text()
+        + Text("CWD: ", style=Style(bold=True, color=GITS_CYAN))
+        + Text(session.directory, style=Style(color=GITS_TEXT)),
+        Text()
+        + Text("Tool Calls: ", style=Style(bold=True, color=GITS_CYAN))
+        + Text(str(tool_count), style=Style(color=GITS_GREEN)),
+        Text()
+        + Text("Messages: ", style=Style(bold=True, color=GITS_CYAN))
+        + Text(str(msg_count), style=Style(color=GITS_GREEN)),
+        Text()
+        + Text("Last User: ", style=Style(bold=True, color=GITS_CYAN))
+        + Text(last_msg, style=Style(color=GITS_TEXT)),
     ]
     return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
 
@@ -127,10 +149,10 @@ def render_todos(todos: list[Todo]) -> Text:
             Text("(No todos)", style=Style(color=GITS_MUTED)),
         ]
         return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
-    
+
     lines = [Text("TODOs", style=Style(bold=True, color=GITS_CYAN))]
     lines.append(Text("-" * 30, style=Style(color=GITS_MUTED)))
-    
+
     for todo in todos:
         # Status icon based on priority
         priority_color = {
@@ -138,23 +160,23 @@ def render_todos(todos: list[Todo]) -> Text:
             "medium": GITS_ORANGE,
             "low": GITS_MUTED,
         }.get(todo.priority, GITS_MUTED)
-        
+
         status_icon = {
             "pending": "○",
             "in_progress": "◐",
             "completed": "●",
         }.get(todo.status, "○")
-        
+
         # Truncate content if too long
         content = todo.content[:40] + "..." if len(todo.content) > 40 else todo.content
-        
+
         line = Text()
         line.append(f"{status_icon} ", style=Style(color=priority_color))
         line.append(f"[{todo.priority}] ", style=Style(color=priority_color))
         line.append(content, style=Style(color=GITS_TEXT))
-        
+
         lines.append(line)
-    
+
     return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
 
 
@@ -172,7 +194,7 @@ def render_aggregation(sessions: list[Session]) -> Text:
     text.append(" active | ", style=Style(color=GITS_TEXT))
     text.append(f"{total}", style=Style(bold=True, color=GITS_MUTED))
     text.append(" total", style=Style(color=GITS_TEXT))
-    
+
     return text
 
 
