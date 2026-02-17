@@ -236,8 +236,6 @@ If you're stuck:
 3. Look at [Skill Templates](../skill-templates.md) for examples
 4. Check existing skills in `.opencode/skills/` for patterns
 
----
-
 ## Next Steps
 
 - [Create Your First Skill](add-skill.md) — Add custom capability

@@ -22,8 +22,6 @@ Agents are increasingly capable, but often don't have the context they need to d
 - **Portable**: Skills are just files, making them easy to edit, version, and share
 - **Progressive disclosure**: Context is loaded incrementally (metadata → instructions → resources)
 
----
-
 ## Directory Structure
 
 A skill is a directory containing at minimum a `SKILL.md` file:
@@ -48,8 +46,6 @@ skill-name/
     ├── template.html
     └── schema.json
 ```
-
----
 
 ## SKILL.md Format
 
@@ -171,8 +167,6 @@ List pre-approved tools:
 allowed-tools: Bash(git:*) Bash(jq:*) Read
 ```
 
----
-
 ## Body Content (Markdown)
 
 The Markdown body after the frontmatter contains the skill instructions. There are **no format restrictions** — write whatever helps agents perform the task effectively.
@@ -214,8 +208,6 @@ Skills should be structured for efficient context use:
 - Keep main `SKILL.md` under 500 lines
 - Move detailed reference material to separate files
 - Keep file references one level deep from `SKILL.md` (avoid deeply nested reference chains)
-
----
 
 ## File References
 
@@ -328,8 +320,6 @@ assets/
     └── country-codes.csv
 ```
 
----
-
 ## Validation
 
 Use the [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref) reference library to validate your skills:
@@ -343,8 +333,6 @@ This checks:
 - Naming conventions
 - Required fields
 - Format compliance
-
----
 
 ## Complete Skill Example
 
@@ -429,8 +417,6 @@ I'll analyze the auth module for code quality issues...
 See [coding standards](../context/10-coding-standards.md) for baseline expectations.
 ```
 
----
-
 ## Best Practices
 
 ### ✅ DO
@@ -477,8 +463,6 @@ See [coding standards](../context/10-coding-standards.md) for baseline expectati
    - Handle environment differences
    - Provide fallbacks for missing tools
 
----
-
 ## Tools and Resources
 
 - **Official Documentation**: [agentskills.io](https://agentskills.io)
@@ -486,8 +470,6 @@ See [coding standards](../context/10-coding-standards.md) for baseline expectati
 - **Example Skills**: [anthropics/skills](https://github.com/anthropics/skills) on GitHub
 - **Reference Library**: [agentskills/skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)
 - **Validation**: Use `skills-ref validate ./my-skill`
-
----
 
 ## Related Documentation
 

@@ -19,10 +19,50 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Generator
+from functools import lru_cache
+import itertools
 
 # Approximate tokens per character (rough estimate)
 TOKENS_PER_CHAR = 0.25
+
+
+@lru_cache(maxsize=16)
+def _compile_todo_pattern():
+    """Cache compiled regex pattern for TODO/FIXME detection"""
+    return re.compile(
+        r"^\s*(#|//|/\*|\*)?\s*(TODO|FIXME|HACK|XXX|NOTE):", re.IGNORECASE
+    )
+
+
+@lru_cache(maxsize=32)
+def _compile_boilerplate_patterns(language: str) -> List[re.Pattern]:
+    """Cache compiled regex patterns for boilerplate removal"""
+    if language == "python":
+        patterns = [
+            re.compile(r"^#!/.*$"),
+            re.compile(r'^if __name__ == ["\']__main__["\']:'),
+        ]
+    elif language in ["javascript", "js"]:
+        patterns = [
+            re.compile(r'^"use strict";?\s*$'),
+        ]
+    else:
+        patterns = []
+    return patterns
+
+
+@lru_cache(maxsize=32)
+def _compile_important_patterns() -> List[re.Pattern]:
+    """Cache compiled regex patterns for smart section keeping"""
+    return [
+        re.compile(r"^def\s+"),
+        re.compile(r"^class\s+"),
+        re.compile(r"^import\s+"),
+        re.compile(r"^from\s+"),
+        re.compile(r"^async\s+def"),
+        re.compile(r"^\s*@"),
+    ]
 
 
 def estimate_tokens(text: str) -> int:
@@ -113,67 +153,42 @@ def remove_comments(content: str, language: str = "python") -> str:
 
 def remove_todos(content: str) -> str:
     """Remove TODO/FIXME comments."""
+    todo_pattern = _compile_todo_pattern()
+    
     lines = content.split("\n")
-    result = []
-
-    todo_pattern = re.compile(
-        r"^\s*(#|//|/\*|\*)?\s*(TODO|FIXME|HACK|XXX|NOTE):", re.IGNORECASE
-    )
-
-    for line in lines:
-        if not todo_pattern.search(line):
-            result.append(line)
-
-    return "\n".join(result)
+    filtered = filter(lambda line: not todo_pattern.search(line), lines)
+    
+    return "\n".join(filtered)
 
 
 def remove_boilerplate(content: str, language: str) -> str:
     """Remove common boilerplate patterns."""
-
-    if language == "python":
-        # Remove common boilerplate
-        patterns_to_remove = [
-            r"^#!/.*$",  # Shebang
-            r'^if __name__ == ["\']__main__["\']:',  # Main guard
-        ]
-    elif language in ["javascript", "js"]:
-        patterns_to_remove = [
-            r'^"use strict";?\s*$',
-        ]
-    else:
-        patterns_to_remove = []
-
+    patterns = _compile_boilerplate_patterns(language)
     lines = content.split("\n")
-    result = []
-
-    for line in lines:
-        skip = False
-        for pattern in patterns_to_remove:
-            if re.match(pattern, line.strip()):
-                skip = True
-                break
-        if not skip:
-            result.append(line)
-
-    return "\n".join(result)
+    
+    filtered = filter(
+        lambda line: not any(re.match(pattern, line.strip()) for pattern in patterns),
+        lines
+    )
+    
+    return "\n".join(filtered)
 
 
 def smart_keep_sections(content: str, important_patterns: List[str]) -> str:
     """Keep only sections matching important patterns."""
+    patterns = _compile_important_patterns()
     lines = content.split("\n")
+    
     result = []
     include = True
-
+    
     for line in lines:
-        # Check if line starts important section
-        for pattern in important_patterns:
-            if re.match(pattern, line.strip(), re.IGNORECASE):
-                include = True
-                break
-
+        if any(re.match(pattern, line.strip(), re.IGNORECASE) for pattern in patterns):
+            include = True
+        
         if include or line.strip():
             result.append(line)
-
+    
     return "\n".join(result)
 
 
@@ -200,29 +215,25 @@ def prune_context(
         pruned = remove_whitespace(pruned)
 
     elif strategy == "smart":
-        # Keep only important sections based on task
         important_patterns = [
-            r"^def\s+",  # Functions
-            r"^class\s+",  # Classes
-            r"^import\s+",  # Imports
-            r"^from\s+",  # From imports
-            r"^async\s+def",  # Async functions
-            r"^\s*@",  # Decorators
+            r"^def\s+",
+            r"^class\s+",
+            r"^import\s+",
+            r"^from\s+",
+            r"^async\s+def",
+            r"^\s*@",
         ]
         pruned = smart_keep_sections(pruned, important_patterns)
         pruned = remove_whitespace(pruned)
 
-    # If still over limit, truncate
     final_tokens = estimate_tokens(pruned)
 
     if final_tokens > max_tokens:
-        # Calculate how many chars we can keep
         max_chars = int(max_tokens / TOKENS_PER_CHAR)
         pruned = pruned[:max_chars]
 
-        # Try to end at a clean line
         last_newline = pruned.rfind("\n")
-        if last_newline > max_chars * 0.8:  # If we're past 80%, try to clean up
+        if last_newline > max_chars * 0.8:
             pruned = pruned[:last_newline]
 
     final_tokens = estimate_tokens(pruned)

@@ -166,8 +166,6 @@ See [Research Overview](../research/overview.md) for details.
 - [Subagents](../capabilities/subagents.md) - Large context handling
 - [Research](../research/overview.md) - Why this architecture works
 
----
-
 ## Next Steps
 
 - [Getting Started](../getting-started.md) - Install and setup

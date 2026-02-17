@@ -133,8 +133,6 @@ Research shows LLMs exhibit U-shaped attention bias (Hsieh et al., ACL 2024):
 
 **RLM solution:** Chunking + synthesis ensures important info is always at beginning of each chunk.
 
----
-
 ## Best Practices
 
 1. **Don't overuse** — Subagents add latency. Use skills for routine tasks.

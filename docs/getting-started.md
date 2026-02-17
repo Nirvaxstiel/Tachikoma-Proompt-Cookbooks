@@ -117,6 +117,4 @@ If you run into issues:
 2. Review [AGENTS.md](../AGENTS.md) for system details
 3. Check the [Agent Skills Specification](capabilities/skills-specification.md)
 
----
-
 **Need help?** Check out the [Troubleshooting Guide](troubleshooting.md) or [FAQ](troubleshooting.md#faq).

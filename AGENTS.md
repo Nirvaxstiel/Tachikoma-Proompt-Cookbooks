@@ -47,6 +47,7 @@ Before ANY action:
 - Use `grep`, `find`, `rg`, `jq`, `git` aggressively
 - **The shell is the primary reasoning surface**
 - Propose containerized commands when isolation matters
+- **Run smoke tests** before deploying scripts: `python .opencode/tools/smoke_test.py`
 
 ### 6. COST AWARENESS: Expensive Operations
 

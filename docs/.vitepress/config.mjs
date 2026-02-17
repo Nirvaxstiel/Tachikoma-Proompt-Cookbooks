@@ -8,46 +8,64 @@ export default defineConfig({
   themeConfig: {
     logo: '/favicon.ico',
 
+    // Simplified top navigation
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/getting-started' },
-      {
-        text: 'Concepts',
-        items: [
-          { text: 'Overview', link: '/concepts/overview' },
-          { text: 'Architecture', link: '/concepts/architecture' },
-        ]
-      },
-      {
-        text: 'Capabilities',
-        items: [
-          { text: 'Intent Routing', link: '/capabilities/intent-routing' },
-          { text: 'Context Management', link: '/capabilities/context-management' },
-          { text: 'Skill Execution', link: '/capabilities/skill-execution' },
-          { text: 'Skill Chains', link: '/capabilities/skill-chains' },
-          { text: 'Composite Intents', link: '/capabilities/composite-intents' },
-          { text: 'Subagents', link: '/capabilities/subagents' },
-          { text: 'Skills Specification', link: '/capabilities/skills-specification' },
-          { text: 'Skill Templates', link: '/capabilities/skill-templates' },
-          { text: 'Customize', link: '/capabilities/customization/overview' },
-          { text: 'Troubleshooting', link: '/troubleshooting' },
-        ]
-      },
-      {
-        text: 'Research',
-        items: [
-          { text: 'Overview', link: '/research/overview' },
-        ]
-      },
+      { text: 'Concepts', link: '/concepts/overview' },
+      { text: 'Capabilities', link: '/capabilities/index' },
+      { text: 'Research', link: '/research/overview' },
+      { text: 'Changelog', link: '/changelog' },
     ],
 
+    // Enhanced sidebar with all navigation
     sidebar: {
       '/': [
         {
-          text: 'Documentation',
+          text: 'Getting Started',
           items: [
-            { text: 'Getting Started', link: '/getting-started' },
+            { text: 'Introduction', link: '/getting-started' },
             { text: 'Troubleshooting', link: '/troubleshooting' },
+          ]
+        },
+        {
+          text: 'Concepts',
+          collapsed: false,
+          items: [
+            { text: 'Overview', link: '/concepts/overview' },
+            { text: 'Architecture', link: '/concepts/architecture' },
+          ]
+        },
+        {
+          text: 'Capabilities',
+          collapsed: false,
+          items: [
+            { text: 'Overview', link: '/capabilities/index' },
+            { text: 'Intent Routing', link: '/capabilities/intent-routing' },
+            { text: 'Context Management', link: '/capabilities/context-management' },
+            { text: 'Skill Execution', link: '/capabilities/skill-execution' },
+            { text: 'Skill Chains', link: '/capabilities/skill-chains' },
+            { text: 'Composite Intents', link: '/capabilities/composite-intents' },
+            { text: 'Subagents', link: '/capabilities/subagents' },
+            { text: 'Tools', link: '/capabilities/tools' },
+            { text: 'Epistemic Mode', link: '/capabilities/epistemic-mode' },
+            { text: 'Position-Aware Loading', link: '/capabilities/position-aware-loading' },
+            { text: 'Communication Protocol', link: '/capabilities/communication-protocol' },
+            { text: 'Skills Specification', link: '/capabilities/skills-specification' },
+            { text: 'Skill Templates', link: '/capabilities/skill-templates' },
+          ]
+        },
+        {
+          text: 'Research',
+          collapsed: true,
+          items: [
+            { text: 'Overview', link: '/research/overview' },
+            { text: 'Position Bias', link: '/research/position-bias' },
+            { text: 'Verification Loops', link: '/research/verification-loops' },
+            { text: 'Model Harness', link: '/research/model-harness' },
+            { text: 'RLM', link: '/research/rlm' },
+            { text: 'Cost-Aware Routing', link: '/research/cost-aware-routing' },
+            { text: 'Modularity', link: '/research/modularity' },
           ]
         }
       ],
@@ -58,30 +76,91 @@ export default defineConfig({
             { text: 'Overview', link: '/concepts/overview' },
             { text: 'Architecture', link: '/concepts/architecture' },
           ]
-        }
-      ],
-      '/capabilities/': [
+        },
         {
           text: 'Capabilities',
+          collapsed: true,
           items: [
+            { text: 'Overview', link: '/capabilities/index' },
             { text: 'Intent Routing', link: '/capabilities/intent-routing' },
             { text: 'Context Management', link: '/capabilities/context-management' },
             { text: 'Skill Execution', link: '/capabilities/skill-execution' },
             { text: 'Skill Chains', link: '/capabilities/skill-chains' },
             { text: 'Composite Intents', link: '/capabilities/composite-intents' },
             { text: 'Subagents', link: '/capabilities/subagents' },
+            { text: 'Tools', link: '/capabilities/tools' },
+          ]
+        },
+        {
+          text: 'Research',
+          collapsed: true,
+          items: [
+            { text: 'Overview', link: '/research/overview' },
+            { text: 'Position Bias', link: '/research/position-bias' },
+            { text: 'Verification Loops', link: '/research/verification-loops' },
+            { text: 'Model Harness', link: '/research/model-harness' },
+            { text: 'RLM', link: '/research/rlm' },
+            { text: 'Cost-Aware Routing', link: '/research/cost-aware-routing' },
+            { text: 'Modularity', link: '/research/modularity' },
+          ]
+        }
+      ],
+      '/capabilities/': [
+        {
+          text: 'Core Capabilities',
+          items: [
+            { text: 'Overview', link: '/capabilities/index' },
+            { text: 'Intent Routing', link: '/capabilities/intent-routing' },
+            { text: 'Context Management', link: '/capabilities/context-management' },
+            { text: 'Skill Execution', link: '/capabilities/skill-execution' },
+            { text: 'Skill Chains', link: '/capabilities/skill-chains' },
+            { text: 'Composite Intents', link: '/capabilities/composite-intents' },
+          ]
+        },
+        {
+          text: 'Advanced Capabilities',
+          items: [
+            { text: 'Subagents', link: '/capabilities/subagents' },
+            { text: 'Tools', link: '/capabilities/tools' },
+          ]
+        },
+        {
+          text: 'Tribal Capabilities',
+          items: [
+            { text: 'Epistemic Mode', link: '/capabilities/epistemic-mode' },
+            { text: 'Position-Aware Loading', link: '/capabilities/position-aware-loading' },
+            { text: 'Communication Protocol', link: '/capabilities/communication-protocol' },
+          ]
+        },
+        {
+          text: 'Reference',
+          items: [
             { text: 'Skills Specification', link: '/capabilities/skills-specification' },
             { text: 'Skill Templates', link: '/capabilities/skill-templates' },
           ]
         },
         {
           text: 'Customization',
+          collapsed: true,
           items: [
             { text: 'Overview', link: '/capabilities/customization/overview' },
             { text: 'Add Skill', link: '/capabilities/customization/add-skill' },
             { text: 'Add Agent', link: '/capabilities/customization/add-agent' },
             { text: 'Add Intent', link: '/capabilities/customization/add-intent' },
             { text: 'Context Modules', link: '/capabilities/customization/context-modules' },
+          ]
+        },
+        {
+          text: 'Research',
+          collapsed: true,
+          items: [
+            { text: 'Overview', link: '/research/overview' },
+            { text: 'Position Bias', link: '/research/position-bias' },
+            { text: 'Verification Loops', link: '/research/verification-loops' },
+            { text: 'Model Harness', link: '/research/model-harness' },
+            { text: 'RLM', link: '/research/rlm' },
+            { text: 'Cost-Aware Routing', link: '/research/cost-aware-routing' },
+            { text: 'Modularity', link: '/research/modularity' },
           ]
         }
       ],
@@ -90,6 +169,32 @@ export default defineConfig({
           text: 'Research',
           items: [
             { text: 'Overview', link: '/research/overview' },
+          ]
+        },
+        {
+          text: 'Core Research',
+          items: [
+            { text: 'Position Bias in LLMs', link: '/research/position-bias' },
+            { text: 'Verification Loops', link: '/research/verification-loops' },
+            { text: 'Model Harness', link: '/research/model-harness' },
+          ]
+        },
+        {
+          text: 'Advanced Research',
+          items: [
+            { text: 'Recursive Language Models', link: '/research/rlm' },
+            { text: 'Cost-Aware Routing', link: '/research/cost-aware-routing' },
+            { text: 'Modularity', link: '/research/modularity' },
+          ]
+        },
+        {
+          text: 'Capabilities',
+          collapsed: true,
+          items: [
+            { text: 'Overview', link: '/capabilities/index' },
+            { text: 'Intent Routing', link: '/capabilities/intent-routing' },
+            { text: 'Context Management', link: '/capabilities/context-management' },
+            { text: 'Skill Execution', link: '/capabilities/skill-execution' },
           ]
         }
       ],

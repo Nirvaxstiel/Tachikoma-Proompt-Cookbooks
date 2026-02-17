@@ -247,8 +247,6 @@ Skill chains provide reliability at the cost of latency:
 
 **Application:** `verifier-code-agent` and `reflection-orchestrator` skills implement verification patterns.
 
----
-
 ## Creating Custom Chains
 
 Define custom chains in `.opencode/config/intent-routes.yaml`:

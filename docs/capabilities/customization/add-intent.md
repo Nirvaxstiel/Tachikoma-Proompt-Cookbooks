@@ -244,8 +244,6 @@ Choose the right threshold for your intent:
 - [Add Agent](add-agent.md) — Create custom subagents
 - [Context Modules](context-modules.md) — Add project rules
 
----
-
 ## Next Steps
 
 - [Skills Specification](../skills-specification.md) — Understand the format

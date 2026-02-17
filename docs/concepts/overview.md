@@ -136,8 +136,6 @@ See [Research Overview](research/overview.md) for complete references and detail
 
 **Tachikoma** — curious AI tanks from *Ghost in the Shell*. Always learning.
 
----
-
 ## Next Steps
 
 - [Getting Started](../getting-started.md) - Install and setup

@@ -1,6 +1,21 @@
 # Intent Routing Configuration
 # Defines how Tachikoma orchestrator routes tasks based on classified intent
-# Version: 1.1.0
+# Version: 1.1.2
+#
+# ⚠️  CRITICAL: Skill vs Subagent Distinction
+# -----------------------------------------
+# SKILL:    Guidance document that you LOAD and FOLLOW
+#           Usage: Read: .opencode/skills/{name}/SKILL.md
+#           Then: Execute using tools directly (Edit, Read, Grep, etc.)
+#           Examples: code-agent, analysis-agent, research-agent
+#
+# SUBAGENT: Delegated worker that you INVOKE
+#           Usage: task(subagent_type="{name}", ...)
+#           Then: Wait for subagent to complete and return result
+#           Examples: rlm-subcall, rlm-optimized
+#
+# NEVER use task() for skills or Read for subagents!
+# -----------------------------------------
 
 # ============================================
 # INTENT ROUTES
@@ -15,6 +30,9 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
+    skill_load_instruction: "Read: .opencode/skills/code-agent/SKILL.md"
+    skill_usage: "Load skill, then follow its workflow (inspect→extract→validate→implement→verify→stop) using tools directly"
+    invoke_via: skill  # skill = load and follow | subagent = delegate
     tools:
       - Read
       - Grep
@@ -31,6 +49,9 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
+    skill_load_instruction: "Read: .opencode/skills/code-agent/SKILL.md"
+    skill_usage: "Load skill, then follow its workflow (inspect→extract→validate→implement→verify→stop) using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Write
@@ -49,6 +70,9 @@ routes:
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
       - 30-research-methods
     skill: analysis-agent
+    skill_load_instruction: "Read: .opencode/skills/analysis-agent/SKILL.md"
+    skill_usage: "Load skill, then follow its analysis workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Grep
@@ -64,6 +88,9 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
+    skill_load_instruction: "Read: .opencode/skills/code-agent/SKILL.md"
+    skill_usage: "Load skill, then follow its refactoring workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Write
@@ -80,6 +107,9 @@ routes:
       - 00-core-contract
       - 30-research-methods
     skill: research-agent
+    skill_load_instruction: "Read: .opencode/skills/research-agent/SKILL.md"
+    skill_usage: "Load skill, then follow its research methodology using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - WebFetch
@@ -95,6 +125,9 @@ routes:
       - 00-core-contract
       - 20-git-workflow
     skill: git-commit
+    skill_load_instruction: "Read: .opencode/skills/git-commit/SKILL.md"
+    skill_usage: "Load skill, then follow its git workflow using tools directly"
+    invoke_via: skill
     tools:
       - Bash
     strategy: direct
@@ -108,6 +141,9 @@ routes:
       - 00-core-contract
       - 12-commenting-rules  # Documentation includes code comments
     skill: self-learning
+    skill_load_instruction: "Read: .opencode/skills/self-learning/SKILL.md"
+    skill_usage: "Load skill, then follow its documentation workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Write
@@ -122,6 +158,9 @@ routes:
       - 00-core-contract
     subagent: rlm-optimized
     fallback_subagent: rlm-subcall
+    subagent_invoke_instruction: "task(subagent_type='rlm-optimized', description='...', prompt='...')"
+    subagent_usage: "Delegate task to subagent and wait for completion"
+    invoke_via: subagent  # subagent = delegate via task() | skill = load and follow
     tools:
       - Read
     strategy: rlm
@@ -145,6 +184,9 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: skill-composer
+    skill_load_instruction: "Read: .opencode/skills/skill-composer/SKILL.md"
+    skill_usage: "Load skill, then follow its composition workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Grep
@@ -159,6 +201,9 @@ routes:
     context_modules:
       - 00-core-contract
     skill: context-manager
+    skill_load_instruction: "Read: .opencode/skills/context-manager/SKILL.md"
+    skill_usage: "Load skill, then follow its optimization workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Bash
@@ -174,6 +219,9 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: verifier-code-agent
+    skill_load_instruction: "Read: .opencode/skills/verifier-code-agent/SKILL.md"
+    skill_usage: "Load skill, then follow its verify workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Write
@@ -191,6 +239,9 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: reflection-orchestrator
+    skill_load_instruction: "Read: .opencode/skills/reflection-orchestrator/SKILL.md"
+    skill_usage: "Load skill, then follow its reflection workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Write
@@ -205,6 +256,9 @@ routes:
     context_modules:
       - 00-core-contract
     skill: model-aware-editor
+    skill_load_instruction: "Read: .opencode/skills/model-aware-editor/SKILL.md"
+    skill_usage: "Load skill, then use hashline processor for reliable edits"
+    invoke_via: skill
     tools:
       - Read
       - Write
@@ -215,6 +269,21 @@ routes:
 # ============================================
 # SKILL CHAINS (Multi-Skill Orchestration)
 # ============================================
+# ⚠️  SKILL CHAIN USAGE:
+# Each skill in a chain is loaded INDIVIDUALLY using Read, then executed in sequence.
+# Skills in chains follow the same rules as standalone skills - NEVER use task() for them!
+#
+# Example flow for "implement-verify" chain:
+#   1. Read: .opencode/skills/code-agent/SKILL.md
+#      → Execute code changes
+#   2. Read: .opencode/skills/verifier-code-agent/SKILL.md
+#      → Verify the changes
+#   3. Read: .opencode/skills/formatter/SKILL.md
+#      → Format the result
+#
+# Mode: sequential = execute one after another
+# Mode: parallel = execute simultaneously (if independent)
+# ============================================
 skill_chains:
   # High-reliability implementation chain
   implement-verify:
@@ -223,6 +292,12 @@ skill_chains:
       - code-agent
       - verifier-code-agent
       - formatter
+    skill_load_instructions:
+      code-agent: "Read: .opencode/skills/code-agent/SKILL.md"
+      verifier-code-agent: "Read: .opencode/skills/verifier-code-agent/SKILL.md"
+      formatter: "Read: .opencode/skills/formatter/SKILL.md"
+    chain_usage: "Load each skill in sequence using Read, execute following each skill's workflow"
+    invoke_via: skill_chain  # Each skill loaded with Read, executed in sequence
     mode: sequential
     context_modules:
       - 00-core-contract
@@ -237,6 +312,13 @@ skill_chains:
       - context7
       - code-agent
       - formatter
+    skill_load_instructions:
+      research-agent: "Read: .opencode/skills/research-agent/SKILL.md"
+      context7: "Read: .opencode/skills/context7/SKILL.md"
+      code-agent: "Read: .opencode/skills/code-agent/SKILL.md"
+      formatter: "Read: .opencode/skills/formatter/SKILL.md"
+    chain_usage: "Load each skill in sequence using Read, execute following each skill's workflow"
+    invoke_via: skill_chain
     mode: sequential
     context_modules:
       - 00-core-contract
@@ -251,6 +333,13 @@ skill_chains:
       - code-agent
       - verifier-code-agent
       - reflection-orchestrator
+    skill_load_instructions:
+      context7: "Read: .opencode/skills/context7/SKILL.md"
+      code-agent: "Read: .opencode/skills/code-agent/SKILL.md"
+      verifier-code-agent: "Read: .opencode/skills/verifier-code-agent/SKILL.md"
+      reflection-orchestrator: "Read: .opencode/skills/reflection-orchestrator/SKILL.md"
+    chain_usage: "Load each skill in sequence using Read, execute following each skill's workflow"
+    invoke_via: skill_chain
     mode: sequential
     context_modules:
       - 00-core-contract
@@ -263,6 +352,11 @@ skill_chains:
     skills:
       - analysis-agent
       - reflection-orchestrator
+    skill_load_instructions:
+      analysis-agent: "Read: .opencode/skills/analysis-agent/SKILL.md"
+      reflection-orchestrator: "Read: .opencode/skills/reflection-orchestrator/SKILL.md"
+    chain_usage: "Load each skill in sequence using Read, execute following each skill's workflow"
+    invoke_via: skill_chain
     mode: sequential
     context_modules:
       - 00-core-contract
@@ -276,6 +370,12 @@ skill_chains:
       - research-agent
       - context7
       - reflection-orchestrator
+    skill_load_instructions:
+      research-agent: "Read: .opencode/skills/research-agent/SKILL.md"
+      context7: "Read: .opencode/skills/context7/SKILL.md"
+      reflection-orchestrator: "Read: .opencode/skills/reflection-orchestrator/SKILL.md"
+    chain_usage: "Load each skill in sequence using Read, execute following each skill's workflow"
+    invoke_via: skill_chain
     mode: sequential
     context_modules:
       - 00-core-contract
@@ -366,3 +466,40 @@ module_priority:
   20-git-workflow: 20
   30-research-methods: 30
   50-prompt-safety: 50
+
+# ============================================
+# RESOURCE TYPE REFERENCE
+# ============================================
+# Quick lookup for skill vs subagent confusion
+#
+# SKILLS (Load with Read, execute yourself):
+#   code-agent:              .opencode/skills/code-agent/SKILL.md
+#   analysis-agent:          .opencode/skills/analysis-agent/SKILL.md
+#   research-agent:          .opencode/skills/research-agent/SKILL.md
+#   verifier-code-agent:     .opencode/skills/verifier-code-agent/SKILL.md
+#   model-aware-editor:      .opencode/skills/model-aware-editor/SKILL.md
+#   reflection-orchestrator: .opencode/skills/reflection-orchestrator/SKILL.md
+#   skill-composer:          .opencode/skills/skill-composer/SKILL.md
+#   context-manager:         .opencode/skills/context-manager/SKILL.md
+#   context7:                .opencode/skills/context7/SKILL.md
+#   formatter:               .opencode/skills/formatter/SKILL.md
+#   git-commit:              .opencode/skills/git-commit/SKILL.md
+#   self-learning:           .opencode/skills/self-learning/SKILL.md
+#
+# SKILL CHAINS (Load each skill with Read, execute in sequence):
+#   Each skill in a chain is loaded INDIVIDUALLY using Read
+#   Then executed following that skill's workflow
+#   Example: implement-verify chain
+#     1. Read: .opencode/skills/code-agent/SKILL.md → execute
+#     2. Read: .opencode/skills/verifier-code-agent/SKILL.md → execute
+#     3. Read: .opencode/skills/formatter/SKILL.md → execute
+#
+# SUBAGENTS (Delegate with task()):
+#   rlm-subcall:    task(subagent_type='rlm-subcall', ...)
+#   rlm-optimized:  task(subagent_type='rlm-optimized', ...)
+#
+# RULES:
+#   If route has 'skill:' key → use Read to load
+#   If route has 'subagent:' key → use task() to delegate
+#   If route has 'skills:' array (chain) → use Read for each, execute in sequence
+# ============================================

@@ -14,7 +14,45 @@ Key Features:
 import json
 import re
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Generator
+from functools import lru_cache
+import itertools
+
+
+@lru_cache(maxsize=32)
+def _compile_content_type_patterns():
+    """Cache compiled regex patterns for content type detection"""
+    return {
+        'json_obj': re.compile(r"^\{.*\}$", re.DOTALL),
+        'json_arr': re.compile(r"^\[.*\]$", re.DOTALL),
+        'markdown': re.compile(r"^#{1,6}\s"),
+        'log': re.compile(r"^\[\d{4}-\d{2}-\d{2}]"),
+        'code': [
+            re.compile(r"^(import|def|class|from|function|const|let|var|interface|type)\s+"),
+            re.compile(r"^(public|private|protected|async|await)\s+"),
+            re.compile(r"^(if|for|while|switch|try|catch|return)\s*\("),
+        ],
+    }
+
+
+@lru_cache(maxsize=32)
+def _compile_semantic_patterns(content_type: str) -> List[re.Pattern]:
+    """Cache compiled regex patterns for semantic boundary detection"""
+    if content_type == "markdown":
+        return [re.compile(r"^#{2,4}\s+", re.MULTILINE)]
+    elif content_type == "json":
+        return [re.compile(r"\n(?=\{|\[)")]
+    elif content_type == "log":
+        return [re.compile(r"^\[\d{4}-\d{2}-\d{2}]", re.MULTILINE)]
+    elif content_type == "code":
+        return [
+            re.compile(r"^(def |class |function |class |interface |type |struct )", re.MULTILINE),
+            re.compile(r"^(public |private |protected |static |async )\s+(def |class |function )", re.MULTILINE),
+        ]
+    elif content_type == "text":
+        return [re.compile(r"\n\n+")]
+    else:
+        return []
 
 
 class ContentType(Enum):
@@ -52,9 +90,10 @@ class AdaptiveChunker:
         self.optimal_time = optimal_processing_time_ms
         self.processing_times = []
 
+    @lru_cache(maxsize=128)
     def detect_content_type(self, content: str) -> ContentType:
         """
-        Detect content type for boundary selection
+        Detect content type for boundary selection (cached)
 
         Args:
             content: Text content
@@ -63,32 +102,23 @@ class AdaptiveChunker:
             ContentType enum
         """
         content_stripped = content.strip()
+        patterns = _compile_content_type_patterns()
 
-        # JSON detection (object or array)
-        if re.match(r"^\{.*\}$", content_stripped, re.DOTALL):
+        if patterns['json_obj'].match(content_stripped):
             return ContentType.JSON
-        if re.match(r"^\[.*\]$", content_stripped, re.DOTALL):
+        if patterns['json_arr'].match(content_stripped):
             return ContentType.JSON
 
-        # Markdown detection (hashtag headings)
-        if re.match(r"^#{1,6}\s", content_stripped):
+        if patterns['markdown'].match(content_stripped):
             return ContentType.MARKDOWN
 
-        # Log detection (timestamps)
-        if re.match(r"^\[\d{4}-\d{2}-\d{2}]", content_stripped):
+        if patterns['log'].match(content_stripped):
             return ContentType.LOG
 
-        # Code detection (common programming patterns)
-        code_patterns = [
-            r"^(import|def|class|from|function|const|let|var|interface|type)\s+",
-            r"^(public|private|protected|async|await)\s+",
-            r"^(if|for|while|switch|try|catch|return)\s*\(",
-        ]
-        for pattern in code_patterns:
-            if re.match(pattern, content_stripped):
+        for pattern in patterns['code']:
+            if pattern.match(content_stripped):
                 return ContentType.CODE
 
-        # Default: text
         return ContentType.TEXT
 
     def find_semantic_boundaries(
@@ -104,70 +134,40 @@ class AdaptiveChunker:
         Returns:
             List of boundary indices (sorted)
         """
-        boundaries = [0]  # Always start at 0
+        boundaries = [0]
+        patterns = _compile_semantic_patterns(content_type.value)
 
-        if content_type == ContentType.MARKDOWN:
-            # Split at ## and ### headings (not #, too frequent)
-            matches = list(re.finditer(r"^#{2,4}\s+", content, re.MULTILINE))
-            boundaries.extend([m.start() for m in matches])
-
-        elif content_type == ContentType.JSON:
-            # Split at top-level objects using JSON parser
+        if content_type == ContentType.JSON:
             try:
                 data = json.loads(content)
 
-                # If it's an array, split at each element
                 if isinstance(data, list):
-                    # Track positions of each array element
                     offset = 0
                     for i, item in enumerate(data):
-                        # Serialize item to find its position
                         item_str = json.dumps(item, separators=(",", ":"))
-                        # Find this item in the original content (simplified)
                         item_pos = content.find(item_str, offset)
                         if item_pos != -1 and i > 0:
                             boundaries.append(item_pos)
                         offset = item_pos + len(item_str)
 
-                # If it's an object, split at each top-level key
                 elif isinstance(data, dict):
                     offset = 0
                     for i, (key, value) in enumerate(data.items()):
-                        # Serialize key-value to find its position
                         kv_str = f'"{key}":{json.dumps(value, separators=(",", ":"))}'
                         kv_pos = content.find(kv_str, offset)
                         if kv_pos != -1 and i > 0:
                             boundaries.append(kv_pos)
                         offset = kv_pos + len(kv_str)
             except (json.JSONDecodeError, Exception):
-                # Fallback to regex-based splitting if JSON parsing fails
-                matches = list(re.finditer(r"\n(?=\{|\[)", content))
-                boundaries.extend([m.start() for m in matches])
-
-        elif content_type == ContentType.LOG:
-            # Split at timestamps
-            matches = list(re.finditer(r"^\[\d{4}-\d{2}-\d{2}]", content, re.MULTILINE))
-            boundaries.extend([m.start() for m in matches])
-
-        elif content_type == ContentType.CODE:
-            # Split at function/class/method definitions
-            patterns = [
-                r"^(def |class |function |class |interface |type |struct )",
-                r"^(public |private |protected |static |async )\s+(def |class |function )",
-            ]
+                for pattern in patterns:
+                    matches = list(pattern.finditer(content))
+                    boundaries.extend([m.start() for m in matches])
+        else:
             for pattern in patterns:
-                matches = list(re.finditer(pattern, content, re.MULTILINE))
+                matches = list(pattern.finditer(content))
                 boundaries.extend([m.start() for m in matches])
 
-        elif content_type == ContentType.TEXT:
-            # Split at paragraphs (double newlines)
-            matches = list(re.finditer(r"\n\n+", content))
-            boundaries.extend([m.start() for m in matches])
-
-        # Add end boundary
         boundaries.append(len(content))
-
-        # Remove duplicates and sort
         return sorted(set(boundaries))
 
     def _split_large_chunk(self, chunk: str, max_size: int) -> List[Tuple[str, int]]:
@@ -205,28 +205,21 @@ class AdaptiveChunker:
         boundaries = self.find_semantic_boundaries(content, content_type)
 
         chunks = []
-
-        # Use while loop for explicit index control (merging logic)
         i = 0
         while i < len(boundaries) - 1:
             start = boundaries[i]
             end = boundaries[i + 1]
             chunk = content[start:end]
-
-            # Adjust chunk size based on content density
             chunk_len = len(chunk)
 
             if chunk_len > self.chunk_size * 2:
-                # Content is dense, split further
                 sub_chunks = self._split_large_chunk(chunk, self.chunk_size)
                 chunks.extend(sub_chunks)
                 i += 1
             elif chunk_len < self.chunk_size * 0.5:
-                # Merge with next if too small
                 if i < len(boundaries) - 2:
                     merged = chunk + content[end : boundaries[i + 2]]
                     chunks.append((merged, len(chunks)))
-                    # Skip next boundary since we merged
                     i += 2
                 else:
                     chunks.append((chunk, len(chunks)))
@@ -235,15 +228,12 @@ class AdaptiveChunker:
                 chunks.append((chunk, len(chunks)))
                 i += 1
 
-        # Limit to max_chunks if specified
         if max_chunks and len(chunks) > max_chunks:
-            # Merge remaining chunks into fewer chunks
             merged_chunks = []
             target_chunk_size = len(content) // max_chunks
 
             current_chunk = ""
             current_size = 0
-            chunk_idx = 0
 
             for chunk, _ in chunks:
                 if current_size + len(chunk) <= target_chunk_size:
@@ -252,7 +242,6 @@ class AdaptiveChunker:
                 else:
                     if current_chunk:
                         merged_chunks.append((current_chunk, len(merged_chunks)))
-                        chunk_idx += 1
                     current_chunk = chunk
                     current_size = len(chunk)
 

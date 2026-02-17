@@ -12,6 +12,47 @@ import re
 import tempfile
 from typing import Dict, List, Tuple, Optional, Any
 from enum import Enum
+from functools import lru_cache
+import itertools
+
+
+@lru_cache(maxsize=32)
+def _compile_verification_patterns():
+    """Cache compiled regex patterns for verification"""
+    return {
+        'empty_function': re.compile(r'def\s+\w+\(\s*\):\s*(?:pass|...|$)'),
+        'todo': re.compile(r'#\s*(TODO|FIXME|HACK|XXX)', re.IGNORECASE),
+        'infinite_loop': re.compile(r'while\s+True:'),
+        'sql_injection': re.compile(r'(?:execute|query|cursor)\s*\([^)]*\+[^)]*\)', re.IGNORECASE),
+        'hardcoded_creds': re.compile(r'(?:password|secret|api_key|token)\s*=\s*["\'][^"\']{8,}["\']', re.IGNORECASE),
+        'eval_usage': re.compile(r'\beval\s*\('),
+        'command_injection': re.compile(r'(?:os\.system|subprocess\.call|os\.popen)\s*\([^)]*\+[^)]*\)'),
+        'insecure_random': re.compile(r'random\.(?:random|randint)\s*\('),
+        'nested_loops': re.compile(r'for\s+\w+\s+in\s+.*:\s*.*for\s+\w+\s+in\s+', re.DOTALL),
+        'string_concat_loop': re.compile(r'\+=.*\n.*for\s+', re.DOTALL),
+    }
+
+
+@lru_cache(maxsize=64)
+def _compile_language_patterns():
+    """Cache compiled regex patterns for language detection"""
+    return {
+        'python': re.compile(r'^(def |class |import |from |if __name__)', re.MULTILINE),
+        'javascript': re.compile(r'^(function |const |let |var |class |import |export )', re.MULTILINE),
+        'go': re.compile(r'^(func |package |import |type |struct )', re.MULTILINE),
+        'java': re.compile(r'^(public |private |protected |class |void |int )', re.MULTILINE),
+    }
+
+
+@lru_cache(maxsize=32)
+def _compile_edge_case_patterns():
+    """Cache compiled regex patterns for edge case detection"""
+    return {
+        'null_handling': re.compile(r'(?:is\s+None|==\s+None|is\s+not\s+None|null|\bnull\b)'),
+        'empty_input': re.compile(r'(?:if\s+not\s+\w+|if\s+\w+\s*==\s*[\[\(\{]|len\()'),
+        'exception_handling': re.compile(r'(?:try:|except|raise|throw)'),
+        'type_checking': re.compile(r'(?:isinstance|type\(|typeof)'),
+    }
 
 
 class VerificationCriterion(Enum):
@@ -27,7 +68,7 @@ class VerificationCriterion(Enum):
 class VerificationResult:
     """Result of verification check"""
     
-    def __init__(self, criterion: str, passed: bool, message: str = "", details: Dict = None):
+    def __init__(self, criterion: str, passed: bool, message: str = "", details: Optional[Dict] = None):
         self.criterion = criterion
         self.passed = passed
         self.message = message
@@ -140,15 +181,11 @@ class VerificationEngine:
     def _detect_language(self, code: str) -> str:
         """Detect programming language"""
         code_stripped = code.strip()
+        patterns = _compile_language_patterns()
         
-        if re.match(r'^(def |class |import |from |if __name__)', code_stripped, re.MULTILINE):
-            return 'python'
-        elif re.match(r'^(function |const |let |var |class |import |export )', code_stripped, re.MULTILINE):
-            return 'javascript'
-        elif re.match(r'^(func |package |import |type |struct )', code_stripped, re.MULTILINE):
-            return 'go'
-        elif re.match(r'^(public |private |protected |class |void |int )', code_stripped, re.MULTILINE):
-            return 'java'
+        for lang, pattern in patterns.items():
+            if pattern.match(code_stripped):
+                return lang
         
         return 'unknown'
     
@@ -164,23 +201,17 @@ class VerificationEngine:
             "Is there any unnecessary complexity?"
         ]
         
-        # Analyze code for common logic issues
+        patterns = _compile_verification_patterns()
         issues = []
         
-        # Check for empty functions
-        if re.search(r'def\s+\w+\(\s*\):\s*(?:pass|...|$)', code):
+        if patterns['empty_function'].search(code):
             issues.append("Empty function detected")
         
-        # Check for TODO/FIXME in code
-        if re.search(r'#\s*(TODO|FIXME|HACK|XXX)', code, re.IGNORECASE):
+        if patterns['todo'].search(code):
             issues.append("Unresolved TODO/FIXME in code")
         
-        # Check for potential infinite loops
-        if re.search(r'while\s+True:', code) and 'break' not in code:
+        if patterns['infinite_loop'].search(code) and 'break' not in code:
             issues.append("Potential infinite loop without break")
-        
-        # Check for unused variables
-        # (simplified check - would need AST for proper analysis)
         
         if issues:
             return VerificationResult(
@@ -237,23 +268,17 @@ class VerificationEngine:
     
     def check_edge_cases(self, code: str, requirements: str) -> VerificationResult:
         """Check edge case handling"""
-        edge_cases = {
-            'null_handling': r'(?:is\s+None|==\s+None|is\s+not\s+None|null|\bnull\b)',
-            'empty_input': r'(?:if\s+not\s+\w+|if\s+\w+\s*==\s*[\[\(\{]|len\()',
-            'exception_handling': r'(?:try:|except|raise|throw)',
-            'type_checking': r'(?:isinstance|type\(|typeof)',
-        }
+        patterns = _compile_edge_case_patterns()
         
         found_handling = []
         missing_handling = []
         
-        for case_name, pattern in edge_cases.items():
-            if re.search(pattern, code):
+        for case_name, pattern in patterns.items():
+            if pattern.search(code):
                 found_handling.append(case_name)
             else:
                 missing_handling.append(case_name)
         
-        # Check for common edge cases in requirements
         if 'null' in requirements.lower() or 'none' in requirements.lower():
             if 'null_handling' not in found_handling:
                 missing_handling.append('null handling (required by spec)')
@@ -284,26 +309,22 @@ class VerificationEngine:
     
     def check_security(self, code: str, requirements: str) -> VerificationResult:
         """Check for common security issues"""
+        patterns = _compile_verification_patterns()
         issues = []
         
-        # Check for SQL injection vulnerabilities
-        if re.search(r'(?:execute|query|cursor)\s*\([^)]*\+[^)]*\)', code, re.IGNORECASE):
+        if patterns['sql_injection'].search(code):
             issues.append("Potential SQL injection - string concatenation in query")
         
-        # Check for hardcoded credentials
-        if re.search(r'(?:password|secret|api_key|token)\s*=\s*["\'][^"\']{8,}["\']', code, re.IGNORECASE):
+        if patterns['hardcoded_creds'].search(code):
             issues.append("Potential hardcoded credentials detected")
         
-        # Check for eval usage
-        if re.search(r'\beval\s*\(', code):
+        if patterns['eval_usage'].search(code):
             issues.append("Use of eval() is a security risk")
         
-        # Check for command injection
-        if re.search(r'(?:os\.system|subprocess\.call|os\.popen)\s*\([^)]*\+[^)]*\)', code):
+        if patterns['command_injection'].search(code):
             issues.append("Potential command injection - string concatenation in system call")
         
-        # Check for insecure random
-        if re.search(r'random\.(?:random|randint)\s*\(', code) and 'security' in requirements.lower():
+        if patterns['insecure_random'].search(code) and 'security' in requirements.lower():
             issues.append("Insecure random for security purposes - use secrets module")
         
         if issues:
@@ -324,20 +345,15 @@ class VerificationEngine:
     
     def check_performance(self, code: str, requirements: str) -> VerificationResult:
         """Check for common performance issues"""
+        patterns = _compile_verification_patterns()
         issues = []
         
-        # Check for nested loops that might be O(n^2)
         if len(re.findall(r'\bfor\s+', code)) >= 2:
-            # Check if there's nested iteration
-            if re.search(r'for\s+\w+\s+in\s+.*:\s*.*for\s+\w+\s+in\s+', code, re.DOTALL):
+            if patterns['nested_loops'].search(code):
                 issues.append("Potential O(n^2) nested loops detected")
         
-        # Check for inefficient string concatenation in loop
-        if re.search(r'\+=.*\n.*for\s+', code, re.DOTALL):
+        if patterns['string_concat_loop'].search(code):
             issues.append("String concatenation in loop - use list join instead")
-        
-        # Check for missing indexes on frequently queried fields
-        # (would need database context)
         
         if issues:
             return VerificationResult(

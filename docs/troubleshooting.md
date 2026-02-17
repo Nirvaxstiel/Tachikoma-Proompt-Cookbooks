@@ -14,8 +14,6 @@ Common issues and solutions for working with Tachikoma, skills, agents, and capa
 | Context module missing | Check file path and naming |
 | Edit format failing | Try model-aware-editor skill |
 
----
-
 ## FAQ
 
 ### General Questions
@@ -31,8 +29,6 @@ A: Create custom skills, agents, or context modules following the [Agent Skills 
 
 **Q: Can I use Tachikoma with different AI agents?**
 A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with any skills-supporting agent.
-
----
 
 ## Skill Issues
 
@@ -57,6 +53,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
    ---  # Missing closing dashes
    name: MySkill  # Uppercase not allowed
    name: my-skill  # Description field missing
+   ---
    ```
 
 2. **Verify Naming**
@@ -130,8 +127,6 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
    - Link from main SKILL.md
    - Load only when needed
 
----
-
 ## Intent Routing Issues
 
 ### Wrong Intent Classification
@@ -199,8 +194,6 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
    - Include synonyms
    - Account for different phrasings
 
----
-
 ## Context Module Issues
 
 ### Module Not Loading
@@ -267,8 +260,6 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
    - Avoid overlap
    - Each module has clear focus
 
----
-
 ## Subagent Issues
 
 ### Subagent Not Invoked
@@ -327,8 +318,6 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
    - Verify subagent has required tools
    - Check tool syntax
    - Test tools manually
-
----
 
 ## Common Mistakes
 
@@ -413,8 +402,6 @@ routes:
 - Use skill chains for complexity
 - Split when too large
 
----
-
 ## Debugging Tips
 
 ### Enable Debug Mode
@@ -461,8 +448,6 @@ Test components individually:
 3. Identify where it fails
 4. Fix the specific issue
 
----
-
 ## Performance Issues
 
 ### Slow Response Times
@@ -506,8 +491,6 @@ Test components individually:
    - Reuse loaded context when possible
    - Avoid re-loading same modules
 
----
-
 ## Getting Help
 
 ### When to Seek Help
@@ -549,8 +532,6 @@ When reporting issues:
 - [Context Modules](/capabilities/customization/context-modules)
 - [Intent Routing](/capabilities/intent-routing)
 
----
-
 ## Best Practices Checklist
 
 ### Creating Skills
@@ -584,8 +565,6 @@ When reporting issues:
 - [ ] Error handling in place
 - [ ] Tested with large context
 
----
-
 ## Quick Reference
 
 ### Common YAML Errors
@@ -614,8 +593,6 @@ When reporting issues:
 | Context Modules | `.opencode/context/XX-my-module.md` |
 | Routes | `.opencode/config/intent-routes.yaml` |
 | Intent Classifier | `.opencode/skills/intent-classifier/SKILL.md` |
-
----
 
 ## See Also
 
