@@ -152,7 +152,7 @@ User: "Save this analysis"
 
 Tachikoma:
   1. Context Manager: harvest ANALYSIS.md
-     → Creates .opencode/context/40-analysis.md
+     → Creates .opencode/context-modules/40-analysis.md
   2. Updates intent-routes.yaml (optional)
   3. Confirms: Available for future use
 ```

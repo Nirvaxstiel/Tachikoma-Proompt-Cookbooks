@@ -7,7 +7,7 @@
 ## Structure
 
 ```
-.opencode/context/
+.opencode/context-modules/
 ├── 00-core-contract.md        # Universal rules (always loaded first)
 ├── 10-coding-standards.md     # Code patterns & design philosophy
 ├── 15-commenting-rules.md     # Comment guidelines
@@ -73,7 +73,7 @@ Create new context files following the naming convention:
 
 ```bash
 # Create a new context module (priority 40)
-cat > .opencode/context/40-my-project.md << 'EOF'
+cat > .opencode/context-modules/40-my-project.md << 'EOF'
 ---
 module_id: my-project-rules
 name: My Project Patterns

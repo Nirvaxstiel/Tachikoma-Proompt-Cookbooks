@@ -62,7 +62,7 @@ Use LLM-based classification when:
 To fall back, load the intent-classifier skill and reason through it:
 
 ```
-Read: .opencode/skills/intent-classifier/SKILL.md
+skill({ name: "intent-classifier" })
 ```
 
 ## Context Loading

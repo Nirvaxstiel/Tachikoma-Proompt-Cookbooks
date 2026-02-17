@@ -36,7 +36,7 @@ Tachikoma:
 1. **Receives request** — Your message
 2. **Classifies intent** — What do you want to do?
 3. **Loads context** — Project rules relevant to this intent
-4. **Routes to specialist** — Skill, subagent, or skill chain
+4. **Routes to specialist** — Skill, subagent, workflow, or skills_bulk
 5. **Returns result** — What happened + confidence score
 
 ## Components
@@ -47,7 +47,7 @@ Tachikoma:
 | **Intent Classifier** | `.opencode/skills/intent-classifier/SKILL.md` | Classifies requests into intents |
 | **Intent Routes** | `.opencode/config/intent-routes.yaml` | Maps intents → skills/subagents |
 | **Confidence Routes** | `.opencode/config/intent-routes.yaml` | Configures confidence-based escalation |
-| **Context Modules** | `.opencode/context/*.md` | Project rules by priority |
+| **Context Modules** | `.opencode/context-modules/*.md` | Project rules by priority |
 
 ## Request Flow
 
@@ -70,7 +70,8 @@ Report Results
 At any point, Tachikoma can:
 - **Ask for clarification** (if intent is unclear)
 - **Delegate to subagent** (if context is too large)
-- **Use a skill chain** (if task needs multiple steps)
+- **Use a workflow** (sequential: implement → verify → format)
+- **Use skills_bulk** (all at once, agent decides)
 
 ## Cost-Aware Routing
 

@@ -112,7 +112,7 @@ bash router.sh harvest ANALYSIS.md
 ```
 
 **What it does**:
-- Creates `.opencode/context/40-{filename}.md`
+- Creates `.opencode/context-modules/40-{filename}.md`
 - Extracts headers and key sections
 - Adds metadata (source, date, dependencies)
 - Ready to be added to intent-routes.yaml
@@ -213,7 +213,7 @@ User: "Save this analysis as context"
 
 Tachikoma:
   1. Harvest: bash router.sh harvest ANALYSIS.md
-  2. Creates: .opencode/context/40-analysis.md
+  2. Creates: .opencode/context-modules/40-analysis.md
   3. Updates: intent-routes.yaml (if needed)
   4. Confirms: Context available for future use
 ```

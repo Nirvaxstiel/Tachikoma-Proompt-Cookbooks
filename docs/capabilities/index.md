@@ -36,16 +36,22 @@ Specialized capabilities for specific tasks. Each skill is an expert in its doma
 - Progressive disclosure (load only what's needed)
 - Easy to extend with custom skills
 
-### [Skill Chains](./skill-chains.md)
+### [Workflows & Skills](/capabilities/skill-chains.md)
 
-Links multiple skills together for complex workflows. Output of one skill becomes input for the next.
+Link multiple skills together for complex workflows using:
+- **Workflows** (sequential): Each skill sees the result of the previous
+- **Skills Bulk** (all at once): Agent decides which to use
 
-**Built-in chains:**
+**Built-in workflows:**
 - `implement-verify`: Code generation with verification
 - `research-implement`: Research then build
 - `security-implement`: Security-critical code with maximum verification
 - `deep-review`: Thorough code review with self-verification
 - `complex-research`: Multi-source research with verification
+
+**Skills bulk:**
+- `coding-all`: All coding skills available
+- `research-all`: All research skills available
 
 ### [Composite Intents](./composite-intents.md)
 
@@ -171,7 +177,7 @@ Create project-specific rules and conventions.
 |------|------------|
 | Fix a bug | [Intent Routing](./intent-routing.md) → `debug` intent |
 | Write code | [Skill Execution](./skill-execution.md) → `code-agent` |
-| Review code | [Skill Chains](./skill-chains.md) → `deep-review` |
+| Review code | [Workflows](./skill-chains.md) → `deep-review` |
 | Large refactoring | [Subagents](./subagents.md) → `rlm-optimized` |
 | Research APIs | [Skill Execution](./skill-execution.md) → `research-agent` |
 | Git operations | [Intent Routing](./intent-routing.md) → `git` intent |
@@ -182,7 +188,7 @@ Create project-specific rules and conventions.
 |------------|---------------------|
 | Simple (< 1 file) | Single skill |
 | Medium (1-5 files) | Skill with context |
-| Complex (5+ files) | [Skill Chains](./skill-chains.md) |
+| Complex (5+ files) | [Workflows](./skill-chains.md) or skills_bulk |
 | Very Complex (> 2000 tokens) | [Subagents](./subagents.md) |
 
 ## Research Foundation

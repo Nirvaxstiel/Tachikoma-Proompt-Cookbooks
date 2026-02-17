@@ -1,34 +1,63 @@
-# Skill Chains
+# Skills & Workflows
 
-Link multiple skills together for complex workflows.
+Link multiple skills together for complex workflows using **workflows** (sequential) or **skills_bulk** (all at once).
 
-## What This Is
+## Two Modes
 
-Skill chains link multiple skills in sequence. The output of one skill becomes input for the next. This enables sophisticated workflows beyond what any single skill can accomplish.
+### Workflows (Sequential)
 
-Think of it as an assembly line: each skill does its part, passes it along, and the next skill refines it further.
+Skills execute **one after another** — each skill sees the result of the previous. Use when:
+- Implementation → Verification → Format
+- Research → Implement
+- Analysis → Review → Validate
+
+### Skills Bulk (All at Once)
+
+All skills are loaded **at once** into context. The agent picks what to use. Use when:
+- Multi-tool tasks
+- Agent decides best approach
+- Flexibility is needed
+
+---
 
 ## How It Works
 
+### Workflows
+
 1. **Intent is classified** — Tachikoma figures out what you want
-2. **Route specifies chain** — Intent routes can define skill chains for complex intents
+2. **Route specifies workflow** — Sequential execution
 3. **Skills execute in sequence** — Output of skill A → input for skill B
 4. **Results are synthesized** — Combined result from all skills
 
-## Why Skill Chains Matter
+### Skills Bulk
 
-Without skill chains:
+1. **Intent is classified** — Tachikoma figures out what you want
+2. **All skills loaded** — Via multiple `skill()` calls
+3. **Agent decides** — Which skills to use and in what order
+4. **Flexible execution** — Adapts to task needs
+
+---
+
+## Why This Matters
+
+Without workflows/skills:
 - **Single perspective** — One skill with its biases
 - **No verification** — Errors propagate silently
 - **Fixed approach** — Can't adapt to task complexity
 
-With skill chains:
+With workflows:
 - **Multiple perspectives** — Different skills have different strengths
 - **Progressive refinement** — Each skill improves the output
 - **Error catching** — Verification skills catch what generators missed
-- **Higher reliability** — For critical tasks, this matters
 
-## Available Skill Chains
+With skills_bulk:
+- **Agent flexibility** — Adapts to what's needed
+- **Efficient** — No unnecessary steps
+- **Multi-tool** — Can handle varied tasks
+
+---
+
+## Available Workflows (Sequential)
 
 ### implement-verify
 
@@ -52,7 +81,7 @@ With skill chains:
 **Example:**
 ```
 User: "Implement authentication system"
-→ Chain: implement-verify
+→ Workflow: implement-verify
 → Result: Generated code, verified for issues, formatted
 ```
 
@@ -76,13 +105,6 @@ User: "Implement authentication system"
 4. formatter: Clean up result
 ```
 
-**Example:**
-```
-User: "Add OAuth2 authentication with Google"
-→ Chain: research-implement
-→ Result: Researched OAuth2 flows, fetched docs, implemented
-```
-
 ### security-implement
 
 **Purpose:** Security-critical implementation with maximum verification
@@ -94,21 +116,6 @@ User: "Add OAuth2 authentication with Google"
 - Cryptographic implementations
 - Payment processing
 - Security-sensitive features
-
-**Flow:**
-```
-1. context7: Fetch latest security best practices
-2. code-agent: Generate secure implementation
-3. verifier-code-agent: Verify correctness
-4. reflection-orchestrator: Self-critique and validate
-```
-
-**Example:**
-```
-User: "Implement JWT token handling"
-→ Chain: security-implement
-→ Result: Secure, verified, self-validated implementation
-```
 
 ### deep-review
 
@@ -122,19 +129,6 @@ User: "Implement JWT token handling"
 - Architecture evaluation
 - Before major releases
 
-**Flow:**
-```
-1. analysis-agent: Initial code analysis
-2. reflection-orchestrator: Self-critique findings
-```
-
-**Example:**
-```
-User: "Review this payment module thoroughly"
-→ Chain: deep-review
-→ Result: Analysis + adversarial self-verification
-```
-
 ### complex-research
 
 **Purpose:** Multi-source research with verification
@@ -147,87 +141,120 @@ User: "Review this payment module thoroughly"
 - Architecture decisions
 - Need high-confidence research
 
-**Flow:**
-```
-1. research-agent: Initial investigation
-2. context7: Fetch authoritative sources
-3. reflection-orchestrator: Validate findings
-```
+---
 
-**Example:**
-```
-User: "Research best database for our use case"
-→ Chain: complex-research
-→ Result: Comprehensive, verified research
-```
+## Available Skills Bulk
+
+### coding-all
+
+**Purpose:** All coding skills available
+
+**Skills:** `code-agent`, `verifier-code-agent`, `formatter`, `reflection-orchestrator`
+
+**Use When:**
+- Complex coding tasks
+- Agent should decide approach
+- Need multiple capabilities available
+
+### research-all
+
+**Purpose:** All research skills available
+
+**Skills:** `research-agent`, `context7`, `analysis-agent`
+
+**Use When:**
+- Research tasks
+- Agent should decide methodology
+- Need flexibility in approach
+
+### full-stack
+
+**Purpose:** Full coding + research capabilities
+
+**Skills:** `code-agent`, `verifier-code-agent`, `research-agent`, `context7`, `formatter`, `reflection-orchestrator`
+
+**Use When:**
+- Complex multi-domain tasks
+- Agent decides best approach
+- Maximum flexibility needed
+
+---
 
 ## Configuration
 
-Skill chains are defined in `.opencode/config/intent-routes.yaml`:
+Defined in `.opencode/config/intent-routes.yaml`:
 
 ```yaml
-skill_chains:
+# Sequential - pass context through each stage
+workflows:
   implement-verify:
     description: "Implementation with verification loop"
-    skills:
-      - code-agent
-      - verifier-code-agent
-      - formatter
+    skills: [code-agent, verifier-code-agent, formatter]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules
+
+# All at once - inject all, agent decides
+skills_bulk:
+  coding-all:
+    description: "All coding skills available"
+    skills: [code-agent, verifier-code-agent, formatter, reflection-orchestrator]
 ```
 
-## Chain Modes
+---
 
-### Sequential (Default)
+## Invocation
 
-Skills execute one after another:
+Use OpenCode's native `skill()` tool:
+
+```python
+# For workflows - sequential execution
+skill({ name: "code-agent" })      # 1. Execute
+skill({ name: "verifier-code-agent" })  # 2. Sees result from #1
+skill({ name: "formatter" })       # 3. Formats result
+
+# For skills bulk - all at once
+skill({ name: "code-agent" })
+skill({ name: "verifier-code-agent" })
+skill({ name: "formatter" })
+skill({ name: "reflection-orchestrator" })
+# Agent has ALL skills, picks what to use
 ```
-Skill A → Output → Skill B → Output → Skill C
-```
 
-**Best for:** Verification chains, progressive refinement
+---
 
-### Parallel (Future)
+## When to Use What
 
-Skills execute simultaneously:
-```
-          ┌→ Skill A ─┐
-Input ────┼→ Skill B ─┼→ Synthesize → Output
-          └→ Skill C ─┘
-```
+| Mode | Use Case | Example |
+|------|----------|---------|
+| **Single skill** | Routine tasks | Quick fix, simple change |
+| **workflow** | Sequential needed | Implement → Verify → Format |
+| **skills_bulk** | Agent decides | Complex, flexible tasks |
 
-**Best for:** Multi-perspective analysis
+### Use workflow when:
+- ✓ Task has clear stages
+- ✓ Each stage depends on previous
+- ✓ Verification is critical
+- ✓ Fixed order matters
+
+### Use skills_bulk when:
+- ✓ Task is complex/unpredictable
+- ✓ Agent should decide approach
+- ✓ Flexibility is priority
+- ✓ Multiple options might apply
+
+---
 
 ## Cost Considerations
 
-Skill chains provide reliability at the cost of latency:
+| Mode | Skills | Est. Latency | Best For |
+|------|--------|--------------|----------|
+| Single skill | 1 | 10-20s | Routine |
+| workflow | 2-4 | 30-90s | Critical, multi-stage |
+| skills_bulk | 2-6 | 20-60s | Flexible, complex |
 
-| Chain | Skills | Estimated Latency | Best For |
-|-------|--------|-------------------|----------|
-| implement-verify | 3 | 30-60s | Critical features |
-| research-implement | 4 | 45-90s | Unfamiliar tech |
-| security-implement | 4 | 45-90s | Security code |
-| deep-review | 2 | 20-40s | Important reviews |
-| complex-research | 3 | 30-60s | Deep investigation |
-
-## When to Use Chains
-
-**Use a chain when:**
-- ✓ Task is high-stakes (production, security, payments)
-- ✓ Multiple verification stages needed
-- ✓ You need research + implementation
-- ✓ Error detection is critical
-- ✓ Time allows for thoroughness
-
-**Use single skill when:**
-- ✓ Task is routine
-- ✓ Quick turnaround needed
-- ✓ Low risk if imperfect
-- ✓ Budget constraints
+---
 
 ## Research Basis
 
@@ -237,7 +264,7 @@ Skill chains provide reliability at the cost of latency:
 - 4B proposer model + modular skills = 91.6% accuracy
 - Modular beats monolithic
 
-**Application:** Each skill in Tachikoma is focused and specialized. Chaining them achieves better results than one giant skill.
+**Application:** Each skill in Tachikoma is focused and specialized. Workflows achieve better results than one giant skill.
 
 ### Verification Improves Quality
 
@@ -247,30 +274,40 @@ Skill chains provide reliability at the cost of latency:
 
 **Application:** `verifier-code-agent` and `reflection-orchestrator` skills implement verification patterns.
 
-## Creating Custom Chains
+---
 
-Define custom chains in `.opencode/config/intent-routes.yaml`:
+## Creating Custom Workflows
 
 ```yaml
-skill_chains:
-  my-custom-chain:
-    description: "Custom workflow"
-    skills:
-      - skill-a
-      - skill-b
-      - skill-c
+workflows:
+  my-custom-workflow:
+    description: "Custom sequential workflow"
+    skills: [skill-a, skill-b, skill-c]
     mode: sequential
     context_modules:
       - 00-core-contract
 ```
 
-## Debugging Chains
+## Creating Custom Skills Bulk
 
-If a chain fails:
+```yaml
+skills_bulk:
+  my-custom-bulk:
+    description: "Custom skill set"
+    skills: [skill-a, skill-b, skill-c, skill-d]
+```
+
+---
+
+## Debugging
+
+If a workflow fails:
 1. Check which skill failed
 2. Review that skill's output
 3. Consider adjusting context modules
-4. Try simpler chain or single skill
+4. Try simpler workflow or single skill
+
+---
 
 ## See Also
 

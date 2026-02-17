@@ -1,11 +1,12 @@
 # Intent Routing Configuration
 # Defines how Tachikoma orchestrator routes tasks based on classified intent
-# Version: 1.1.2
+# Version: 1.1.3
 #
 # ⚠️  CRITICAL: Skill vs Subagent Distinction
 # -----------------------------------------
 # SKILL:    Guidance document that you LOAD and FOLLOW
-#           Usage: Read: .opencode/skills/{name}/SKILL.md
+#           Usage: skill({ name: "code-agent" })
+#           Output: Returns <skill_content> block with instructions
 #           Then: Execute using tools directly (Edit, Read, Grep, etc.)
 #           Examples: code-agent, analysis-agent, research-agent
 #
@@ -14,7 +15,15 @@
 #           Then: Wait for subagent to complete and return result
 #           Examples: rlm-subcall, rlm-optimized
 #
-# NEVER use task() for skills or Read for subagents!
+# NEVER use task() for skills or skill() for subagents!
+# -----------------------------------------
+
+# SKILL CHAINS: Load multiple skills sequentially
+# Usage: Call skill() for each skill in the chain
+# Example:
+#   1. skill({ name: "code-agent" }) → execute
+#   2. skill({ name: "verifier-code-agent" }) → execute
+#   3. skill({ name: "formatter" }) → execute
 # -----------------------------------------
 
 # ============================================
@@ -30,7 +39,7 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
-    skill_load_instruction: "Read: .opencode/skills/code-agent/SKILL.md"
+    skill_load_instruction: 'skill({ name: "code-agent" })'
     skill_usage: "Load skill, then follow its workflow (inspect→extract→validate→implement→verify→stop) using tools directly"
     invoke_via: skill  # skill = load and follow | subagent = delegate
     tools:
@@ -49,7 +58,7 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
-    skill_load_instruction: "Read: .opencode/skills/code-agent/SKILL.md"
+    skill_load_instruction: 'skill({ name: "code-agent" })'
     skill_usage: "Load skill, then follow its workflow (inspect→extract→validate→implement→verify→stop) using tools directly"
     invoke_via: skill
     tools:
@@ -70,7 +79,7 @@ routes:
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
       - 30-research-methods
     skill: analysis-agent
-    skill_load_instruction: "Read: .opencode/skills/analysis-agent/SKILL.md"
+    skill_load_instruction: 'skill({ name: "analysis-agent" })'
     skill_usage: "Load skill, then follow its analysis workflow using tools directly"
     invoke_via: skill
     tools:
@@ -88,7 +97,7 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
-    skill_load_instruction: "Read: .opencode/skills/code-agent/SKILL.md"
+    skill_load_instruction: 'skill({ name: "code-agent" })'
     skill_usage: "Load skill, then follow its refactoring workflow using tools directly"
     invoke_via: skill
     tools:
@@ -107,7 +116,7 @@ routes:
       - 00-core-contract
       - 30-research-methods
     skill: research-agent
-    skill_load_instruction: "Read: .opencode/skills/research-agent/SKILL.md"
+    skill_load_instruction: 'skill({ name: "research-agent" })'
     skill_usage: "Load skill, then follow its research methodology using tools directly"
     invoke_via: skill
     tools:
@@ -125,7 +134,7 @@ routes:
       - 00-core-contract
       - 20-git-workflow
     skill: git-commit
-    skill_load_instruction: "Read: .opencode/skills/git-commit/SKILL.md"
+    skill_load_instruction: 'skill({ name: "git-commit" })'
     skill_usage: "Load skill, then follow its git workflow using tools directly"
     invoke_via: skill
     tools:
@@ -141,7 +150,7 @@ routes:
       - 00-core-contract
       - 12-commenting-rules  # Documentation includes code comments
     skill: self-learning
-    skill_load_instruction: "Read: .opencode/skills/self-learning/SKILL.md"
+    skill_load_instruction: 'skill({ name: "self-learning" })'
     skill_usage: "Load skill, then follow its documentation workflow using tools directly"
     invoke_via: skill
     tools:
@@ -184,7 +193,7 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: skill-composer
-    skill_load_instruction: "Read: .opencode/skills/skill-composer/SKILL.md"
+    skill_load_instruction: 'skill({ name: "skill-composer" })'
     skill_usage: "Load skill, then follow its composition workflow using tools directly"
     invoke_via: skill
     tools:
@@ -201,7 +210,7 @@ routes:
     context_modules:
       - 00-core-contract
     skill: context-manager
-    skill_load_instruction: "Read: .opencode/skills/context-manager/SKILL.md"
+    skill_load_instruction: 'skill({ name: "context-manager" })'
     skill_usage: "Load skill, then follow its optimization workflow using tools directly"
     invoke_via: skill
     tools:
@@ -219,7 +228,7 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: verifier-code-agent
-    skill_load_instruction: "Read: .opencode/skills/verifier-code-agent/SKILL.md"
+    skill_load_instruction: 'skill({ name: "verifier-code-agent" })'
     skill_usage: "Load skill, then follow its verify workflow using tools directly"
     invoke_via: skill
     tools:
@@ -239,7 +248,7 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: reflection-orchestrator
-    skill_load_instruction: "Read: .opencode/skills/reflection-orchestrator/SKILL.md"
+    skill_load_instruction: 'skill({ name: "reflection-orchestrator" })'
     skill_usage: "Load skill, then follow its reflection workflow using tools directly"
     invoke_via: skill
     tools:
@@ -256,7 +265,7 @@ routes:
     context_modules:
       - 00-core-contract
     skill: model-aware-editor
-    skill_load_instruction: "Read: .opencode/skills/model-aware-editor/SKILL.md"
+    skill_load_instruction: 'skill({ name: "model-aware-editor" })'
     skill_usage: "Load skill, then use hashline processor for reliable edits"
     invoke_via: skill
     tools:
@@ -267,119 +276,95 @@ routes:
     notes: Use when experiencing edit failures or working with multiple models.
 
 # ============================================
-# SKILL CHAINS (Multi-Skill Orchestration)
+# WORKFLOWS (Sequential - pass context through each stage)
 # ============================================
-# ⚠️  SKILL CHAIN USAGE:
-# Each skill in a chain is loaded INDIVIDUALLY using Read, then executed in sequence.
-# Skills in chains follow the same rules as standalone skills - NEVER use task() for them!
+# ⚠️  WORKFLOW USAGE:
+# Skills execute SEQUENTIALLY - each skill sees the result of the previous.
+# Use when: implement → verify → format, or research → implement
 #
-# Example flow for "implement-verify" chain:
-#   1. Read: .opencode/skills/code-agent/SKILL.md
-#      → Execute code changes
-#   2. Read: .opencode/skills/verifier-code-agent/SKILL.md
-#      → Verify the changes
-#   3. Read: .opencode/skills/formatter/SKILL.md
-#      → Format the result
+# Execution:
+#   1. skill({ name: "code-agent" }) → executes → result
+#   2. skill({ name: "verifier-code-agent" }) → sees result → executes
+#   3. skill({ name: "formatter" }) → formats
 #
-# Mode: sequential = execute one after another
-# Mode: parallel = execute simultaneously (if independent)
+# mode: sequential (default) - one after another
 # ============================================
-skill_chains:
-  # High-reliability implementation chain
+workflows:
+  # High-reliability implementation workflow
   implement-verify:
     description: "Implementation with verification loop"
-    skills:
-      - code-agent
-      - verifier-code-agent
-      - formatter
-    skill_load_instructions:
-      code-agent: "Read: .opencode/skills/code-agent/SKILL.md"
-      verifier-code-agent: "Read: .opencode/skills/verifier-code-agent/SKILL.md"
-      formatter: "Read: .opencode/skills/formatter/SKILL.md"
-    chain_usage: "Load each skill in sequence using Read, execute following each skill's workflow"
-    invoke_via: skill_chain  # Each skill loaded with Read, executed in sequence
+    skills: [code-agent, verifier-code-agent, formatter]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules
 
-  # Research-then-implement chain  
+  # Research-then-implement workflow  
   research-implement:
     description: "Research followed by implementation"
-    skills:
-      - research-agent
-      - context7
-      - code-agent
-      - formatter
-    skill_load_instructions:
-      research-agent: "Read: .opencode/skills/research-agent/SKILL.md"
-      context7: "Read: .opencode/skills/context7/SKILL.md"
-      code-agent: "Read: .opencode/skills/code-agent/SKILL.md"
-      formatter: "Read: .opencode/skills/formatter/SKILL.md"
-    chain_usage: "Load each skill in sequence using Read, execute following each skill's workflow"
-    invoke_via: skill_chain
+    skills: [research-agent, context7, code-agent, formatter]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules
 
-  # High-stakes security chain
+  # High-stakes security workflow
   security-implement:
     description: "Security-critical implementation"
-    skills:
-      - context7
-      - code-agent
-      - verifier-code-agent
-      - reflection-orchestrator
-    skill_load_instructions:
-      context7: "Read: .opencode/skills/context7/SKILL.md"
-      code-agent: "Read: .opencode/skills/code-agent/SKILL.md"
-      verifier-code-agent: "Read: .opencode/skills/verifier-code-agent/SKILL.md"
-      reflection-orchestrator: "Read: .opencode/skills/reflection-orchestrator/SKILL.md"
-    chain_usage: "Load each skill in sequence using Read, execute following each skill's workflow"
-    invoke_via: skill_chain
+    skills: [context7, code-agent, verifier-code-agent, reflection-orchestrator]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules
 
   # Review with reflection
   deep-review:
     description: "In-depth code review with self-verification"
-    skills:
-      - analysis-agent
-      - reflection-orchestrator
-    skill_load_instructions:
-      analysis-agent: "Read: .opencode/skills/analysis-agent/SKILL.md"
-      reflection-orchestrator: "Read: .opencode/skills/reflection-orchestrator/SKILL.md"
-    chain_usage: "Load each skill in sequence using Read, execute following each skill's workflow"
-    invoke_via: skill_chain
+    skills: [analysis-agent, reflection-orchestrator]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules
 
-  # Complex research chain
+  # Complex research workflow
   complex-research:
     description: "Multi-source research with verification"
-    skills:
-      - research-agent
-      - context7
-      - reflection-orchestrator
-    skill_load_instructions:
-      research-agent: "Read: .opencode/skills/research-agent/SKILL.md"
-      context7: "Read: .opencode/skills/context7/SKILL.md"
-      reflection-orchestrator: "Read: .opencode/skills/reflection-orchestrator/SKILL.md"
-    chain_usage: "Load each skill in sequence using Read, execute following each skill's workflow"
-    invoke_via: skill_chain
+    skills: [research-agent, context7, reflection-orchestrator]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 30-research-methods
+
+# ============================================
+# SKILLS BULK (All at once - inject all, agent decides)
+# ============================================
+# ⚠️  SKILLS BULK USAGE:
+# ALL skills are loaded at once into context.
+# Agent can use ANY of them as needed.
+# Use when: multi-tool tasks, agent decides what to use
+#
+# Execution:
+#   1. skill({ name: "code-agent" })
+#   2. skill({ name: "verifier-code-agent" })
+#   3. skill({ name: "formatter" })
+#   → Agent has ALL available, picks what to use
+# ============================================
+skills_bulk:
+  coding-all:
+    description: "All coding skills available"
+    skills: [code-agent, verifier-code-agent, formatter, reflection-orchestrator]
+
+  research-all:
+    description: "All research skills available"
+    skills: [research-agent, context7, analysis-agent]
+
+  full-stack:
+    description: "Full coding + research capabilities"
+    skills: [code-agent, verifier-code-agent, research-agent, context7, formatter, reflection-orchestrator]
 
 # ============================================
 # COMPOSITE INTENTS
@@ -486,20 +471,92 @@ module_priority:
 #   git-commit:              .opencode/skills/git-commit/SKILL.md
 #   self-learning:           .opencode/skills/self-learning/SKILL.md
 #
-# SKILL CHAINS (Load each skill with Read, execute in sequence):
-#   Each skill in a chain is loaded INDIVIDUALLY using Read
-#   Then executed following that skill's workflow
-#   Example: implement-verify chain
-#     1. Read: .opencode/skills/code-agent/SKILL.md → execute
-#     2. Read: .opencode/skills/verifier-code-agent/SKILL.md → execute
-#     3. Read: .opencode/skills/formatter/SKILL.md → execute
+# WORKFLOWS (Sequential - pass context through each stage):
+#   Skills execute SEQUENTIALLY - each skill sees result of previous
+#   Example: implement-verify workflow
+#     1. skill({ name: "code-agent" }) → execute
+#     2. skill({ name: "verifier-code-agent" }) → sees result → execute
+#     3. skill({ name: "formatter" }) → format
+#
+# SKILLS BULK (All at once - inject all, agent decides):
+#   ALL skills loaded at once, agent picks what to use
+#   Example:
+#     1. skill({ name: "code-agent" })
+#     2. skill({ name: "verifier-code-agent" })
+#     3. skill({ name: "formatter" })
+#     → Agent has ALL available, uses as needed
 #
 # SUBAGENTS (Delegate with task()):
 #   rlm-subcall:    task(subagent_type='rlm-subcall', ...)
 #   rlm-optimized:  task(subagent_type='rlm-optimized', ...)
 #
 # RULES:
-#   If route has 'skill:' key → use Read to load
+#   If route has 'skill:' key → use skill() to load
 #   If route has 'subagent:' key → use task() to delegate
-#   If route has 'skills:' array (chain) → use Read for each, execute in sequence
+#   If route matches a workflow → execute skills sequentially
+#   If route matches skills_bulk → load all skills at once
 # ============================================
+
+# ============================================
+# INTENT DETECTION KEYWORDS
+# Used by CLI router for fast pattern matching
+# ============================================
+intent_keywords:
+  debug:
+    - "fix"
+    - "debug"
+    - "broken"
+    - "error"
+    - "bug"
+    - "issue"
+    - "not working"
+
+  implement:
+    - "add"
+    - "implement"
+    - "create"
+    - "write"
+    - "build"
+    - "make"
+    - "feature"
+
+  review:
+    - "review"
+    - "audit"
+    - "check"
+    - "analyze"
+    - "quality"
+    - "assess"
+
+  research:
+    - "research"
+    - "find"
+    - "investigate"
+    - "look up"
+    - "search"
+    - "discover"
+
+  git:
+    - "git"
+    - "commit"
+    - "push"
+    - "pull"
+    - "merge"
+    - "branch"
+    - "pr"
+
+  document:
+    - "document"
+    - "docs"
+    - "readme"
+    - "explain"
+    - "learn"
+    - "remember"
+
+  complex:
+    - "complex"
+    - "large"
+    - "many files"
+    - "refactor"
+    - "redesign"
+    - "architecture"

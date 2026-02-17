@@ -203,38 +203,74 @@ def detect_complexity(query: str) -> float:
     return min(complexity, 1.0)
 
 
-def detect_skill_chain_need(query: str) -> Optional[Dict]:
+def detect_workflow_need(query: str) -> Optional[Dict]:
+    """Detect if a workflow is needed (sequential execution)"""
     query_lower = normalize_query(query)
 
+    # Research → Implement workflow
     if re.search(r"\bresearch\b.*\b(implement|add|create|build)/i", query_lower):
         return {
             "needed": True,
-            "chain": ["research-agent", "code-agent"],
+            "name": "research-implement",
+            "skills": ["research-agent", "context7", "code-agent", "formatter"],
             "reason": "Explicit research-then-implement",
         }
 
+    # Implement → Verify workflow
     if re.search(r"\b(implement|add|create).*\b(verify|test|check)/i", query_lower):
         return {
             "needed": True,
-            "chain": ["code-agent", "verifier-code-agent"],
+            "name": "implement-verify",
+            "skills": ["code-agent", "verifier-code-agent", "formatter"],
             "reason": "Implementation with verification",
         }
 
+    # Security-critical workflow
     if re.search(
         r"\b(secure|auth|payment|encryption)\b.*\b(implement|add|fix)/i", query_lower
     ):
         return {
             "needed": True,
-            "chain": ["code-agent", "verifier-code-agent", "reflection-orchestrator"],
+            "name": "security-implement",
+            "skills": ["context7", "code-agent", "verifier-code-agent", "reflection-orchestrator"],
             "reason": "Security-critical implementation",
         }
 
+    # Review → Fix workflow
     if re.search(r"\b(review|analyze).*\b(fix|implement)/i", query_lower):
         return {
             "needed": True,
-            "chain": ["analysis-agent", "code-agent"],
+            "name": "deep-review",
+            "skills": ["analysis-agent", "reflection-orchestrator"],
             "reason": "Review followed by fix",
         }
+
+    return None
+
+
+def detect_skills_bulk_need(query: str) -> Optional[Dict]:
+    """Detect if skills bulk is needed (all at once, agent decides)"""
+    query_lower = normalize_query(query)
+
+    # Full coding capabilities
+    if re.search(r"\b(coding|code|program|develop)/i", query_lower):
+        if re.search(r"\b(all|everything|full|complete)/i", query_lower):
+            return {
+                "needed": True,
+                "name": "coding-all",
+                "skills": ["code-agent", "verifier-code-agent", "formatter", "reflection-orchestrator"],
+                "reason": "Full coding capabilities requested",
+            }
+
+    # Full research capabilities
+    if re.search(r"\b(research|investigate|find|discover)/i", query_lower):
+        if re.search(r"\b(all|everything|full|complete|thorough)/i", query_lower):
+            return {
+                "needed": True,
+                "name": "research-all",
+                "skills": ["research-agent", "context7", "analysis-agent"],
+                "reason": "Full research capabilities requested",
+            }
 
     return None
 
@@ -259,7 +295,8 @@ def classify_intent(query: str) -> Dict:
             "suggested_action": "llm",
             "keywords_matched": [],
             "alternative_intents": [],
-            "skill_chain": {"needed": False},
+            "workflow": {"needed": False},
+            "skills_bulk": {"needed": False},
             "complexity": detect_complexity(query),
         }
 
@@ -282,14 +319,19 @@ def classify_intent(query: str) -> Dict:
     else:
         action = "llm"
 
-    skill_chain = detect_skill_chain_need(query)
-    if skill_chain:
-        action = "skill_chain"
+    # Detect workflow (sequential) or skills_bulk (all at once)
+    workflow = detect_workflow_need(query)
+    skills_bulk = detect_skills_bulk_need(query)
+    
+    if workflow:
+        action = "workflow"
+    elif skills_bulk:
+        action = "skills_bulk"
 
     complexity = detect_complexity(query)
 
     if complexity > 0.7 and primary_intent not in ["complex"]:
-        action = "skill_chain" if skill_chain else "llm"
+        action = "workflow" if workflow else "skills_bulk" if skills_bulk else "llm"
 
     return {
         "intent": primary_intent,
@@ -300,7 +342,8 @@ def classify_intent(query: str) -> Dict:
         "alternative_intents": [
             {"intent": intent, "score": score} for intent, score in sorted_intents[1:3]
         ],
-        "skill_chain": skill_chain or {"needed": False},
+        "workflow": workflow or {"needed": False},
+        "skills_bulk": skills_bulk or {"needed": False},
         "complexity": round(complexity, 2),
     }
 
@@ -328,8 +371,11 @@ def main():
         print(f"Complexity: {result['complexity']}")
         print(f"Keywords: {', '.join(result['keywords_matched'])}")
 
-        if result["skill_chain"]["needed"]:
-            print(f"Skill chain: {' → '.join(result['skill_chain']['chain'])}")
+        if result["workflow"]["needed"]:
+            print(f"Workflow: {result['workflow']['name']} → {result['workflow']['skills']}")
+        
+        if result["skills_bulk"]["needed"]:
+            print(f"Skills Bulk: {result['skills_bulk']['name']} → {result['skills_bulk']['skills']}")
 
     return 0
 

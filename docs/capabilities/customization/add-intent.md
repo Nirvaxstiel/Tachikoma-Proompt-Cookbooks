@@ -178,12 +178,19 @@ routes:
 
 ### Complex Intent
 
-Routes to a skill chain:
+Routes to a workflow (sequential) or skills_bulk (all at once):
 
 ```yaml
+# For sequential workflows
 routes:
   my-complex-task:
-    skill_chain: my-complex-workflow
+    workflow: my-complex-workflow
+    confidence_threshold: 0.6
+
+# Or for skills bulk (agent decides)
+routes:
+  my-flexible-task:
+    skills_bulk: my-skill-set
     confidence_threshold: 0.6
 ```
 

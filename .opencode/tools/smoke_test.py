@@ -399,11 +399,6 @@ class SmokeTestFramework:
                 (["context", "--discover"], "discover context"),
                 (["full", "test query", "--json"], "full routing workflow"),
             ],
-            # Skill indexer
-            "skill-indexer.py": [
-                (["stats"], "show index stats"),
-                (["search", "code"], "search skills"),
-            ],
             # Intent classifier
             "fast_heuristic.py": [
                 (["fix the bug", "--json"], "classify intent"),

@@ -189,24 +189,19 @@ User: "Migrate the user table to add email_verified column"
 → Result: Migration planned and executed
 ```
 
-### Example 2: Skill Chain for Security
+### Example 2: Workflow for Security
 
-For security-critical tasks, use a skill chain:
+For security-critical tasks, use a workflow (sequential):
 
 ```yaml
-skill_chains:
+workflows:
   security-implementation:
     description: "Implementation with security verification"
-    skills:
-      - context7          # Fetch latest security docs
-      - code-agent        # Implement changes
-      - verifier-code-agent  # Verify implementation
-      - security-audit    # Audit for vulnerabilities
+    skills: [context7, code-agent, verifier-code-agent, reflection-orchestrator]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules
 ```
 
 Add to routes:
@@ -215,37 +210,30 @@ routes:
   security-implement:
     description: Security-critical implementations
     confidence_threshold: 0.6
-    skill_chain: security-implementation
+    workflow: security-implementation
 ```
 
 **Usage:**
 ```
 User: "Implement password reset with secure tokens"
 → Intent: security-implement
-→ Executes skill chain:
+→ Executes workflow:
   1. context7: Fetches OWASP password reset guidelines
   2. code-agent: Implements password reset
   3. verifier-code-agent: Verifies implementation is correct
-  4. security-audit: Audits for vulnerabilities
+  4. reflection-orchestrator: Self-critiques and validates
 → Result: Secure implementation with verification
 ```
 
-### Example 3: Multi-Perspective Analysis
+### Example 3: Skills Bulk for Multi-Perspective
 
-For thorough code review, use parallel skills:
+For flexibility, use skills_bulk (all at once):
 
 ```yaml
-skill_chains:
+skills_bulk:
   comprehensive-review:
     description: "Multi-perspective code review"
-    skills:
-      - analysis-agent    # Code quality analysis
-      - security-audit    # Security review (parallel)
-      - performance-review  # Performance review (parallel)
-    mode: parallel
-    context_modules:
-      - 00-core-contract
-      - 10-coding-standards
+    skills: [analysis-agent, reflection-orchestrator]
 ```
 
 Add to routes:
@@ -254,19 +242,15 @@ routes:
   comprehensive-review:
     description: Thorough multi-perspective code review
     confidence_threshold: 0.7
-    skill_chain: comprehensive-review
+    skills_bulk: comprehensive-review
 ```
 
 **Usage:**
 ```
 User: "Do a comprehensive review of the payment module"
-→ Intent: comprehensive-review
-→ Executes in parallel:
-  - analysis-agent: Reviews code quality
-  - security-audit: Checks for security issues
-  - performance-review: Analyzes performance
-→ Synthesizes findings from all three
-→ Result: Comprehensive report with all perspectives
+→ Skills loaded: analysis-agent + reflection-orchestrator
+→ Agent decides: Uses analysis first, then reflection to validate
+→ Result: Comprehensive report with self-verification
 ```
 
 ### Example 4: Complex Task with Confidence Escalation
@@ -331,8 +315,8 @@ routes:
 4. **Test with real queries** — Intent classifier improves with pattern matching
 5. **Add to confidence routes** — Configure escalation for your project's needs
 6. **Document your routes** — Use the `notes` field to explain when each route applies
-7. **Use skill chains** — For complex, multi-step workflows
-8. **Leverage parallel skills** — For multi-perspective analysis
+7. **Use workflows** — For sequential, multi-step workflows (implement → verify → format)
+8. **Use skills_bulk** — When agent should decide which skills to use
 
 ## See Also
 

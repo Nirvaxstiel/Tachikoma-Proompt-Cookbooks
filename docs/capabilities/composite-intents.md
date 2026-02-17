@@ -176,19 +176,20 @@ Composites cost more than single intents but less than separate requests:
 | Composite | 1.5-2x |
 | Two separate requests | 2x |
 
-## Composites vs Skill Chains
+## Composites vs Workflows/Skills
 
-| Feature | Composite Intents | Skill Chains |
-|---------|------------------|--------------|
-| **What** | Multiple user intents | Multiple skills for one intent |
-| **Execution** | Intent → Intent | Skill → Skill → Skill |
-| **Use case** | User has multi-part request | One intent needs verification |
-| **Example** | Research + Implement | Generate → Verify → Format |
+| Feature | Composite Intents | Workflows | Skills Bulk |
+|---------|------------------|-----------|-------------|
+| **What** | Multiple user intents | Sequential skills | All skills loaded |
+| **Execution** | Intent → Intent | Skill → Skill → Skill | All at once |
+| **Use case** | User has multi-part request | One intent needs verification | Agent decides |
+| **Example** | Research + Implement | Generate → Verify → Format | Agent picks |
 
 **When to use what:**
 - You say "do X then Y" → **Composite**
-- Task needs verification steps → **Skill Chain**
-- Both apply → Use both (composite can call skill chain)
+- Task needs verification steps → **Workflow**
+- Agent should decide approach → **Skills Bulk**
+- Both apply → Use both (composite can call workflow)
 
 ## Creating Custom Composites
 

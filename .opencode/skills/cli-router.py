@@ -142,10 +142,15 @@ def cmd_classify(args):
     print(f"  Complexity:     {complexity:.0%}")
     print(f"  Keywords:      {', '.join(keywords) if keywords else 'none'}")
     
-    # Skill chain info
-    if result.get("skill_chain", {}).get("needed"):
-        chain = result["skill_chain"].get("chain", [])
-        print(f"  Skill Chain:   {Colors.MAGENTA}{' → '.join(chain)}{Colors.NC}")
+    # Workflow info
+    if result.get("workflow", {}).get("needed"):
+        wf = result["workflow"].get("name", [])
+        print(f"  Workflow:   {Colors.MAGENTA}{wf}{Colors.NC}")
+    
+    # Skills bulk info
+    if result.get("skills_bulk", {}).get("needed"):
+        bulk = result["skills_bulk"].get("name", [])
+        print(f"  Skills Bulk: {Colors.MAGENTA}{bulk}{Colors.NC}")
     
     # Alternatives
     alt_intents = result.get("alternative_intents", [])
@@ -178,10 +183,16 @@ def get_route(intent: str) -> dict:
     return routes.get("routes", {}).get(intent, {})
 
 
-def get_skill_chain(chain_name: str) -> dict:
-    """Get skill chain configuration"""
+def get_workflow(workflow_name: str) -> dict:
+    """Get workflow configuration (sequential execution)"""
     routes = load_routes()
-    return routes.get("skill_chains", {}).get(chain_name, {})
+    return routes.get("workflows", {}).get(workflow_name, {})
+
+
+def get_skills_bulk(bulk_name: str) -> dict:
+    """Get skills bulk configuration (all at once)"""
+    routes = load_routes()
+    return routes.get("skills_bulk", {}).get(bulk_name, {})
 
 
 def cmd_route(args):
@@ -467,10 +478,15 @@ def cmd_full(args):
     print(f"  Invoke:       {invoke_via}")
     print(f"  Strategy:     {route.get('strategy', 'N/A')}")
     
-    # Skill chain?
-    if classification.get("skill_chain", {}).get("needed"):
-        chain = classification["skill_chain"].get("chain", [])
-        print(f"  Skill chain:  {Colors.MAGENTA}{' -> '.join(chain)}{Colors.NC}")
+    # Workflow?
+    if classification.get("workflow", {}).get("needed"):
+        wf = classification["workflow"].get("name", "")
+        print(f"  Workflow:  {Colors.MAGENTA}{wf}{Colors.NC}")
+    
+    # Skills bulk?
+    if classification.get("skills_bulk", {}).get("needed"):
+        bulk = classification["skills_bulk"].get("name", "")
+        print(f"  Skills Bulk: {Colors.MAGENTA}{bulk}{Colors.NC}")
     
     # Tools needed
     tools = route.get("tools", [])
@@ -490,7 +506,8 @@ def cmd_full(args):
             "strategy": route.get("strategy"),
             "context_modules": ctx_modules,
             "tools": tools,
-            "skill_chain": classification.get("skill_chain", {}).get("chain", [])
+            "workflow": classification.get("workflow", {}).get("name", ""),
+            "skills_bulk": classification.get("skills_bulk", {}).get("name", "")
         }
         print(json.dumps(output, indent=2))
     
