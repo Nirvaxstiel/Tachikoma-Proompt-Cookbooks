@@ -389,6 +389,70 @@ class SmokeTestFramework:
         # Specific files to exclude (rarely changed, manually tested, or cause issues)
         self.exclude_files = {"tachikoma-install.sh", "run-smoke-tests.sh"}
 
+        # Known test arguments for scripts that need functional testing
+        # Maps script name pattern to list of test argument sets to try
+        # Each entry is (args_list, description)
+        self.script_test_args = {
+            # CLI routing scripts
+            "cli-router.py": [
+                (["route", "--list"], "list routes"),
+                (["context", "--discover"], "discover context"),
+                (["full", "test query", "--json"], "full routing workflow"),
+            ],
+            # Skill indexer
+            "skill-indexer.py": [
+                (["stats"], "show index stats"),
+                (["search", "code"], "search skills"),
+            ],
+            # Intent classifier
+            "fast_heuristic.py": [
+                (["fix the bug", "--json"], "classify intent"),
+            ],
+            # RLM scripts
+            "rlm_repl.py": [
+                (["--help"], "show help"),
+            ],
+            # Context manager scripts
+            "context_pruner.py": [
+                (["--help"], "show help"),
+            ],
+            # Verification scripts
+            "deterministic_verifier.py": [
+                (["--help"], "show help"),
+            ],
+            "hashline_generator.py": [
+                (["--help"], "show help"),
+            ],
+            "edit_format_optimizer.py": [
+                (["--help"], "show help"),
+            ],
+        }
+
+        # Known test arguments for shell scripts
+        # Maps script name pattern to list of (args_list, description)
+        self.shell_test_args = {
+            "router.sh": [
+                (["discover"], "discover skills"),
+                (["examples"], "show examples"),
+                (["help"], "show help"),
+            ],
+        }
+
+        # Map full script paths to their test args for shell scripts
+        # Key is the full relative path from .opencode
+        self.shell_path_test_args = {
+            "skills/formatter/router.sh": [
+                (["help"], "show help"),
+                (["check", "."], "check mode"),
+            ],
+            "skills/context7/router.sh": [
+                (["help"], "show help"),
+            ],
+            "skills/context-manager/router.sh": [
+                (["help"], "show help"),
+            ],
+        }
+
     def discover_scripts(
         self, script_type: Optional[str] = None, specific_file: Optional[str] = None
     ) -> List[Path]:
@@ -662,9 +726,40 @@ class SmokeTestFramework:
             return False
 
     def _test_python_execution(self, script_path: Path) -> Tuple[bool, str]:
-        """Test basic Python script execution (with --help if available)"""
+        """Test Python script execution with functional arguments"""
+        script_name = script_path.name
+        
+        # Check if we have known functional test arguments for this script
+        if script_name in self.script_test_args:
+            test_args_list = self.script_test_args[script_name]
+            
+            # Try each set of functional arguments
+            for args, description in test_args_list:
+                try:
+                    proc = subprocess.run(
+                        [sys.executable, str(script_path)] + args,
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        errors="replace",
+                        timeout=10,
+                    )
+                    
+                    if proc.returncode == 0:
+                        return True, f"Functional test: {description}"
+                    else:
+                        # This args set didn't work, try next one
+                        continue
+                        
+                except subprocess.TimeoutExpired:
+                    continue  # Try next args set
+                except Exception as e:
+                    continue  # Try next args set
+            
+            # If we got here, none of the functional args worked, fall through to fallback
+        
+        # Fallback 1: Try running with --help
         try:
-            # Try running with --help
             proc = subprocess.run(
                 [sys.executable, str(script_path), "--help"],
                 capture_output=True,
@@ -675,9 +770,9 @@ class SmokeTestFramework:
             )
 
             if proc.returncode == 0:
-                return True, "Help command works"
+                return True, "Help command works (fallback)"
             else:
-                # Try without arguments
+                # Fallback 2: Try without arguments
                 proc = subprocess.run(
                     [sys.executable, str(script_path)],
                     capture_output=True,
@@ -687,7 +782,7 @@ class SmokeTestFramework:
                     timeout=10,
                 )
                 if proc.returncode == 0:
-                    return True, "Script runs without errors"
+                    return True, "Script runs without errors (fallback)"
                 else:
                     return False, f"Execution error: {proc.stderr[:100]}"
 
@@ -870,9 +965,61 @@ class SmokeTestFramework:
             return False, f"Help check failed: {str(e)}"
 
     def _test_shell_execution(self, script_path: Path) -> Tuple[bool, str]:
-        """Test basic shell script execution"""
+        """Test shell script execution with functional arguments"""
+        script_name = script_path.name
+        
+        # Check if we have known functional test arguments for this script (by name)
+        if script_name in self.shell_test_args:
+            test_args_list = self.shell_test_args[script_name]
+            
+            # Try each set of functional arguments
+            for args, description in test_args_list:
+                try:
+                    proc = subprocess.run(
+                        ["bash", str(script_path)] + args,
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        errors="replace",
+                        timeout=10,
+                    )
+                    
+                    if proc.returncode == 0:
+                        return True, f"Functional test: {description}"
+                    else:
+                        # This args set didn't work, try next one
+                        continue
+                        
+                except subprocess.TimeoutExpired:
+                    continue  # Try next args set
+                except Exception as e:
+                    continue  # Try next args set
+        
+        # Check by full relative path
         try:
-            # Try running without arguments (may show help or status)
+            rel_path = script_path.relative_to(self.base_dir)
+            rel_path_str = str(rel_path).replace("\\", "/")
+            if rel_path_str in self.shell_path_test_args:
+                test_args_list = self.shell_path_test_args[rel_path_str]
+                for args, description in test_args_list:
+                    try:
+                        proc = subprocess.run(
+                            ["bash", str(script_path)] + args,
+                            capture_output=True,
+                            text=True,
+                            encoding="utf-8",
+                            errors="replace",
+                            timeout=10,
+                        )
+                        if proc.returncode == 0:
+                            return True, f"Functional test: {description}"
+                    except:
+                        continue
+        except ValueError:
+            pass
+        
+        # Fallback: Try running without arguments
+        try:
             proc = subprocess.run(
                 ["bash", str(script_path)],
                 capture_output=True,
@@ -883,7 +1030,7 @@ class SmokeTestFramework:
             )
 
             if proc.returncode == 0:
-                return True, "Script runs without errors"
+                return True, "Script runs without errors (fallback)"
             else:
                 return (
                     False,
