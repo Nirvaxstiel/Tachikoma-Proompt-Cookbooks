@@ -98,12 +98,11 @@ is_interactive() {
 }
 
 # Ask user if they want to use packaged Python
-# Returns: "true" or "false"
+# Returns: "true" or "false" (empty = no answer/default)
 ask_use_packaged_python() {
-    # Non-interactive mode defaults to using packaged Python
+    # Non-interactive mode: don't use packaged Python unless --include-prepackaged-python was passed
     ! is_interactive && {
-        log_warn "Non-interactive mode detected, using packaged Python by default"
-        echo "true"
+        echo ""
         return
     }
 
