@@ -21,6 +21,9 @@ curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookboo
 
 # Install from specific branch
 curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s -- -b develop
+
+# Install with pre-packaged Python (recommended for CI/automated setups)
+curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s -- --include-prepackaged-python
 ```
 
 ### Option 2: Manual Copy
@@ -41,7 +44,12 @@ If you installed using the script:
 
 # Update to specific branch
 ./.opencode/tachikoma-install.sh -b develop
+
+# Quick update via curl (use --include-prepackaged-python to skip prompt)
+curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s -- --include-prepackaged-python
 ```
+
+> **Tip:** Running `.opencode/tachikoma-install.sh` directly allows interactive prompts. Use curl piping for CI/automated environments.
 
 ## What Gets Installed
 

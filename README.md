@@ -49,7 +49,11 @@ Ghost in the Shell inspired themes for OpenCode terminal:
 ## Quick Install
 
 ```bash
+# Install to current directory
 curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
+
+# Optional flag to include pre-packaged python executables
+curl -sS ... | bash -s -- --include-prepackaged-python
 ```
 
 Or copy `AGENTS.md` and `.opencode/` to your repo root.

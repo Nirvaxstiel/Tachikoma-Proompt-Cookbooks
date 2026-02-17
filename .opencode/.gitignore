@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+bun.lock
+
+# Packaged runtime (Python, Node, etc.)
+assets/
+plugins/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
