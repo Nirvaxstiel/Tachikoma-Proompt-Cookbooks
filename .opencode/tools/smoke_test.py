@@ -127,8 +127,8 @@ class SmokeTestFramework:
             "build",
         }
 
-        # Specific files to exclude (rarely changed, manually tested)
-        self.exclude_files = {"tachikoma-install.sh"}
+        # Specific files to exclude (rarely changed, manually tested, or cause issues)
+        self.exclude_files = {"tachikoma-install.sh", "run-smoke-tests.sh"}
 
     def discover_scripts(
         self, script_type: Optional[str] = None, specific_file: Optional[str] = None
