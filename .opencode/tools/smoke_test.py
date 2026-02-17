@@ -17,15 +17,19 @@ import argparse
 import ast
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
+# ===========================================================================
+# Core Types (must be defined first)
+# ===========================================================================
 class TestStatus(Enum):
     """Test status enumeration"""
 
@@ -33,6 +37,260 @@ class TestStatus(Enum):
     FAIL = "FAIL"
     SKIP = "SKIP"
     WARN = "WARN"
+
+
+# ===========================================================================
+# Ghost in the Shell Theme - Cyberpunk Aesthetic
+# ===========================================================================
+class GITSTheme:
+    """Ghost in the Shell color theme for terminal output"""
+
+    # Color definitions (ANSI 256/truecolor approximations)
+    # Primary palette
+    NEON_GREEN = "\033[38;5;48m"  # #00ff9f
+    CYAN = "\033[38;5;51m"  # #26c6da
+    TEAL = "\033[38;5;43m"  # #00d4aa
+    CRIMSON = "\033[38;5;197m"  # #ff0066
+    AMBER = "\033[38;5;214m"  # #ffa726
+    ICE_BLUE = "\033[38;5;153m"  # #b3e5fc
+
+    # Muted tones
+    STEEL = "\033[38;5;240m"  # #4a5f6d
+    SLATE = "\033[38;5;66m"  # #6b8e9e
+    MIDNIGHT = "\033[38;5;235m"  # #0a0e14
+    DEEP_BLUE = "\033[38;5;234m"  # #0d1117
+
+    # Backgrounds
+    BG_DARK = "\033[48;5;234m"
+
+    # Styles
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+    ITALIC = "\033[3m"
+    UNDERLINE = "\033[4m"
+    BLINK = "\033[5m"
+    REVERSE = "\033[7m"
+
+    # Reset
+    RESET = "\033[0m"
+
+    # Status colors
+    @classmethod
+    def status(cls, status: Optional[TestStatus]) -> str:
+        """Get color for test status"""
+        if status is None:
+            return cls.ICE_BLUE
+        if status == TestStatus.PASS:
+            return cls.NEON_GREEN
+        elif status == TestStatus.FAIL:
+            return cls.CRIMSON
+        elif status == TestStatus.WARN:
+            return cls.AMBER
+        else:
+            return cls.STEEL
+
+    @classmethod
+    def icon(cls, status: Optional[TestStatus]) -> str:
+        """Get icon for test status - uses ASCII-safe chars for Windows compatibility"""
+        if status is None:
+            return ">"
+        if status == TestStatus.PASS:
+            return "+"  # Plus - represents success
+        elif status == TestStatus.FAIL:
+            return "!"  # Exclamation - failure
+        elif status == TestStatus.WARN:
+            return "~"  # Tilde - warning
+        else:
+            return "-"  # Minus - skipped
+
+
+# ===========================================================================
+# Terminal Styling Utilities
+# ===========================================================================
+class TerminalUI:
+    """Terminal UI styling utilities"""
+
+    _theme = GITSTheme()
+    _term_width: Optional[int] = None
+    
+    @classmethod
+    def _strip_ansi(cls, text: str) -> str:
+        """Remove ANSI escape codes from string to get visible length"""
+        import re
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        return ansi_escape.sub('', text)
+    
+    @classmethod
+    def _visible_len(cls, text: str) -> int:
+        """Get visible length of string (excluding ANSI codes)"""
+        return len(cls._strip_ansi(text))
+    
+    @classmethod
+    def get_width(cls) -> int:
+        """Get terminal width, fallback to 80"""
+        if cls._term_width is None:
+            try:
+                cls._term_width = shutil.get_terminal_size().columns
+            except Exception:
+                cls._term_width = 80
+        return min(cls._term_width, 100)  # Cap at 100 for aesthetics
+
+    @classmethod
+    def hr(cls, char: str = "=", color: Optional[str] = None) -> str:
+        """Create horizontal rule"""
+        width = cls.get_width()
+        line = char * width
+        if color:
+            return f"{color}{line}{cls._theme.RESET}"
+        return line
+
+    @classmethod
+    def box_top(cls, title: str = "", color: Optional[str] = None) -> str:
+        """Create box top border with optional title"""
+        width = cls.get_width()
+        c = color or cls._theme.STEEL
+        if title:
+            visible_len = cls._visible_len(title)
+            padding = (width - visible_len - 4) // 2
+            left = "+" + "=" * padding
+            right = "=" * (width - padding - visible_len - 4) + "+"
+            return f"{c}{left} {cls._theme.BOLD}{title} {c}{right}{cls._theme.RESET}"
+        else:
+            return f"{c}+{'=' * (width - 2)}+{cls._theme.RESET}"
+    
+    @classmethod
+    def box_bottom(cls, color: Optional[str] = None) -> str:
+        """Create box bottom border"""
+        width = cls.get_width()
+        c = color or cls._theme.STEEL
+        return f"{c}+{'=' * (width - 2)}+{cls._theme.RESET}"
+    
+    @classmethod
+    def box_line(
+        cls, content: str = "", color: Optional[str] = None, align: str = "left"
+    ) -> str:
+        """Create box content line"""
+        width = cls.get_width()
+        c = color or cls._theme.STEEL
+        inner_width = width - 4
+        visible_len = cls._visible_len(content)
+
+        if align == "center":
+            padding = (inner_width - visible_len) // 2
+            text = (
+                " " * padding + content + " " * (inner_width - padding - visible_len)
+            )
+        elif align == "right":
+            text = " " * (inner_width - visible_len) + content
+        else:
+            text = content + " " * (inner_width - visible_len)
+
+        # Truncate if too long (check visible length)
+        if cls._visible_len(text) > inner_width:
+            text = cls._strip_ansi(text)[:inner_width-3] + "..."
+
+        return f"{c}|{cls._theme.RESET} {text} {c}|{cls._theme.RESET}"
+
+    @classmethod
+    def section_header(cls, title: str, icon: str = ">") -> str:
+        """Create section header"""
+        c = cls._theme.CYAN
+        t = cls._theme
+        return f"\n{t.BOLD}{c}{icon} {title.upper()}{t.RESET}\n{t.DIM}{cls.hr('-', t.STEEL)}{t.RESET}"
+
+    @classmethod
+    def metric(cls, label: str, value: str, status: Optional[TestStatus] = None) -> str:
+        """Format a metric line"""
+        t = cls._theme
+        status_color = t.status(status)
+        return f"  {t.STEEL}|{t.RESET} {t.DIM}{label}{t.RESET} {status_color}{value}{t.RESET}"
+
+    @classmethod
+    def status_line(cls, status: TestStatus, label: str, message: str = "") -> str:
+        """Format a status line with icon"""
+        t = cls._theme
+        color = t.status(status)
+        icon = t.icon(status)
+
+        if message:
+            return f"  {color}{icon}{t.RESET} {label} {t.STEEL}>{t.RESET} {message}"
+        else:
+            return f"  {color}{icon}{t.RESET} {label}"
+
+    @classmethod
+    def script_card(cls, path: str, script_type: str) -> str:
+        """Create script test card header"""
+        t = cls._theme
+        type_color = t.CYAN if script_type == "python" else t.TEAL
+        type_icon = "PY" if script_type == "python" else "SH"
+
+        return (
+            f"\n{t.DIM}{cls.hr('-')}{t.RESET}\n"
+            f"{t.BOLD}{type_color}[{type_icon}] {path}{t.RESET}\n"
+            f"{t.STEEL}    {script_type.upper()}{t.RESET}"
+        )
+
+    @classmethod
+    def summary_card(cls, summary: Dict[str, Any]) -> str:
+        """Create final summary card"""
+        t = cls._theme
+        total = summary["total_scripts"]
+        passed = summary["passed"]
+        failed = summary["failed"]
+        warned = summary["warned"]
+        skipped = summary["skipped"]
+        duration = summary["duration_ms"]
+
+        lines = [
+            "",
+            cls.box_top("TACHIKOMA SMOKE TEST", t.CYAN),
+            cls.box_line(
+                f"{t.BOLD}{t.ICE_BLUE}System Diagnostic Complete{t.RESET}",
+                align="center",
+            ),
+            cls.box_line(""),
+        ]
+
+        # Stats
+        lines.append(
+            cls.box_line(
+                f"{t.STEEL}Scripts Analyzed:{t.RESET} {t.BOLD}{total}{t.RESET}"
+            )
+        )
+        lines.append(cls.box_line(f"{t.NEON_GREEN}+ Passed:{t.RESET}      {passed:>3}"))
+
+        if failed > 0:
+            lines.append(
+                cls.box_line(f"{t.CRIMSON}! Failed:{t.RESET}      {failed:>3}")
+            )
+        if warned > 0:
+            lines.append(cls.box_line(f"{t.AMBER}~ Warned:{t.RESET}      {warned:>3}"))
+        if skipped > 0:
+            lines.append(cls.box_line(f"{t.STEEL}- Skipped:{t.RESET}     {skipped:>3}"))
+
+        lines.append(cls.box_line(""))
+        lines.append(
+            cls.box_line(
+                f"{t.SLATE}Execution Time: {duration / 1000:.2f}s{t.RESET}",
+                align="center",
+            )
+        )
+        lines.append(cls.box_bottom(t.CYAN))
+        lines.append("")
+
+        # Status message
+        if failed > 0:
+            lines.append(
+                f"{t.BOLD}{t.CRIMSON}! SYSTEM ALERT: Critical failures detected{t.RESET}"
+            )
+        elif warned > 0:
+            lines.append(f"{t.BOLD}{t.AMBER}~ SYSTEM NOTICE: Warnings present{t.RESET}")
+        else:
+            lines.append(
+                f"{t.BOLD}{t.NEON_GREEN}+ SYSTEM STATUS: All tests passed{t.RESET}"
+            )
+
+        return "\n".join(lines)
 
 
 @dataclass
@@ -110,6 +368,7 @@ class SmokeTestFramework:
         self.fail_fast = fail_fast
         self.verbose = verbose
         self.results: List[ScriptTestResult] = []
+        self.ui = TerminalUI()
 
         # Define script patterns
         self.python_patterns = ["*.py"]
@@ -199,10 +458,7 @@ class SmokeTestFramework:
             overall_status=TestStatus.PASS,
         )
 
-        self._print(f"\n{'=' * 60}")
-        self._print(f"Testing: {script_path}")
-        self._print(f"Type: {script_type}")
-        self._print(f"{'=' * 60}")
+        self._print(self.ui.script_card(str(script_path), script_type))
 
         if script_type == "python":
             self._test_python_script(script_path, result)
@@ -245,6 +501,7 @@ class SmokeTestFramework:
                     duration_ms=(time.time() - test_start) * 1000,
                 )
             )
+            self._print(self.ui.status_line(TestStatus.PASS, "syntax", "valid"))
         except py_compile.PyCompileError as e:
             result.add_test(
                 TestResult(
@@ -254,20 +511,23 @@ class SmokeTestFramework:
                     duration_ms=(time.time() - test_start) * 1000,
                 )
             )
+            self._print(self.ui.status_line(TestStatus.FAIL, "syntax", str(e)[:50]))
             if self.fail_fast:
                 return
 
         # Test 2: Import check
         test_start = time.time()
         imports_ok, import_msg = self._check_python_imports(script_path)
+        status = TestStatus.PASS if imports_ok else TestStatus.WARN
         result.add_test(
             TestResult(
                 name="imports",
-                status=TestStatus.PASS if imports_ok else TestStatus.WARN,
+                status=status,
                 message=import_msg,
                 duration_ms=(time.time() - test_start) * 1000,
             )
         )
+        self._print(self.ui.status_line(status, "imports", import_msg[:50]))
 
         # Test 3: Shebang check
         test_start = time.time()
@@ -275,41 +535,47 @@ class SmokeTestFramework:
             "\n"
         )[0]
         has_shebang = first_line.startswith("#!")
+        status = TestStatus.PASS if has_shebang else TestStatus.WARN
+        msg = "present" if has_shebang else "missing"
         result.add_test(
             TestResult(
                 name="shebang",
-                status=TestStatus.PASS if has_shebang else TestStatus.WARN,
-                message="Has shebang" if has_shebang else "Missing shebang line",
+                status=status,
+                message=f"Shebang {msg}",
                 duration_ms=(time.time() - test_start) * 1000,
             )
         )
+        self._print(self.ui.status_line(status, "shebang", msg))
 
         # Test 4: CLI interface check (if main block exists)
         test_start = time.time()
         has_cli = self._check_python_cli(script_path)
+        status = TestStatus.PASS if has_cli else TestStatus.SKIP
+        msg = "present" if has_cli else "none (optional)"
         result.add_test(
             TestResult(
                 name="cli_interface",
-                status=TestStatus.PASS if has_cli else TestStatus.SKIP,
-                message="Has CLI interface"
-                if has_cli
-                else "No CLI interface (optional)",
+                status=status,
+                message=f"CLI {msg}",
                 duration_ms=(time.time() - test_start) * 1000,
             )
         )
+        self._print(self.ui.status_line(status, "cli", msg))
 
         # Test 5: Basic execution (if has CLI)
         test_start = time.time()
         if has_cli:
             exec_ok, exec_msg = self._test_python_execution(script_path)
+            status = TestStatus.PASS if exec_ok else TestStatus.WARN
             result.add_test(
                 TestResult(
                     name="execution",
-                    status=TestStatus.PASS if exec_ok else TestStatus.WARN,
+                    status=status,
                     message=exec_msg,
                     duration_ms=(time.time() - test_start) * 1000,
                 )
             )
+            self._print(self.ui.status_line(status, "execution", exec_msg[:50]))
 
     def _check_python_imports(self, script_path: Path) -> Tuple[bool, str]:
         """Check if Python imports are available"""
@@ -347,6 +613,8 @@ class SmokeTestFramework:
                 "io",
                 "pickle",
                 "logging",
+                "shutil",
+                "ast",
             }
 
             # Check external imports
@@ -437,14 +705,17 @@ class SmokeTestFramework:
             "\n"
         )[0]
         has_shebang = first_line.startswith("#!")
+        status = TestStatus.PASS if has_shebang else TestStatus.FAIL
+        msg = "present" if has_shebang else "missing"
         result.add_test(
             TestResult(
                 name="shebang",
-                status=TestStatus.PASS if has_shebang else TestStatus.FAIL,
-                message="Has shebang" if has_shebang else "Missing shebang line",
+                status=status,
+                message=f"Shebang {msg}",
                 duration_ms=(time.time() - test_start) * 1000,
             )
         )
+        self._print(self.ui.status_line(status, "shebang", msg))
 
         if not has_shebang and self.fail_fast:
             return
@@ -470,6 +741,7 @@ class SmokeTestFramework:
                         duration_ms=(time.time() - test_start) * 1000,
                     )
                 )
+                self._print(self.ui.status_line(TestStatus.PASS, "syntax", "valid"))
             else:
                 result.add_test(
                     TestResult(
@@ -478,6 +750,9 @@ class SmokeTestFramework:
                         message=f"Syntax error: {proc.stderr[:100]}",
                         duration_ms=(time.time() - test_start) * 1000,
                     )
+                )
+                self._print(
+                    self.ui.status_line(TestStatus.FAIL, "syntax", proc.stderr[:50])
                 )
                 if self.fail_fast:
                     return
@@ -491,6 +766,7 @@ class SmokeTestFramework:
                     duration_ms=(time.time() - test_start) * 1000,
                 )
             )
+            self._print(self.ui.status_line(TestStatus.WARN, "syntax", "timeout"))
         except FileNotFoundError:
             result.add_test(
                 TestResult(
@@ -499,6 +775,9 @@ class SmokeTestFramework:
                     message="bash not found, skipping syntax check",
                     duration_ms=(time.time() - test_start) * 1000,
                 )
+            )
+            self._print(
+                self.ui.status_line(TestStatus.WARN, "syntax", "bash not found")
             )
         except Exception as e:
             result.add_test(
@@ -509,44 +788,50 @@ class SmokeTestFramework:
                     duration_ms=(time.time() - test_start) * 1000,
                 )
             )
+            self._print(self.ui.status_line(TestStatus.WARN, "syntax", str(e)[:50]))
 
         # Test 3: Executable check
         test_start = time.time()
         is_executable = os.access(script_path, os.X_OK)
+        status = TestStatus.PASS if is_executable else TestStatus.WARN
+        msg = "yes" if is_executable else "no (optional)"
         result.add_test(
             TestResult(
                 name="executable",
-                status=TestStatus.PASS if is_executable else TestStatus.WARN,
-                message="Is executable"
-                if is_executable
-                else "Not executable (may not need to be)",
+                status=status,
+                message=f"Executable: {msg}",
                 duration_ms=(time.time() - test_start) * 1000,
             )
         )
+        self._print(self.ui.status_line(status, "executable", msg))
 
         # Test 4: Help command (common pattern in router scripts)
         test_start = time.time()
         help_ok, help_msg = self._test_shell_help(script_path)
+        status = TestStatus.PASS if help_ok else TestStatus.WARN
         result.add_test(
             TestResult(
                 name="help_command",
-                status=TestStatus.PASS if help_ok else TestStatus.WARN,
+                status=status,
                 message=help_msg,
                 duration_ms=(time.time() - test_start) * 1000,
             )
         )
+        self._print(self.ui.status_line(status, "help", help_msg[:50]))
 
         # Test 5: Basic execution
         test_start = time.time()
         exec_ok, exec_msg = self._test_shell_execution(script_path)
+        status = TestStatus.PASS if exec_ok else TestStatus.WARN
         result.add_test(
             TestResult(
                 name="execution",
-                status=TestStatus.PASS if exec_ok else TestStatus.WARN,
+                status=status,
                 message=exec_msg,
                 duration_ms=(time.time() - test_start) * 1000,
             )
         )
+        self._print(self.ui.status_line(status, "execution", exec_msg[:50]))
 
     def _test_shell_help(self, script_path: Path) -> Tuple[bool, str]:
         """Test shell script help command"""
@@ -631,7 +916,8 @@ class SmokeTestFramework:
         scripts = self.discover_scripts(script_type, specific_file)
 
         if not scripts:
-            self._print("No scripts found to test!")
+            t = self.ui._theme
+            print(f"\n{t.STEEL}> No scripts found to test{t.RESET}\n")
             return {
                 "total_scripts": 0,
                 "passed": 0,
@@ -642,7 +928,10 @@ class SmokeTestFramework:
                 "duration_ms": (time.time() - start_time) * 1000,
             }
 
-        self._print(f"\nFound {len(scripts)} scripts to test")
+        t = self.ui._theme
+        print(f"\n{t.CYAN}>{t.RESET} {t.BOLD}Initializing System Diagnostics{t.RESET}")
+        print(f"{t.STEEL}  Target: {self.base_dir}{t.RESET}")
+        print(f"{t.STEEL}  Scripts detected: {len(scripts)}{t.RESET}\n")
 
         # Test each script
         for script in scripts:
@@ -651,7 +940,9 @@ class SmokeTestFramework:
 
             # Stop on failure if fail_fast
             if self.fail_fast and result.overall_status == TestStatus.FAIL:
-                self._print("\n[FAIL] Stopping due to failure (fail-fast mode)")
+                print(
+                    f"\n{self.ui._theme.CRIMSON}! FAIL-FAST: Stopping on first failure{self.ui._theme.RESET}"
+                )
                 break
 
         # Generate summary
@@ -675,51 +966,44 @@ class SmokeTestFramework:
 
     def print_summary(self, summary: Dict[str, Any]):
         """Print test summary"""
-        self._print(f"\n{'=' * 60}")
-        self._print("SMOKE TEST SUMMARY")
-        self._print(f"{'=' * 60}")
-        self._print(f"Total scripts tested: {summary['total_scripts']}")
-        self._print(f"Passed: {summary['passed']}")
-        self._print(f"Failed: {summary['failed']}")
-        self._print(f"Warnings: {summary['warned']}")
-        self._print(f"Skipped: {summary['skipped']}")
-        self._print(f"Duration: {summary['duration_ms']:.2f}ms")
-        self._print(f"{'=' * 60}")
+        print(self.ui.summary_card(summary))
 
-        # Print failures
+        # Print failures in detail
         if summary["failed"] > 0:
-            self._print("\n[FAIL] Failed scripts:")
+            print(self.ui.section_header("FAILURE DETAILS", "!"))
             for result in summary["results"]:
                 if result["overall_status"] == "FAIL":
-                    self._print(f"  - {result['script_path']}")
+                    t = self.ui._theme
+                    print(f"\n{t.CRIMSON}! {result['script_path']}{t.RESET}")
                     failed_tests = [t for t in result["tests"] if t["status"] == "FAIL"]
                     for test in failed_tests:
-                        self._print(f"      {test['name']}: {test['message']}")
+                        print(
+                            f"  {t.STEEL} | {t.RESET} {t.BOLD}{test['name']}{t.RESET}: {test['message']}"
+                        )
 
-        # Print warnings
+        # Print warnings in detail
         if summary["warned"] > 0:
-            self._print("\n[WARN] Scripts with warnings:")
+            print(self.ui.section_header("WARNING DETAILS", "~"))
             for result in summary["results"]:
                 if result["overall_status"] == "WARN":
-                    self._print(f"  - {result['script_path']}")
+                    t = self.ui._theme
+                    print(f"\n{t.AMBER}~ {result['script_path']}{t.RESET}")
                     warned_tests = [t for t in result["tests"] if t["status"] == "WARN"]
                     for test in warned_tests:
-                        self._print(f"      {test['name']}: {test['message']}")
+                        print(
+                            f"  {t.STEEL} | {t.RESET} {t.BOLD}{test['name']}{t.RESET}: {test['message']}"
+                        )
 
         # Exit code
         if summary["failed"] > 0:
-            self._print("\n[FAIL] Some tests failed!")
             sys.exit(1)
         elif summary["warned"] > 0:
-            self._print("\n[WARN] Some tests passed with warnings")
             sys.exit(0)
         else:
-            self._print("\n[PASS] All tests passed!")
             sys.exit(0)
 
     def _print(self, message: str):
         """Print message if verbose or always print important messages"""
-        # Always print messages (can add verbose check later)
         print(message)
 
 
