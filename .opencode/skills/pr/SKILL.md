@@ -1,6 +1,6 @@
 ---
 name: pr
-description: Expert at writing pull request titles and descriptions that are clear, concise, and useful for future reference.
+description: Write pull request descriptions that document what changed for future maintainers.
 license: MIT
 allowed-tools:
   - Bash
@@ -14,47 +14,47 @@ metadata:
 
 ## Purpose
 
-Generate **useful pull request descriptions** that serve as documentation for future developers.
+Document what changed and why, so future devs (including future you) don't have to guess.
 
-This skill ensures PRs are:
+A good PR description is a time capsule. It answers:
+- What changed?
+- Why was this necessary?
+- What should reviewers know?
 
-- Clear about what changed and why
-- Concise but detailed enough to understand context
-- Self-contained (no tribal knowledge assumed)
-- Free of hype, self-promotion, or unnecessary commentary
+That's it. No hype, no essays, no selling the change.
 
 ---
 
 ## Definition of Done
 
-A PR description is complete when:
+A PR description is done when:
 
-- The title clearly summarizes the change
-- The body provides context without being verbose
-- Future developers can understand the change without asking questions
-- No redundant or obvious information is included
+- Title clearly says what changed (type + summary)
+- Body explains why without being a novel
+- Someone reading this in 6 months understands the context
+- No obvious or redundant info (the diff exists for a reason)
 
 ---
 
-## Operating Constraints (Non‑Negotiable)
+## Operating Constraints
 
 ### 1. Read the Actual Changes
 
-Before writing any description:
+Before writing anything:
 
-1. Run `git diff` to understand what changed
-2. Run `git log --oneline -10` to understand recent commits and patterns
-3. Check related issues or PRs if referenced
-4. Identify the core change, motivation, and impact
+1. Run `git diff` to see what actually changed
+2. Run `git log --oneline -10` for recent context
+3. Check if there are related issues or PRs
+4. Figure out the core change and motivation
 
-Never guess or infer context without inspection.
+Don't guess. Don't assume. Look at the actual diff.
 
 ### 2. PR Title
 
 **Format:** `<type>: <summary>`
 
 - Keep under 80 characters
-- Use conventional commit types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `perf`, `style`
+- Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `perf`, `style`
 - Be specific about what changed
 - No punctuation at the end
 
@@ -64,11 +64,11 @@ Never guess or infer context without inspection.
 
 ```
 ## Summary
-Brief description of what changed (1-2 sentences max)
+What changed and why (1-2 sentences)
 
 ## Changes
-- Bullet points of specific changes
-- Focus on what changed, not how
+- Specific things that changed
+- Technical details worth noting
 
 ## Notes (Optional)
 - Breaking changes
@@ -79,31 +79,31 @@ Brief description of what changed (1-2 sentences max)
 
 **Rules:**
 
-- Be concise but detailed enough to understand context
-- No self-promotion or fluff ("Excited to introduce...", "This amazing feature...")
-- No redundant info (don't repeat the diff)
-- Include technical context that's not obvious from code
-- If it's a small change, keep it short
+- This is documentation, not a pitch
+- Include context that isn't obvious from reading the code
+- Don't narrate the diff (we can see the diff)
+- Keep it factual and direct
+- Small changes get small descriptions
 
 ### 4. Output Format
 
-Return **only** the PR title and description, formatted like:
+Return **only** the PR title and description:
 
 ```
 <type>: Brief summary
 
 ## Summary
-1-2 sentences on what and why.
+What and why.
 
 ## Changes
 - Change 1
 - Change 2
 
 ## Notes (if applicable)
-- Any additional context
+- Additional context
 ```
 
-No prefixes, no markdown code blocks around the output.
+No markdown code blocks around the output. Just the content.
 
 ---
 
@@ -111,29 +111,30 @@ No prefixes, no markdown code blocks around the output.
 
 **Do:**
 
-- Use technical, precise language
-- Include relevant context (APIs touched, config changes, etc.)
-- Note breaking changes or migration requirements
+- State facts: what changed and why
+- Note technical details (APIs touched, config changes)
+- Call out breaking changes or migrations
 - Reference related issues/PRs
+- Write for someone who doesn't have your context
 
 **Don't:**
 
-- Use hype language ("awesome", "amazing", "exciting")
-- Repeat the diff in prose form
-- Include personal commentary ("I struggled with...", "This was tricky...")
+- Use hype words ("awesome", "revolutionary", "exciting")
+- Explain the obvious (function `doX()` does X)
+- Add personal commentary ("I struggled with...", "This was tricky...")
 - Write release notes or marketing copy
-- Explain obvious code ("This function does X" for a function named `doX()`)
+- Repeat the diff in prose
 
 ---
 
 ## Workflow
 
-1. **Inspect changes**: Run git diff, log, and gather context
-2. **Analyze**: Identify the core change and its impact
-3. **Draft title**: Use conventional type + clear summary (≤80 chars)
-4. **Draft body**: Write summary, changes, and notes
-5. **Review**: Ensure no fluff, no repetition, no obvious info
-6. **Return**: Output only title and description
+1. **Inspect**: Run git diff, log, gather context
+2. **Analyze**: Find the core change and its impact
+3. **Draft title**: Type + summary (≤80 chars)
+4. **Draft body**: Summary, changes, notes
+5. **Review**: Remove fluff, repetition, obvious info
+6. **Return**: Just the title and description
 
 ---
 
@@ -145,8 +146,7 @@ No prefixes, no markdown code blocks around the output.
 feat: Add user session validation
 
 ## Summary
-Adds middleware to validate user sessions before processing requests. Reduces
-unauthorized access edge cases.
+Adds middleware to validate user sessions before processing requests.
 
 ## Changes
 - Add SessionValidator middleware
@@ -164,14 +164,14 @@ unauthorized access edge cases.
 refactor: Consolidate authentication providers
 
 ## Summary
-Merges three auth providers (Google, GitHub, Email) into single OAuthService.
-Reduces code duplication and simplifies provider additions.
+Merges Google, GitHub, and Email auth into single OAuthService.
+Reduces code duplication and simplifies adding new providers.
 
 ## Changes
 - Create unified OAuthService interface
-- Migrate Google, GitHub, Email providers to new interface
+- Migrate all three providers to new interface
 - Remove legacy auth handlers
-- Update all integration tests
+- Update integration tests
 
 ## Notes
 - Breaking: `AuthProvider` interface changed
@@ -179,24 +179,24 @@ Reduces code duplication and simplifies provider additions.
 - Downtime: None expected
 ```
 
-**Bad (too verbose):**
+**Bad (marketing copy):**
 
 ```
-feat: Super awesome new feature that I worked really hard on!
+feat: Introducing our amazing new user feature!
 
-This amazing feature is going to revolutionize how users interact with our
-system. I'm so excited to share this with you! It took a lot of effort but
-I think it was worth it.
+We're thrilled to announce this incredible new capability that will
+revolutionize user experience. This represents months of hard work
+and we're so proud of what we've accomplished!
 
 The changes:
-- Added a new file called feature.go
-- Changed some code in main.go
-- Added tests
+- Added feature.go with the implementation
+- Modified main.go to use it
+- Added some tests
 
-This is going to be great for everyone!
+We hope you love it! 🚀
 ```
 
-**Bad (too sparse):**
+**Bad (too vague):**
 
 ```
 fix: Fix stuff
@@ -205,13 +205,13 @@ fix: Fix stuff
 - Fixed things
 ```
 
-**Bad (repetitive):**
+**Bad (repeats the diff):**
 
 ```
 feat: Add new API endpoint for user data
 
-This PR adds a new API endpoint for user data. The endpoint allows fetching
-user data from the database.
+This PR adds a new API endpoint for user data. The endpoint allows
+fetching user data from the database by calling the handler function.
 
 ## Changes
 - Added endpoint `/api/users` in users.go
@@ -241,25 +241,18 @@ user data from the database.
 
 Stop when:
 
-- The title clearly summarizes the change
-- The description provides useful context without being verbose
-- No fluff, repetition, or obvious information is included
+- Title clearly summarizes the change
+- Description provides useful context without bloat
+- No fluff, no repetition, no explaining the obvious
 
-* The PR follows GitHub best practices and is ready for review
-
-If uncertain about the scope or context of changes, inspect again before writing.
+If uncertain about the scope, inspect again before writing.
 
 ---
 
 ## Contract
 
-This skill enforces clear, documentation-focused PR descriptions.
+This skill produces documentation, not content marketing.
 
-Violations include:
+The goal is simple: someone reading this PR in the future should understand what happened and why, without having to ask questions.
 
-- Hype language or self-promotion
-- Repeating the diff in prose
-- Missing critical context
-- Overly verbose or sparse descriptions
-
-Be direct. Be useful. Stop.
+Be factual. Be direct. Document what changed. Done.

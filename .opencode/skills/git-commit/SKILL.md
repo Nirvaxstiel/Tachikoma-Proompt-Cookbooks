@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: Expert at writing Git commit messages that are concise, clear, and follow conventional style.
+description: Write clear git commit messages that document changes for the project's history.
 license: MIT
 allowed-tools:
   - Bash
@@ -14,119 +14,119 @@ metadata:
 
 ## Purpose
 
-Generate **high-quality Git commit messages** that accurately summarize changes without unnecessary verbosity or commentary.
+Document what changed in the commit history. Each commit message should answer:
 
-This skill ensures commits are:
+- What changed?
+- Why did it change? (when it's not obvious)
 
-- Clear and readable
-- Following Git best practices
-- Concise (when possible, subject line only)
-- Imperative in tone
+That's the job. Nothing more.
+
+Git history is a logbook, not a diary. Be clear. Be concise. Move on.
 
 ---
 
 ## Definition of Done
 
-A commit message is complete when:
+A commit message is done when:
 
-- The subject line accurately reflects what changed and why
-- The body (if present) provides useful context not in the subject
-- Git style guidelines are followed
-- No meta-commentary or raw diff is included
+- Subject line says what changed (and why, if needed)
+- Body adds context only if the subject isn't enough
+- It follows the standard format
+- No meta-commentary, no raw diff
 
 ---
 
-## Operating Constraints (Non‑Negotiable)
+## Operating Constraints
 
 ### 1. Read the Actual Changes
 
-Before writing any message:
+Before writing anything:
 
-1. Run `git status` to see staged/unstaged files
-2. Run `git diff` and/or `git diff --cached` to understand changes
-3. Run `git log --oneline -5` to understand repository commit style
+1. Run `git status` to see what's staged/unstaged
+2. Run `git diff` or `git diff --cached` to see the actual changes
+3. Run `git log --oneline -5` to see the repo's commit style
 4. Extract concrete facts about what changed
 
-Never guess or infer changes without inspection.
+Don't guess. Look at the actual changes.
 
 ### 2. Git Style Guidelines
 
 **Subject line:**
 
-- Limit to 50 characters
+- Keep it under 50 characters
 - Capitalize the first letter
 - Use imperative mood ("Add" not "Adds", "Fix" not "Fixed")
-- Do NOT end with any punctuation (no period)
+- No punctuation at the end
 
 **Body (if needed):**
 
 - Separate from subject with a blank line
 - Wrap at 72 characters
 - Explain **what** and **why**, not how
-- Do NOT repeat the subject line
+- Don't repeat the subject line
 
 **General:**
 
-- Keep body short and concise
-- Omit body entirely if not useful
-- Only return the commit message in response
-- Do NOT include meta-commentary about the task
-- Do NOT include raw diff output
+- Keep it short
+- Skip the body if the subject is enough
+- Return only the commit message
+- No meta-commentary about the task
+- No raw diff output
 
 ---
 
-## Message Quality Rules
+## Message Quality
 
 ### Prefer Subject-Only
 
-If you can accurately express the change in just the subject line:
+If the subject line covers it, stop there.
 
-- Do not include anything in the message body
-- A single clear line is better than unnecessary detail
+- One clear line > unnecessary detail
+- The diff exists for a reason
 
-### Body Is for Useful Information Only
+### Use Body Only When Useful
 
-Use the body only when it provides additional value:
+Add a body when it provides actual value:
 
 - Multiple distinct changes in one commit
 - Breaking changes or migration notes
 - References to issues or PRs
-- Context not obvious from subject
+- Context not obvious from the subject
 
-Don't include body just to fill space.
+Don't add body just to have body.
 
 ---
 
 ## Workflow
 
-1. **Frame the task**: Understand what changes need to be summarized
+1. **Frame the task**: What needs to be documented?
 2. **Inspect**: Run git commands to see actual changes
-3. **Extract**: Identify the core change and motivation
-4. **Draft**: Write subject line following 50-char limit and imperative mood
-5. **Decide**: Does body add useful context? If no, stop
-6. **Refine**: If yes, write concise body (no subject repetition)
-7. **Return**: Output only the commit message, nothing else
+3. **Extract**: Find the core change and reason
+4. **Draft**: Write subject line (≤50 chars, imperative)
+5. **Decide**: Does body add value? If no, done.
+6. **Refine**: If yes, write concise body (no repetition)
+7. **Return**: Just the commit message, nothing else
 
 ---
 
 ## Common Patterns
 
-Reference these common commit types:
-
-- `feat:` New feature or capability
-- `fix:` Bug fix
-- `refactor:` Code restructuring without behavior change
-- `chore:` Maintenance or dependency updates
-- `docs:` Documentation only
-- `test:` Test-only changes
-- `perf:` Performance improvements
-- `style:` Code style/formatting (no logic change)
+| Type       | Use For                                    |
+| ---------- | ------------------------------------------ |
+| `feat:`    | New feature or capability                  |
+| `fix:`     | Bug fix                                    |
+| `refactor:`| Code restructuring without behavior change |
+| `chore:`   | Maintenance or dependency updates          |
+| `docs:`    | Documentation only                         |
+| `test:`    | Test-only changes                          |
+| `perf:`    | Performance improvements                   |
+| `style:`   | Code style/formatting (no logic change)    |
 
 ---
 
 ## Output Format
 
-Return **only** the commit message, formatted like:
+Return **only** the commit message:
 
 ```
 Subject line (≤50 chars, imperative, no period)
@@ -135,7 +135,7 @@ Optional body line 1.
 Optional body line 2.
 ```
 
-No prefix, no suffix, no explanation, no markdown formatting beyond blank lines.
+No prefix, no suffix, no markdown formatting.
 
 ---
 
@@ -143,11 +143,11 @@ No prefix, no suffix, no explanation, no markdown formatting beyond blank lines.
 
 Stop when:
 
-- The commit message accurately summarizes the changes
-- All Git style rules are followed
-- The message is as concise as possible while remaining clear
+- The message accurately documents what changed
+- It follows the format rules
+- It's as concise as possible while remaining clear
 
-If uncertain about the nature of changes or the appropriate scope, inspect again before writing.
+If uncertain about the changes, inspect again.
 
 ---
 
@@ -165,7 +165,7 @@ feat: Add user authentication middleware
 refactor: Simplify authentication flow
 
 Consolidate duplicate validation logic into shared validator.
-This reduces code duplication and makes future changes easier.
+Reduces duplication and makes future changes easier.
 ```
 
 **Bad (too long):**
@@ -187,3 +187,11 @@ This commit fixes the login validation error that was occurring.
 ```
 Adds new feature for user management
 ```
+
+---
+
+## Notes
+
+- This is about documenting changes, not explaining them
+- Future you will thank present you for clear commit messages
+- When in doubt, keep it shorter
