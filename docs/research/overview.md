@@ -102,4 +102,3 @@ Some claims from papers (like specific quantitative improvements) are reported b
 
 - [Architecture](/concepts/architecture) — How research influences system design
 - [Capabilities](/capabilities/index) — Where research is applied
-- [Changelog](/changelog) — When research was integrated

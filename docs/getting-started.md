@@ -114,7 +114,7 @@ A: Just run the install script again or update manually from the repository.
 
 If you run into issues:
 1. Check [Troubleshooting](troubleshooting.md) for common problems
-2. Review [AGENTS.md](../AGENTS.md) for system details
+2. Review [AGENTS.md](https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/blob/master/AGENTS.md) for system details
 3. Check the [Agent Skills Specification](capabilities/skills-specification.md)
 
 **Need help?** Check out the [Troubleshooting Guide](troubleshooting.md) or [FAQ](troubleshooting.md#faq).

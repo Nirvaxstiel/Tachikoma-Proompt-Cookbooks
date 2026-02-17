@@ -274,12 +274,12 @@ Example:
 
 ### Bearer Token
 ```
-Authorization: Bearer <token>
+Authorization: Bearer &lt;token&gt;
 ```
 
 ### API Key
 ```
-X-API-Key: <key>
+X-API-Key: &lt;key&gt;
 ```
 
 ## Endpoints

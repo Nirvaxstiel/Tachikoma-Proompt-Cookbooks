@@ -226,7 +226,7 @@ routes:
 
 ### Reference
 - [Agent Skills](https://agentskills.io) — Official Agent Skills standard
-- [AGENTS.md](../../AGENTS.md) — System constitution
+- [AGENTS.md](https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/blob/master/AGENTS.md) — System constitution
 
 ## Getting Help
 

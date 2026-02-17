@@ -93,8 +93,7 @@ If [error condition]:
 
 ## References
 
-- [Link to related documentation](references/REFERENCE.md)
-- [Related file](scripts/script.py)
+- [Agent Skills Specification](https://agentskills.io)
 ```
 
 ## Example Skills Gallery
@@ -242,8 +241,7 @@ If documentation format is unclear:
 
 ## References
 
-- [OpenAPI Specification](references/openapi-spec.md)
-- [API Documentation Template](assets/api-doc-template.md)
+- [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
 ```
 
 ### Example 2: Code Transformation
@@ -472,7 +470,6 @@ Check these sources for security updates:
 ## References
 
 - [Semantic Versioning](https://semver.org/)
-- [Package Manager Documentation](references/package-managers.md)
 ```
 
 ### Example 3: Multi-Step Workflow
@@ -832,9 +829,6 @@ If rollback fails:
 
 ## References
 
-- [CI/CD Pipeline Documentation](references/ci-cd.md)
-- [Rollback Procedures](references/rollback.md)
-- [Deployment Checklist](assets/deployment-checklist.md)
 ```
 
 ## Skill Patterns

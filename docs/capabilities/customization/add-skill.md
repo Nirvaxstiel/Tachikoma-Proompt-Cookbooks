@@ -261,7 +261,7 @@ If a git operation fails:
 
 ## References
 
-See [PR templates](references/pr-templates.md) for standard PR descriptions.
+See [PR Templates](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) for standard PR descriptions.
 ```
 
 ### Route Configuration

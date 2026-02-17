@@ -58,14 +58,14 @@ Tachikoma:
 
 | Intent | Description | Skill |
 |--------|-------------|---------|
-| `refactor` | Restructure code | [code-agent](capabilities/skill-execution.md) |
-| `skill-compose` | Combine skills | [skill-composer](capabilities/skill-chains.md) |
-| `optimize` | Context/token optimization | [context-manager](capabilities/context-management.md) |
-| `verify` | High-reliability generation | [verifier-code-agent](capabilities/skill-execution.md) |
-| `reflect` | Self-critique and verification | [reflection-orchestrator](capabilities/skill-execution.md) |
-| `edit-optimize` | Model-aware edit format | [model-aware-editor](capabilities/skill-execution.md) |
+| `refactor` | Restructure code | [code-agent](../capabilities/skill-execution.md) |
+| `skill-compose` | Combine skills | [skill-composer](../capabilities/skill-chains.md) |
+| `optimize` | Context/token optimization | [context-manager](../capabilities/context-management.md) |
+| `verify` | High-reliability generation | [verifier-code-agent](../capabilities/skill-execution.md) |
+| `reflect` | Self-critique and verification | [reflection-orchestrator](../capabilities/skill-execution.md) |
+| `edit-optimize` | Model-aware edit format | [model-aware-editor](../capabilities/skill-execution.md) |
 
-See [Intent Routing](capabilities/intent-routing.md) for complete configuration.
+See [Intent Routing](../capabilities/intent-routing.md) for complete configuration.
 
 ## Composite Intents
 
@@ -89,7 +89,7 @@ Project-specific rules that Tachikoma loads automatically:
 | `git-workflow` | 20 | Git conventions |
 | `research-methods` | 30 | Investigation methodology |
 
-See [Context Modules](capabilities/customization/context-modules.md) to add your own.
+See [Context Modules](../capabilities/customization/context-modules.md) to add your own.
 
 ## Skills vs Subagents
 
@@ -98,7 +98,7 @@ See [Context Modules](capabilities/customization/context-modules.md) to add your
 | **Skill** | Simple, fast tasks | Routine work, normal context |
 | **Subagent** | Complex tasks | Large context, multi-step reasoning |
 
-See [Subagents](capabilities/subagents.md) for details.
+See [Subagents](../capabilities/subagents.md) for details.
 
 ## System Architecture
 
@@ -130,7 +130,7 @@ Key findings include:
 - **Modular Skills** — Specialized components beat monolithic approaches
 - **Verification Loops** — Self-verification improves reliability for complex tasks
 
-See [Research Overview](research/overview.md) for complete references and detailed findings.
+See [Research Overview](../research/overview.md) for complete references and detailed findings.
 
 ## Named After
 
@@ -139,7 +139,7 @@ See [Research Overview](research/overview.md) for complete references and detail
 ## Next Steps
 
 - [Getting Started](../getting-started.md) - Install and setup
-- [Skill Execution](capabilities/skill-execution.md) - How skills work
-- [Intent Routing](capabilities/intent-routing.md) - How routing works
-- [Skills Specification](capabilities/skills-specification.md) - Agent Skills format
-- [Create Custom Skill](capabilities/customization/add-skill.md) - Add your own capabilities
+- [Skill Execution](../capabilities/skill-execution.md) - How skills work
+- [Intent Routing](../capabilities/intent-routing.md) - How routing works
+- [Skills Specification](../capabilities/skills-specification.md) - Agent Skills format
+- [Create Custom Skill](../capabilities/customization/add-skill.md) - Add your own capabilities

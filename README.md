@@ -2,34 +2,36 @@
     <img width="300px" src= "assets/tachikoma1.png" alt="tachikoma1.png">
 </p>
 
-# Tachikoma Proompt Cookbooks 🕷️
+# Tachikoma 🕷️
 
 **Agent coordination system for AI-assisted development.**
 
-A modular framework that helps AI agents understand your project structure, follow your conventions, and route tasks to appropriate specialists.
+A modular framework that helps AI agents understand your project, follow your conventions, and route tasks to the right specialist.
 
-**Core Concepts:**
-
-1.  **Orchestrator Pattern**: Primary agent (Tachikoma) coordinates all activity
-2.  **Intent-Based Routing**: Classifies requests and routes to appropriate skills/subagents
-3.  **Context Modules**: Project-specific rules that load based on task type
-4.  **Self-Learning**: Tracks patterns and suggests improvements
-
-Named after the adaptive AI tanks from _Ghost in the Shell_ — always learning, always asking questions.
+Named after the curious, chatty AI tanks from _Ghost in the Shell_ — always learning, always asking questions.
 
 ---
 
-## 🧠 How It Works
+## Core Concepts
 
-This system uses a **primary orchestrator** pattern where Tachikoma (the primary agent) handles all incoming requests, classifies them, and routes to the appropriate specialist.
+- **Orchestrator Pattern** — Primary agent coordinates all activity
+- **Intent-Based Routing** — Classifies requests, routes to appropriate skills/subagents
+- **Context Modules** — Project-specific rules load based on task type
+- **Self-Learning** — Tracks patterns, suggests improvements
 
-For detailed architecture and flow, see [AGENTS.md](./AGENTS.md).
+---
+
+## How It Works
+
+Tachikoma handles every request, classifies the intent, loads relevant context, and routes to the appropriate skill or subagent.
+
+For detailed architecture, see [docs/concepts/overview.md](docs/concepts/overview.md).
 
 ---
 
 ## 🎨 Themes
 
-Two Ghost in the Shell inspired themes for OpenCode terminal:
+Ghost in the Shell inspired themes for OpenCode terminal:
 
 | Theme                     | View       | Dark                                                      | Light                                               |
 | ------------------------- | ---------- | --------------------------------------------------------- | --------------------------------------------------- |
@@ -40,224 +42,65 @@ Two Ghost in the Shell inspired themes for OpenCode terminal:
 | ghost-in-the-shell        | Chat       | ![chat](assets/tachikoma-dark-theme-gits-solid-chat.png)  | ![chat](assets/tachikoma-light-theme-gits-chat.png) |
 | lucent-ghost-in-the-shell | Chat       | ![chat](assets/tachikoma-dark-theme-gits-lucent-chat.png) | ![chat](assets/tachikoma-light-theme-gits-chat.png) |
 
-> **Note:** Light mode for both themes uses solid colors — transparency doesn't work well in light mode, so it's a solid colour for both lucent and solid themes.
+> Light mode uses solid colors — transparency doesn't work well in light mode.
 
 ---
 
-## 🚀 Installation (Drop-in Framework)
-
-### Quick Setup (Recommended)
-
-Use the install script for one-line setup:
+## Quick Install
 
 ```bash
-# Install to current directory
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s --
-
-# Install to specific directory
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s -- -C /path/to/project
-
-# Install specific branch
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s -- -b develop
+curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
 ```
 
-### Manual Setup
+Or copy `AGENTS.md` and `.opencode/` to your repo root.
 
-If you prefer manual installation:
-
-1.  **Copy to your repo:**
-
-    ```
-    cp -r .opencode AGENTS.md /path/to/your/project/
-    ```
-
-2.  **Don't ignore these files:**
-    - `AGENTS.md` or `.opencode/`
-    - The agent needs them at repo root to pick them up.
-    - Up to you if you want to commit them to your repo.
-
-3.  **That's it.** The system wakes up and starts learning immediately.
-
-### Updating
-
-If you used the install script, update easily:
-
-```bash
-# Run the local install script
-./.opencode/tachikoma-install.sh
-
-# Or specify a branch
-./.opencode/tachikoma-install.sh -b develop
-```
-
-### What Gets Copied
-
-```
-your-project/
-├── AGENTS.md                          # Universal context
-└── .opencode/
-    ├── agents/                        # Agent definitions
-    │   └── subagents/                 # Specialized subagents
-    ├── skills/                        # Specialized skills
-    ├── context/                       # Context modules
-    ├── config/
-    │   └── intent-routes.yaml         # Intent → action mapping
-    ├── themes/                        # Agent themes
-    ├── instructions/                  # Agent bootstrap templates
-    └── runtime/                       # Runtime configuration
-```
-
-See [context/navigation.md](./.opencode/context/navigation.md) for full structure.
+Full guide: [docs/getting-started.md](docs/getting-started.md)
 
 ---
 
-## 🔧 Customizing for Your Project
+## Documentation
 
-### Adding Project-Specific Rules
-
-Create a new context module in `.opencode/context/`:
-
-```bash
-cat > .opencode/context/40-my-project.md << 'EOF'
----
-module_id: my-project-rules
-name: My Project Patterns
-priority: 40
-depends_on:
-  - core-contract
-  - coding-standards
----
-
-# My Project Specific Rules
-
-## Testing
-Always run `npm test` before committing.
-
-## Naming
-- Components: PascalCase
-- Utilities: camelCase
-- Constants: UPPER_CASE
-EOF
-```
-
-### Adding Custom Intents
-
-Edit `.opencode/config/intent-routes.yaml`:
-
-```yaml
-routes:
-  my-custom-intent:
-    description: Description of this intent
-    confidence_threshold: 0.7
-    context_modules:
-      - 00-core-contract
-      - 40-my-project
-    skill: code-agent
-    tools:
-      - Read
-      - Write
-      - Bash
-```
-
-### Providing Feedback
-
-The system monitors interactions for learning:
-
-```
-User: "Learn this: Always run lint before committing"
-System: Detects pattern → Proposes adding to git-workflow
-User: Approves → Updates context
-```
+| Guide         | Where                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| Full docs     | [docs/](docs/)                                                                             |
+| Skills        | [.opencode/skills/\*/SKILL.md](.opencode/skills/)                                          |
+| Customization | [docs/capabilities/customization/overview.md](docs/capabilities/customization/overview.md) |
 
 ---
 
-## 📚 Documentation
+## 🤖 Tested Models
 
-| Guide             | Where                                                       |
-| ----------------- | ----------------------------------------------------------- |
-| Full architecture | [AGENTS.md](./AGENTS.md)                                    |
-| Skills reference  | [skills/README.md](./.opencode/skills/README.md)            |
-| Context modules   | [navigation.md](./.opencode/context/navigation.md)          |
-| Routing config    | [intent-routes.yaml](./.opencode/config/intent-routes.yaml) |
-| Individual skills | `.opencode/skills/*/SKILL.md`                               |
+| Model               | Notes                                                                       |
+| ------------------- | --------------------------------------------------------------------------- |
+| Claude 4.6 Opus     | Big brain energy                                                            |
+| Kimi K2.5           | Strong alternative to Sonnet                                                |
+| GLM 5               | Seems to be great value. Waiting for it to roll out to me for field testing |
+| Minimax M2.5        | Shockingly good                                                             |
+| Claude 4.5 Sonnet   | Current sweet spot                                                          |
+| GLM 4.7             | Almost as good as Sonnet                                                    |
+| Gemini 3 Deep Think | ARC-AGI-2: 84.6%, Codeforces 3455Elo                                        |
+| o1/o3 Pro           | Excellent for complex reasoning                                             |
+| GPT-5.3 series      | Much better than previous                                                   |
 
----
-
-## 🛠️ Compatibility
-
-This framework works with OpenCode and the [SKILLs](https://agentskills.io/specification) format.
-
-**Should work with:**
-
-- Any AI agent that can read files from your repo
-- Local models via Ollama, LM Studio, etc.
-- Custom agent integrations
+> **Copilot** is doing a lot of the heavy lifting — I'm turning the knobs and trying **every model it'll let me** 😄
 
 ---
 
-### Editors / IDEs
+## Research & Credits
 
-| Tier     | Tool                                 | Notes                    |
-| -------- | ------------------------------------ | ------------------------ |
-| **Best** | Zed + Copilot/Open Code              | Honestly the best so far |
-| **Best** | VS Code/Cursor/Kiro + Copilot        | Just works, good stuff.  |
-| **Okay** | Visual Studio (Enterprise) + Copilot | I mean... it works...    |
+Built on peer-reviewed LLM research:
 
----
+| Paper                                  | Basis                           |
+| -------------------------------------- | ------------------------------- |
+| Tool-Augmented LLMs (arXiv:2601.02663) | Cost-aware routing              |
+| Agentic Proposing (arXiv:2602.03279)   | Skill composition               |
+| ARC-AGI Benchmark                      | Intelligence efficiency metrics |
+| MIT RLM                                | Adaptive chunking               |
 
-### Models / Agents
-
-| Tier                         | Model             | Notes                                                              |
-| ---------------------------- | ----------------- | ------------------------------------------------------------------ |
-| **PAUSECHAMP?**              | Kimi K2.5         | This might be better than sonnet or opus depending on your usecase |
-| **SOLID**                    | Claude 4.5 Sonnet | Sweet spot: smart + fast.                                          |
-| **SOLID**                    | Claude 4.5 Opus   | Big brain energy.                                                  |
-| **Shockingly Good**          | GLM 4.7           | Almost as good as Claude 4.5 Sonnet                                |
-| **Shockingly Good**          | Minimax M2        | Very close to GLM 4.7, I switch between the two                   |
-| **State of the Art**         | Gemini 3 Deep Think | ARC-AGI-2: 84.6%, Codeforces: 3455 Elo, IMO Gold level           |
-| **State of the Art**         | o1/o3 Pro         | Advanced reasoning, excellent for complex tasks                   |
-| **Mixed (experiment, YMMV)** | GPT-4 series      | Hit or miss; try different agents, some shine.                     |
-| **Mixed (experiment, YMMV)** | GPT-5 series      | Generally better, still inconsistent; worth poking.                |
-| **Not recommended, for now** | Grok models       | No ❤️.                                                             |
-| **Promising**                | Gemini 3+         | Good vibes, needs tuning.                                          |
+RLM concept based on [brainqub3/Claude Code RLM](https://github.com/brainqub3/claude_code_RLM).
 
 ---
-
-### Notes
-
-Copilot is doing a lot of the heavy lifting here —
-work pays for it, so I'm turning the knobs and trying **every model it'll let me** 😄
-
----
-
-### Disclaimer
-
-AI agents vary wildly by model, tool, and prompt plumbing.
-**Your mileage may vary.**
-Experiment and trust local results over lists like this.
-
----
-
-## Credits
-
-### Research & Papers
-
-- **Tool-Augmented LLMs** (arXiv:2601.02663) - Tool use can improve accuracy but adds latency. Basis for cost-aware routing. (Specific numbers not yet verified - see RESEARCH_VERIFICATION.md)
-- **Agentic Proposing** (arXiv:2602.03279) - 4B proposer dynamically composes modular skills. 91.6% accuracy. Basis for skill-composer.
-- **Can.ac Harness Problem** (Feb 2026) - Edit format can improve success rates up to 10x. Verified: Grok 6.7%→68.3%, Gemini +8%. Basis for model-aware-editor.
-- **Gemini Deep Think: Mathematics** (arXiv:2602.10177) - Aletheia agent (Generator-Verifier-Reviser) achieves 90% on IMO-ProofBench, autonomous math research. Basis for verifier-code-agent.
-- **Gemini Deep Think: Science** (arXiv:2602.03837) - "Vibe-proving" methodology, Advisor model, balanced prompting. Basis for reflection-orchestrator.
-- **ARC-AGI Benchmark** (arcprize.org) - Measures intelligence efficiency (performance vs cost). Gemini 3 Deep Think: 84.6% on ARC-AGI-2.
-- **MIT RLM** - Adaptive chunking for large contexts. Basis for rlm-optimized.
-
-### Code & Concepts
-
-- **RLM Concept**: Based on _Recursive Language Models_ (2025) by Zhang, Kraska, and Khattab (MIT CSAIL)
-- **claude_code_RLM**: Yoinked the RLM scripts and proompts from [brainqub3/Claude Code RLM](https://github.com/brainqub3/claude_code_RLM)
-- **Tachikoma**: Named after the curious, chatty, and adaptive AI tanks from _Ghost in the Shell_ — always learning, always asking questions
 
 ## License
 
-MIT — Do whatever. Fork it, hack it, use it in closed-source, whatever.
-
-If you make it better, sharing back is cool but not required.
+MIT — Do whatever. Fork it, hack it, use it in closed-source.
