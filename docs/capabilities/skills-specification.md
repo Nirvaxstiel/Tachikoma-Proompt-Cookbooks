@@ -1,6 +1,8 @@
 # Agent Skills Specification
 
-> The complete format specification for Agent Skills, based on the official [agentskills.io](https://agentskills.io) standard.
+> **Quick Reference:** For a condensed version, see [Agent Skills Format](/internals/agent-skills-format) in the Internals section.
+
+The complete format specification for Agent Skills, based on the official [agentskills.io](https://agentskills.io) standard.
 
 ## Overview
 
@@ -414,7 +416,7 @@ I'll analyze the auth module for code quality issues...
 
 ## References
 
-See [coding standards](../context/10-coding-standards.md) for baseline expectations.
+See [coding standards](../context-modules/10-coding-standards.md) for baseline expectations.
 ```
 
 ## Best Practices

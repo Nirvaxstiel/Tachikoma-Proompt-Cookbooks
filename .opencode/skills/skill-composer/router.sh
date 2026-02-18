@@ -38,22 +38,22 @@ print_info() {
 # Discover available skills
 op_discover() {
     print_header "SKILL COMPOSER: Available Skills"
-    
+
     if [ ! -d "$SKILLS_DIR" ]; then
         print_warning "Skills directory not found: $SKILLS_DIR"
         exit 1
     fi
-    
+
     echo ""
     echo "Registered skills:"
     echo ""
-    
+
     local count=0
     for skill_dir in "$SKILLS_DIR"/*/; do
         if [ -d "$skill_dir" ]; then
             local skill_name=$(basename "$skill_dir")
             local skill_file="${skill_dir}SKILL.md"
-            
+
             if [ -f "$skill_file" ]; then
                 # Extract description from frontmatter
                 local desc=$(grep "^description:" "$skill_file" | head -1 | sed 's/description: *//' | sed 's/^"//; s/"$//')
@@ -63,7 +63,7 @@ op_discover() {
             fi
         fi
     done
-    
+
     echo ""
     print_success "Found $count skills"
     echo ""
@@ -73,55 +73,55 @@ op_discover() {
 # Decompose a task into skill sequence
 op_decompose() {
     local task="$1"
-    
+
     print_header "SKILL COMPOSER: Task Decomposition"
-    
+
     if [ -z "$task" ]; then
         print_warning "No task provided"
         echo "Usage: decompose '<task description>'"
         exit 1
     fi
-    
+
     echo "Task: $task"
     echo ""
-    
+
     # Simple rule-based decomposition
     # In production, this would use LLM to analyze task
-    
+
     local skills_needed=""
     local sequence=""
-    
+
     # Detect patterns
     if echo "$task" | grep -qi "research\|find\|look up\|investigate"; then
         skills_needed="${skills_needed}research-agent "
         sequence="${sequence}1:research-agent:Find information\n"
     fi
-    
+
     if echo "$task" | grep -qi "implement\|code\|write\|create\|build"; then
         skills_needed="${skills_needed}code-agent "
         sequence="${sequence}2:code-agent:Write code\n"
     fi
-    
+
     if echo "$task" | grep -qi "review\|audit\|check\|analyze.*code"; then
         skills_needed="${skills_needed}analysis-agent "
         sequence="${sequence}2:analysis-agent:Review code\n"
     fi
-    
+
     if echo "$task" | grep -qi "document\|doc\|readme"; then
         skills_needed="${skills_needed}docs "
         sequence="${sequence}3:docs:Write documentation\n"
     fi
-    
+
     if echo "$task" | grep -qi "format\|clean\|lint\|prettify"; then
         skills_needed="${skills_needed}formatter "
         sequence="${sequence}3:formatter:Clean up code\n"
     fi
-    
+
     if echo "$task" | grep -qi "commit\|git"; then
         skills_needed="${skills_needed}git-commit "
         sequence="${sequence}4:git-commit:Commit changes\n"
     fi
-    
+
     if echo "$task" | grep -qi "api\|library\|framework\|docs.*external"; then
         skills_needed="${skills_needed}context7 "
         # Insert context7 early if research is also needed
@@ -131,7 +131,7 @@ op_decompose() {
             sequence="${sequence}1:context7:Fetch live docs\n"
         fi
     fi
-    
+
     # If no specific skills detected, suggest general composition
     if [ -z "$skills_needed" ]; then
         print_warning "Could not auto-detect skills for this task"
@@ -143,7 +143,7 @@ op_decompose() {
         echo "  4. formatter: Clean up"
         return 0
     fi
-    
+
     echo "Detected skill composition:"
     echo ""
     echo "$sequence" | sort -n | while IFS=: read -r order skill desc; do
@@ -151,7 +151,7 @@ op_decompose() {
         echo "    Purpose: $desc"
         echo ""
     done
-    
+
     echo ""
     print_success "Decomposition complete"
     echo ""
@@ -164,7 +164,7 @@ op_decompose() {
 # Show example compositions
 op_examples() {
     print_header "SKILL COMPOSER: Example Compositions"
-    
+
     echo ""
     echo "Example 1: Feature Implementation"
     echo "─────────────────────────────────────"
@@ -177,7 +177,7 @@ op_examples() {
     echo "  4. formatter: Clean up code"
     echo "  5. git-commit: Commit changes"
     echo ""
-    
+
     echo "Example 2: Comprehensive Code Review"
     echo "─────────────────────────────────────"
     echo "Task: 'Review this PR thoroughly'"
@@ -189,7 +189,7 @@ op_examples() {
     echo "  4. [Synthesis]: Merge findings"
     echo "  5. pr: Create review comments"
     echo ""
-    
+
     echo "Example 3: Documentation Sprint"
     echo "─────────────────────────────────────"
     echo "Task: 'Document the new API endpoints'"
@@ -201,7 +201,7 @@ op_examples() {
     echo "  4. formatter: Format documentation"
     echo "  5. git-commit: Commit docs"
     echo ""
-    
+
     print_success "Use 'decompose <task>' to see composition for your task"
 }
 
@@ -209,25 +209,25 @@ op_examples() {
 op_log() {
     local task="$1"
     local composition="$2"
-    
+
     mkdir -p "$(dirname "$COMPOSITION_LOG")"
-    
+
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Task: $task" >> "$COMPOSITION_LOG"
     echo "Composition: $composition" >> "$COMPOSITION_LOG"
     echo "---" >> "$COMPOSITION_LOG"
-    
+
     print_success "Composition logged"
 }
 
 # Show composition history
 op_history() {
     print_header "SKILL COMPOSER: Composition History"
-    
+
     if [ ! -f "$COMPOSITION_LOG" ]; then
         print_info "No composition history found"
         exit 0
     fi
-    
+
     echo ""
     tail -50 "$COMPOSITION_LOG"
 }

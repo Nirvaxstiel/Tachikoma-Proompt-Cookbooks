@@ -61,50 +61,50 @@ detect_project_type() {
 op_cleanup() {
     local target="${1:-.}"
     local project_type=$(detect_project_type)
-    
+
     print_header "FORMATTER: Code Quality Cleanup"
-    
+
     echo "Target: $target"
     echo "Project type: $project_type"
     echo ""
-    
+
     local changes_made=0
     local warnings=""
-    
+
     # Step 1: Remove debug code
     print_info "Step 1: Removing debug code..."
     if op_remove_debug "$target"; then
         changes_made=$((changes_made + 1))
     fi
-    
+
     # Step 2: Format code
     print_info "Step 2: Formatting code..."
     if op_format "$target"; then
         changes_made=$((changes_made + 1))
     fi
-    
+
     # Step 3: Optimize imports
     print_info "Step 3: Optimizing imports..."
     if op_imports "$target"; then
         changes_made=$((changes_made + 1))
     fi
-    
+
     # Step 4: Fix linting
     print_info "Step 4: Fixing linting issues..."
     if op_lint "$target"; then
         changes_made=$((changes_made + 1))
     fi
-    
+
     # Step 5: Type checking
     print_info "Step 5: Type checking..."
     if op_types "$target"; then
         changes_made=$((changes_made + 1))
     fi
-    
+
     # Summary
     echo ""
     print_header "CLEANUP SUMMARY"
-    
+
     if [ $changes_made -gt 0 ]; then
         print_success "Cleanup completed with improvements"
         echo ""
@@ -117,7 +117,7 @@ op_cleanup() {
     else
         print_info "No changes needed - code is clean!"
     fi
-    
+
     if [ -n "$warnings" ]; then
         echo ""
         print_warning "Manual review needed:"
@@ -129,7 +129,7 @@ op_cleanup() {
 op_remove_debug() {
     local target="${1:-.}"
     local removed=0
-    
+
     # Find and remove console.log from JS/TS files
     if [ -d "$target" ]; then
         # Remove console.log statements (but keep console.error in catch blocks)
@@ -141,7 +141,7 @@ op_remove_debug() {
                 removed=$((removed + count))
             fi
         done
-        
+
         # Remove debugger statements
         find "$target" -type f \( -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" \) -exec grep -l "debugger;" {} \; 2>/dev/null | while read -r file; do
             local count=$(grep -c "debugger;" "$file" 2>/dev/null || echo "0")
@@ -151,7 +151,7 @@ op_remove_debug() {
             fi
         done
     fi
-    
+
     if [ $removed -gt 0 ]; then
         print_success "Removed $removed debug statements"
         return 0
@@ -165,7 +165,7 @@ op_remove_debug() {
 op_format() {
     local target="${1:-.}"
     local formatted=0
-    
+
     # Try Prettier
     if command_exists npx && [ -f ".prettierrc" ] || [ -f ".prettierrc.json" ] || [ -f "prettier.config.js" ]; then
         echo "  Running Prettier..."
@@ -174,7 +174,7 @@ op_format() {
             print_success "Formatted with Prettier"
         fi
     fi
-    
+
     # Try Black (Python)
     if command_exists black && [ -f "pyproject.toml" ] || [ -f "setup.py" ]; then
         echo "  Running Black..."
@@ -183,7 +183,7 @@ op_format() {
             print_success "Formatted with Black"
         fi
     fi
-    
+
     # Try gofmt (Go)
     if command_exists gofmt && [ -f "go.mod" ]; then
         echo "  Running gofmt..."
@@ -192,7 +192,7 @@ op_format() {
             print_success "Formatted with gofmt"
         fi
     fi
-    
+
     # Try rustfmt (Rust)
     if command_exists rustfmt && [ -f "Cargo.toml" ]; then
         echo "  Running rustfmt..."
@@ -201,7 +201,7 @@ op_format() {
             print_success "Formatted with rustfmt"
         fi
     fi
-    
+
     if [ $formatted -eq 1 ]; then
         return 0
     else
@@ -214,7 +214,7 @@ op_format() {
 op_imports() {
     local target="${1:-.}"
     local optimized=0
-    
+
     # Try ESLint with import plugin
     if command_exists npx && [ -f ".eslintrc" ] || [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ]; then
         echo "  Running ESLint import fixes..."
@@ -223,7 +223,7 @@ op_imports() {
             print_success "Optimized imports with ESLint"
         fi
     fi
-    
+
     # Try isort (Python)
     if command_exists isort; then
         echo "  Running isort..."
@@ -232,14 +232,14 @@ op_imports() {
             print_success "Optimized imports with isort"
         fi
     fi
-    
+
     # Try organize-imports (TypeScript)
     if command_exists npx && [ -f "tsconfig.json" ]; then
         echo "  Running TypeScript import organizer..."
         # This would need a specific tool, skipping for now
         :
     fi
-    
+
     if [ $optimized -eq 1 ]; then
         return 0
     else
@@ -252,7 +252,7 @@ op_imports() {
 op_lint() {
     local target="${1:-.}"
     local fixed=0
-    
+
     # Try ESLint
     if command_exists npx && [ -f ".eslintrc" ] || [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ]; then
         echo "  Running ESLint --fix..."
@@ -261,25 +261,25 @@ op_lint() {
             print_success "Fixed ESLint issues"
         fi
     fi
-    
+
     # Try flake8/pylint (Python)
     if command_exists flake8; then
         echo "  Running flake8 check..."
         flake8 "$target" 2>/dev/null || true
     fi
-    
+
     # Try golint (Go)
     if command_exists golint && [ -f "go.mod" ]; then
         echo "  Running golint..."
         golint "$target" 2>/dev/null || true
     fi
-    
+
     # Try clippy (Rust)
     if command_exists cargo && [ -f "Cargo.toml" ]; then
         echo "  Running cargo clippy..."
         cargo clippy 2>/dev/null || true
     fi
-    
+
     if [ $fixed -eq 1 ]; then
         return 0
     else
@@ -292,7 +292,7 @@ op_lint() {
 op_types() {
     local target="${1:-.}"
     local checked=0
-    
+
     # Try TypeScript
     if command_exists npx && [ -f "tsconfig.json" ]; then
         echo "  Running TypeScript compiler..."
@@ -303,7 +303,7 @@ op_types() {
             print_warning "TypeScript errors found (manual review needed)"
         fi
     fi
-    
+
     # Try mypy (Python)
     if command_exists mypy; then
         echo "  Running mypy..."
@@ -312,7 +312,7 @@ op_types() {
             print_success "Python type check passed"
         fi
     fi
-    
+
     # Try go build (Go)
     if command_exists go && [ -f "go.mod" ]; then
         echo "  Running go build..."
@@ -321,7 +321,7 @@ op_types() {
             print_success "Go build passed"
         fi
     fi
-    
+
     # Try cargo check (Rust)
     if command_exists cargo && [ -f "Cargo.toml" ]; then
         echo "  Running cargo check..."
@@ -330,7 +330,7 @@ op_types() {
             print_success "Rust check passed"
         fi
     fi
-    
+
     if [ $checked -eq 1 ]; then
         return 0
     else
@@ -343,41 +343,41 @@ op_types() {
 op_check() {
     local target="${1:-.}"
     local project_type=$(detect_project_type)
-    
+
     print_header "FORMATTER: Check Only (Dry Run)"
-    
+
     echo "Target: $target"
     echo "Project type: $project_type"
     echo ""
-    
+
     print_info "Checking for issues (no changes will be made)..."
-    
+
     # Check for debug code
     echo ""
     echo "Debug code found:"
     find "$target" -type f \( -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" \) -exec grep -Hn "console\.log\|debugger;" {} \; 2>/dev/null | head -20 || echo "  None"
-    
+
     # Check formatting
     echo ""
     if command_exists npx && [ -f ".prettierrc" ]; then
         echo "Prettier issues:"
         npx prettier --check "$target" 2>/dev/null || echo "  Formatting issues found"
     fi
-    
+
     # Check linting
     echo ""
     if command_exists npx && [ -f ".eslintrc" ]; then
         echo "ESLint issues:"
         npx eslint "$target" 2>/dev/null | head -20 || echo "  No issues or ESLint not configured"
     fi
-    
+
     # Type checking
     echo ""
     if command_exists npx && [ -f "tsconfig.json" ]; then
         echo "TypeScript issues:"
         npx tsc --noEmit 2>/dev/null || echo "  Type errors found"
     fi
-    
+
     echo ""
     print_info "Check complete. Run 'cleanup' to fix issues."
 }

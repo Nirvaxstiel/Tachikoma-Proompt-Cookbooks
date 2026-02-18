@@ -5,6 +5,7 @@ Structured communication patterns for agent coordination and user interaction.
 ## What & Why
 
 **Problem:** Agents need to communicate with each other and users in consistent, predictable ways. Without structured protocols:
+
 - Unclear what information is needed
 - Inconsistent message formats
 - Uncertainty about who is responsible
@@ -38,6 +39,7 @@ Execute this task following the loaded context and return a summary of actions t
 ### Guidelines
 
 **Message Characteristics:**
+
 - **Concise**: Keep under 500 tokens when possible
 - **Structured**: Use defined sections (CONTEXT, USER REQUEST, CLASSIFICATION)
 - **Complete**: Include all necessary information
@@ -46,6 +48,7 @@ Execute this task following the loaded context and return a summary of actions t
 **Example Messages:**
 
 **Code Review:**
+
 ```yaml
 This task must be performed by subagent "analysis-agent".
 
@@ -66,6 +69,7 @@ Execute this task following the loaded context and return a summary of actions t
 ```
 
 **Complex Task:**
+
 ```yaml
 This task must be performed by subagent "rlm-optimized".
 
@@ -165,6 +169,7 @@ Next steps:
 ### Example Responses
 
 **Code Implementation:**
+
 ```markdown
 ✅ Code Implementation Complete
 
@@ -192,6 +197,7 @@ Next steps:
 ```
 
 **Code Review:**
+
 ```markdown
 ✅ Code Review Complete
 
@@ -207,7 +213,7 @@ Next steps:
 
 **Files changed**:
 - docs/security-findings.md (created)
-- .opencode/context/50-prompt-safety.md (updated)
+- .opencode/context-modules/50-prompt-safety.md (updated)
 
 **Next steps**:
 - Fix JWT secret (use environment variable)
@@ -235,6 +241,7 @@ When a task fails, communicate clearly:
 ```
 
 **Example:**
+
 ```markdown
 ❌ Task Failed
 
@@ -271,6 +278,7 @@ Or please rephrase with more detail.
 ```
 
 **Example:**
+
 ```markdown
 I need to clarify your request
 
@@ -354,6 +362,7 @@ For long-running tasks, provide periodic updates:
 ### Skills That Apply Protocol
 
 All skills follow communication protocol:
+
 - **intent-classifier** - Reports classification with confidence
 - **code-agent** - Reports what was done and files changed
 - **analysis-agent** - Reports review findings and recommendations
@@ -363,11 +372,13 @@ All skills follow communication protocol:
 ### Agent Handoffs
 
 **From Tachikoma to Subagents:**
+
 - Use structured message format
 - Include context, query, classification
 - Request summary of actions taken
 
 **From Subagents to Tachikoma:**
+
 - Return structured summary
 - Include actions taken
 - Report any issues encountered
@@ -440,7 +451,3 @@ Communication protocol works with other tribal rules:
 **Context**:
 {what was being worked on}
 ```
-
-**Last Updated:** 2026-02-17
-**Tribal Rule:** Universal Rule #8 - Communication
-**Application:** All agents, all interactions, always

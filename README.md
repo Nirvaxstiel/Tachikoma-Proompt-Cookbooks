@@ -74,17 +74,18 @@ Full guide: [docs/getting-started.md](docs/getting-started.md)
 
 ## 🤖 Tested Models
 
-| Model               | Notes                                                                       |
-| ------------------- | --------------------------------------------------------------------------- |
-| Claude 4.6 Opus     | Big brain energy                                                            |
-| Kimi K2.5           | Strong alternative to Sonnet                                                |
-| GLM 5               | Seems to be great value. Waiting for it to roll out to me for field testing |
-| Minimax M2.5        | Shockingly good                                                             |
-| Claude 4.5 Sonnet   | Current sweet spot                                                          |
-| GLM 4.7             | Almost as good as Sonnet                                                    |
-| Gemini 3 Deep Think | ARC-AGI-2: 84.6%, Codeforces 3455Elo                                        |
-| o1/o3 Pro           | Excellent for complex reasoning                                             |
-| GPT-5.3 series      | Much better than previous                                                   |
+| Model               | Notes                                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------------------- |
+| Claude 4.6 Opus     | Big guns, big brains, big wallet sinkhole                                                               |
+| Claude 4.6 Sonnet   | Much more sane compared to Opus. Not much different I feel between 4.5 and this. Use whatever's cheaper |
+| Kimi K2.5           | Strong alternative to Sonnet                                                                            |
+| GLM 5               | Honestly it feels like Sonnet 4.6 and its cheaper. More testing required.                               |
+| Minimax M2.5        | Shockingly good                                                                                         |
+| Claude 4.5 Sonnet   | Current sweet spot                                                                                      |
+| GLM 4.7             | Almost as good as Sonnet                                                                                |
+| Gemini 3 Deep Think | ARC-AGI-2: 84.6%, Codeforces 3455Elo                                                                    |
+| o1/o3 Pro           | Excellent for complex reasoning                                                                         |
+| GPT-5.3 series      | Much better than previous                                                                               |
 
 > **Copilot** is doing a lot of the heavy lifting — I'm turning the knobs and trying **every model it'll let me** 😄
 

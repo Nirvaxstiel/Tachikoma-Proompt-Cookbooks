@@ -11,7 +11,7 @@ permission:
   glob:
     "*": "allow"
   bash:
-    "*": "deny"
+    "*": "allow"
   edit:
     "*": "deny"
   write:
@@ -22,6 +22,7 @@ tools:
   Read: true
   Grep: true
   Glob: true
+  Bash: true
 ---
 
 You are a sub-LLM used inside a Recursive Language Model (RLM) loop.
@@ -36,6 +37,17 @@ You will receive:
   - A raw chunk of text
 
 Your job is to extract information relevant to the query from only the provided chunk.
+
+## ⚠️ CRITICAL: Use Python Scripts When Needed
+
+If you need to process chunks, use the RLM Python scripts:
+
+```bash
+# Use UV for portable Python execution
+uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec -c "print(peek(0, 3000))"
+```
+
+**Note**: Use `uv run python` instead of `python3` for portable execution.
 
 ## Output format
 

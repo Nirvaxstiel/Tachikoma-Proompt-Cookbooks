@@ -48,8 +48,9 @@ from typing import Any, Dict, List, Tuple
 
 # Import parallel and adaptive processing (Phase 1.3 and 2.1)
 try:
-    from ..parallel_processor import ParallelWaveProcessor, get_parallel_processor
     from ..adaptive_chunker import AdaptiveChunker, get_adaptive_chunker
+    from ..parallel_processor import ParallelWaveProcessor, get_parallel_processor
+
     PARALLEL_AVAILABLE = True
 except ImportError:
     PARALLEL_AVAILABLE = False
@@ -337,7 +338,7 @@ def cmd_exec(args: argparse.Namespace) -> int:
 
     if dropped and args.warn_unpickleable:
         msg = "Dropped unpickleable variables: " + ", ".join(dropped)
-        err = (err + ("\n" if err else "") + msg + "\n")
+        err = err + ("\n" if err else "") + msg + "\n"
 
     if out:
         sys.stdout.write(_truncate(out, args.max_output_chars))
@@ -424,10 +425,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 # === PARALLEL PROCESSING HELPERS (Phase 1.3) ===
 
+
 def process_chunks_parallel(
-    chunks: List[str],
-    query: str,
-    subagent_callback: callable
+    chunks: List[str], query: str, subagent_callback: callable
 ) -> Dict[str, Any]:
     """Process chunks in parallel waves (Phase 1.3 implementation)
 
@@ -445,16 +445,12 @@ def process_chunks_parallel(
 
     processor = get_parallel_processor(max_concurrent=5)
     return processor.process_all_chunks_sync(
-        all_chunk_paths=chunks,
-        query=query,
-        subagent_callback=subagent_callback
+        all_chunk_paths=chunks, query=query, subagent_callback=subagent_callback
     )
 
 
 def process_chunks_sequential(
-    chunks: List[str],
-    query: str,
-    subagent_callback: callable
+    chunks: List[str], query: str, subagent_callback: callable
 ) -> Dict[str, Any]:
     """Process chunks sequentially (fallback when parallel unavailable)
 
@@ -469,35 +465,27 @@ def process_chunks_sequential(
     results = []
     for chunk_path in chunks:
         try:
-            result = subagent_callback({
-                'chunk_file': chunk_path,
-                'query': query
-            })
-            results.append({
-                'chunk_id': Path(chunk_path).stem,
-                'success': True,
-                'result': result
-            })
+            result = subagent_callback({"chunk_file": chunk_path, "query": query})
+            results.append(
+                {"chunk_id": Path(chunk_path).stem, "success": True, "result": result}
+            )
         except Exception as e:
-            results.append({
-                'chunk_id': Path(chunk_path).stem,
-                'success': False,
-                'error': str(e)
-            })
+            results.append(
+                {"chunk_id": Path(chunk_path).stem, "success": False, "error": str(e)}
+            )
 
     return {
-        'total_chunks': len(chunks),
-        'processed_chunks': len(results),
-        'results': results
+        "total_chunks": len(chunks),
+        "processed_chunks": len(results),
+        "results": results,
     }
 
 
 # === ADAPTIVE CHUNKING HELPERS (Phase 2.1) ===
 
+
 def create_chunks_adaptive(
-    content: str,
-    max_chunks: int = None,
-    output_dir: str = None
+    content: str, max_chunks: int = None, output_dir: str = None
 ) -> List[str]:
     """Create chunks using semantic boundary detection (Phase 2.1 implementation)
 
@@ -515,9 +503,7 @@ def create_chunks_adaptive(
 
     chunker = get_adaptive_chunker()
     return chunker.create_chunks_file(
-        content=content,
-        output_dir=output_dir,
-        max_chunks=max_chunks
+        content=content, output_dir=output_dir, max_chunks=max_chunks
     )
 
 
@@ -542,7 +528,7 @@ def get_chunking_stats() -> Dict[str, Any]:
         Dictionary with chunking statistics
     """
     if not PARALLEL_AVAILABLE:
-        return {'error': 'adaptive_chunker not available'}
+        return {"error": "adaptive_chunker not available"}
 
     chunker = get_adaptive_chunker()
     return chunker.get_stats()

@@ -2,11 +2,18 @@
 
 This document describes how the agent system works.
 
+> **Architecture**: The system follows this order:
+> 1. `AGENTS.md` (this file) - System overview
+> 2. `.opencode/agents/tachikoma.md` - Agent definition with mandatory workflow
+> 3. `.opencode/skills/*/SKILL.md` - Capability modules
+
 ## How It Works
 
 ```
-User Query → Tachikoma → Route to Skill/Subagent → Result
+User Query → [MUST: Classify] → [MUST: Load Context] → [MUST: Load Skill] → Execute → Report
 ```
+
+**Every request MUST go through all phases. Skipping phases is a contract violation.**
 
 1. User sends a request to Tachikoma
 2. Tachikoma figures out what kind of task it is
@@ -37,14 +44,49 @@ Context modules contain project-specific rules and conventions.
 |--------|--------------|
 | 00-core-contract.md | Foundational rules |
 | 10-coding-standards.md | Code style |
+| 11-artifacts-policy.md | Artifact consent and workspace protection |
 | 12-commenting-rules.md | Comment guidelines |
 | 20-git-workflow.md | Git conventions |
 | 30-research-methods.md | How to investigate |
 | 50-prompt-safety.md | Safety guidelines |
 
-Location: `.opencode/context/`
+Location: `.opencode/context-modules/`
 
 When loading coding-standards, also load commenting-rules. They go together.
+
+## Behavioral Policies
+
+The Tachikoma system enforces several behavioral policies to ensure quality and user experience:
+
+### Artifact Consent
+
+Before creating persistent artifacts (files, documentation, test scripts), agents must:
+- Verify task explicitly requests the artifact
+- Check for existing artifacts to integrate with
+- Ask user for consent unless clearly in scope
+- Prefer terminal output for temporary information
+
+**Module**: `11-artifacts-policy.md` (Priority 11)
+
+**Applies to**: code-agent, workflow-management, task-tracking, verifier-code-agent, self-learning
+
+### Core Contract
+
+Foundational rules that apply to all tasks:
+- Externalized context mode (filesystem is truth)
+- Minimal change principle
+- Reuse before creation
+- Validation before action
+
+**Module**: `00-core-contract.md` (Priority 0)
+
+### Loading Strategy
+
+Policies are loaded based on task intent and priority order:
+1. Core rules always load (priority 0)
+2. Domain-specific rules load as needed (coding, research, git)
+3. Higher priority modules load before lower priority
+4. Coupled modules load together (coding-standards + commenting-rules)
 
 ## How Tachikoma Routes Requests
 

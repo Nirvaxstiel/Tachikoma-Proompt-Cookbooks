@@ -1,0 +1,15 @@
+#!/bin/bash
+# Smoke Test for Tachikoma Dashboard
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Find Python
+if command -v python3 &> /dev/null; then
+    PYTHON=python3
+elif command -v python &> /dev/null; then
+    PYTHON=python
+else
+    PYTHON="$SCRIPT_DIR/../../assets/Python310/python"
+fi
+
+exec "$PYTHON" "$SCRIPT_DIR/test_smoke.py" "$@"

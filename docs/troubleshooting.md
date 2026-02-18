@@ -4,37 +4,42 @@ Common issues and solutions for working with Tachikoma, skills, agents, and capa
 
 ## Quick Fixes
 
-| Problem | Quick Fix |
-|---------|------------|
-| Skill not loading | Check YAML frontmatter is valid |
-| Wrong skill being called | Verify route name matches skill name |
-| Low confidence on intent | Add keywords to intent classifier |
-| Instructions not followed | Check skill formatting and clarity |
-| Subagent not invoked | Verify routing configuration |
-| Context module missing | Check file path and naming |
-| Edit format failing | Try model-aware-editor skill |
+| Problem                   | Quick Fix                            |
+| ------------------------- | ------------------------------------ |
+| Skill not loading         | Check YAML frontmatter is valid      |
+| Wrong skill being called  | Verify route name matches skill name |
+| Low confidence on intent  | Add keywords to intent classifier    |
+| Instructions not followed | Check skill formatting and clarity   |
+| Subagent not invoked      | Verify routing configuration         |
+| Context module missing    | Check file path and naming           |
+| Edit format failing       | Try model-aware-editor skill         |
 
 ## FAQ
 
 ### General Questions
 
 **Q: What is Tachikoma?**
-A: Tachikoma is a primary orchestrator agent that receives all user input, classifies intent, and routes tasks to the appropriate skill or subagent.
+
+> A: Tachikoma is a primary orchestrator agent that receives all user input, classifies intent, and routes tasks to the appropriate skill or subagent.
 
 **Q: What's the difference between a skill and a subagent?**
-A: Skills are for routine, focused tasks (normal context window). Subagents are for complex, large-context tasks (unlimited context via chunking).
+
+> A: Skills are for routine, focused tasks (normal context window). Subagents are for complex, large-context tasks (unlimited context via chunking).
 
 **Q: How do I add my own capabilities?**
-A: Create custom skills, agents, or context modules following the [Agent Skills specification](/capabilities/skills-specification). See [Add Skill](/capabilities/customization/add-skill) and [Add Agent](/capabilities/customization/add-agent).
+
+> A: Create custom skills, agents, or context modules following the [Agent Skills specification](/capabilities/skills-specification). See [Add Skill](/capabilities/customization/add-skill) and [Add Agent](/capabilities/customization/add-agent).
 
 **Q: Can I use Tachikoma with different AI agents?**
-A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with any skills-supporting agent.
+
+> A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with any skills-supporting agent.
 
 ## Skill Issues
 
 ### Skill Not Loading
 
 **Symptoms:**
+
 - Skill doesn't activate even when it should
 - Intent classifier doesn't recognize relevant keywords
 - No error message, just wrong skill is used
@@ -42,6 +47,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 **Solutions:**
 
 1. **Check YAML Frontmatter**
+
    ```yaml
    # Correct format
    ---
@@ -75,6 +81,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 ### Instructions Not Followed
 
 **Symptoms:**
+
 - Agent doesn't follow skill instructions
 - Agent ignores boundaries
 - Agent makes assumptions not in skill
@@ -105,6 +112,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 ### Skill Too Large
 
 **Symptoms:**
+
 - Token limit warnings
 - Slow loading
 - Lost-in-the-middle problem
@@ -116,6 +124,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
    - Use skill chains for complex workflows
 
 2. **Use Progressive Disclosure**
+
    ```
    SKILL.md (< 500 lines, < 5000 tokens)
    ├── references/  # Detailed docs (loaded on demand)
@@ -132,6 +141,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 ### Wrong Intent Classification
 
 **Symptoms:**
+
 - Task routed to wrong skill
 - Wrong subagent is invoked
 - "Unclear" intent when it should be clear
@@ -144,6 +154,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
    - Check for keyword conflicts
 
 2. **Adjust Confidence Threshold**
+
    ```yaml
    routes:
      my-intent:
@@ -153,6 +164,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
    ```
 
 3. **Add Alternative Intents**
+
    ```yaml
    alternative_intents:
      - intent: debug
@@ -168,6 +180,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 ### Always "Unclear" Intent
 
 **Symptoms:**
+
 - Every query returns "unclear"
 - Confidence is always low
 - Agent asks for clarification too often
@@ -175,15 +188,19 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 **Solutions:**
 
 1. **Add Pattern Matching**
+
    ```markdown
    ### My Intent Patterns
+
    - Keywords: `keyword1`, `keyword2`, `keyword3`
    - Indicators: [what triggers this intent]
    ```
 
 2. **Include Examples**
+
    ```markdown
    ### Usage Example
+
    **User:** "fix the bug"
    **Intent:** debug
    **Confidence:** 0.95
@@ -199,6 +216,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 ### Module Not Loading
 
 **Symptoms:**
+
 - Context modules don't affect behavior
 - Rules aren't being followed
 - Module seems to be ignored
@@ -206,11 +224,12 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 **Solutions:**
 
 1. **Check File Location**
-   - Must be in `.opencode/context/`
+   - Must be in `.opencode/context-modules/`
    - File name must follow pattern: `XX-name.md`
    - XX is the priority (00-99)
 
 2. **Verify Frontmatter**
+
    ```yaml
    ---
    module_id: my-module
@@ -220,12 +239,13 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
    ```
 
 3. **Check Route Configuration**
+
    ```yaml
    routes:
      my-intent:
        context_modules:
          - 00-core-contract
-         - 45-my-module  # Must reference by filename prefix
+         - 45-my-module # Must reference by filename prefix
    ```
 
 4. **Verify Coupling**
@@ -239,6 +259,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 ### Conflicting Rules
 
 **Symptoms:**
+
 - Modules have conflicting instructions
 - Agent behaves inconsistently
 - Some rules ignored
@@ -265,6 +286,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 ### Subagent Not Invoked
 
 **Symptoms:**
+
 - Complex task routed to skill instead of subagent
 - Large context fails to process
 - "Complex" intent not recognized
@@ -272,10 +294,11 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 **Solutions:**
 
 1. **Check Route Configuration**
+
    ```yaml
    routes:
      complex:
-       subagent: rlm-optimized  # Not 'skill'
+       subagent: rlm-optimized # Not 'skill'
        fallback_subagent: rlm-subcall
    ```
 
@@ -292,6 +315,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 ### Subagent Fails Silently
 
 **Symptoms:**
+
 - No output or error
 - Partial results only
 - Task times out
@@ -304,10 +328,12 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
    - Ensure tools are listed
 
 2. **Add Error Handling**
+
    ```markdown
    ## Error Handling
 
    If [error occurs]:
+
    1. Identify the issue
    2. Report clearly
    3. Suggest recovery
@@ -324,6 +350,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 ### 1. Forgetting Frontmatter
 
 **Mistake:**
+
 ```markdown
 # My Skill
 
@@ -331,12 +358,12 @@ Instructions...
 ```
 
 **Fix:**
+
 ```yaml
 ---
 name: my-skill
 description: What this skill does
 ---
-
 # My Skill
 
 Instructions...
@@ -345,6 +372,7 @@ Instructions...
 ### 2. Wrong Naming Convention
 
 **Mistake:**
+
 ```
 name: MySkill
 name: my-skill-
@@ -352,6 +380,7 @@ name: my--skill
 ```
 
 **Fix:**
+
 ```
 name: my-skill
 ```
@@ -359,6 +388,7 @@ name: my-skill
 ### 3. Missing Context Modules
 
 **Mistake:**
+
 ```yaml
 routes:
   debug:
@@ -367,6 +397,7 @@ routes:
 ```
 
 **Fix:**
+
 ```yaml
 routes:
   debug:
@@ -380,11 +411,13 @@ routes:
 ### 4. Not Testing Edge Cases
 
 **Mistake:**
+
 - Only testing happy path
 - Not testing error conditions
 - No fallback strategies
 
 **Fix:**
+
 - Test normal usage
 - Test with missing dependencies
 - Test with invalid input
@@ -393,11 +426,13 @@ routes:
 ### 5. Over-engineering
 
 **Mistake:**
+
 - Creating skill for simple tasks
 - Adding unnecessary complexity
 - Making skills too large
 
 **Fix:**
+
 - Keep skills focused
 - Use skill chains for complexity
 - Split when too large
@@ -417,6 +452,7 @@ behavior:
 ### Check Logs
 
 Review agent logs for:
+
 - Intent classification results
 - Skill activation
 - Module loading
@@ -427,11 +463,13 @@ Review agent logs for:
 Test components individually:
 
 1. **Test Skill**
+
    ```
    User: "Use the my-skill to do X"
    ```
 
 2. **Test Intent**
+
    ```
    User: "What intent would you classify this as: [query]?"
    ```
@@ -535,6 +573,7 @@ When reporting issues:
 ## Best Practices Checklist
 
 ### Creating Skills
+
 - [ ] Valid YAML frontmatter with required fields
 - [ ] Correct naming (lowercase, hyphens)
 - [ ] Clear description with when-to-use
@@ -545,6 +584,7 @@ When reporting issues:
 - [ ] Tested with real queries
 
 ### Creating Intents
+
 - [ ] Added keywords to classifier
 - [ ] Configured route with appropriate threshold
 - [ ] Loaded relevant context modules
@@ -552,6 +592,7 @@ When reporting issues:
 - [ ] Checked for conflicts with other intents
 
 ### Creating Context Modules
+
 - [ ] Proper frontmatter with priority
 - [ ] Clear, focused rules
 - [ ] No conflicts with other modules
@@ -559,6 +600,7 @@ When reporting issues:
 - [ ] Tested with real tasks
 
 ### Creating Subagents
+
 - [ ] Valid SUBAGENT.md with capabilities
 - [ ] Clear workflow and limitations
 - [ ] Proper routing configuration
@@ -569,30 +611,30 @@ When reporting issues:
 
 ### Common YAML Errors
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `mapping values are not allowed here` | Indentation issue | Check indentation (use spaces, not tabs) |
-| `could not find expected ':'` | Missing colon | Add colons after keys |
-| `expected <document start>` | Missing frontmatter | Add `---` before YAML |
+| Error                                 | Cause               | Fix                                      |
+| ------------------------------------- | ------------------- | ---------------------------------------- |
+| `mapping values are not allowed here` | Indentation issue   | Check indentation (use spaces, not tabs) |
+| `could not find expected ':'`         | Missing colon       | Add colons after keys                    |
+| `expected <document start>`           | Missing frontmatter | Add `---` before YAML                    |
 
 ### Common Naming Errors
 
-| Invalid | Valid | Reason |
-|---------|--------|--------|
-| `MySkill` | `my-skill` | Uppercase not allowed |
-| `my-skill-` | `my-skill` | Can't end with hyphen |
+| Invalid     | Valid      | Reason                  |
+| ----------- | ---------- | ----------------------- |
+| `MySkill`   | `my-skill` | Uppercase not allowed   |
+| `my-skill-` | `my-skill` | Can't end with hyphen   |
 | `-my-skill` | `my-skill` | Can't start with hyphen |
-| `my--skill` | `my-skill` | No consecutive hyphens |
+| `my--skill` | `my-skill` | No consecutive hyphens  |
 
 ### Common File Locations
 
-| File Type | Location |
-|-----------|----------|
-| Skills | `.opencode/skills/my-skill/SKILL.md` |
-| Subagents | `.opencode/agents/subagents/my-subagent/SUBAGENT.md` |
-| Context Modules | `.opencode/context/XX-my-module.md` |
-| Routes | `.opencode/config/intent-routes.yaml` |
-| Intent Classifier | `.opencode/skills/intent-classifier/SKILL.md` |
+| File Type         | Location                                             |
+| ----------------- | ---------------------------------------------------- |
+| Skills            | `.opencode/skills/my-skill/SKILL.md`                 |
+| Subagents         | `.opencode/agents/subagents/my-subagent/SUBAGENT.md` |
+| Context Modules   | `.opencode/context-modules/XX-my-module.md`          |
+| Routes            | `.opencode/config/intent-routes.yaml`                |
+| Intent Classifier | `.opencode/skills/intent-classifier/SKILL.md`        |
 
 ## See Also
 

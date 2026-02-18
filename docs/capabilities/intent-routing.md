@@ -32,6 +32,7 @@ Routes are defined in `.opencode/config/intent-routes.yaml`:
 
 ```yaml
 routes:
+  # Skill route
   debug:
     skill: code-agent
     context_modules:
@@ -40,8 +41,17 @@ routes:
       - 12-commenting-rules
     confidence_threshold: 0.7
 
+  # Subagent routes
+  explore:
+    subagent: explore  # OpenCode built-in
+    confidence_threshold: 0.5
+
+  deep-research:
+    subagent: general  # OpenCode built-in
+    confidence_threshold: 0.5
+
   complex:
-    subagent: rlm-optimized
+    subagent: rlm-optimized  # Tachikoma custom
     fallback_subagent: rlm-subcall
     confidence_threshold: 0.5
 ```
@@ -108,31 +118,38 @@ Better to ask than to break something.
 
 ### Core Intents
 
-| Intent | Description | Skill |
+| Intent | Description | Handler |
 |--------|-------------|---------|
-| `debug` | Fix issues | `code-agent` |
-| `implement` | Write code | `code-agent` |
-| `review` | Analyze code | `analysis-agent` |
-| `research` | Find info | `research-agent` |
-| `git` | Version control | `git-commit` |
-| `document` | Documentation tasks | `self-learning` |
+| `debug` | Fix issues | skill: `code-agent` |
+| `implement` | Write code | skill: `code-agent` |
+| `review` | Analyze code | skill: `analysis-agent` |
+| `research` | Find info | skill: `research-agent` |
+| `git` | Version control | skill: `git-commit` |
+| `document` | Documentation tasks | skill: `self-learning` |
 
 ### Extended Intents
 
-| Intent | Description | Skill |
+| Intent | Description | Handler |
 |--------|-------------|---------|
-| `refactor` | Restructure code | `code-agent` |
-| `skill-compose` | Combine skills | `skill-composer` |
-| `optimize` | Context/token optimization | `context-manager` |
-| `verify` | High-reliability generation | `verifier-code-agent` |
-| `reflect` | Self-critique and verification | `reflection-orchestrator` |
-| `edit-optimize` | Model-aware edit format | `model-aware-editor` |
+| `refactor` | Restructure code | skill: `code-agent` |
+| `skill-compose` | Combine skills | skill: `skill-composer` |
+| `optimize` | Context/token optimization | skill: `context-manager` |
+| `verify` | High-reliability generation | skill: `verifier-code-agent` |
+| `reflect` | Self-critique and verification | skill: `reflection-orchestrator` |
+| `creative` | Creative exploration | skill: `analysis-agent` (high variance) |
+
+### Subagent Intents
+
+| Intent | Description | Handler |
+|--------|-------------|---------|
+| `explore` | Fast codebase exploration | subagent: `explore` (OpenCode built-in) |
+| `deep-research` | Multi-step parallel research | subagent: `general` (OpenCode built-in) |
+| `complex` | Large context (>2000 tokens) | subagent: `rlm-optimized` |
 
 ### Special Intents
 
 | Intent | Description | Behavior |
 |--------|-------------|-----------|
-| `complex` | Large context tasks | Delegate to `rlm-optimized` |
 | `unclear` | Ambiguous requests | Ask for clarification |
 
 ## Context Coupling

@@ -1,0 +1,138 @@
+#!/bin/bash
+# Tachikoma Dashboard Bootstrapper
+# - Uses injected Python or bundled Python
+# - Downloads uv if not present
+# - Creates venv if needed
+# - Runs the dashboard or tests
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DASHBOARD_DIR="$(cd "$SCRIPT_DIR/../tools/dashboard" && pwd)"
+ASSETS_DIR="$(cd "$SCRIPT_DIR/../assets" && pwd)"
+VENV_DIR="$DASHBOARD_DIR/.venv"
+
+# Parse arguments
+RUN_TESTS=0
+RUN_UNIT_TESTS=0
+ARGS=()
+
+for arg in "$@"; do
+    case "$arg" in
+        --test)
+            RUN_TESTS=1
+            ;;
+        --pytest)
+            RUN_UNIT_TESTS=1
+            ;;
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        *)
+            ARGS+=("$arg")
+            ;;
+    esac
+done
+
+# On Windows (MSYS/Cygwin), convert paths to Windows format
+case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*)
+        # Convert /d/... to D:/...
+        DASHBOARD_DIR=$(cygpath -w "$DASHBOARD_DIR")
+        ASSETS_DIR=$(cygpath -w "$ASSETS_DIR")
+        PYTHON="$ASSETS_DIR/Python310/python.exe"
+        UV="$ASSETS_DIR/uv.exe"
+        VENV_PYTHON="$VENV_DIR/Scripts/python.exe"
+        PIP="$VENV_DIR/Scripts/pip.exe"
+        ;;
+    *)
+        PYTHON="$ASSETS_DIR/Python310/python"
+        UV="$ASSETS_DIR/uv"
+        VENV_PYTHON="$VENV_DIR/bin/python"
+        PIP="$VENV_DIR/bin/pip"
+        ;;
+esac
+
+# Find Python (from PATH if available)
+if command -v python &> /dev/null; then
+    PYTHON=$(command -v python)
+fi
+
+if [ ! -f "$PYTHON" ]; then
+    echo "Error: Python not found at $PYTHON" >&2
+    exit 1
+fi
+
+# Find or download uv
+if [ ! -f "$UV" ]; then
+    echo "Downloading uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    # Move to assets if installed elsewhere
+    if [ -f "$HOME/.local/bin/uv" ]; then
+        cp "$HOME/.local/bin/uv" "$UV"
+        chmod +x "$UV"
+    fi
+fi
+
+if [ ! -f "$UV" ]; then
+    echo "Error: uv not found and could not be downloaded" >&2
+    exit 1
+fi
+
+# Make uv executable
+chmod +x "$UV"
+
+# Change to dashboard directory
+cd "$DASHBOARD_DIR"
+
+# Create venv if needed using uv
+if [ ! -f "$VENV_PYTHON" ]; then
+    echo "Creating virtual environment with uv..."
+    "$UV" venv --python "$PYTHON" "$VENV_DIR"
+    "$UV" pip install --python "$VENV_PYTHON" textual rich
+else
+    # Check if dependencies are installed
+    if ! "$VENV_PYTHON" -c "import textual" 2>/dev/null; then
+        echo "Installing dependencies..."
+        "$UV" pip install --python "$VENV_PYTHON" textual rich
+    fi
+fi
+
+# Run tests or dashboard
+if [ "$RUN_TESTS" = "1" ]; then
+    echo "Running dashboard smoke tests..."
+    exec "$VENV_PYTHON" "$DASHBOARD_DIR/test_smoke_no_rich.py"
+fi
+
+if [ "$RUN_UNIT_TESTS" = "1" ]; then
+    echo "Running pytest unit tests..."
+    "$UV" pip install --python "$VENV_PYTHON" pytest pytest-cov >/dev/null 2>&1
+    exec "$VENV_PYTHON" -m pytest tests/ -v
+fi
+
+# Run the dashboard
+exec "$VENV_PYTHON" -m tachikoma_dashboard "${ARGS[@]}"
+
+show_help() {
+    echo ""
+    echo "Tachikoma Dashboard - Real-time agent monitoring"
+    echo ""
+    echo "Usage: tachikoma-dashboard [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  -i, --interval INT     Refresh interval in milliseconds (default: 2000)"
+    echo "  -c, --cwd PATH         Filter by working directory"
+    echo "  -a, --all-sessions     Show all sessions"
+    echo "  -j, --json             One-shot JSON output (no TUI)"
+    echo "  --test                 Run smoke tests"
+    echo "  --pytest               Run pytest unit tests"
+    echo "  -h, --help             Show this help"
+    echo ""
+    echo "Examples:"
+    echo "  tachikoma-dashboard                  Start dashboard"
+    echo "  tachikoma-dashboard --json           Output as JSON"
+    echo "  tachikoma-dashboard --test           Run smoke tests"
+    echo "  tachikoma-dashboard --pytest         Run unit tests"
+    echo ""
+}

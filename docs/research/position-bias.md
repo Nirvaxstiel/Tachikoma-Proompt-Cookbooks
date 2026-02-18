@@ -121,7 +121,7 @@ Priority 50:  50-prompt-safety      (safety frameworks)
 
 ### Position-Aware Loader
 
-Full implementation: `.opencode/context/position-aware-loader.py`
+Full implementation: `.opencode/context-modules/position-aware-loader.py`
 
 **Features:**
 - Relevance scoring with keyword matching

@@ -24,7 +24,102 @@ import time
 from dataclasses import asdict, dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
+
+
+# ===========================================================================
+# Python/UV Runtime Detection
+# ===========================================================================
+class RuntimeConfig:
+    """Detected runtime configuration for Python and UV"""
+
+    python: Optional[str] = None
+    uv: Optional[str] = None
+
+    @classmethod
+    def detect(cls) -> "RuntimeConfig":
+        """Detect Python and UV at runtime"""
+        config = cls()
+
+        # Check environment variables first (set by wrapper scripts)
+        config.python = os.environ.get("PYTHON")
+        config.uv = os.environ.get("UV")
+
+        # If not set, try to find them
+        if not config.python:
+            config.python = cls._find_python()
+        if not config.uv:
+            config.uv = cls._find_uv()
+
+        return config
+
+    @classmethod
+    def _find_python(cls) -> Optional[str]:
+        """Find Python executable"""
+        import shutil as sh
+
+        # Try python first
+        python = sh.which("python")
+        if python:
+            return python
+
+        # Try python3
+        python = sh.which("python3")
+        if python:
+            return python
+
+        # Try common bundled locations
+        script_dir = Path(__file__).parent.resolve()
+        opencode_dir = script_dir.parent  # .opencode/
+        assets_dir = opencode_dir / "assets"
+
+        bundled_locations = [
+            assets_dir / "Python310" / "python.exe",
+            assets_dir / "Python310" / "python",
+            assets_dir / "Python" / "python.exe",
+            assets_dir / "Python" / "python",
+            opencode_dir / "Python310" / "python.exe",
+            opencode_dir / "Python310" / "python",
+        ]
+
+        for loc in bundled_locations:
+            if loc.exists():
+                return str(loc)
+
+        # Fallback to sys.executable
+        return sys.executable
+
+    @classmethod
+    def _find_uv(cls) -> Optional[str]:
+        """Find UV executable"""
+        import shutil as sh
+
+        # Try uv from PATH
+        uv = sh.which("uv")
+        if uv:
+            return uv
+
+        # Try common bundled locations
+        script_dir = Path(__file__).parent.resolve()
+        opencode_dir = script_dir.parent  # .opencode/
+        assets_dir = opencode_dir / "assets"
+
+        bundled_locations = [
+            assets_dir / "uv.exe",
+            assets_dir / "uv",
+            opencode_dir / "uv.exe",
+            opencode_dir / "uv",
+        ]
+
+        for loc in bundled_locations:
+            if loc.exists():
+                return str(loc)
+
+        return None
+
+
+# Initialize runtime config at module load
+RUNTIME_CONFIG = RuntimeConfig.detect()
 
 
 # ===========================================================================
@@ -112,19 +207,20 @@ class TerminalUI:
 
     _theme = GITSTheme()
     _term_width: Optional[int] = None
-    
+
     @classmethod
     def _strip_ansi(cls, text: str) -> str:
         """Remove ANSI escape codes from string to get visible length"""
         import re
-        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-        return ansi_escape.sub('', text)
-    
+
+        ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        return ansi_escape.sub("", text)
+
     @classmethod
     def _visible_len(cls, text: str) -> int:
         """Get visible length of string (excluding ANSI codes)"""
         return len(cls._strip_ansi(text))
-    
+
     @classmethod
     def get_width(cls) -> int:
         """Get terminal width, fallback to 80"""
@@ -157,14 +253,14 @@ class TerminalUI:
             return f"{c}{left} {cls._theme.BOLD}{title} {c}{right}{cls._theme.RESET}"
         else:
             return f"{c}+{'=' * (width - 2)}+{cls._theme.RESET}"
-    
+
     @classmethod
     def box_bottom(cls, color: Optional[str] = None) -> str:
         """Create box bottom border"""
         width = cls.get_width()
         c = color or cls._theme.STEEL
         return f"{c}+{'=' * (width - 2)}+{cls._theme.RESET}"
-    
+
     @classmethod
     def box_line(
         cls, content: str = "", color: Optional[str] = None, align: str = "left"
@@ -177,9 +273,7 @@ class TerminalUI:
 
         if align == "center":
             padding = (inner_width - visible_len) // 2
-            text = (
-                " " * padding + content + " " * (inner_width - padding - visible_len)
-            )
+            text = " " * padding + content + " " * (inner_width - padding - visible_len)
         elif align == "right":
             text = " " * (inner_width - visible_len) + content
         else:
@@ -187,7 +281,7 @@ class TerminalUI:
 
         # Truncate if too long (check visible length)
         if cls._visible_len(text) > inner_width:
-            text = cls._strip_ansi(text)[:inner_width-3] + "..."
+            text = cls._strip_ansi(text)[: inner_width - 3] + "..."
 
         return f"{c}|{cls._theme.RESET} {text} {c}|{cls._theme.RESET}"
 
@@ -398,10 +492,6 @@ class SmokeTestFramework:
                 (["route", "--list"], "list routes"),
                 (["context", "--discover"], "discover context"),
                 (["full", "test query", "--json"], "full routing workflow"),
-            ],
-            # Intent classifier
-            "fast_heuristic.py": [
-                (["fix the bug", "--json"], "classify intent"),
             ],
             # RLM scripts
             "rlm_repl.py": [
@@ -723,40 +813,42 @@ class SmokeTestFramework:
     def _test_python_execution(self, script_path: Path) -> Tuple[bool, str]:
         """Test Python script execution with functional arguments"""
         script_name = script_path.name
-        
+
         # Check if we have known functional test arguments for this script
         if script_name in self.script_test_args:
             test_args_list = self.script_test_args[script_name]
-            
+
             # Try each set of functional arguments
             for args, description in test_args_list:
                 try:
+                    python_cmd = RUNTIME_CONFIG.python or sys.executable
                     proc = subprocess.run(
-                        [sys.executable, str(script_path)] + args,
+                        [python_cmd, str(script_path)] + args,
                         capture_output=True,
                         text=True,
                         encoding="utf-8",
                         errors="replace",
                         timeout=10,
                     )
-                    
+
                     if proc.returncode == 0:
                         return True, f"Functional test: {description}"
                     else:
                         # This args set didn't work, try next one
                         continue
-                        
+
                 except subprocess.TimeoutExpired:
                     continue  # Try next args set
-                except Exception as e:
+                except Exception:
                     continue  # Try next args set
-            
+
             # If we got here, none of the functional args worked, fall through to fallback
-        
+
         # Fallback 1: Try running with --help
         try:
+            python_cmd = RUNTIME_CONFIG.python or sys.executable
             proc = subprocess.run(
-                [sys.executable, str(script_path), "--help"],
+                [python_cmd, str(script_path), "--help"],
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -768,8 +860,9 @@ class SmokeTestFramework:
                 return True, "Help command works (fallback)"
             else:
                 # Fallback 2: Try without arguments
+                python_cmd = RUNTIME_CONFIG.python or sys.executable
                 proc = subprocess.run(
-                    [sys.executable, str(script_path)],
+                    [python_cmd, str(script_path)],
                     capture_output=True,
                     text=True,
                     encoding="utf-8",
@@ -962,11 +1055,11 @@ class SmokeTestFramework:
     def _test_shell_execution(self, script_path: Path) -> Tuple[bool, str]:
         """Test shell script execution with functional arguments"""
         script_name = script_path.name
-        
+
         # Check if we have known functional test arguments for this script (by name)
         if script_name in self.shell_test_args:
             test_args_list = self.shell_test_args[script_name]
-            
+
             # Try each set of functional arguments
             for args, description in test_args_list:
                 try:
@@ -978,18 +1071,18 @@ class SmokeTestFramework:
                         errors="replace",
                         timeout=10,
                     )
-                    
+
                     if proc.returncode == 0:
                         return True, f"Functional test: {description}"
                     else:
                         # This args set didn't work, try next one
                         continue
-                        
+
                 except subprocess.TimeoutExpired:
                     continue  # Try next args set
-                except Exception as e:
+                except Exception:
                     continue  # Try next args set
-        
+
         # Check by full relative path
         try:
             rel_path = script_path.relative_to(self.base_dir)
@@ -1012,7 +1105,7 @@ class SmokeTestFramework:
                         continue
         except ValueError:
             pass
-        
+
         # Fallback: Try running without arguments
         try:
             proc = subprocess.run(
@@ -1151,6 +1244,14 @@ class SmokeTestFramework:
 
 def main():
     """Main entry point"""
+    # Print runtime info
+    t = GITSTheme()
+    python_info = RUNTIME_CONFIG.python or "system default"
+    uv_info = RUNTIME_CONFIG.uv or "not available"
+    print(f"{t.STEEL}> Python: {python_info}{t.RESET}")
+    print(f"{t.STEEL}> UV: {uv_info}{t.RESET}")
+    print()
+
     parser = argparse.ArgumentParser(
         description="Smoke Test Framework for Tachikoma Scripts"
     )

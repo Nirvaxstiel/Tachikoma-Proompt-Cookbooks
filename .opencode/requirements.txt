@@ -1,0 +1,4 @@
+# Tachikoma Framework Dependencies
+# Install: pip install -r .opencode/requirements.txt
+
+pyyaml>=6.0

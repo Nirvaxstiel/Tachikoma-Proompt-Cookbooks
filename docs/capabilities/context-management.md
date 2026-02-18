@@ -82,7 +82,7 @@ Tachikoma reads `00-core-contract`, applies those rules, then reads `10-coding-s
 
 ## Add Custom Module
 
-Create `.opencode/context/40-my-rules.md`:
+Create `.opencode/context-modules/40-my-rules.md`:
 
 ```yaml
 ---

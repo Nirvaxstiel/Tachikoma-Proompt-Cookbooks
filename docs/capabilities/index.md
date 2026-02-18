@@ -21,9 +21,10 @@ Classifies your requests and routes them to the right specialist. The system fig
 Loads project-specific rules and conventions relevant to each task. Think of it as `.gitignore` but for AI behavior.
 
 **Key features:**
-- 6 built-in context modules
+- 7 built-in context modules
 - Priority-based loading (important rules first)
 - Automatic module coupling (coding-standards + commenting-rules)
+- Artifact consent policy (prevents workspace clutter)
 - Custom module support (priority range 40-49)
 
 ### [Skill Execution](./skill-execution.md)
@@ -211,5 +212,3 @@ See [Research Overview](../research/overview.md) for the complete research direc
 - [Research](../research/overview.md) - Scientific foundation
 - [Getting Started](../getting-started.md) - Installation and setup
 - [Troubleshooting](../troubleshooting.md) - Common issues
-
-**Last Updated:** 2026-02-17

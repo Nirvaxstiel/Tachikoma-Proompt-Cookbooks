@@ -317,7 +317,3 @@ preferred_formats:
 - [Research Overview](../research/overview.md) - All research-backed techniques
 - [Position-Aware Loading](./position-aware-loading.md) - Attention optimization
 - [Verification & Reflection](#verification-reflection) - Ensuring reliability
-
-**Last Updated:** 2026-02-17
-**Research Basis:** The Harness Problem (Can.ac, Feb 2026)
-**Implementation:** `.opencode/skills/model-aware-editor/`

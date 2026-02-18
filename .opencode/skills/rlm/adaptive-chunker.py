@@ -14,21 +14,22 @@ Key Features:
 import json
 import re
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Generator
 from functools import lru_cache
-import itertools
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @lru_cache(maxsize=32)
 def _compile_content_type_patterns():
     """Cache compiled regex patterns for content type detection"""
     return {
-        'json_obj': re.compile(r"^\{.*\}$", re.DOTALL),
-        'json_arr': re.compile(r"^\[.*\]$", re.DOTALL),
-        'markdown': re.compile(r"^#{1,6}\s"),
-        'log': re.compile(r"^\[\d{4}-\d{2}-\d{2}]"),
-        'code': [
-            re.compile(r"^(import|def|class|from|function|const|let|var|interface|type)\s+"),
+        "json_obj": re.compile(r"^\{.*\}$", re.DOTALL),
+        "json_arr": re.compile(r"^\[.*\]$", re.DOTALL),
+        "markdown": re.compile(r"^#{1,6}\s"),
+        "log": re.compile(r"^\[\d{4}-\d{2}-\d{2}]"),
+        "code": [
+            re.compile(
+                r"^(import|def|class|from|function|const|let|var|interface|type)\s+"
+            ),
             re.compile(r"^(public|private|protected|async|await)\s+"),
             re.compile(r"^(if|for|while|switch|try|catch|return)\s*\("),
         ],
@@ -46,8 +47,14 @@ def _compile_semantic_patterns(content_type: str) -> List[re.Pattern]:
         return [re.compile(r"^\[\d{4}-\d{2}-\d{2}]", re.MULTILINE)]
     elif content_type == "code":
         return [
-            re.compile(r"^(def |class |function |class |interface |type |struct )", re.MULTILINE),
-            re.compile(r"^(public |private |protected |static |async )\s+(def |class |function )", re.MULTILINE),
+            re.compile(
+                r"^(def |class |function |class |interface |type |struct )",
+                re.MULTILINE,
+            ),
+            re.compile(
+                r"^(public |private |protected |static |async )\s+(def |class |function )",
+                re.MULTILINE,
+            ),
         ]
     elif content_type == "text":
         return [re.compile(r"\n\n+")]
@@ -104,18 +111,18 @@ class AdaptiveChunker:
         content_stripped = content.strip()
         patterns = _compile_content_type_patterns()
 
-        if patterns['json_obj'].match(content_stripped):
+        if patterns["json_obj"].match(content_stripped):
             return ContentType.JSON
-        if patterns['json_arr'].match(content_stripped):
+        if patterns["json_arr"].match(content_stripped):
             return ContentType.JSON
 
-        if patterns['markdown'].match(content_stripped):
+        if patterns["markdown"].match(content_stripped):
             return ContentType.MARKDOWN
 
-        if patterns['log'].match(content_stripped):
+        if patterns["log"].match(content_stripped):
             return ContentType.LOG
 
-        for pattern in patterns['code']:
+        for pattern in patterns["code"]:
             if pattern.match(content_stripped):
                 return ContentType.CODE
 
@@ -362,7 +369,7 @@ class AdaptiveChunker:
 
 # Singleton instance
 _chunker_instance = None
-_instance_lock = None  # Will be imported when needed
+_instance_lock = None  # Lazy import for threading
 
 
 def get_adaptive_chunker(
@@ -384,13 +391,19 @@ def get_adaptive_chunker(
     global _chunker_instance
 
     if _chunker_instance is None:
-        # Note: Lock is not used here for simplicity
-        # In multi-threaded environments, add import threading and use lock
-        _chunker_instance = AdaptiveChunker(
-            initial_chunk_size=initial_chunk_size,
-            min_chunk_size=min_chunk_size,
-            max_chunk_size=max_chunk_size,
-        )
+        global _instance_lock
+        if _instance_lock is None:
+            import threading
+
+            _instance_lock = threading.Lock()
+
+        with _instance_lock:
+            if _chunker_instance is None:  # Double-check locking
+                _chunker_instance = AdaptiveChunker(
+                    initial_chunk_size=initial_chunk_size,
+                    min_chunk_size=min_chunk_size,
+                    max_chunk_size=max_chunk_size,
+                )
 
     return _chunker_instance
 
@@ -465,7 +478,7 @@ if __name__ == "__main__":
 
     elif args.command == "stats":
         stats = chunker.get_stats()
-        print(f"\nChunker Statistics:")
+        print("\nChunker Statistics:")
         print(f"  Current chunk size: {stats['current_chunk_size']:,} characters")
         print(f"  Min chunk size: {stats['min_chunk_size']:,} characters")
         print(f"  Max chunk size: {stats['max_chunk_size']:,} characters")

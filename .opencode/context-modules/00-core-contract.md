@@ -156,6 +156,50 @@ When something feels wrong, check against these parameters to understand why.
 
 ---
 
+## 11. Python Execution with UV
+
+When running Python scripts, prefer UV for portable, dependency-managed execution:
+
+```bash
+# Preferred: UV with portable Python (if available)
+uv run python <script.py> [args]
+
+# Fallback: System Python (if UV not installed)
+python <script.py> [args]
+```
+
+**Execution Priority:**
+1. **UV** (preferred) - Portable, auto dependency management, faster installs
+2. **System Python** - Fallback if UV unavailable or user declined prepackaged Python
+
+**Setup:**
+- Install script prompts for prepackaged Python if neither Python nor UV found
+- UV is bundled at `.opencode/assets/uv.exe` if prepackaged option selected
+- UV is injected into PATH via `.opencode/plugins/inject-python.js`
+
+**Installing dependencies:**
+```bash
+# With UV
+uv pip install -r .opencode/requirements.txt --system
+
+# With pip (fallback)
+pip install -r .opencode/requirements.txt
+```
+
+---
+
+## 12. Artifact Consent
+
+Before creating persistent artifacts, agents must:
+- Verify task explicitly requests artifact
+- Check for existing artifacts to integrate with
+- Ask user for consent unless clearly in scope
+- Prefer terminal output for temporary information
+
+**Silent artifact creation is prohibited.**
+
+---
+
 ## Final Rule
 
 When in doubt:
