@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, Sequence
 from rich.style import Style
 from rich.text import Text
 
-from .models import Session, SessionStats, SessionStatus, SessionTree, Todo
+from .models import ModelUsage, Session, SessionStats, SessionStatus, SessionTokens, SessionTree, Todo
 from .theme import PANEL_BORDERS, PRIORITY_COLORS, STATUS_COLORS, THEME
 
 if TYPE_CHECKING:
@@ -25,11 +25,12 @@ if TYPE_CHECKING:
 
 def get_status_icon(status: SessionStatus) -> tuple[str, str]:
     """Get status icon and color (pure function).
-    
+
     Returns:
         Tuple of (icon_character, hex_color)
     """
-    return STATUS_COLORS.get(status.value, ("?", THEME.muted))
+    color, icon = STATUS_COLORS.get(status.value, (THEME.muted, "?"))
+    return (icon, color)
 
 
 def truncate_message(msg: str | None, max_length: int = 40) -> str:
@@ -52,6 +53,33 @@ def format_duration(seconds: int) -> str:
         return f"{minutes}m{secs:02d}s"
     hours, mins = divmod(minutes, 60)
     return f"{hours}h{mins:02d}m"
+
+
+def format_tokens(tokens: int) -> str:
+    """Format token count with K/M suffixes (pure function)."""
+    if tokens < 1000:
+        return str(tokens)
+    if tokens < 1_000_000:
+        return f"{tokens / 1000:.1f}K"
+    return f"{tokens / 1_000_000:.2f}M"
+
+
+def format_model_name(provider: str, model: str, max_len: int = 25) -> str:
+    """Format model name for display (pure function)."""
+    # Shorten common provider names
+    provider_short = {
+        "openai": "openai",
+        "anthropic": "anthropic",
+        "google": "google",
+        "opencode": "opencode",
+    }.get(provider.lower(), provider[:8])
+
+    # Shorten model name
+    model_short = model.split("/")[-1] if "/" in model else model
+    if len(model_short) > max_len:
+        model_short = model_short[:max_len - 3] + "..."
+
+    return f"{provider_short}/{model_short}"
 
 
 # Rendering functions (pure - return Text, no side effects)
@@ -248,3 +276,121 @@ def _make_label_value(
         Text(label + ": ", style=Style(bold=True, color=label_color)) +
         Text(value, style=Style(color=value_color))
     )
+
+
+def render_session_tokens(tokens: SessionTokens | None) -> Text:
+    """Render token usage for a session (pure function).
+
+    Shows input/output tokens with model breakdown.
+    """
+    header = Text("TOKEN USAGE", style=Style(bold=True, color=THEME.cyan))
+    separator = Text("─" * 25, style=Style(color=THEME.muted))
+
+    if not tokens or tokens.total_tokens == 0:
+        return Text("\n").join([
+            header,
+            separator,
+            Text("(No token data)", style=Style(color=THEME.muted)),
+        ])
+
+    lines = [header, separator]
+
+    # Total tokens with GREEN accent
+    total_line = Text()
+    total_line.append("Total: ", style=Style(color=THEME.text))
+    total_line.append(format_tokens(tokens.total_tokens), style=Style(bold=True, color=THEME.green))
+    lines.append(total_line)
+
+    # Input/Output breakdown
+    io_line = Text()
+    io_line.append(f"  In: {format_tokens(tokens.total_input_tokens)}", style=Style(color=THEME.muted))
+    io_line.append("  ", style=Style(color=THEME.muted))
+    io_line.append(f"Out: {format_tokens(tokens.total_output_tokens)}", style=Style(color=THEME.muted))
+    lines.append(io_line)
+
+    # Request count
+    lines.append(
+        Text(f"  Requests: {tokens.request_count}", style=Style(color=THEME.muted))
+    )
+
+    # Model breakdown if multiple models
+    if len(tokens.models) > 0:
+        lines.append(Text())  # Blank line
+        lines.append(Text("Models:", style=Style(color=THEME.text, bold=True)))
+
+        for model in tokens.models[:3]:  # Show top 3 models
+            model_line = Text()
+            model_line.append(f"  ◇ ", style=Style(color=THEME.cyan))
+            model_line.append(
+                format_model_name(model.provider, model.model),
+                style=Style(color=THEME.text)
+            )
+            model_line.append(
+                f" {format_tokens(model.total_tokens)}",
+                style=Style(color=THEME.green)
+            )
+            lines.append(model_line)
+
+    return Text("\n").join(lines)
+
+
+def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
+    """Render model usage panel (pure function).
+
+    Shows all models with token counts and request counts.
+    """
+    header = Text("MODEL USAGE", style=Style(bold=True, color=THEME.cyan))
+    separator = Text("─" * 30, style=Style(color=THEME.muted))
+
+    if not models:
+        return Text("\n").join([
+            header,
+            separator,
+            Text("(No model data)", style=Style(color=THEME.muted)),
+        ])
+
+    lines = [header, separator]
+
+    # Calculate totals
+    total_tokens = sum(m.total_tokens for m in models)
+    total_requests = sum(m.request_count for m in models)
+
+    # Summary line
+    summary = Text()
+    summary.append(f"Total: ", style=Style(color=THEME.text))
+    summary.append(format_tokens(total_tokens), style=Style(bold=True, color=THEME.green))
+    summary.append(f" tokens across ", style=Style(color=THEME.text))
+    summary.append(f"{total_requests}", style=Style(bold=True, color=THEME.green))
+    summary.append(f" requests", style=Style(color=THEME.text))
+    lines.append(summary)
+    lines.append(Text())  # Blank line
+
+    # Model list
+    for model in models[:5]:  # Show top 5 models
+        # Model name
+        model_line = Text()
+        model_line.append("◆ ", style=Style(color=THEME.red))
+        model_line.append(
+            format_model_name(model.provider, model.model),
+            style=Style(color=THEME.text, bold=True)
+        )
+        lines.append(model_line)
+
+        # Stats
+        stats_line = Text()
+        stats_line.append(f"    Tokens: ", style=Style(color=THEME.muted))
+        stats_line.append(format_tokens(model.total_tokens), style=Style(color=THEME.green))
+        stats_line.append(f"  Reqs: {model.request_count}", style=Style(color=THEME.muted))
+
+        # Rate limit warning
+        if model.last_rate_limit:
+            stats_line.append("  ⚠ rate limited", style=Style(color=THEME.orange))
+
+        lines.append(stats_line)
+
+    if len(models) > 5:
+        lines.append(
+            Text(f"  ... and {len(models) - 5} more", style=Style(color=THEME.muted))
+        )
+
+    return Text("\n").join(lines)

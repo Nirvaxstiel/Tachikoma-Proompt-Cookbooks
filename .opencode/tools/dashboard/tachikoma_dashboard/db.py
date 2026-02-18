@@ -1,16 +1,27 @@
 """
 Database queries for OpenCode sessions.
+
+Design principles:
+- Pure functions for data extraction
+- Caching for performance (functools.lru_cache)
+- Type-safe with immutable models
 """
+
+from __future__ import annotations
 
 import json
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-from .models import Session, SessionStats, Skill, Todo
+from .models import ModelUsage, Session, SessionStats, SessionTokens, Skill, Todo
 from .query import MESSAGE, SESSION, TODO, QueryBuilder, json_extract
 
 DB_PATH = ".local/share/opencode/opencode.db"
+
+# Cache timeout in seconds
+CACHE_TTL = 5
 
 
 def _db_path() -> Path:
@@ -417,3 +428,205 @@ def get_skill_usage_stats(cwd: Optional[str] = None) -> dict[str, dict]:
             )
 
     return stats
+
+
+def get_session_tokens(session_id: str) -> SessionTokens:
+    """Get token usage for a specific session.
+
+    Parses assistant messages to extract token counts.
+
+    Args:
+        session_id: The session ID to query
+
+    Returns:
+        SessionTokens with aggregated token usage
+    """
+    b = _builder()
+    if b is None:
+        return SessionTokens(session_id=session_id)
+
+    total_input = 0
+    total_output = 0
+    request_count = 0
+    models: dict[str, dict] = {}
+
+    with b._conn() as conn:
+        rows = conn.execute(
+            """
+            SELECT data, time_created FROM message
+            WHERE session_id = ?
+            AND json_valid(data) = 1
+            AND json_extract(data, '$.role') = 'assistant'
+            ORDER BY time_created ASC
+            """,
+            (session_id,),
+        ).fetchall()
+
+        for row in rows:
+            data = row["data"]
+            if not data:
+                continue
+
+            try:
+                msg = json.loads(data)
+
+                # Get model info
+                provider = msg.get("providerID", "unknown")
+                model = msg.get("modelID", "unknown")
+                model_key = f"{provider}/{model}"
+
+                # Get token counts from usage
+                usage = msg.get("usage", {})
+                input_tokens = usage.get("inputTokens", 0) or 0
+                output_tokens = usage.get("outputTokens", 0) or 0
+
+                # Accumulate totals
+                total_input += input_tokens
+                total_output += output_tokens
+                request_count += 1
+
+                # Track per-model
+                if model_key not in models:
+                    models[model_key] = {
+                        "provider": provider,
+                        "model": model,
+                        "input_tokens": 0,
+                        "output_tokens": 0,
+                        "request_count": 0,
+                        "last_used": row["time_created"],
+                    }
+
+                models[model_key]["input_tokens"] += input_tokens
+                models[model_key]["output_tokens"] += output_tokens
+                models[model_key]["request_count"] += 1
+
+            except (json.JSONDecodeError, KeyError):
+                continue
+
+    # Convert to ModelUsage objects
+    model_usages = tuple(
+        ModelUsage(
+            provider=m["provider"],
+            model=m["model"],
+            request_count=m["request_count"],
+            input_tokens=m["input_tokens"],
+            output_tokens=m["output_tokens"],
+            total_tokens=m["input_tokens"] + m["output_tokens"],
+            last_used=m["last_used"],
+        )
+        for m in models.values()
+    )
+
+    return SessionTokens(
+        session_id=session_id,
+        total_input_tokens=total_input,
+        total_output_tokens=total_output,
+        total_tokens=total_input + total_output,
+        request_count=request_count,
+        models=model_usages,
+    )
+
+
+def get_all_model_usage() -> list[ModelUsage]:
+    """Get aggregated model usage across all sessions.
+
+    Returns:
+        List of ModelUsage objects sorted by total tokens
+    """
+    b = _builder()
+    if b is None:
+        return []
+
+    models: dict[str, dict] = {}
+
+    with b._conn() as conn:
+        rows = conn.execute(
+            """
+            SELECT data, time_created FROM message
+            WHERE json_valid(data) = 1
+            AND json_extract(data, '$.role') = 'assistant'
+            ORDER BY time_created DESC
+            """
+        ).fetchall()
+
+        for row in rows:
+            data = row["data"]
+            if not data:
+                continue
+
+            try:
+                msg = json.loads(data)
+
+                provider = msg.get("providerID", "unknown")
+                model = msg.get("modelID", "unknown")
+                model_key = f"{provider}/{model}"
+
+                usage = msg.get("usage", {})
+                input_tokens = usage.get("inputTokens", 0) or 0
+                output_tokens = usage.get("outputTokens", 0) or 0
+
+                if model_key not in models:
+                    models[model_key] = {
+                        "provider": provider,
+                        "model": model,
+                        "input_tokens": 0,
+                        "output_tokens": 0,
+                        "request_count": 0,
+                        "last_used": row["time_created"],
+                        "last_rate_limit": None,
+                    }
+
+                models[model_key]["input_tokens"] += input_tokens
+                models[model_key]["output_tokens"] += output_tokens
+                models[model_key]["request_count"] += 1
+
+            except (json.JSONDecodeError, KeyError):
+                continue
+
+        # Check for rate limits
+        error_rows = conn.execute(
+            """
+            SELECT data, time_created FROM message
+            WHERE json_valid(data) = 1
+            AND (
+                json_extract(data, '$.error.code') LIKE '%rate_limit%'
+                OR json_extract(data, '$.error.message') LIKE '%rate limit%'
+                OR json_extract(data, '$.error.message') LIKE '%quota%'
+            )
+            ORDER BY time_created DESC
+            """
+        ).fetchall()
+
+        for row in error_rows:
+            data = row["data"]
+            if not data:
+                continue
+
+            try:
+                msg = json.loads(data)
+                provider = msg.get("providerID", "unknown")
+                model = msg.get("modelID", "unknown")
+                model_key = f"{provider}/{model}"
+
+                if model_key in models and models[model_key]["last_rate_limit"] is None:
+                    models[model_key]["last_rate_limit"] = row["time_created"]
+
+            except (json.JSONDecodeError, KeyError):
+                continue
+
+    # Convert to ModelUsage objects and sort by total tokens
+    result = [
+        ModelUsage(
+            provider=m["provider"],
+            model=m["model"],
+            request_count=m["request_count"],
+            input_tokens=m["input_tokens"],
+            output_tokens=m["output_tokens"],
+            total_tokens=m["input_tokens"] + m["output_tokens"],
+            last_used=m["last_used"],
+            last_rate_limit=m["last_rate_limit"],
+        )
+        for m in models.values()
+    ]
+
+    return sorted(result, key=lambda x: x.total_tokens, reverse=True)

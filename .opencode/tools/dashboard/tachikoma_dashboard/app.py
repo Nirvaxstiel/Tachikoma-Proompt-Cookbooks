@@ -4,7 +4,8 @@ Design principles:
 - Textual reactive patterns for state management
 - Background workers for database queries
 - Centralized GITS theme with RED accents
-- Lazy loading for performance
+- Native Textual widgets for interactivity
+- Lazy loading and caching for performance
 """
 
 from __future__ import annotations
@@ -22,12 +23,14 @@ from textual.reactive import reactive
 from textual.widgets import Header, Static
 
 from . import db
-from .models import Session, SessionStats, SessionTree, build_session_tree
-from .theme import PANEL_BORDERS, THEME
-from .tree_renderer import render_tree_iterative
+from .models import ModelUsage, Session, SessionStats, SessionTokens, SessionTree, build_session_tree
+from .session_tree import SessionTreeWidget
+from .theme import THEME
 from .widgets import (
     render_aggregation,
     render_details,
+    render_model_usage,
+    render_session_tokens,
     render_skills,
     render_todos,
 )
@@ -64,13 +67,31 @@ class StatsLoaded(Message):
         self.stats = stats
 
 
+class TokensLoaded(Message):
+    """Posted when token data is loaded for a session."""
+
+    def __init__(self, session_id: str, tokens: SessionTokens) -> None:
+        super().__init__()
+        self.session_id = session_id
+        self.tokens = tokens
+
+
+class ModelUsageLoaded(Message):
+    """Posted when model usage data is loaded."""
+
+    def __init__(self, models: list[ModelUsage]) -> None:
+        super().__init__()
+        self.models = models
+
+
 class DashboardApp(App):
     """Main dashboard application with GITS-themed visuals.
 
     Features:
+    - Interactive session tree with native Textual Tree widget
     - Reactive state management
     - Background data loading
-    - Session tree visualization
+    - Token/cost tracking
     - Real-time updates
     """
 
@@ -79,6 +100,8 @@ class DashboardApp(App):
     session_trees: reactive[list[SessionTree]] = reactive(list)
     selected_session: reactive[Optional[Session]] = reactive(None)
     stats_cache: reactive[dict[str, SessionStats]] = reactive(dict)
+    tokens_cache: reactive[dict[str, SessionTokens]] = reactive(dict)
+    model_usage: reactive[list[ModelUsage]] = reactive(list)
 
     # Configuration
     CSS = f"""
@@ -94,62 +117,71 @@ class DashboardApp(App):
     }}
 
     /* Session Tree Panel - GREEN border */
-    #session-tree {{
+    #session-tree-container {{
         width: 100%;
         height: 100%;
         border: solid {THEME.green};
         background: {THEME.bg1};
-        overflow-y: auto;
     }}
 
     #session-tree-title {{
         background: {THEME.green};
         color: {THEME.bg0};
         padding: 0 1;
-        border-bottom: solid {THEME.muted};
         text-style: bold;
-    }}
-
-    #session-tree-content {{
-        padding: 1 2;
-        color: {THEME.text};
     }}
 
     /* Right Panel Container */
     #right-panel {{
         width: 100%;
         height: 100%;
-        layout: vertical;
+        layout: grid;
+        grid-size: 1;
+        grid-rows: 1fr 1fr 1fr 1fr;
     }}
 
     /* Details Panel - CYAN border */
     #details {{
         width: 100%;
-        height: 1fr;
+        height: 100%;
         border: solid {THEME.cyan};
         padding: 1;
         background: {THEME.bg1};
         color: {THEME.text};
+        overflow-y: auto;
+    }}
+
+    /* Tokens Panel - TEAL border */
+    #tokens {{
+        width: 100%;
+        height: 100%;
+        border: solid {THEME.teal};
+        padding: 1;
+        background: {THEME.bg1};
+        color: {THEME.text};
+        overflow-y: auto;
     }}
 
     /* Skills Panel - ORANGE border */
     #skills {{
         width: 100%;
-        height: 1fr;
+        height: 100%;
         border: solid {THEME.orange};
         padding: 1;
         background: {THEME.bg1};
         color: {THEME.text};
+        overflow-y: auto;
     }}
 
     /* Todos Panel - RED border for pop! */
     #todos {{
         width: 100%;
-        height: 1fr;
+        height: 100%;
         border: solid {THEME.red};
         padding: 1;
         background: {THEME.bg1};
         color: {THEME.text};
+        overflow-y: auto;
     }}
 
     /* Aggregation Bar */
@@ -171,11 +203,15 @@ class DashboardApp(App):
     }}
 
     /* Focus effects with RED accent */
-    #session-tree:focus {{
+    #session-tree-container:focus {{
         border: solid {THEME.red};
     }}
 
     #details:focus {{
+        border: solid {THEME.red};
+    }}
+
+    #tokens:focus {{
         border: solid {THEME.red};
     }}
 
@@ -192,9 +228,7 @@ class DashboardApp(App):
         Binding("q", "quit", "Quit", show=True),
         Binding("tab", "toggle_filter", "Filter", show=True),
         Binding("r", "refresh", "Refresh", show=True),
-        Binding("enter", "select", "Select", show=True),
-        Binding("up", "scroll_up", "↑", show=False),
-        Binding("down", "scroll_down", "↓", show=False),
+        Binding("m", "toggle_model_panel", "Models", show=True),
     ]
 
     def __init__(
@@ -206,6 +240,7 @@ class DashboardApp(App):
         self.interval = interval
         self.cwd_filter = cwd
         self._sessions_hash: str = ""
+        self._show_model_panel: bool = False
 
     def _footer_text(self) -> str:
         """Generate footer text with filter status."""
@@ -213,6 +248,7 @@ class DashboardApp(App):
         return (
             f"[bold]Enter[/bold] Select │ "
             f"[bold]Tab[/bold] Filter{filter_status} │ "
+            f"[bold]M[/bold] Models │ "
             f"[bold]R[/bold] Refresh │ "
             f"[bold]Q[/bold] Quit"
         )
@@ -222,12 +258,15 @@ class DashboardApp(App):
         yield Header()
 
         with Horizontal(id="main-grid"):
-            with Vertical(id="session-tree"):
+            # Left panel: Session Tree
+            with Vertical(id="session-tree-container"):
                 yield Static("◈ SESSION TREE", id="session-tree-title")
-                yield Static("", id="session-tree-content")
+                yield SessionTreeWidget("Sessions", id="session-tree")
 
+            # Right panel: Details, Tokens, Skills, Todos
             with Vertical(id="right-panel"):
                 yield Static("◇ DETAILS", id="details")
+                yield Static("◈ TOKENS", id="tokens")
                 yield Static("◆ SKILLS", id="skills")
                 yield Static("● TODOS", id="todos")
 
@@ -237,6 +276,7 @@ class DashboardApp(App):
     def on_mount(self) -> None:
         """Initialize dashboard on mount."""
         self._load_data()
+        self._load_model_usage()
         self.set_interval(self.interval / 1000, self._load_data)
 
     @work(exclusive=True, thread=True)
@@ -266,22 +306,39 @@ class DashboardApp(App):
             trees = build_session_tree(sessions)
             self.post_message(SessionsLoaded(sessions, trees))
 
-    def on_sessions_loaded(self, event: SessionsLoaded) -> None:
-        """Handle sessions loaded event."""
-        self.sessions = event.sessions
-        self.session_trees = event.trees
-        self._update_session_tree()
-        self._update_aggregation()
-
-        # Load stats for selected session
-        if self.selected_session:
-            self._load_stats(self.selected_session.id)
-
     @work(exclusive=True, thread=True)
     def _load_stats(self, session_id: str) -> None:
         """Load stats for a session in background."""
         stats = db.get_session_stats(session_id)
         self.post_message(StatsLoaded(session_id, stats))
+
+    @work(exclusive=True, thread=True)
+    def _load_tokens(self, session_id: str) -> None:
+        """Load token data for a session in background."""
+        tokens = db.get_session_tokens(session_id)
+        self.post_message(TokensLoaded(session_id, tokens))
+
+    @work(exclusive=True, thread=True)
+    def _load_model_usage(self) -> None:
+        """Load model usage data in background."""
+        models = db.get_all_model_usage()
+        self.post_message(ModelUsageLoaded(models))
+
+    def on_sessions_loaded(self, event: SessionsLoaded) -> None:
+        """Handle sessions loaded event."""
+        self.sessions = event.sessions
+        self.session_trees = event.trees
+
+        # Update the tree widget
+        tree_widget = self.query_one(SessionTreeWidget)
+        tree_widget.update_sessions(event.trees)
+
+        self._update_aggregation()
+
+        # Load stats for selected session
+        if self.selected_session:
+            self._load_stats(self.selected_session.id)
+            self._load_tokens(self.selected_session.id)
 
     def on_stats_loaded(self, event: StatsLoaded) -> None:
         """Handle stats loaded event."""
@@ -289,15 +346,28 @@ class DashboardApp(App):
         if self.selected_session and self.selected_session.id == event.session_id:
             self._update_details()
 
-    def _update_session_tree(self) -> None:
-        """Update session tree panel."""
-        tree_content = self.query_one("#session-tree-content", Static)
-        if not self.session_trees:
-            tree_content.update("[dim]No sessions found[/dim]")
-            return
+    def on_tokens_loaded(self, event: TokensLoaded) -> None:
+        """Handle tokens loaded event."""
+        self.tokens_cache = {**self.tokens_cache, event.session_id: event.tokens}
+        if self.selected_session and self.selected_session.id == event.session_id:
+            self._update_tokens()
 
-        lines = render_tree_iterative(self.session_trees)
-        tree_content.update("\n".join(lines))
+    def on_model_usage_loaded(self, event: ModelUsageLoaded) -> None:
+        """Handle model usage loaded event."""
+        self.model_usage = event.models
+
+    def on_session_tree_widget_selected(
+        self, event: SessionTreeWidget.Selected
+    ) -> None:
+        """Handle session selection from tree widget."""
+        node = event.node
+        if node and node.data:
+            self.selected_session = node.data
+            self._update_details()
+            self._update_skills()
+            self._update_todos()
+            self._load_stats(node.data.id)
+            self._load_tokens(node.data.id)
 
     def _update_aggregation(self) -> None:
         """Update aggregation panel."""
@@ -312,6 +382,15 @@ class DashboardApp(App):
             details.update(render_details(self.selected_session, stats))
         else:
             details.update("[dim]No session selected[/dim]")
+
+    def _update_tokens(self) -> None:
+        """Update tokens panel."""
+        tokens_widget = self.query_one("#tokens", Static)
+        if self.selected_session:
+            tokens = self.tokens_cache.get(self.selected_session.id)
+            tokens_widget.update(render_session_tokens(tokens))
+        else:
+            tokens_widget.update("[dim]No session selected[/dim]")
 
     def _update_skills(self) -> None:
         """Update skills panel."""
@@ -331,20 +410,6 @@ class DashboardApp(App):
         else:
             todos.update(render_todos([]))
 
-    def action_select(self) -> None:
-        """Select first session (simplified for now)."""
-        if self.sessions:
-            self.selected_session = self.sessions[0]
-            self._update_details()
-            self._update_skills()
-            self._update_todos()
-            self._load_stats(self.selected_session.id)
-
-    def action_refresh(self) -> None:
-        """Force refresh data."""
-        self._sessions_hash = ""  # Force reload
-        self._load_data()
-
     def action_toggle_filter(self) -> None:
         """Toggle CWD filter."""
         import os
@@ -357,12 +422,18 @@ class DashboardApp(App):
         footer = self.query_one("#footer-bar", Static)
         footer.update(self._footer_text())
 
-    def action_scroll_up(self) -> None:
-        """Scroll up in tree."""
-        tree = self.query_one("#session-tree-content", Static)
-        # Textual handles this automatically with overflow-y: auto
+    def action_toggle_model_panel(self) -> None:
+        """Toggle model usage panel (show in tokens area)."""
+        self._show_model_panel = not self._show_model_panel
 
-    def action_scroll_down(self) -> None:
-        """Scroll down in tree."""
-        tree = self.query_one("#session-tree-content", Static)
-        # Textual handles this automatically with overflow-y: auto
+        tokens_widget = self.query_one("#tokens", Static)
+        if self._show_model_panel:
+            tokens_widget.update(render_model_usage(self.model_usage))
+        else:
+            self._update_tokens()
+
+    def action_refresh(self) -> None:
+        """Force refresh data."""
+        self._sessions_hash = ""  # Force reload
+        self._load_data()
+        self._load_model_usage()

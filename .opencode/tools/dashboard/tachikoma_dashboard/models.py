@@ -108,12 +108,50 @@ class SessionStats:
 @dataclass(frozen=True)
 class Skill:
     """Immutable skill with usage metrics."""
-    
+
     name: str
     session_id: str
     time_loaded: int
     invocation_count: int = 1
     last_used: Optional[int] = None
+
+
+@dataclass(frozen=True)
+class ModelUsage:
+    """Immutable model usage statistics."""
+
+    provider: str
+    model: str
+    request_count: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    total_tokens: int = 0
+    last_used: Optional[int] = None
+    last_rate_limit: Optional[int] = None
+
+    @property
+    def model_key(self) -> str:
+        """Get the model key (provider/model)."""
+        return f"{self.provider}/{self.model}"
+
+    @property
+    def avg_tokens_per_request(self) -> float:
+        """Get average tokens per request."""
+        if self.request_count == 0:
+            return 0.0
+        return self.total_tokens / self.request_count
+
+
+@dataclass(frozen=True)
+class SessionTokens:
+    """Immutable token usage for a session."""
+
+    session_id: str
+    total_input_tokens: int = 0
+    total_output_tokens: int = 0
+    total_tokens: int = 0
+    request_count: int = 0
+    models: tuple[ModelUsage, ...] = ()
 
 
 # SessionTree - mutable for Textual integration
