@@ -173,9 +173,8 @@ Tachikoma:
 │   │   ├── SKILL.md
 │   │   └── router.sh
 │   └── intent-classifier/    # Routing decisions
-├── context/
-│   ├── navigation.md         # Human-readable index
-│   └── *.md                  # Context modules
+├── context-modules/
+│   └── *.md                  # Context modules (00-core-contract, etc.)
 └── config/
     └── intent-routes.yaml    # Routing configuration
 ```

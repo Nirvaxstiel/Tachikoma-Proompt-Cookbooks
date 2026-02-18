@@ -208,299 +208,388 @@ This is **optional** - the core dashboard works without worktrees.
 
 ---
 
-## Tech Stack: Rust + Ratatui
+## Tech Stack: Python + Textual
 
-### Why Rust?
+### Why Python?
 
 | Reason | Details |
 |--------|---------|
-| **Performance** | Fast TUI rendering, low memory |
-| **ratatui** | Excellent TUI library, actively maintained |
-| **rusqlite** | Easy SQLite access |
-| **Single binary** | Easy distribution |
-| **Type safety** | Catch errors at compile time |
+| **Portable Python** | Already distributed with OpenCode - no new runtime needed |
+| **uv** | Fast Python package manager; runs scripts directly without installation |
+| **Textual** | Excellent TUI library with modern async API, actively maintained |
+| **sqlite3** | Built-in SQLite support (no external dependencies) |
+| **Rich ecosystem** | Easy to extend with additional libraries |
+| **Familiarity** | Easier for most users to read and modify |
 
-### Dependencies (Cargo.toml)
+### Why Python + Textual + uv?
+
+- **Modern async API** - Built on asyncio, clean component model
+- **Widget library** - Tree, DataTable, Static, Input built-in
+- **CSS-like styling** - Declarative UI styling
+- **Cross-platform** - Works on macOS, Linux, Windows
+- **Active development** - Well-documented with many examples
+- **uv for packaging** - Fast, modern Python package manager; can run scripts directly without installation
+
+### Dependencies (pyproject.toml)
 
 ```toml
-[dependencies]
-ratatui = "0.28"
-rusqlite = { version = "0.32", features = ["bundled"] }
-crossterm = "0.28"
-clap = { version = "4.5", features = ["derive"] }
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
-dirs = "5"
-chrono = { version = "0.4", features = ["serde"] }
+[project]
+name = "tachikoma-dashboard"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "textual>=0.90.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.6.0",
+    "mypy>=1.0.0",
+]
+
+[project.scripts]
+tachikoma-dashboard = "tachikoma_dashboard.__main__:main"
+
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.6.0",
+    "mypy>=1.0.0",
+]
 ```
+
+**Note:** 
+- Uses Python's built-in `sqlite3` - no external DB driver needed.
+- `[project.scripts]` enables `pip install -e` and direct invocation
+- `[tool.uv]` enables `uv run` with auto-dependency resolution
 
 ---
 
-## Implementation (Rust)
+## Implementation (Python)
 
 ### File Structure
 
 ```
 .opencode/tools/dashboard/
-├── Cargo.toml
-├── src/
-│   ├── main.rs           # CLI entry point
-│   ├── db.rs            # OpenCode DB queries
-│   ├── data.rs          # Data models
-│   ├── panels.rs        # Panel renderers
-│   ├── tui.rs           # Main TUI loop
-│   └── commands.rs       # Keyboard handlers
-└── build.sh             # Build script
+├── pyproject.toml
+├── tachikoma_dashboard/
+│   ├── __init__.py
+│   ├── __main__.py           # CLI entry point (python -m)
+│   ├── db.py                 # OpenCode DB queries
+│   ├── models.py             # Data models
+│   ├── widgets.py            # Panel widgets
+│   ├── app.py                # Main TUI app
+│   └── css.py                # Styles
+└── build.sh                  # Build/deploy script
 ```
 
-### Database Query (db.rs)
+### Database Query (db.py)
 
-```rust
-use rusqlite::{Connection, params};
-use std::path::PathBuf;
+```python
+import sqlite3
+import os
+from pathlib import Path
+from typing import Optional
+from .models import Session, Todo
 
-const DB_PATH: &str = ".local/share/opencode/opencode.db";
+DB_PATH = ".local/share/opencode/opencode.db"
 
-pub fn get_db_path() -> PathBuf {
-    dirs::home_dir()
-        .unwrap()
-        .join(DB_PATH)
-}
+def get_db_path() -> Path:
+    return Path(os.path.expanduser("~")) / DB_PATH
 
-pub fn get_sessions(cwd: Option<&str>) -> Result<Vec<Session>, rusqlite::Error> {
-    let conn = Connection::open(get_db_path())?;
+def get_sessions(cwd: Optional[str] = None) -> list[Session]:
+    conn = sqlite3.connect(get_db_path())
+    conn.row_factory = sqlite3.Row
     
-    let mut query = String::from(
-        "SELECT id, parent_id, project_id, title, directory, time_created, time_updated 
-         FROM session WHERE 1=1"
-    );
+    query = """
+        SELECT id, parent_id, project_id, title, directory, time_created, time_updated 
+        FROM session WHERE 1=1
+    """
+    params = []
     
-    if cwd.is_some() {
-        query.push_str(" AND directory = ?");
-    }
-    query.push_str(" ORDER BY time_updated DESC");
+    if cwd:
+        query += " AND directory = ?"
+        params.append(cwd)
     
-    let mut stmt = conn.prepare(&query)?;
+    query += " ORDER BY time_updated DESC"
     
-    let rows = if let Some(c) = cwd {
-        stmt.query_map(params![c], |row| {
-            Ok(Session {
-                id: row.get(0)?,
-                parent_id: row.get(1)?,
-                project_id: row.get(2)?,
-                title: row.get(3)?,
-                directory: row.get(4)?,
-                time_created: row.get(5)?,
-                time_updated: row.get(6)?,
-            })
-        })?
-    } else {
-        stmt.query_map([], |row| {
-            Ok(Session {
-                id: row.get(0)?,
-                parent_id: row.get(1)?,
-                project_id: row.get(2)?,
-                title: row.get(3)?,
-                directory: row.get(4)?,
-                time_created: row.get(5)?,
-                time_updated: row.get(6)?,
-            })
-        })?
-    };
+    cursor = conn.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
     
-    rows.collect()
-}
+    return [Session(
+        id=row["id"],
+        parent_id=row["parent_id"],
+        project_id=row["project_id"],
+        title=row["title"],
+        directory=row["directory"],
+        time_created=row["time_created"],
+        time_updated=row["time_updated"],
+    ) for row in rows]
 
-pub fn get_todos(session_id: &str) -> Result<Vec<Todo>, rusqlite::Error> {
-    let conn = Connection::open(get_db_path())?;
-    let mut stmt = conn.prepare(
+def get_todos(session_id: str) -> list[Todo]:
+    conn = sqlite3.connect(get_db_path())
+    conn.row_factory = sqlite3.Row
+    
+    cursor = conn.execute(
         "SELECT session_id, content, status, priority, position, time_created 
-         FROM todo WHERE session_id = ?"
-    )?;
+         FROM todo WHERE session_id = ?",
+        (session_id,)
+    )
     
-    stmt.query_map(params![session_id], |row| {
-        Ok(Todo {
-            session_id: row.get(0)?,
-            content: row.get(1)?,
-            status: row.get(2)?,
-            priority: row.get(3)?,
-            position: row.get(4)?,
-            time_created: row.get(5)?,
-        })
-    })?.collect()
-}
+    rows = cursor.fetchall()
+    conn.close()
+    
+    return [Todo(
+        session_id=row["session_id"],
+        content=row["content"],
+        status=row["status"],
+        priority=row["priority"],
+        position=row["position"],
+        time_created=row["time_created"],
+    ) for row in rows]
 ```
 
-### Data Models (data.rs)
+### Data Models (models.py)
 
-```rust
-use serde::{Deserialize, Serialize};
+```python
+from dataclasses import dataclass
+from typing import Optional
+from enum import Enum
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Session {
-    pub id: String,
-    pub parent_id: Option<String>,
-    pub project_id: String,
-    pub title: String,
-    pub directory: String,
-    pub time_created: i64,
-    pub time_updated: i64,
-}
+class SessionStatus(Enum):
+    WORKING = "working"   # Currently active (< 30s since last update)
+    ACTIVE = "active"     # Has activity (< 5min)
+    IDLE = "idle"         # No recent activity
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Todo {
-    pub session_id: String,
-    pub content: String,
-    pub status: String,
-    pub priority: String,
-    pub position: i32,
-    pub time_created: i64,
-}
+@dataclass
+class Session:
+    id: str
+    parent_id: Optional[str]
+    project_id: str
+    title: str
+    directory: str
+    time_created: int
+    time_updated: int
 
-#[derive(Debug, Clone)]
-pub struct SessionTree {
-    pub session: Session,
-    pub children: Vec<SessionTree>,
-    pub status: SessionStatus,
-}
+@dataclass
+class Todo:
+    session_id: str
+    content: str
+    status: str
+    priority: str
+    position: int
+    time_created: int
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum SessionStatus {
-    Working,  // Currently active (< 30s since last update)
-    Active,   // Has activity (< 5min)
-    Idle,     // No recent activity
-}
+class SessionTree:
+    def __init__(self, session: Session):
+        self.session = session
+        self.children: list[SessionTree] = []
+        self.status: SessionStatus = SessionStatus.IDLE
+
+    @property
+    def duration(self) -> int:
+        import time
+        return int(time.time()) - self.session.time_created
 ```
 
-### TUI Main Loop (tui.rs)
+### Main TUI App (app.py)
 
-```rust
-use ratatui::{Frame, Terminal, backend::CrosstermBackend};
-use crossterm::{event, execute};
+```python
+from textual.app import App, ComposeResult
+from textual.containers import Container, Horizontal, Vertical
+from textual.widgets import Header, Footer, Static, Tree
+from textual import work
+import time
 
-pub fn run() -> Result<(), Box<dyn std::error::Error>> {
-    let stdout = io::stdout();
-    let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
-    
-    terminal.clear()?;
-    
-    loop {
-        // 1. Poll data
-        let sessions = db::get_sessions(cwd_filter)?;
-        
-        // 2. Render
-        terminal.draw(|f| {
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints([Constraint::Length(3), Constraint::Min(0)])
-                .split(f.size());
-            
-            // Render panels
-            render_session_tree(f, chunks[0], &sessions);
-            render_details(f, chunks[1], &selected_session);
-        })?;
-        
-        // 3. Handle input
-        if event::poll(Duration::from_millis(100))? {
-            if let Event::Key(key) = event::read()? {
-                match key.code {
-                    KeyCode::Char('q') => break,
-                    KeyCode::Down => selected_session.next(),
-                    KeyCode::Up => selected_session.prev(),
-                    KeyCode::Enter => selected_session.select(),
-                    _ => {}
-                }
-            }
-        }
-        
-        // 4. Refresh
-        thread::sleep(Duration::from_millis(REFRESH_INTERVAL));
+class DashboardApp(App):
+    CSS = """
+    Screen {
+        layout: grid;
+        grid-size: 2 3;
     }
     
-    Ok(())
-}
+    #session-tree {
+        width: 100%;
+        height: 100%;
+        border: solid green;
+    }
+    
+    #details {
+        width: 100%;
+        height: 100%;
+        border: solid blue;
+    }
+    
+    #skills {
+        width: 100%;
+        height: 100%;
+        border: solid yellow;
+    }
+    
+    #aggregation {
+        width: 100%;
+        column-span: 2;
+        border: solid white;
+    }
+    """
+    
+    BINDINGS = [
+        ("q", "quit", "Quit"),
+        ("enter", "select", "Select"),
+    ]
+    
+    def __init__(self, interval: int = 2000, cwd: Optional[str] = None):
+        super().__init__()
+        self.interval = interval
+        self.cwd_filter = cwd
+        self.sessions: list[SessionTree] = []
+        self.selected_session: Optional[Session] = None
+        
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield Static("SESSION TREE", id="session-tree")
+        yield Static("DETAILS", id="details")
+        yield Static("LOADED SKILLS", id="skills")
+        yield Static("ROOT AGGREGATION", id="aggregation")
+        yield Footer()
+    
+    def on_mount(self) -> None:
+        self.refresh_sessions()
+        self.set_interval(self.interval / 1000, self.refresh_sessions)
+    
+    @work
+    async def refresh_sessions(self) -> None:
+        sessions = db.get_sessions(self.cwd_filter)
+        self.sessions = build_tree(sessions)
+        self.query_one("#session-tree").update(render_tree(self.sessions))
+    
+    def action_select(self) -> None:
+        # Show details for selected session
+        pass
 ```
 
-### Panel Renderers (panels.rs)
+### Widget Renderers (widgets.py)
 
-```rust
-use ratatui::{Frame, widgets::{Block, Borders, List, ListItem}};
+```python
+from textual.widget import Widget
+from textual.widgets import Static
+from .models import SessionTree, SessionStatus
 
-pub fn render_session_tree(f: &mut Frame, area: Rect, sessions: &[SessionTree]) {
-    let items: Vec<ListItem> = sessions
-        .iter()
-        .map(|s| {
-            let icon = match s.status {
-                SessionStatus::Working => "●",
-                SessionStatus::Active => "◐",
-                SessionStatus::Idle => "○",
-            };
-            ListItem::new(format!("{} {} {}", icon, s.session.title, s.session.directory))
-        })
-        .collect();
-    
-    let list = List::new(items)
-        .block(Block::default().title("SESSION TREE").borders(Borders::ALL));
-    
-    f.render_widget(list, area);
-}
-
-pub fn render_details(f: &mut Frame, area: Rect, session: &Option<Session>) {
-    if let Some(s) = session {
-        let text = Text::from(vec![
-            Line::from(format!("Selected: {}", s.title)),
-            Line::from(format!("CWD: {}", s.directory)),
-            Line::from(format!("Duration: {}", duration(s.time_created))),
-        ]);
+def render_session_tree(trees: list[SessionTree]) -> str:
+    lines = []
+    for tree in trees:
+        icon = {
+            SessionStatus.WORKING: "●",
+            SessionStatus.ACTIVE: "◐",
+            SessionStatus.IDLE: "○",
+        }[tree.status]
+        lines.append(f"{icon} {tree.session.title}  {tree.session.directory}")
         
-        let paragraph = Paragraph::new(text)
-            .block(Block::default().title("DETAILS").borders(Borders::ALL));
-        
-        f.render_widget(paragraph, area);
-    }
-}
+        # Render children with indentation
+        for child in tree.children:
+            lines.append(f"  ├─ {child.session.title}  {child.session.directory}")
+    
+    return "\n".join(lines)
+
+def render_details(session: Session) -> str:
+    if not session:
+        return "No session selected"
+    
+    duration = int(time.time()) - session.time_created
+    minutes, seconds = divmod(duration, 60)
+    
+    return f"""Selected: {session.title}
+Status: {get_status(session)}
+Duration: {minutes}m {seconds}s
+CWD: {session.directory}
+Tool Calls: --
+Messages: --"""
 ```
 
 ---
 
-## CLI (main.rs)
+## CLI (tachikoma_dashboard/__main__.py)
 
-```rust
-use clap::Parser;
+```python
+import argparse
+import sys
+from tachikoma_dashboard.app import DashboardApp
 
-#[derive(Parser, Debug)]
-#[command(name = "tachikoma dashboard")]
-#[command(about = "Real-time Tachikoma agent dashboard")]
-struct Args {
-    /// Refresh interval in milliseconds
-    #[arg(long, default_value = "2000")]
-    interval: u64,
+def main():
+    parser = argparse.ArgumentParser(
+        prog="tachikoma dashboard",
+        description="Real-time Tachikoma agent dashboard"
+    )
     
-    /// Filter by working directory
-    #[arg(short, long)]
-    cwd: Option<String>,
+    parser.add_argument(
+        "--interval", "-i",
+        type=int,
+        default=2000,
+        help="Refresh interval in milliseconds (default: 2000)"
+    )
     
-    /// Show all sessions (not just current cwd)
-    #[arg(short, long)]
-    all_sessions: bool,
+    parser.add_argument(
+        "--cwd", "-c",
+        type=str,
+        default=None,
+        help="Filter by working directory"
+    )
     
-    /// Include worktree panel
-    #[arg(short, long)]
-    worktrees: bool,
+    parser.add_argument(
+        "--all-sessions", "-a",
+        action="store_true",
+        help="Show all sessions (not just current cwd)"
+    )
     
-    /// Select specific session on start
-    #[arg(long)]
-    select: Option<String>,
+    parser.add_argument(
+        "--worktrees", "-w",
+        action="store_true",
+        help="Include worktree panel"
+    )
     
-    /// One-shot JSON output
-    #[arg(long)]
-    json: bool,
-}
+    parser.add_argument(
+        "--select", "-s",
+        type=str,
+        default=None,
+        help="Select specific session on start"
+    )
+    
+    parser.add_argument(
+        "--json", "-j",
+        action="store_true",
+        help="One-shot JSON output (no TUI)"
+    )
+    
+    args = parser.parse_args()
+    
+    if args.json:
+        # One-shot JSON output
+        from tachikoma_dashboard import db
+        import json
+        sessions = db.get_sessions(args.cwd)
+        print(json.dumps([s.__dict__ for s in sessions], indent=2))
+        return
+    
+    # Run TUI
+    app = DashboardApp(
+        interval=args.interval,
+        cwd=args.cwd
+    )
+    app.run()
 
-fn main() {
-    let args = Args::parse();
-    // ... run dashboard
-}
+if __name__ == "__main__":
+    main()
+```
+
+### Installation
+
+```bash
+# Install as local tool
+pip install -e .opencode/tools/dashboard/
+
+# Or run directly
+python -m tachikoma_dashboard
 ```
 
 ---
@@ -539,26 +628,36 @@ COLORS = {
 ## Command Line Interface
 
 ```bash
-# Start dashboard with defaults
+# Install and run with uv (recommended - no manual pip install needed)
+uv run --with textual --with rich -m tachikoma_dashboard
+
+# Or run directly with uv (auto-installs dependencies)
+uv run .opencode/tools/dashboard/
+
+# Install as local tool (if you want 'tachikoma dashboard' command)
+pip install -e .opencode/tools/dashboard/
 tachikoma dashboard
 
+# Or run directly with Python
+python -m tachikoma_dashboard
+
 # Custom refresh interval
-tachikoma dashboard --interval 5000
+uv run --with textual --with rich -m tachikoma_dashboard -- --interval 5000
 
 # One-shot output (no TUI)
-tachikoma dashboard --json
+uv run --with textual --with rich -m tachikoma_dashboard -- --json
 
 # Filter by directory (cwd)
-tachikoma dashboard --cwd ~/projects/tachikoma
+uv run --with textual --with rich -m tachikoma_dashboard -- --cwd ~/projects/tachikoma
 
 # Show all sessions (not just current cwd)
-tachikoma dashboard --all-sessions
+uv run --with textual --with rich -m tachikoma_dashboard -- --all-sessions
 
 # Include worktrees (optional)
-tachikoma dashboard --worktrees
+uv run --with textual --with rich -m tachikoma_dashboard -- --worktrees
 
 # Select specific session on start
-tachikoma dashboard --select session-id
+uv run --with textual --with rich -m tachikoma_dashboard -- --select session-id
 ```
 
 ### Keyboard Controls
@@ -596,18 +695,36 @@ tachikoma dashboard --select session-id
 | **Root = aggregation** | tachikoma shows combined stats of all children |
 | **Multiple roots** | Support multiple TUI sessions across directories |
 | **Skills Today removed** | Move to statistics TUI if needed later |
+| **Python + Textual instead of Rust** | Portable Python already distributed with OpenCode; Textual provides modern async TUI with rich widget library |
+| **Built-in sqlite3** | No external dependencies needed, Python stdlib has SQLite support |
+| **uv for packaging** | Fast dependency resolution, can run scripts directly without `pip install` |
 
 ---
 
 ## Next Steps
 
 1. **Create tool directory**: `.opencode/tools/dashboard/`
-2. **Implement DB queries**: Connect to OpenCode's SQLite
-3. **Build panel renderers**: ANSI-based UI
-4. **Add CLI entry point**: `tachikoma dashboard` command
-5. **Test with real data**: Verify session queries work
+2. **Set up pyproject.toml**: Configure Python package with textual dependency
+3. **Implement DB queries**: Connect to OpenCode's SQLite using built-in sqlite3
+4. **Build Textual widgets**: Create panel widgets using Textual's widget system
+5. **Create main app**: Implement the TUI app with async refresh
+6. **Add CLI entry point**: Set up `__main__.py` for `python -m` invocation
+7. **Test with real data**: Verify session queries work against OpenCode DB
+8. **Style with CSS**: Apply Textual CSS for the dashboard look
+
+### Why This Approach Works
+
+- **uv for packaging** - Fast dependency resolution, can run directly without installation
+- **Portable Python** - Already available in OpenCode distribution  
+- **Textual's async** - Built-in support for polling and refresh
+- **SQLite in stdlib** - No additional dependencies
+- **Familiar syntax** - Python is widely known and easy to modify
 
 ---
 
-*Last Updated: 2026-02-17*
-*Sources: OpenCode source (temp-docs/opencode), Overstory dashboard (temp-docs/overstory)*
+*Last Updated: 2026-02-18*
+*Sources: 
+- OpenCode source (temp-docs/opencode)
+- Overstory dashboard (temp-docs/overstory) 
+- Agent Skills format (temp-docs/agentskills)
+- Textual TUI library (temp-docs/textual)*

@@ -219,8 +219,46 @@ routes:
     strategy: direct
     notes: Use for context cleanup, token reduction, efficiency tuning
 
-  # Explore: Creative exploration with strategic variance
+  # Explore: Fast codebase exploration (uses OpenCode built-in subagent)
   explore:
+    description: Fast codebase exploration, finding files, searching code
+    confidence_threshold: 0.5
+    context_modules:
+      - 00-core-contract
+    subagent: explore
+    subagent_invoke_instruction: "task(subagent_type='explore', description='...', prompt='...')"
+    subagent_usage: "Delegate to explore subagent for fast read-only codebase exploration"
+    invoke_via: subagent
+    tools:
+      - Read
+      - Grep
+      - Glob
+      - Bash
+    strategy: direct
+    notes: "Use for: finding files by patterns, searching code keywords, answering codebase questions. Optimized for speed."
+
+  # Deep-Research: Complex multi-step research (uses OpenCode built-in subagent)
+  deep-research:
+    description: Complex multi-step research requiring parallel investigation
+    confidence_threshold: 0.5
+    context_modules:
+      - 00-core-contract
+      - 30-research-methods
+    subagent: general
+    subagent_invoke_instruction: "task(subagent_type='general', description='...', prompt='...')"
+    subagent_usage: "Delegate to general subagent for complex multi-step research"
+    invoke_via: subagent
+    tools:
+      - Read
+      - Grep
+      - Glob
+      - Bash
+      - WebFetch
+    strategy: direct
+    notes: "Use for: complex investigations, multi-source research, parallel analysis. Has full tool access except todo."
+
+  # Creative: Creative exploration with strategic variance
+  creative:
     description: Creative exploration, unconventional approaches, "surprise me" tasks
     confidence_threshold: 0.5
     context_modules:
@@ -525,8 +563,12 @@ module_priority:
 #     → Agent has ALL available, uses as needed
 #
 # SUBAGENTS (Delegate with task()):
-#   rlm-subcall:    task(subagent_type='rlm-subcall', ...)
-#   rlm-optimized:  task(subagent_type='rlm-optimized', ...)
+#   OpenCode Built-in:
+#     explore:        task(subagent_type='explore', ...)     # Fast codebase exploration (read-only)
+#     general:        task(subagent_type='general', ...)     # Multi-step parallel tasks
+#   Tachikoma Custom:
+#     rlm-subcall:    task(subagent_type='rlm-subcall', ...) # Chunk processing (internal worker)
+#     rlm-optimized:  task(subagent_type='rlm-optimized', ...) # Large context coordinator
 #
 # RULES:
 #   If route has 'skill:' key → use skill() to load
@@ -639,14 +681,32 @@ intent_keywords:
     - "prune"
 
   explore:
+    - "find files"
+    - "search code"
+    - "where is"
+    - "show me"
+    - "locate"
+    - "explore codebase"
+    - "look for"
+    - "find all"
+
+  creative:
     - "surprise me"
     - "creative"
     - "unconventional"
-    - "explore"
     - "experiment"
     - "try something different"
     - "interesting"
     - "novel"
+    - "brainstorm"
+
+  deep-research:
+    - "deep research"
+    - "thorough investigation"
+    - "comprehensive analysis"
+    - "multi-step research"
+    - "research in parallel"
+    - "investigate thoroughly"
 
 # ============================================
 # STRATEGIC VARIANCE
@@ -699,7 +759,9 @@ strategic_variance:
     git: low # Version control must be precise
     document: medium # Documentation can be creative
     complex: medium # Complex tasks may benefit from exploration
-    explore: high # Explicitly requested creativity
+    explore: low # Codebase exploration should be accurate
+    creative: high # Explicitly requested creativity
+    deep-research: medium # Research can have some exploration
 
   # Intents that MUST NEVER have variance (safety)
   variance_forbidden:

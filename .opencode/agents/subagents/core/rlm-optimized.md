@@ -11,7 +11,7 @@ permission:
   glob:
     "*": "allow"
   bash:
-    "*": "deny"
+    "*": "allow"
   edit:
     "*": "deny"
   write:
@@ -22,6 +22,7 @@ tools:
   Read: true
   Grep: true
   Glob: true
+  Bash: true
 ---
 
 # RLM-Optimized: MIT-Inspired Recursive Language Model
@@ -29,6 +30,31 @@ tools:
 ## Purpose
 
 Handle large contexts efficiently using semantic chunking, parallel processing, and intelligent synthesis. Processes 10M+ token contexts that exceed normal context window limits.
+
+---
+
+## ⚠️ CRITICAL: Use Python Scripts
+
+This subagent MUST use the RLM Python scripts for chunking and processing:
+
+```bash
+# Initialize the REPL state
+uv run python .opencode/skills/rlm/scripts/rlm_repl.py init <context_path>
+
+# Check status
+uv run python .opencode/skills/rlm/scripts/rlm_repl.py status
+
+# Scout context
+uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec -c "print(peek(0, 3000))"
+
+# Create chunks
+uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec <<'PY'
+paths = write_chunks('.opencode/rlm_state/chunks', size=200000, overlap=0)
+print(len(paths))
+PY
+```
+
+**Note**: Use `uv run python` instead of `python3` for portable execution.
 
 ---
 
