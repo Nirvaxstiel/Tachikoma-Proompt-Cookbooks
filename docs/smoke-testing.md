@@ -103,5 +103,5 @@ python .opencode/tools/smoke_test.py --fail-fast || exit 1
 ## Adding Tests
 
 For detailed information on adding tests, see:
-- [SMOKE_TESTS.md](../.opencode/tools/SMOKE_TESTS.md) - Full documentation
+- `.opencode/tools/SMOKE_TESTS.md` - Full documentation
 - [Dashboard Testing](./dashboard/index.md#testing) - Dashboard-specific tests

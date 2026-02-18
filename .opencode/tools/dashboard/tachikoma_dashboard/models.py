@@ -130,6 +130,34 @@ class ModelUsage:
     total_tokens: int = 0
     last_used: Optional[int] = None
     last_rate_limit: Optional[int] = None
+    retry_after_ms: Optional[int] = None
+    error_count: int = 0
+    last_error: Optional[int] = None
+    last_error_type: Optional[str] = None
+
+    @property
+    def rate_limit_cooldown_remaining(self) -> int:
+        """Get remaining cooldown time in seconds."""
+        if not self.last_rate_limit or not self.retry_after_ms:
+            return 0
+
+        import time
+        time_elapsed = int(time.time() * 1000) - self.last_rate_limit
+        remaining = self.retry_after_ms - time_elapsed
+        return max(0, remaining // 1000)
+
+
+@dataclass(frozen=True)
+class ModelError:
+    """Immutable error record for a model."""
+
+    session_id: str
+    provider: str
+    model: str
+    error_name: str
+    error_message: str
+    timestamp: int
+    time_created: int
 
     @property
     def model_key(self) -> str:

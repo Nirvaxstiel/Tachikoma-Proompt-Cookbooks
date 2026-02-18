@@ -1,6 +1,8 @@
 # Agent Skills Specification
 
-> The complete format specification for Agent Skills, based on the official [agentskills.io](https://agentskills.io) standard.
+> **Quick Reference:** For a condensed version, see [Agent Skills Format](/internals/agent-skills-format) in the Internals section.
+
+The complete format specification for Agent Skills, based on the official [agentskills.io](https://agentskills.io) standard.
 
 ## Overview
 

@@ -19,7 +19,7 @@ from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import DataTable, Input, Label, ProgressBar, Sparkline, Static
 
-from .models import ModelUsage, Session, SessionStats, SessionStatus, SessionTokens, SessionTree, Skill, Todo
+from .models import ModelError, ModelUsage, Session, SessionStats, SessionStatus, SessionTokens, SessionTree, Skill, Todo
 from .theme import PANEL_BORDERS, PRIORITY_COLORS, STATUS_COLORS, THEME
 
 if TYPE_CHECKING:
@@ -294,21 +294,15 @@ def render_session_tokens(tokens: SessionTokens | None) -> Text:
 
 
 def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
-    """Render model usage panel."""
-    header = Text("MODEL USAGE", style=Style(bold=True, color=THEME.cyan))
-    separator = Text("─" * 30, style=Style(color=THEME.muted))
-
+    """Render model usage panel (without header - header is in app.py)."""
     if not models:
-        return Text("\n").join([
-            header,
-            separator,
-            Text("(No model data)", style=Style(color=THEME.muted)),
-        ])
+        return Text("(No model data)", style=Style(color=THEME.muted))
 
-    lines = [header, separator]
+    lines = []
 
     total_tokens = sum(m.total_tokens for m in models)
     total_requests = sum(m.request_count for m in models)
+    total_errors = sum(m.error_count for m in models)
 
     summary = Text()
     summary.append(f"Total: ", style=Style(color=THEME.text))
@@ -316,6 +310,10 @@ def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
     summary.append(f" tokens across ", style=Style(color=THEME.text))
     summary.append(f"{total_requests}", style=Style(bold=True, color=THEME.green))
     summary.append(f" requests", style=Style(color=THEME.text))
+    if total_errors > 0:
+        summary.append(f"  ", style=Style(color=THEME.text))
+        summary.append(f"{total_errors}", style=Style(bold=True, color=THEME.red))
+        summary.append(f" errors", style=Style(color=THEME.text))
     lines.append(summary)
     lines.append(Text())
 
@@ -333,8 +331,22 @@ def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
         stats_line.append(format_tokens(model.total_tokens), style=Style(color=THEME.green))
         stats_line.append(f"  Reqs: {model.request_count}", style=Style(color=THEME.muted))
 
+        # Display error count if any errors
+        if model.error_count > 0:
+            stats_line.append(f"  Errors: {model.error_count}", style=Style(color=THEME.red))
+            if model.last_error_type:
+                stats_line.append(f" ({model.last_error_type})", style=Style(color=THEME.muted))
+
+        # Display rate limit info with cooldown
         if model.last_rate_limit:
-            stats_line.append("  ⚠ rate limited", style=Style(color=THEME.orange))
+            import time
+            time_since_sec = int(time.time()) - (model.last_rate_limit // 1000)
+            remaining = model.rate_limit_cooldown_remaining
+
+            if remaining > 0:
+                stats_line.append(f"  ⚠ cooldown: {format_duration(remaining)} remaining", style=Style(color=THEME.orange))
+            else:
+                stats_line.append(f"  ⚠ rate limited {format_duration(time_since_sec)} ago", style=Style(color=THEME.orange))
 
         lines.append(stats_line)
 
@@ -342,6 +354,53 @@ def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
         lines.append(
             Text(f"  ... and {len(models) - 5} more", style=Style(color=THEME.muted))
         )
+
+    return Text("\n").join(lines)
+
+
+def render_model_error_details(errors: Sequence[ModelError] | None = None) -> Text:
+    """Render error details for a specific model."""
+    header = Text("MODEL ERROR HISTORY", style=Style(bold=True, color=THEME.red))
+    separator = Text("─" * 35, style=Style(color=THEME.muted))
+
+    if not errors:
+        return Text("\n").join([
+            header,
+            separator,
+            Text("(No errors recorded)", style=Style(color=THEME.muted)),
+        ])
+
+    lines = [header, separator]
+    lines.append(
+        Text(f"Showing {len(errors)} most recent errors", style=Style(color=THEME.muted))
+    )
+    lines.append(Text())
+
+    for i, error in enumerate(errors, 1):
+        error_line = Text()
+
+        # Error number and time
+        time_ago = format_duration(int((int(error.time_created) // 1000)))
+        error_line.append(f"{i}. ", style=Style(color=THEME.red, bold=True))
+        error_line.append(f"[{time_ago} ago]", style=Style(color=THEME.muted))
+        lines.append(error_line)
+
+        # Error type
+        type_line = Text()
+        type_line.append(f"    Type: ", style=Style(color=THEME.muted))
+        type_line.append(error.error_name, style=Style(color=THEME.red, bold=True))
+        lines.append(type_line)
+
+        # Error message (truncated)
+        msg = error.error_message
+        if len(msg) > 60:
+            msg = msg[:57] + "..."
+        msg_line = Text()
+        msg_line.append(f"    Msg: ", style=Style(color=THEME.muted))
+        msg_line.append(msg, style=Style(color=THEME.text))
+        lines.append(msg_line)
+
+        lines.append(Text())
 
     return Text("\n").join(lines)
 

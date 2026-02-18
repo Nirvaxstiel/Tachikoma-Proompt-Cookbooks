@@ -17,7 +17,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Generic, Optional, TypeVar
 
-from .models import ModelUsage, Session, SessionStats, SessionTokens, Skill, Todo
+from .models import ModelError, ModelUsage, Session, SessionStats, SessionTokens, Skill, Todo
 from .query import MESSAGE, SESSION, TODO, QueryBuilder, json_extract
 
 DB_PATH = ".local/share/opencode/opencode.db"
@@ -140,6 +140,57 @@ def _builder() -> QueryBuilder | None:
     if not _db_path().exists():
         return None
     return QueryBuilder(str(_db_path()))
+
+
+def _extract_retry_after(error: dict[str, Any]) -> Optional[int]:
+    """Extract retry_after duration from error data.
+
+    Checks multiple locations where retry information might be stored:
+    1. error.data.retry_after (milliseconds)
+    2. error.data.retryAfter (milliseconds)
+    3. Parses message text for patterns like "retry after 60s"
+
+    Args:
+        error: Error dictionary from message
+
+    Returns:
+        Retry duration in milliseconds, or None if not found
+    """
+    error_data = error.get("data", {})
+
+    # Check direct retry_after field
+    if retry_after := error_data.get("retry_after"):
+        try:
+            return int(retry_after)
+        except (ValueError, TypeError):
+            pass
+
+    if retry_after := error_data.get("retryAfter"):
+        try:
+            return int(retry_after)
+        except (ValueError, TypeError):
+            pass
+
+    # Parse from message text
+    import re
+    message = error_data.get("message", "").lower()
+
+    # Pattern: "retry after X seconds/minutes"
+    match = re.search(r"retry after\s+(\d+)\s*(second|minute|min|hour)", message)
+    if match:
+        try:
+            value = int(match.group(1))
+            unit = match.group(2)
+            if unit.startswith("minute") or unit == "min":
+                return value * 60 * 1000
+            elif unit.startswith("hour"):
+                return value * 3600 * 1000
+            else:  # seconds
+                return value * 1000
+        except (ValueError, TypeError):
+            pass
+
+    return None
 
 
 # =============================================================================
@@ -331,7 +382,11 @@ def get_model_usage_stats() -> dict[str, dict]:
             "output_tokens": 0,
             "request_count": 0,
             "last_rate_limit": None,
+            "retry_after_ms": None,
             "last_used": None,
+            "error_count": 0,
+            "last_error": None,
+            "last_error_type": None,
         }
     )
 
@@ -363,23 +418,27 @@ def get_model_usage_stats() -> dict[str, dict]:
             if stats[model_key]["last_used"] is None:
                 stats[model_key]["last_used"] = time_created
 
+            # Extract token counts
+            tokens = msg.get("tokens", {})
+            input_tokens = int(tokens.get("input", 0) or 0)
+            output_tokens = int(tokens.get("output", 0) or 0)
+
+            stats[model_key]["input_tokens"] = int(stats[model_key]["input_tokens"] or 0) + input_tokens
+            stats[model_key]["output_tokens"] = int(stats[model_key]["output_tokens"] or 0) + output_tokens
+            stats[model_key]["total_tokens"] = int(stats[model_key]["total_tokens"] or 0) + input_tokens + output_tokens
+
             # Count requests
             stats[model_key]["request_count"] = int(stats[model_key]["request_count"] or 0) + 1
 
         except (json.JSONDecodeError, KeyError):
             continue
 
-    # For rate limit errors, we need raw SQL for the LIKE queries
-    # The query builder doesn't support complex WHERE clauses with OR/LIKE
+    # For all errors (not just rate limits)
     with b._conn() as conn:
         error_rows = conn.execute("""
             SELECT data, time_created FROM message
             WHERE json_valid(data) = 1
-            AND (
-                json_extract(data, '$.error.code') LIKE '%rate_limit%'
-                OR json_extract(data, '$.error.message') LIKE '%rate limit%'
-                OR json_extract(data, '$.error.message') LIKE '%quota%'
-            )
+            AND json_extract(data, '$.error') IS NOT NULL
             ORDER BY time_created DESC
         """).fetchall()
 
@@ -392,11 +451,31 @@ def get_model_usage_stats() -> dict[str, dict]:
 
             try:
                 msg = json.loads(data)
-                model_key = "unknown/unknown"
+                provider_id = msg.get("providerID", "unknown")
+                model_id = msg.get("modelID", "unknown")
+                model_key = f"{provider_id}/{model_id}"
 
-                # Update rate limit info
-                if stats[model_key]["last_rate_limit"] is None:
-                    stats[model_key]["last_rate_limit"] = time_created
+                error = msg.get("error", {})
+                error_name = error.get("name", "Unknown")
+                error_message = error.get("data", {}).get("message", "")
+
+                # Update error stats
+                stats[model_key]["error_count"] = int(stats[model_key]["error_count"] or 0) + 1
+                if stats[model_key]["last_error"] is None:
+                    stats[model_key]["last_error"] = time_created
+                    stats[model_key]["last_error_type"] = error_name
+
+                # Special handling for rate limit errors
+                if (
+                    "rate_limit" in error_name.lower()
+                    or "rate limit" in error_message.lower()
+                    or "quota" in error_message.lower()
+                ):
+                    if stats[model_key]["last_rate_limit"] is None:
+                        stats[model_key]["last_rate_limit"] = time_created
+                        retry_after = _extract_retry_after(error)
+                        if retry_after:
+                            stats[model_key]["retry_after_ms"] = retry_after
 
             except (json.JSONDecodeError, KeyError):
                 continue
@@ -634,10 +713,10 @@ def get_session_tokens(session_id: str) -> SessionTokens:
                 model = msg.get("modelID", "unknown")
                 model_key = f"{provider}/{model}"
 
-                # Get token counts from usage
-                usage = msg.get("usage", {})
-                input_tokens = usage.get("inputTokens", 0) or 0
-                output_tokens = usage.get("outputTokens", 0) or 0
+                # Token data is in 'tokens' field, not 'usage'
+                tokens = msg.get("tokens", {})
+                input_tokens = tokens.get("input", 0) or 0
+                output_tokens = tokens.get("output", 0) or 0
 
                 # Accumulate totals
                 total_input += input_tokens
@@ -672,6 +751,9 @@ def get_session_tokens(session_id: str) -> SessionTokens:
             output_tokens=m["output_tokens"],
             total_tokens=m["input_tokens"] + m["output_tokens"],
             last_used=m["last_used"],
+            error_count=0,
+            last_error=None,
+            last_error_type=None,
         )
         for m in models.values()
     )
@@ -720,9 +802,10 @@ def get_all_model_usage() -> list[ModelUsage]:
                 model = msg.get("modelID", "unknown")
                 model_key = f"{provider}/{model}"
 
-                usage = msg.get("usage", {})
-                input_tokens = usage.get("inputTokens", 0) or 0
-                output_tokens = usage.get("outputTokens", 0) or 0
+                # Token data is in 'tokens' field, not 'usage'
+                tokens = msg.get("tokens", {})
+                input_tokens = tokens.get("input", 0) or 0
+                output_tokens = tokens.get("output", 0) or 0
 
                 if model_key not in models:
                     models[model_key] = {
@@ -733,6 +816,10 @@ def get_all_model_usage() -> list[ModelUsage]:
                         "request_count": 0,
                         "last_used": row["time_created"],
                         "last_rate_limit": None,
+                        "retry_after_ms": None,
+                        "error_count": 0,
+                        "last_error": None,
+                        "last_error_type": None,
                     }
 
                 models[model_key]["input_tokens"] += input_tokens
@@ -742,16 +829,12 @@ def get_all_model_usage() -> list[ModelUsage]:
             except (json.JSONDecodeError, KeyError):
                 continue
 
-        # Check for rate limits
+        # Check for all errors (not just rate limits)
         error_rows = conn.execute(
             """
             SELECT data, time_created FROM message
             WHERE json_valid(data) = 1
-            AND (
-                json_extract(data, '$.error.code') LIKE '%rate_limit%'
-                OR json_extract(data, '$.error.message') LIKE '%rate limit%'
-                OR json_extract(data, '$.error.message') LIKE '%quota%'
-            )
+            AND json_extract(data, '$.error') IS NOT NULL
             ORDER BY time_created DESC
             """
         ).fetchall()
@@ -767,8 +850,29 @@ def get_all_model_usage() -> list[ModelUsage]:
                 model = msg.get("modelID", "unknown")
                 model_key = f"{provider}/{model}"
 
-                if model_key in models and models[model_key]["last_rate_limit"] is None:
-                    models[model_key]["last_rate_limit"] = row["time_created"]
+                error = msg.get("error", {})
+                error_name = error.get("name", "Unknown")
+                error_message = error.get("data", {}).get("message", "")
+
+                # Track errors for this model
+                if model_key in models:
+                    models[model_key]["error_count"] += 1
+                    if models[model_key]["last_error"] is None:
+                        models[model_key]["last_error"] = row["time_created"]
+                        models[model_key]["last_error_type"] = error_name
+
+                    # Special handling for rate limit errors
+                    if (
+                        "rate_limit" in error_name.lower()
+                        or "rate limit" in error_message.lower()
+                        or "quota" in error_message.lower()
+                    ):
+                        if models[model_key]["last_rate_limit"] is None:
+                            models[model_key]["last_rate_limit"] = row["time_created"]
+                            # Extract retry_after if available
+                            retry_after = _extract_retry_after(error)
+                            if retry_after:
+                                models[model_key]["retry_after_ms"] = retry_after
 
             except (json.JSONDecodeError, KeyError):
                 continue
@@ -784,8 +888,79 @@ def get_all_model_usage() -> list[ModelUsage]:
             total_tokens=m["input_tokens"] + m["output_tokens"],
             last_used=m["last_used"],
             last_rate_limit=m["last_rate_limit"],
+            retry_after_ms=m.get("retry_after_ms"),
+            error_count=m["error_count"],
+            last_error=m["last_error"],
+            last_error_type=m["last_error_type"],
         )
         for m in models.values()
     ]
 
     return sorted(result, key=lambda x: x.total_tokens, reverse=True)
+
+
+def get_model_error_history(
+    provider: str,
+    model: str,
+    limit: int = 10,
+) -> list[ModelError]:
+    """Get error history for a specific model.
+
+    Args:
+        provider: Model provider (e.g., "openai", "anthropic")
+        model: Model name (e.g., "gpt-4", "claude-3-opus")
+        limit: Maximum number of errors to return
+
+    Returns:
+        List of ModelError objects sorted by timestamp (newest first)
+    """
+    b = _builder()
+    if b is None:
+        return []
+
+    errors = []
+
+    with b._conn() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                m.session_id,
+                m.data,
+                m.time_created
+            FROM message m
+            WHERE json_valid(m.data) = 1
+            AND json_extract(m.data, '$.role') = 'assistant'
+            AND json_extract(m.data, '$.providerID') = ?
+            AND json_extract(m.data, '$.modelID') = ?
+            AND json_extract(m.data, '$.error') IS NOT NULL
+            ORDER BY m.time_created DESC
+            LIMIT ?
+            """,
+            (provider, model, limit),
+        ).fetchall()
+
+        for row in rows:
+            data = row["data"]
+            if not data:
+                continue
+
+            try:
+                msg = json.loads(data)
+                error = msg.get("error", {})
+
+                errors.append(
+                    ModelError(
+                        session_id=row["session_id"],
+                        provider=provider,
+                        model=model,
+                        error_name=error.get("name", "Unknown"),
+                        error_message=error.get("data", {}).get("message", ""),
+                        timestamp=row["time_created"],
+                        time_created=row["time_created"],
+                    )
+                )
+
+            except (json.JSONDecodeError, KeyError):
+                continue
+
+    return errors
