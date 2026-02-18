@@ -1,28 +1,55 @@
-"""Data models for the Tachikoma dashboard."""
+"""Data models for the Tachikoma dashboard.
+
+Design principles:
+- Immutable dataclasses (frozen=True) for FP patterns
+- Pure functions for transformations
+- Type-safe with full mypy compliance
+"""
+
+from __future__ import annotations
 
 import time
 from dataclasses import dataclass
 from enum import Enum
+from functools import lru_cache
 from typing import Optional
 
 
 class SessionStatus(Enum):
-    """Session activity status."""
+    """Session activity status based on time since last update."""
+    
+    WORKING = "working"  # Active < 30s
+    ACTIVE = "active"    # Active < 5min
+    IDLE = "idle"        # No recent activity
 
-    WORKING = "working"  # Currently active (< 30s since last update)
-    ACTIVE = "active"  # Has activity (< 5min)
-    IDLE = "idle"  # No recent activity
 
+# Pure utility functions
 
 def _ms_to_seconds(ms: int) -> int:
-    """Convert milliseconds to seconds."""
+    """Convert milliseconds to seconds (pure function)."""
     return ms // 1000
 
 
-@dataclass
-class Session:
-    """Represents an OpenCode session."""
+@lru_cache(maxsize=128)
+def _get_status_cached(updated_seconds: int, now: int) -> SessionStatus:
+    """Determine session status (cached for performance).
+    
+    This is a pure function that can be cached.
+    """
+    elapsed = now - updated_seconds
+    if elapsed < 30:
+        return SessionStatus.WORKING
+    if elapsed < 300:
+        return SessionStatus.ACTIVE
+    return SessionStatus.IDLE
 
+
+# Immutable data models
+
+@dataclass(frozen=True)
+class Session:
+    """Immutable representation of an OpenCode session."""
+    
     id: str
     parent_id: Optional[str]
     project_id: str
@@ -30,38 +57,37 @@ class Session:
     directory: str
     time_created: int
     time_updated: int
-
+    
     @property
     def created_seconds(self) -> int:
         """Get creation time in seconds."""
         return _ms_to_seconds(self.time_created)
-
+    
     @property
     def updated_seconds(self) -> int:
         """Get last update time in seconds."""
         return _ms_to_seconds(self.time_updated)
-
+    
     @property
     def duration(self) -> int:
         """Get session duration in seconds."""
         return int(time.time()) - self.created_seconds
-
+    
     @property
     def status(self) -> SessionStatus:
         """Determine session status based on activity."""
-        now = int(time.time())
-        updated_secs = self.updated_seconds
-        if now - updated_secs < 30:
-            return SessionStatus.WORKING
-        elif now - updated_secs < 300:
-            return SessionStatus.ACTIVE
-        return SessionStatus.IDLE
+        return _get_status_cached(self.updated_seconds, int(time.time()))
+    
+    @property
+    def is_subagent(self) -> bool:
+        """Check if this is a subagent session."""
+        return self.parent_id is not None
 
 
-@dataclass
+@dataclass(frozen=True)
 class Todo:
-    """Represents a task/todo item."""
-
+    """Immutable todo item."""
+    
     session_id: str
     content: str
     status: str
@@ -70,57 +96,61 @@ class Todo:
     time_created: int
 
 
-@dataclass
+@dataclass(frozen=True)
 class SessionStats:
-    """Statistics for a session."""
-
+    """Immutable session statistics."""
+    
     message_count: int
     tool_call_count: int
-    last_user_message: str | None
+    last_user_message: Optional[str]
 
 
-@dataclass
+@dataclass(frozen=True)
 class Skill:
-    """Represents a loaded skill with usage metrics."""
-
+    """Immutable skill with usage metrics."""
+    
     name: str
     session_id: str
     time_loaded: int
     invocation_count: int = 1
-    last_used: int | None = None
+    last_used: Optional[int] = None
 
+
+# SessionTree - mutable for Textual integration
+# (Textual widgets need mutable state for reactivity)
 
 class SessionTree:
-    """Tree structure for session hierarchy."""
-
+    """Tree structure for session hierarchy.
+    
+    This is intentionally mutable for Textual's reactivity system.
+    The tree structure allows for expand/collapse functionality.
+    """
+    
     def __init__(self, session: Session):
         self.session = session
         self.children: list[SessionTree] = []
-        self._status: Optional[SessionStatus] = None
-        self._is_expanded: bool = True  # Default to expanded
-
+        self._is_expanded: bool = True
+    
     @property
     def status(self) -> SessionStatus:
-        """Get session status (cached)."""
-        if self._status is None:
-            self._status = self.session.status
-        return self._status
-
+        """Get session status (delegates to immutable Session)."""
+        return self.session.status
+    
     @property
     def is_subagent(self) -> bool:
-        """Check if this session is a subagent (has parent_id)."""
-        return self.session.parent_id is not None
-
-    def add_child(self, child: "SessionTree") -> None:
+        """Check if this session is a subagent."""
+        return self.session.is_subagent
+    
+    def add_child(self, child: SessionTree) -> None:
         """Add a child session tree."""
         self.children.append(child)
-
+    
     def toggle_expanded(self) -> None:
         """Toggle expanded state."""
         self._is_expanded = not self._is_expanded
-
-    def find_by_id(self, session_id: str) -> Optional["SessionTree"]:
-        """Find a session tree by ID."""
+    
+    def find_by_id(self, session_id: str) -> Optional[SessionTree]:
+        """Find a session tree by ID (recursive search)."""
         if self.session.id == session_id:
             return self
         for child in self.children:
@@ -130,21 +160,36 @@ class SessionTree:
         return None
 
 
+# Pure tree building function
+
 def build_session_tree(sessions: list[Session]) -> list[SessionTree]:
-    """Build a tree structure from flat session list."""
-    # Create a map of id -> SessionTree
-    trees: dict[str, SessionTree] = {}
+    """Build tree structure from flat session list.
+    
+    This is a pure function that transforms a flat list into a tree.
+    Uses a two-pass algorithm for O(n) complexity.
+    
+    Args:
+        sessions: List of Session objects (immutable)
+        
+    Returns:
+        List of root SessionTree nodes with children attached
+    """
+    if not sessions:
+        return []
+    
+    # Pass 1: Create all tree nodes
+    node_map: dict[str, SessionTree] = {
+        s.id: SessionTree(s) for s in sessions
+    }
+    
+    # Pass 2: Build parent-child relationships
     roots: list[SessionTree] = []
-
+    
     for session in sessions:
-        trees[session.id] = SessionTree(session)
-
-    # Build parent-child relationships
-    for session in sessions:
-        tree = trees[session.id]
-        if session.parent_id and session.parent_id in trees:
-            trees[session.parent_id].add_child(tree)
+        tree = node_map[session.id]
+        if session.parent_id and session.parent_id in node_map:
+            node_map[session.parent_id].add_child(tree)
         else:
             roots.append(tree)
-
+    
     return roots

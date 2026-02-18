@@ -1,212 +1,250 @@
-"""Widgets for Tachikoma dashboard with session tree visualization."""
+"""Widgets for Tachikoma dashboard with GITS theme.
 
-from typing import Any, Optional
+Design principles:
+- Pure rendering functions (no side effects)
+- Centralized theme via theme.py
+- Rich Text for styling
+- Red accents for visual "pop"
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Sequence
 
 from rich.style import Style
 from rich.text import Text
 
 from .models import Session, SessionStats, SessionStatus, SessionTree, Todo
-from .tree_renderer import render_tree_iterative, debug_tree
+from .theme import PANEL_BORDERS, PRIORITY_COLORS, STATUS_COLORS, THEME
 
-# GITS Theme colors
-GITS_BG = "#0a0e14"
-GITS_GREEN = "#00ff9f"
-GITS_CYAN = "#26c6da"
-GITS_RED = "#ff0066"
-GITS_ORANGE = "#ffa726"
-GITS_TEXT = "#b3e5fc"
-GITS_MUTED = "#4a5f6d"
+if TYPE_CHECKING:
+    pass
 
+
+# Pure utility functions
 
 def get_status_icon(status: SessionStatus) -> tuple[str, str]:
-    """Get status icon and color."""
-    icons = {
-        SessionStatus.WORKING: ("●", GITS_GREEN),
-        SessionStatus.ACTIVE: ("◐", GITS_ORANGE),
-        SessionStatus.IDLE: ("○", GITS_MUTED),
-    }
-    return icons.get(status, ("?", GITS_MUTED))
+    """Get status icon and color (pure function).
+    
+    Returns:
+        Tuple of (icon_character, hex_color)
+    """
+    return STATUS_COLORS.get(status.value, ("?", THEME.muted))
 
 
 def truncate_message(msg: str | None, max_length: int = 40) -> str:
-    """Truncate message to max length with ellipsis."""
+    """Truncate message with ellipsis (pure function)."""
     if not msg:
         return "--"
     if len(msg) <= max_length:
         return msg
-    return msg[:max_length] + "..."
+    return msg[: max_length - 3] + "..."
 
 
 def format_duration(seconds: int) -> str:
+    """Format seconds as human-readable duration (pure function)."""
+    if seconds < 0:
+        return "0s"
     if seconds < 60:
         return f"{seconds}s"
     minutes, secs = divmod(seconds, 60)
     if minutes < 60:
-        return f"{minutes}m{secs:02d}"
+        return f"{minutes}m{secs:02d}s"
     hours, mins = divmod(minutes, 60)
-    return f"{hours}h{mins:02d}"
+    return f"{hours}h{mins:02d}m"
 
 
-def render_session_tree(trees: list[SessionTree], debug: bool = False) -> str:
-    """
-    Render session hierarchy as a vertical tree with branching.
+# Rendering functions (pure - return Text, no side effects)
+
+
+def render_session_tree(trees: Sequence[SessionTree], debug: bool = False) -> str:
+    """Render session hierarchy as a vertical tree.
     
-    Uses modern iterative renderer with guard clauses for better debugging.
+    NOTE: This function is kept for API compatibility but delegates
+    to the iterative renderer in tree_renderer.py
     
     Args:
         trees: List of root SessionTree nodes
-        debug: Print debug information about tree structure
+        debug: Print debug information
     
     Returns:
         Rendered tree as string
     """
+    from .tree_renderer import render_tree_iterative
+    
     if not trees:
         return "No sessions found"
-
-    if debug:
-        debug_tree(trees)
-        print("\n" + "=" * 60 + "\n")
-
-    # Use iterative renderer (no stack overflow on deep trees)
-    lines = render_tree_iterative(trees, debug=debug)
-
-    return "\n".join(lines)
+    
+    return "\n".join(render_tree_iterative(list(trees), debug=debug))
 
 
 def render_details(session: Session | None, stats: SessionStats | None = None) -> Text:
-    """Render session details."""
+    """Render session details panel (pure function).
+    
+    Uses cyan labels with green/red accents for metrics.
+    """
     if not session:
-        return Text("No session selected", style=Style(color=GITS_MUTED))
-
+        return Text("No session selected", style=Style(color=THEME.muted))
+    
     icon_char, icon_color = get_status_icon(session.status)
     duration = format_duration(session.duration)
-
-    # Get stats or use defaults
+    
+    # Stats with defaults
     msg_count = stats.message_count if stats else 0
     tool_count = stats.tool_call_count if stats else 0
     last_msg = (
-        truncate_message(stats.last_user_message) if stats and stats.last_user_message else "--"
+        truncate_message(stats.last_user_message)
+        if stats and stats.last_user_message
+        else "--"
     )
-
-    # Check if subagent
-    is_subagent = " (subagent)" if session.parent_id else ""
-
+    
+    # Subagent indicator with RED accent
+    subagent_badge = (
+        Text(" [SUBAGENT]", style=Style(color=THEME.red, bold=True))
+        if session.is_subagent
+        else Text()
+    )
+    
     lines = [
-        Text()
-        + Text("Selected: ", style=Style(bold=True, color=GITS_CYAN))
-        + Text(session.title + is_subagent, style=Style(color=GITS_TEXT)),
-        Text()
-        + Text("Status: ", style=Style(bold=True, color=GITS_CYAN))
-        + Text(f"{icon_char} ", style=Style(color=icon_color))
-        + Text(session.status.value, style=Style(color=GITS_TEXT)),
-        Text()
-        + Text("Duration: ", style=Style(bold=True, color=GITS_CYAN))
-        + Text(duration, style=Style(color=GITS_TEXT)),
-        Text()
-        + Text("CWD: ", style=Style(bold=True, color=GITS_CYAN))
-        + Text(session.directory, style=Style(color=GITS_TEXT)),
-        Text()
-        + Text("Tool Calls: ", style=Style(bold=True, color=GITS_CYAN))
-        + Text(str(tool_count), style=Style(color=GITS_GREEN)),
-        Text()
-        + Text("Messages: ", style=Style(bold=True, color=GITS_CYAN))
-        + Text(str(msg_count), style=Style(color=GITS_GREEN)),
-        Text()
-        + Text("Last User: ", style=Style(bold=True, color=GITS_CYAN))
-        + Text(last_msg, style=Style(color=GITS_TEXT)),
+        _make_label_value("Selected", session.title, THEME.cyan, THEME.text) + subagent_badge,
+        _make_label_value("Status", f"{icon_char} {session.status.value}", THEME.cyan, icon_color),
+        _make_label_value("Duration", duration, THEME.cyan, THEME.text),
+        _make_label_value("CWD", session.directory, THEME.cyan, THEME.text),
+        _make_label_value("Tool Calls", str(tool_count), THEME.cyan, THEME.green),
+        _make_label_value("Messages", str(msg_count), THEME.cyan, THEME.green),
+        _make_label_value("Last User", last_msg, THEME.cyan, THEME.text),
     ]
-    return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
+    
+    return Text("\n").join(lines)
 
 
-def render_skills(skills: list[Any] | None = None) -> Text:
-    """Render loaded skills panel."""
-    if not skills or len(skills) == 0:
-        lines = [
-            Text("Loaded Skills", style=Style(bold=True, color=GITS_CYAN)),
-            Text("-" * 20, style=Style(color=GITS_MUTED)),
-            Text("(No skills loaded)", style=Style(color=GITS_MUTED)),
-        ]
-        return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
-
-    lines = [
-        Text("Loaded Skills", style=Style(bold=True, color=GITS_CYAN)),
-        Text("-" * 20, style=Style(color=GITS_MUTED)),
-    ]
-
+def render_skills(skills: Sequence[Any] | None = None) -> Text:
+    """Render loaded skills panel (pure function).
+    
+    Uses orange border with green/red accents for metrics.
+    """
+    header = Text("LOADED SKILLS", style=Style(bold=True, color=THEME.orange))
+    separator = Text("─" * 25, style=Style(color=THEME.muted))
+    
+    if not skills:
+        return Text("\n").join([
+            header,
+            separator,
+            Text("(No skills loaded)", style=Style(color=THEME.muted)),
+        ])
+    
+    lines = [header, separator]
+    
     for skill in skills:
-        invocations = skill.invocation_count if hasattr(skill, 'invocation_count') else 1
-        last_used = (
-            format_duration(int(skill.last_used / 1000))
-            if hasattr(skill, 'last_used') and skill.last_used
-            else "N/A"
-        )
-
+        name = getattr(skill, "name", "unknown")
+        invocations = getattr(skill, "invocation_count", 1)
+        last_used_ms = getattr(skill, "last_used", None)
+        
+        # Skill name with accent (RED bullet)
         lines.append(Text())
-        lines.append(Text(f"  • {skill.name}", style=Style(color=GITS_TEXT)))
-        lines.append(Text(f"    Invocations: {invocations}", style=Style(color=GITS_MUTED)))
-        if hasattr(skill, 'last_used') and skill.last_used:
-            lines.append(Text(f"    Last Used: {last_used}", style=Style(color=GITS_MUTED)))
+        skill_line = Text("  ◆ ", style=Style(color=THEME.red))
+        skill_line += Text(name, style=Style(color=THEME.text, bold=True))
+        lines.append(skill_line)
+        
+        # Metrics with muted color
+        lines.append(
+            Text(f"    Invocations: {invocations}", style=Style(color=THEME.muted))
+        )
+        
+        if last_used_ms:
+            last_used = format_duration(int(last_used_ms / 1000))
+            lines.append(
+                Text(f"    Last Used: {last_used} ago", style=Style(color=THEME.muted))
+            )
+    
+    return Text("\n").join(lines)
 
-    return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
 
-
-def render_todos(todos: list[Todo]) -> Text:
-    """Render todo panel."""
+def render_todos(todos: Sequence[Todo]) -> Text:
+    """Render todos panel (pure function).
+    
+    Uses RED border and accents for high-priority items.
+    """
+    header = Text("TODOS", style=Style(bold=True, color=THEME.red))  # RED header
+    separator = Text("─" * 30, style=Style(color=THEME.muted))
+    
     if not todos:
-        lines = [
-            Text("TODOs", style=Style(bold=True, color=GITS_CYAN)),
-            Text("-" * 20, style=Style(color=GITS_MUTED)),
-            Text("(No todos)", style=Style(color=GITS_MUTED)),
-        ]
-        return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
-
-    lines = [Text("TODOs", style=Style(bold=True, color=GITS_CYAN))]
-    lines.append(Text("-" * 30, style=Style(color=GITS_MUTED)))
-
+        return Text("\n").join([
+            header,
+            separator,
+            Text("(No pending tasks)", style=Style(color=THEME.muted)),
+        ])
+    
+    lines = [header, separator]
+    
     for todo in todos:
-        # Status icon based on priority
-        priority_color = {
-            "high": GITS_RED,
-            "medium": GITS_ORANGE,
-            "low": GITS_MUTED,
-        }.get(todo.priority, GITS_MUTED)
-
+        # Priority determines color (RED for high!)
+        priority_color = PRIORITY_COLORS.get(todo.priority, THEME.muted)
+        
+        # Status icon
         status_icon = {
             "pending": "○",
             "in_progress": "◐",
             "completed": "●",
         }.get(todo.status, "○")
-
-        # Truncate content if too long
-        content = todo.content[:40] + "..." if len(todo.content) > 40 else todo.content
-
+        
+        # Truncate content
+        content = (
+            todo.content[:40] + "..." if len(todo.content) > 40 else todo.content
+        )
+        
+        # Build line with priority indicator
         line = Text()
         line.append(f"{status_icon} ", style=Style(color=priority_color))
-        line.append(f"[{todo.priority}] ", style=Style(color=priority_color))
-        line.append(content, style=Style(color=GITS_TEXT))
-
+        line.append(f"[{todo.priority.upper()[0]}] ", style=Style(color=priority_color, bold=True))
+        line.append(content, style=Style(color=THEME.text))
+        
         lines.append(line)
+    
+    return Text("\n").join(lines)
 
-    return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
 
-
-def render_aggregation(sessions: list[Session]) -> Text:
-    """Render aggregation stats for sessions."""
+def render_aggregation(sessions: Sequence[Session]) -> Text:
+    """Render aggregation stats bar (pure function).
+    
+    Shows counts with color-coded status indicators.
+    """
     if not sessions:
-        return Text("No sessions", style=Style(color=GITS_MUTED))
-
+        return Text("No sessions", style=Style(color=THEME.muted))
+    
     total = len(sessions)
-    subagent_count = sum(1 for s in sessions if s.parent_id is not None)
+    subagent_count = sum(1 for s in sessions if s.is_subagent)
     working = sum(1 for s in sessions if s.status == SessionStatus.WORKING)
     active = sum(1 for s in sessions if s.status == SessionStatus.ACTIVE)
-
+    
     text = Text()
-    text.append("Sessions: ", style=Style(color=GITS_TEXT))
-    text.append(f"{total}", style=Style(bold=True, color=GITS_GREEN))
-    text.append(f" ({subagent_count} subagents) | ", style=Style(color=GITS_MUTED))
-    text.append(f"{working}", style=Style(bold=True, color=GITS_GREEN))
-    text.append(" running | ", style=Style(color=GITS_TEXT))
-    text.append(f"{active}", style=Style(bold=True, color=GITS_ORANGE))
-    text.append(" active", style=Style(color=GITS_TEXT))
-
+    
+    # Total with GREEN accent
+    text.append("Sessions: ", style=Style(color=THEME.text))
+    text.append(f"{total}", style=Style(bold=True, color=THEME.green))
+    
+    # Subagents with muted
+    text.append(f" ({subagent_count} subagents) │ ", style=Style(color=THEME.muted))
+    
+    # Working count with GREEN
+    text.append(f"{working}", style=Style(bold=True, color=THEME.green))
+    text.append(" running │ ", style=Style(color=THEME.text))
+    
+    # Active count with ORANGE
+    text.append(f"{active}", style=Style(bold=True, color=THEME.orange))
+    text.append(" active", style=Style(color=THEME.text))
+    
     return text
+
+
+# Helper functions (private)
+
+
+def _make_label_value(
+    label: str, value: str, label_color: str, value_color: str
+) -> Text:
+    """Create a label: value text pair (pure helper)."""
+    return (
+        Text(label + ": ", style=Style(bold=True, color=label_color)) +
+        Text(value, style=Style(color=value_color))
+    )

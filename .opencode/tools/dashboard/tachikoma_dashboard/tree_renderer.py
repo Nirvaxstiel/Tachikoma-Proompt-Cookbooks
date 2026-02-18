@@ -1,75 +1,58 @@
 """Modern tree rendering for Tachikoma dashboard sessions.
 
-Features:
+Design principles:
 - Strategy pattern for different node types
 - Guard clauses for validation
 - Iterative rendering (no stack overflow)
-- Debug helpers for tracing
-- Type hints for IDE support
+- Pure functions for rendering
+- Centralized GITS theme with RED accents
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Generator, Optional
 from enum import Enum
+from typing import Optional
 
-from .models import Session, SessionTree, SessionStatus
-
-
-# GITS Theme colors
-GITS_GREEN = "#00ff9f"
-GITS_CYAN = "#26c6da"
-GITS_TEXT = "#b3e5fc"
-GITS_MUTED = "#4a5f6d"
-GITS_ORANGE = "#ffa726"
-
-
-def get_status_icon(status: SessionStatus) -> tuple[str, str]:
-    """Get status icon and color."""
-    icons = {
-        SessionStatus.WORKING: ("●", GITS_GREEN),
-        SessionStatus.ACTIVE: ("◐", GITS_ORANGE),
-        SessionStatus.IDLE: ("○", GITS_MUTED),
-    }
-    return icons.get(status, ("?", GITS_MUTED))
+from .models import Session, SessionStatus, SessionTree
+from .theme import STATUS_COLORS, THEME
 
 
 class NodeType(Enum):
     """Type of tree node for rendering strategy."""
-    ROOT = "root"
-    SUBAGENT = "subagent"
-    LEAF = "leaf"
+    
+    ROOT = "root"      # Top-level session
+    SUBAGENT = "subagent"  # Child session (subagent)
+    LEAF = "leaf"      # No children
 
 
-@dataclass
+@dataclass(frozen=True)
 class TreeRenderContext:
-    """Context for tree rendering."""
+    """Immutable context for tree rendering."""
+    
     max_title_length: int = 40
-    ellipsis: str = "..."
     indent_size: int = 2
 
 
-@dataclass
+@dataclass(frozen=True)
 class RenderedLine:
-    """A single rendered line with metadata."""
-    text: str
-    prefix: str
-    node_prefix: str
-    title: str
-    is_expanded: bool
-    depth: int
-
-
-def validate_tree_node(tree: SessionTree) -> None:
-    """Guard clause: Validate tree node before rendering."""
-    if not tree:
-        raise ValueError("Tree node cannot be None")
+    """Immutable rendered line with metadata."""
     
-    if not tree.session:
-        raise ValueError("Tree session cannot be None")
+    text: str
+    depth: int
+    is_last: bool
+
+
+# Pure utility functions
+
+
+def get_status_icon(status: SessionStatus) -> tuple[str, str]:
+    """Get status icon and color (pure function)."""
+    return STATUS_COLORS.get(status.value, ("?", THEME.muted))
 
 
 def get_node_type(tree: SessionTree) -> NodeType:
-    """Determine node type based on tree structure."""
+    """Determine node type based on tree structure (pure function)."""
     if not tree.children:
         return NodeType.LEAF
     if tree.is_subagent:
@@ -77,33 +60,34 @@ def get_node_type(tree: SessionTree) -> NodeType:
     return NodeType.ROOT
 
 
-def get_branch_chars(is_last: bool, node_type: NodeType) -> tuple[str, str]:
-    """Get branch connector and node prefix based on position."""
+def truncate_title(title: str, max_length: int) -> str:
+    """Truncate title with ellipsis (pure function)."""
+    if len(title) <= max_length:
+        return title
+    return title[: max_length - 3] + "..."
+
+
+def get_branch_chars(is_last: bool) -> tuple[str, str]:
+    """Get branch connector and continuation prefix (pure function)."""
     if is_last:
-        connector = "└─ "
-        node_prefix = "   " if node_type == NodeType.SUBAGENT else "├─ "
-    else:
-        connector = "├─ "
-        node_prefix = "│  " if node_type == NodeType.SUBAGENT else "│  "
-    
-    return connector, node_prefix
+        return "└─ ", "   "
+    return "├─ ", "│  "
 
 
 def get_node_styling(node_type: NodeType) -> tuple[str, str]:
-    """Get icon and color for node type."""
+    """Get icon and color for node type (pure function).
+    
+    Uses RED accent for subagents to make them pop.
+    """
     if node_type == NodeType.ROOT:
-        return "📂 ", GITS_GREEN  # Folder icon for regular session
+        return "◈ ", THEME.green
     elif node_type == NodeType.SUBAGENT:
-        return "📦 ", GITS_CYAN   # Package icon for subagent
+        return "◇ ", THEME.red  # RED for subagents!
     else:
-        return "   ", GITS_TEXT     # No icon for leaf nodes
+        return "· ", THEME.text
 
 
-def truncate_title(title: str, max_length: int) -> str:
-    """Truncate title with ellipsis if too long."""
-    if len(title) <= max_length:
-        return title
-    return title[:max_length - len("...")] + "..."
+# Rendering functions (pure)
 
 
 def render_tree_node_line(
@@ -113,33 +97,42 @@ def render_tree_node_line(
     is_last: bool,
     context: Optional[TreeRenderContext] = None,
 ) -> RenderedLine:
-    """Render a single tree node line (non-recursive)."""
-    # Guard: Validate inputs
-    if not session:
+    """Render a single tree node line (pure function).
+    
+    Args:
+        session: Session to render
+        node_type: Type of node (ROOT/SUBAGENT/LEAF)
+        prefix: Current indentation prefix
+        is_last: Whether this is the last child
+        context: Render context settings
+        
+    Returns:
+        Immutable RenderedLine with text and metadata
+    """
+    if session is None:
         raise ValueError("Session cannot be None")
     
     ctx = context or TreeRenderContext()
     
-    # Get styling based on node type
+    # Get styling
     node_icon, name_color = get_node_styling(node_type)
-    connector, node_prefix = get_branch_chars(is_last, node_type)
-    
-    # Get status icon
+    connector, _ = get_branch_chars(is_last)
     status_icon, status_color = get_status_icon(session.status)
     
-    # Truncate title if needed
+    # Truncate title
     title = truncate_title(session.title, ctx.max_title_length)
     
-    # Build the line
-    line_text = f"{prefix}{connector}{node_prefix}{status_icon} [{name_color}]{title}[/{name_color}]"
+    # Build line with Rich markup
+    line_text = (
+        f"{prefix}{connector}"
+        f"{status_icon} "
+        f"[{name_color}]{node_icon}{title}[/{name_color}]"
+    )
     
     return RenderedLine(
         text=line_text,
-        prefix=prefix,
-        node_prefix=node_prefix,
-        title=title,
-        is_expanded=False,  # Will be set by caller
-        depth=prefix.count("│") + 1,  # Calculate depth from prefix
+        depth=prefix.count("│") + prefix.count("   ") + 1,
+        is_last=is_last,
     )
 
 
@@ -148,8 +141,7 @@ def render_tree_iterative(
     context: Optional[TreeRenderContext] = None,
     debug: bool = False,
 ) -> list[str]:
-    """
-    Render entire tree iteratively (non-recursive).
+    """Render entire tree iteratively (non-recursive).
     
     Benefits over recursive:
     - No stack overflow on deep trees
@@ -160,33 +152,32 @@ def render_tree_iterative(
         trees: List of root SessionTree nodes
         context: Render context (max title length, etc.)
         debug: Print debug information
-    
+        
     Returns:
-        List of rendered lines
+        List of rendered lines (strings with Rich markup)
     """
+    if not trees:
+        return ["[dim]No sessions found[/dim]"]
+    
+    ctx = context or TreeRenderContext()
+    lines: list[str] = []
+    
+    # Stack items: (tree, prefix, is_last, depth)
+    stack: list[tuple[SessionTree, str, bool, int]] = []
+    
+    # Initialize stack with root nodes (reverse order for correct processing)
+    for i, tree in enumerate(reversed(trees)):
+        is_last = i == 0
+        stack.append((tree, "", is_last, 1))
+    
     if debug:
         print(f"[DEBUG] Rendering {len(trees)} root trees")
     
-    ctx = context or TreeRenderContext()
-    lines = []
-    
-    # Use explicit stack for iterative traversal
-    # Each item: (tree, prefix, is_last, depth)
-    stack = []
-    
-    # Initialize stack with root nodes
-    for i, tree in enumerate(trees):
-        is_last = (i == len(trees) - 1)
-        stack.append((tree, "", is_last, 1))
-        if debug:
-            print(f"[DEBUG] Added root: {tree.session.title[:30]} (depth 1, last={is_last})")
-    
     # Iterative rendering
     while stack:
-        tree, prefix, is_last, depth = stack.pop(0)
+        tree, prefix, is_last, depth = stack.pop()
         
-        # Guard: Validate tree
-        if not tree:
+        if tree is None:
             continue
         
         # Get node type
@@ -205,24 +196,14 @@ def render_tree_iterative(
         if debug:
             print(f"[DEBUG] Rendered: {tree.session.title[:30]} at depth {depth}")
         
-        # Add children to stack if expanded
+        # Add children to stack if expanded (reverse order)
         if tree._is_expanded and tree.children:
-            child_count = len(tree.children)
-            new_depth = depth + 1
+            _, continuation = get_branch_chars(is_last)
+            new_prefix = prefix + continuation
             
-            for i, child in enumerate(tree.children):
-                child_is_last = (i == child_count - 1)
-                
-                # Build new prefix
-                if is_last:
-                    new_prefix = prefix + "   "  # No vertical line after last child
-                else:
-                    new_prefix = prefix + "│  "  # Vertical line continues
-                
-                stack.append((child, new_prefix, child_is_last, new_depth))
-                
-                if debug:
-                    print(f"[DEBUG]   Added child: {child.session.title[:30]} (depth {new_depth}, last={child_is_last})")
+            for i, child in enumerate(reversed(tree.children)):
+                child_is_last = i == 0
+                stack.append((child, new_prefix, child_is_last, depth + 1))
     
     if debug:
         print(f"[DEBUG] Total lines rendered: {len(lines)}")
@@ -231,31 +212,38 @@ def render_tree_iterative(
 
 
 def get_tree_stats(trees: list[SessionTree]) -> dict[str, int]:
-    """Get statistics about the tree structure for debugging."""
+    """Get statistics about the tree structure (pure function).
+    
+    Uses iterative traversal to avoid stack overflow.
+    """
     if not trees:
         return {"total_nodes": 0, "max_depth": 0, "total_subagents": 0}
     
-    total_nodes = len(trees)
-    total_subagents = sum(1 for t in trees if t.is_subagent)
-    
-    # Calculate max depth
+    total_roots = len(trees)
+    total_subagents = 0
     max_depth = 0
+    total_nodes = 0
     
-    def calculate_depth(tree: SessionTree, current_depth: int) -> None:
-        nonlocal max_depth
-        max_depth = max(max_depth, current_depth)
+    # Stack: (tree, depth)
+    stack: list[tuple[SessionTree, int]] = [(t, 1) for t in trees]
+    
+    while stack:
+        tree, depth = stack.pop()
+        
+        total_nodes += 1
+        max_depth = max(max_depth, depth)
+        
+        if tree.is_subagent:
+            total_subagents += 1
         
         for child in tree.children:
-            calculate_depth(child, current_depth + 1)
-    
-    for tree in trees:
-        calculate_depth(tree, 1)
+            stack.append((child, depth + 1))
     
     return {
         "total_nodes": total_nodes,
         "max_depth": max_depth,
         "total_subagents": total_subagents,
-        "total_roots": total_nodes - total_subagents,
+        "total_roots": total_roots,
     }
 
 
@@ -276,7 +264,7 @@ def debug_tree(trees: list[SessionTree]) -> None:
         is_subagent = tree.is_subagent
         child_count = len(tree.children)
         
-        print(f"{i+1}. {tree.session.title[:40]}")
+        print(f"{i + 1}. {tree.session.title[:40]}")
         print(f"   Type: {'SUBAGENT' if is_subagent else 'ROOT'}")
         print(f"   Status: {tree.status.value}")
         print(f"   Children: {child_count}")

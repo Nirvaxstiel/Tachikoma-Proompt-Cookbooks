@@ -1,9 +1,24 @@
-"""Tachikoma Dashboard - Real-time agent monitoring."""
+"""Tachikoma Dashboard - Real-time agent monitoring.
 
-__version__ = "0.1.0"
+A Textual-based TUI for monitoring OpenCode agent sessions.
 
-# Lazy imports to avoid requiring rich for basic operations
+Features:
+- Session tree visualization
+- Real-time updates
+- GITS-themed visuals with red accents
+- Background data loading
+"""
+
+__version__ = "0.2.0"
+
+
 def get_app():
     """Lazy import DashboardApp."""
     from .app import DashboardApp
     return DashboardApp
+
+
+# Expose theme for external use
+from .theme import THEME, GITSTheme
+
+__all__ = ["get_app", "THEME", "GITSTheme", "__version__"]
