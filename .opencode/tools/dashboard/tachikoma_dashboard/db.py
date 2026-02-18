@@ -3,7 +3,7 @@ Database queries for OpenCode sessions.
 
 Design principles:
 - Pure functions for data extraction
-- Caching for performance (functools.lru_cache)
+- Caching for performance (time-based TTL cache)
 - Type-safe with immutable models
 """
 
@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import json
 import os
+import time
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
+from typing import Any, Generic, Optional, TypeVar
 
 from .models import ModelUsage, Session, SessionStats, SessionTokens, Skill, Todo
 from .query import MESSAGE, SESSION, TODO, QueryBuilder, json_extract
@@ -24,17 +26,142 @@ DB_PATH = ".local/share/opencode/opencode.db"
 CACHE_TTL = 5
 
 
+# =============================================================================
+# Simple TTL Cache
+# =============================================================================
+
+T = TypeVar("T")
+
+
+@dataclass
+class CacheEntry(Generic[T]):
+    """Cache entry with timestamp."""
+    value: T
+    timestamp: float
+
+
+class TTLCache(Generic[T]):
+    """Simple time-to-live cache.
+
+    Features:
+    - Time-based expiration
+    - Max size limit
+    - Thread-safe for reads
+    """
+
+    def __init__(self, ttl: float = CACHE_TTL, max_size: int = 100) -> None:
+        """Initialize the cache.
+
+        Args:
+            ttl: Time-to-live in seconds
+            max_size: Maximum number of entries
+        """
+        self._cache: dict[str, CacheEntry[T]] = {}
+        self._ttl = ttl
+        self._max_size = max_size
+
+    def get(self, key: str) -> Optional[T]:
+        """Get a value from cache if not expired.
+
+        Args:
+            key: Cache key
+
+        Returns:
+            Cached value or None if expired/not found
+        """
+        entry = self._cache.get(key)
+        if entry is None:
+            return None
+
+        if time.time() - entry.timestamp > self._ttl:
+            del self._cache[key]
+            return None
+
+        return entry.value
+
+    def set(self, key: str, value: T) -> None:
+        """Set a value in cache.
+
+        Args:
+            key: Cache key
+            value: Value to cache
+        """
+        # Evict oldest if at max size
+        if len(self._cache) >= self._max_size:
+            oldest_key = min(
+                self._cache.keys(),
+                key=lambda k: self._cache[k].timestamp,
+            )
+            del self._cache[oldest_key]
+
+        self._cache[key] = CacheEntry(value=value, timestamp=time.time())
+
+    def clear(self) -> None:
+        """Clear all cached entries."""
+        self._cache.clear()
+
+    def invalidate(self, key: str) -> None:
+        """Invalidate a specific cache entry.
+
+        Args:
+            key: Cache key to invalidate
+        """
+        self._cache.pop(key, None)
+
+
+# Global caches
+_session_cache: TTLCache[list[Session]] = TTLCache()
+_stats_cache: TTLCache[SessionStats] = TTLCache()
+_tokens_cache: TTLCache[SessionTokens] = TTLCache()
+_model_usage_cache: TTLCache[list[ModelUsage]] = TTLCache(ttl=10)
+
+
+# =============================================================================
+# Database Path Helpers
+# =============================================================================
+
 def _db_path() -> Path:
+    """Get the path to the OpenCode database.
+
+    Returns:
+        Path to opencode.db in user's home directory
+    """
     return Path(os.path.expanduser("~")) / DB_PATH
 
 
 def _builder() -> QueryBuilder | None:
+    """Create a query builder for the database.
+
+    Returns:
+        QueryBuilder instance or None if database doesn't exist
+    """
     if not _db_path().exists():
         return None
     return QueryBuilder(str(_db_path()))
 
 
+# =============================================================================
+# Session Queries
+# =============================================================================
+
 def get_sessions(cwd: Optional[str] = None) -> list[Session]:
+    """Get all sessions, optionally filtered by directory.
+
+    Results are cached for CACHE_TTL seconds.
+
+    Args:
+        cwd: Working directory filter (None for all)
+
+    Returns:
+        List of Session objects
+    """
+    cache_key = f"sessions:{cwd or 'all'}"
+
+    # Check cache
+    cached = _session_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     b = _builder()
     if b is None:
         return []
@@ -42,7 +169,7 @@ def get_sessions(cwd: Optional[str] = None) -> list[Session]:
     where = {"directory": cwd} if cwd else None
     rows = b.select(SESSION, order_by="-time_updated", where=where)
 
-    return [
+    sessions = [
         Session(
             id=r["id"],
             parent_id=r["parent_id"],
@@ -54,6 +181,9 @@ def get_sessions(cwd: Optional[str] = None) -> list[Session]:
         )
         for r in rows
     ]
+
+    _session_cache.set(cache_key, sessions)
+    return sessions
 
 
 def get_session_by_id(session_id: str) -> Optional[Session]:

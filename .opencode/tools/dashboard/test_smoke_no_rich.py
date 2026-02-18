@@ -281,6 +281,8 @@ def test_enhanced_widgets() -> bool:
             TodosDataTable,
             ActivitySparkline,
             TodoProgressBar,
+            SearchBar,
+            CollapsibleStats,
         )
         from tachikoma_dashboard.models import Skill, Todo
 
@@ -302,9 +304,95 @@ def test_enhanced_widgets() -> bool:
         progress.update_progress(3, 5)
         print(f"  [+] OK: TodoProgressBar created and updated")
 
+        # Test SearchBar
+        search_bar = SearchBar()
+        print(f"  [+] OK: SearchBar created")
+
+        # Test CollapsibleStats
+        collapsible = CollapsibleStats(title="Advanced Stats")
+        print(f"  [+] OK: CollapsibleStats created")
+
         # Note: DataTable requires active app context to add columns/rows
         # Full testing is done when running the actual dashboard
         print(f"  [!] NOTE: DataTable full test requires running app")
+
+        return True
+
+    except Exception as e:
+        error_msg = str(e).encode('ascii', errors='replace').decode('ascii')
+        print(f"  [X] FAILED: {error_msg}")
+        return False
+
+
+def test_styles_module() -> bool:
+    """Test styles module."""
+    print("Testing styles module...")
+
+    try:
+        from tachikoma_dashboard.styles import (
+            DASHBOARD_CSS,
+            SCREEN_CSS,
+            LAYOUT_CSS,
+            SESSION_TREE_CSS,
+            DETAILS_CSS,
+            TOKENS_CSS,
+            SKILLS_CSS,
+            TODOS_CSS,
+            SEARCH_CSS,
+            AGGREGATION_CSS,
+            FOOTER_CSS,
+        )
+
+        # Check that CSS is generated
+        if len(DASHBOARD_CSS) == 0:
+            print("  [X] FAILED: DASHBOARD_CSS is empty")
+            return False
+
+        print(f"  [+] OK: DASHBOARD_CSS generated ({len(DASHBOARD_CSS)} chars)")
+        print(f"  [+] OK: All CSS modules imported")
+
+        return True
+
+    except Exception as e:
+        error_msg = str(e).encode('ascii', errors='replace').decode('ascii')
+        print(f"  [X] FAILED: {error_msg}")
+        return False
+
+
+def test_caching() -> bool:
+    """Test TTL cache functionality."""
+    print("Testing caching...")
+
+    try:
+        from tachikoma_dashboard.db import TTLCache, _session_cache
+
+        # Test TTLCache directly
+        cache = TTLCache(ttl=1, max_size=10)
+        cache.set("test_key", "test_value")
+        value = cache.get("test_key")
+
+        if value != "test_value":
+            print("  [X] FAILED: Cache get returned wrong value")
+            return False
+
+        print(f"  [+] OK: TTLCache works")
+
+        # Test cache invalidation
+        cache.invalidate("test_key")
+        value = cache.get("test_key")
+
+        if value is not None:
+            print("  [X] FAILED: Cache invalidation failed")
+            return False
+
+        print(f"  [+] OK: Cache invalidation works")
+
+        # Test global cache exists
+        if _session_cache is None:
+            print("  [X] FAILED: Session cache not initialized")
+            return False
+
+        print(f"  [+] OK: Global caches initialized")
 
         return True
 
@@ -332,6 +420,8 @@ def main():
         ("Session Tree Widget", test_session_tree_widget),
         ("Widget Rendering", test_widget_rendering),
         ("Enhanced Widgets", test_enhanced_widgets),
+        ("Styles Module", test_styles_module),
+        ("Caching", test_caching),
     ]
 
     results = []

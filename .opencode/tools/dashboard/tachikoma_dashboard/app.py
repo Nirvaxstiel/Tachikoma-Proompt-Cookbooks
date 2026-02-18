@@ -6,12 +6,14 @@ Design principles:
 - Centralized GITS theme with RED accents
 - Native Textual widgets for interactivity
 - Lazy loading and caching for performance
+- Extracted CSS for maintainability
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+from functools import lru_cache
 from typing import Optional
 
 from textual import work
@@ -23,9 +25,17 @@ from textual.reactive import reactive
 from textual.widgets import Header, Static
 
 from . import db
-from .enhanced_widgets import ActivitySparkline, SkillsDataTable, TodoProgressBar, TodosDataTable
+from .enhanced_widgets import (
+    ActivitySparkline,
+    CollapsibleStats,
+    SearchBar,
+    SkillsDataTable,
+    TodoProgressBar,
+    TodosDataTable,
+)
 from .models import ModelUsage, Session, SessionStats, SessionTokens, SessionTree, Todo, build_session_tree
 from .session_tree import SessionTreeWidget
+from .styles import DASHBOARD_CSS
 from .theme import THEME
 from .widgets import (
     render_aggregation,
@@ -35,8 +45,19 @@ from .widgets import (
 )
 
 
+# =============================================================================
+# Utility Functions
+# =============================================================================
+
 def _data_hash(data: list[dict]) -> str:
-    """Create hash of data for change detection (pure function)."""
+    """Create hash of data for change detection (pure function).
+
+    Args:
+        data: List of dictionaries to hash
+
+    Returns:
+        MD5 hash string (16 chars) or empty string on error
+    """
     try:
         return hashlib.md5(
             json.dumps(data, sort_keys=True, default=str).encode()
@@ -45,8 +66,9 @@ def _data_hash(data: list[dict]) -> str:
         return ""
 
 
-# Messages for reactive updates
-
+# =============================================================================
+# Message Classes
+# =============================================================================
 
 class SessionsLoaded(Message):
     """Posted when sessions are loaded from database."""
@@ -101,6 +123,10 @@ class TodosLoaded(Message):
         self.todos = todos
 
 
+# =============================================================================
+# Main Application
+# =============================================================================
+
 class DashboardApp(App):
     """Main dashboard application with GITS-themed visuals.
 
@@ -109,14 +135,28 @@ class DashboardApp(App):
     - DataTable for skills and todos
     - Sparkline for activity visualization
     - Progress bar for todo completion
+    - Search/filter functionality
+    - Collapsible advanced stats
     - Reactive state management
     - Background data loading
     - Token/cost tracking
+
+    Keybindings:
+    - Enter: Select session
+    - Tab: Toggle CWD filter
+    - /: Toggle search
+    - M: Toggle model usage panel
+    - R: Refresh data
+    - Q: Quit
     """
+
+    # Use extracted CSS
+    CSS = DASHBOARD_CSS
 
     # Reactive state
     sessions: reactive[list[Session]] = reactive(list)
     session_trees: reactive[list[SessionTree]] = reactive(list)
+    filtered_sessions: reactive[list[Session]] = reactive(list)
     selected_session: reactive[Optional[Session]] = reactive(None)
     stats_cache: reactive[dict[str, SessionStats]] = reactive(dict)
     tokens_cache: reactive[dict[str, SessionTokens]] = reactive(dict)
@@ -124,157 +164,14 @@ class DashboardApp(App):
     skills_cache: reactive[dict[str, list]] = reactive(dict)
     todos_cache: reactive[dict[str, list[Todo]]] = reactive(dict)
     activity_data: reactive[list[float]] = reactive(list)
+    search_query: reactive[str] = reactive("")
 
-    # Configuration
-    CSS = f"""
-    Screen {{
-        background: {THEME.bg0};
-    }}
-
-    #main-grid {{
-        layout: grid;
-        grid-size: 2;
-        grid-gutter: 1;
-        height: 1fr;
-    }}
-
-    /* Session Tree Panel - GREEN border */
-    #session-tree-container {{
-        width: 100%;
-        height: 100%;
-        border: solid {THEME.green};
-        background: {THEME.bg1};
-    }}
-
-    #session-tree-title {{
-        background: {THEME.green};
-        color: {THEME.bg0};
-        padding: 0 1;
-        text-style: bold;
-    }}
-
-    /* Right Panel Container */
-    #right-panel {{
-        width: 100%;
-        height: 100%;
-        layout: grid;
-        grid-size: 1;
-        grid-rows: 1fr 1fr 1fr 1fr;
-    }}
-
-    /* Details Panel - CYAN border */
-    #details-container {{
-        width: 100%;
-        height: 100%;
-        border: solid {THEME.cyan};
-        background: {THEME.bg1};
-    }}
-
-    #details {{
-        padding: 1;
-        color: {THEME.text};
-        overflow-y: auto;
-        height: 1fr;
-    }}
-
-    /* Tokens Panel - TEAL border */
-    #tokens-container {{
-        width: 100%;
-        height: 100%;
-        border: solid {THEME.teal};
-        background: {THEME.bg1};
-    }}
-
-    #tokens {{
-        padding: 1;
-        color: {THEME.text};
-        overflow-y: auto;
-        height: 1fr;
-    }}
-
-    /* Skills Panel - ORANGE border */
-    #skills-container {{
-        width: 100%;
-        height: 100%;
-        border: solid {THEME.orange};
-        background: {THEME.bg1};
-    }}
-
-    #skills-header {{
-        background: {THEME.orange};
-        color: {THEME.bg0};
-        padding: 0 1;
-        text-style: bold;
-        height: 1;
-    }}
-
-    /* Todos Panel - RED border for pop! */
-    #todos-container {{
-        width: 100%;
-        height: 100%;
-        border: solid {THEME.red};
-        background: {THEME.bg1};
-    }}
-
-    #todos-header {{
-        background: {THEME.red};
-        color: {THEME.bg0};
-        padding: 0 1;
-        text-style: bold;
-        height: 1;
-    }}
-
-    /* Aggregation Bar */
-    #aggregation {{
-        width: 100%;
-        height: auto;
-        border: solid {THEME.muted};
-        padding: 1;
-        color: {THEME.text};
-    }}
-
-    /* Activity Bar */
-    #activity-bar {{
-        width: 100%;
-        height: auto;
-        background: {THEME.bg1};
-        padding: 0 1;
-    }}
-
-    /* Footer */
-    #footer-bar {{
-        background: {THEME.bg0};
-        color: {THEME.muted};
-        height: auto;
-        padding: 0 1;
-        text-align: center;
-    }}
-
-    /* Focus effects with RED accent */
-    #session-tree-container:focus {{
-        border: solid {THEME.red};
-    }}
-
-    #details-container:focus {{
-        border: solid {THEME.red};
-    }}
-
-    #tokens-container:focus {{
-        border: solid {THEME.red};
-    }}
-
-    #skills-container:focus {{
-        border: solid {THEME.red};
-    }}
-
-    #todos-container:focus {{
-        border: solid {THEME.red};
-    }}
-    """
-
+    # Keybindings
     BINDINGS = [
         Binding("q", "quit", "Quit", show=True),
         Binding("tab", "toggle_filter", "Filter", show=True),
+        Binding("slash", "toggle_search", "Search", show=True),
+        Binding("escape", "close_search", "Close", show=False),
         Binding("r", "refresh", "Refresh", show=True),
         Binding("m", "toggle_model_panel", "Models", show=True),
     ]
@@ -284,6 +181,12 @@ class DashboardApp(App):
         interval: int = 2000,
         cwd: str | None = None,
     ) -> None:
+        """Initialize the dashboard application.
+
+        Args:
+            interval: Refresh interval in milliseconds
+            cwd: Working directory filter (None for all)
+        """
         super().__init__()
         self.interval = interval
         self.cwd_filter = cwd
@@ -291,24 +194,34 @@ class DashboardApp(App):
         self._show_model_panel: bool = False
 
     def _footer_text(self) -> str:
-        """Generate footer text with filter status."""
+        """Generate footer text with filter status.
+
+        Returns:
+            Formatted footer text with current state
+        """
         filter_status = f" [{THEME.red}][ON][/{THEME.red}]" if self.cwd_filter else ""
+        search_status = f" [{THEME.cyan}][SEARCH][/{THEME.cyan}]" if self.search_query else ""
         return (
-            f"[bold]Enter[/bold] Select │ "
+            f"[bold]/[/bold] Search │ "
             f"[bold]Tab[/bold] Filter{filter_status} │ "
-            f"[bold]M[/bold] Models │ "
+            f"[bold]M[/bold] Models{search_status} │ "
             f"[bold]R[/bold] Refresh │ "
             f"[bold]Q[/bold] Quit"
         )
 
     def compose(self) -> ComposeResult:
-        """Compose the dashboard layout."""
+        """Compose the dashboard layout.
+
+        Yields:
+            Widget tree for the dashboard
+        """
         yield Header()
 
         with Horizontal(id="main-grid"):
             # Left panel: Session Tree
             with Vertical(id="session-tree-container"):
                 yield Static("◈ SESSION TREE", id="session-tree-title")
+                yield SearchBar(id="search-bar")
                 yield SessionTreeWidget("Sessions", id="session-tree")
 
             # Right panel: Details, Tokens, Skills, Todos
@@ -326,7 +239,7 @@ class DashboardApp(App):
                     yield Static("◆ SKILLS", id="skills-header")
                     yield SkillsDataTable(id="skills-table")
 
-                # Todos panel with DataTable and progress
+                # Todos panel with DataTable
                 with Vertical(id="todos-container"):
                     yield Static("● TODOS", id="todos-header")
                     yield TodosDataTable(id="todos-table")
@@ -338,18 +251,39 @@ class DashboardApp(App):
         yield Static("", id="aggregation")
         yield Static(self._footer_text(), id="footer-bar")
 
+    # =========================================================================
+    # Lifecycle Methods
+    # =========================================================================
+
     def on_mount(self) -> None:
         """Initialize dashboard on mount."""
         self._load_data()
         self._load_model_usage()
         self._update_activity_data()
         self.set_interval(self.interval / 1000, self._load_data)
-        self.set_interval(5.0, self._update_activity_data)  # Update activity every 5s
+        self.set_interval(5.0, self._update_activity_data)
+
+    # =========================================================================
+    # Data Loading Methods
+    # =========================================================================
 
     @work(exclusive=True, thread=True)
     def _load_data(self) -> None:
-        """Load data from database in background worker."""
+        """Load data from database in background worker.
+
+        Uses Textual's @work decorator to run in a separate thread,
+        preventing UI blocking during database queries.
+        """
         sessions = db.get_sessions(self.cwd_filter)
+
+        # Apply search filter if active
+        if self.search_query:
+            query_lower = self.search_query.lower()
+            sessions = [
+                s for s in sessions
+                if query_lower in s.title.lower()
+                or query_lower in s.directory.lower()
+            ]
 
         sessions_data = [
             {
@@ -369,13 +303,21 @@ class DashboardApp(App):
 
     @work(exclusive=True, thread=True)
     def _load_stats(self, session_id: str) -> None:
-        """Load stats for a session in background."""
+        """Load stats for a session in background.
+
+        Args:
+            session_id: The session ID to load stats for
+        """
         stats = db.get_session_stats(session_id)
         self.post_message(StatsLoaded(session_id, stats))
 
     @work(exclusive=True, thread=True)
     def _load_tokens(self, session_id: str) -> None:
-        """Load token data for a session in background."""
+        """Load token data for a session in background.
+
+        Args:
+            session_id: The session ID to load tokens for
+        """
         tokens = db.get_session_tokens(session_id)
         self.post_message(TokensLoaded(session_id, tokens))
 
@@ -387,26 +329,34 @@ class DashboardApp(App):
 
     @work(exclusive=True, thread=True)
     def _load_skills(self, session_id: str) -> None:
-        """Load skills for a session in background."""
+        """Load skills for a session in background.
+
+        Args:
+            session_id: The session ID to load skills for
+        """
         skills = db.get_session_skills(session_id)
         self.post_message(SkillsLoaded(session_id, skills))
 
     @work(exclusive=True, thread=True)
     def _load_todos(self, session_id: str) -> None:
-        """Load todos for a session in background."""
+        """Load todos for a session in background.
+
+        Args:
+            session_id: The session ID to load todos for
+        """
         todos = db.get_todos(session_id)
         self.post_message(TodosLoaded(session_id, todos))
 
     def _update_activity_data(self) -> None:
-        """Update activity sparkline data."""
-        # Generate activity data based on recent sessions
+        """Update activity sparkline data.
+
+        Generates activity data based on recent session updates.
+        """
         import time
 
         now = int(time.time())
-        # Create 20 data points for last 20 minutes
         activity = []
         for i in range(20):
-            # Count sessions active in each minute bucket
             bucket_time = now - (i * 60)
             count = sum(
                 1 for s in self.sessions
@@ -414,19 +364,25 @@ class DashboardApp(App):
             )
             activity.append(float(count))
 
-        # Reverse so most recent is on the right
         activity.reverse()
         self.activity_data = activity
 
-        # Update sparkline
         try:
             sparkline = self.query_one(ActivitySparkline)
             sparkline.update_data(activity)
         except Exception:
-            pass  # Widget may not be mounted yet
+            pass
+
+    # =========================================================================
+    # Event Handlers
+    # =========================================================================
 
     def on_sessions_loaded(self, event: SessionsLoaded) -> None:
-        """Handle sessions loaded event."""
+        """Handle sessions loaded event.
+
+        Args:
+            event: The SessionsLoaded message
+        """
         self.sessions = event.sessions
         self.session_trees = event.trees
 
@@ -443,29 +399,49 @@ class DashboardApp(App):
             self._load_todos(self.selected_session.id)
 
     def on_stats_loaded(self, event: StatsLoaded) -> None:
-        """Handle stats loaded event."""
+        """Handle stats loaded event.
+
+        Args:
+            event: The StatsLoaded message
+        """
         self.stats_cache = {**self.stats_cache, event.session_id: event.stats}
         if self.selected_session and self.selected_session.id == event.session_id:
             self._update_details()
 
     def on_tokens_loaded(self, event: TokensLoaded) -> None:
-        """Handle tokens loaded event."""
+        """Handle tokens loaded event.
+
+        Args:
+            event: The TokensLoaded message
+        """
         self.tokens_cache = {**self.tokens_cache, event.session_id: event.tokens}
         if self.selected_session and self.selected_session.id == event.session_id:
             self._update_tokens()
 
     def on_model_usage_loaded(self, event: ModelUsageLoaded) -> None:
-        """Handle model usage loaded event."""
+        """Handle model usage loaded event.
+
+        Args:
+            event: The ModelUsageLoaded message
+        """
         self.model_usage = event.models
 
     def on_skills_loaded(self, event: SkillsLoaded) -> None:
-        """Handle skills loaded event."""
+        """Handle skills loaded event.
+
+        Args:
+            event: The SkillsLoaded message
+        """
         self.skills_cache = {**self.skills_cache, event.session_id: event.skills}
         if self.selected_session and self.selected_session.id == event.session_id:
             self._update_skills()
 
     def on_todos_loaded(self, event: TodosLoaded) -> None:
-        """Handle todos loaded event."""
+        """Handle todos loaded event.
+
+        Args:
+            event: The TodosLoaded message
+        """
         self.todos_cache = {**self.todos_cache, event.session_id: event.todos}
         if self.selected_session and self.selected_session.id == event.session_id:
             self._update_todos()
@@ -473,7 +449,11 @@ class DashboardApp(App):
     def on_session_tree_widget_selected(
         self, event: SessionTreeWidget.Selected
     ) -> None:
-        """Handle session selection from tree widget."""
+        """Handle session selection from tree widget.
+
+        Args:
+            event: The Selected message from SessionTreeWidget
+        """
         node = event.node
         if node and node.data:
             self.selected_session = node.data
@@ -482,6 +462,24 @@ class DashboardApp(App):
             self._load_tokens(node.data.id)
             self._load_skills(node.data.id)
             self._load_todos(node.data.id)
+
+    def on_search_bar_search_changed(self, event: SearchBar.SearchChanged) -> None:
+        """Handle search query changes.
+
+        Args:
+            event: The SearchChanged message
+        """
+        self.search_query = event.query
+        self._sessions_hash = ""  # Force reload with filter
+        self._load_data()
+
+        # Update footer
+        footer = self.query_one("#footer-bar", Static)
+        footer.update(self._footer_text())
+
+    # =========================================================================
+    # UI Update Methods
+    # =========================================================================
 
     def _update_aggregation(self) -> None:
         """Update aggregation panel."""
@@ -514,7 +512,6 @@ class DashboardApp(App):
         if self.selected_session:
             skills = self.skills_cache.get(self.selected_session.id)
             if skills is None:
-                # Load if not cached
                 self._load_skills(self.selected_session.id)
                 skills = []
             skills_table.update_skills(skills)
@@ -527,32 +524,57 @@ class DashboardApp(App):
         if self.selected_session:
             todos = self.todos_cache.get(self.selected_session.id)
             if todos is None:
-                # Load if not cached
                 self._load_todos(self.selected_session.id)
                 todos = []
             todos_table.update_todos(todos)
         else:
             todos_table.update_todos([])
 
+    # =========================================================================
+    # Action Methods
+    # =========================================================================
+
     def action_toggle_filter(self) -> None:
         """Toggle CWD filter."""
         import os
 
         self.cwd_filter = None if self.cwd_filter else os.getcwd()
-        self._sessions_hash = ""  # Force refresh
+        self._sessions_hash = ""
         self._load_data()
 
         footer = self.query_one("#footer-bar", Static)
         footer.update(self._footer_text())
 
+    def action_toggle_search(self) -> None:
+        """Toggle search bar visibility."""
+        try:
+            search_bar = self.query_one(SearchBar)
+            search_bar.toggle()
+        except Exception:
+            pass
+
+    def action_close_search(self) -> None:
+        """Close search bar."""
+        try:
+            search_bar = self.query_one(SearchBar)
+            if search_bar._visible:
+                search_bar.hide()
+                # Clear search filter
+                if self.search_query:
+                    self.search_query = ""
+                    self._sessions_hash = ""
+                    self._load_data()
+        except Exception:
+            pass
+
     def action_toggle_model_panel(self) -> None:
-        """Toggle model usage panel (show in tokens area)."""
+        """Toggle model usage panel."""
         self._show_model_panel = not self._show_model_panel
         self._update_tokens()
 
     def action_refresh(self) -> None:
         """Force refresh data."""
-        self._sessions_hash = ""  # Force reload
+        self._sessions_hash = ""
         self._load_data()
         self._load_model_usage()
         self._update_activity_data()

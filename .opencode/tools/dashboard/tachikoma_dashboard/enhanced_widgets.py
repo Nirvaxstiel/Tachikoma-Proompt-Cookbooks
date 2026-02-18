@@ -12,13 +12,211 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Sequence
 
 from rich.text import Text
-from textual.widgets import DataTable, ProgressBar, Sparkline, Static
+from textual.containers import Container, Horizontal
+from textual.message import Message
+from textual.reactive import reactive
+from textual.widgets import DataTable, Input, Label, ProgressBar, Sparkline, Static
 
 from .models import Skill, Todo
 from .theme import PRIORITY_COLORS, THEME
 
 if TYPE_CHECKING:
     from textual.widgets._data_table import ColumnKey, RowKey
+
+
+# =============================================================================
+# Search Widget
+# =============================================================================
+
+class SearchBar(Container):
+    """Search bar widget for filtering sessions.
+
+    Features:
+    - Text input with placeholder
+    - Real-time filtering
+    - Keyboard shortcut hint
+    """
+
+    DEFAULT_CSS = f"""
+    SearchBar {{
+        width: 100%;
+        height: auto;
+        background: {THEME.bg2};
+        padding: 0 1;
+        display: none;
+    }}
+
+    SearchBar.visible {{
+        display: block;
+    }}
+
+    SearchBar > Input {{
+        width: 1fr;
+        background: {THEME.bg1};
+        color: {THEME.text};
+        border: solid {THEME.cyan};
+        padding: 0 1;
+    }}
+
+    SearchBar > Input:focus {{
+        border: solid {THEME.red};
+    }}
+
+    SearchBar > #search-hint {{
+        color: {THEME.muted};
+        text-style: italic;
+        padding: 0 1;
+        height: 1;
+    }}
+    """
+
+    class SearchChanged(Message):
+        """Posted when search text changes."""
+
+        def __init__(self, query: str) -> None:
+            super().__init__()
+            self.query = query
+
+    query: reactive[str] = reactive("")
+
+    def __init__(self, id: str | None = None) -> None:
+        """Initialize the search bar."""
+        super().__init__(id=id)
+        self._visible = False
+
+    def compose(self):
+        """Compose the search bar."""
+        yield Input(
+            placeholder="Search sessions by title or directory...",
+            id="search-input",
+        )
+        yield Label("Press Escape to close, Enter to apply", id="search-hint")
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Handle input changes."""
+        self.query = event.value
+        self.post_message(self.SearchChanged(event.value))
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Handle input submission."""
+        self.post_message(self.SearchChanged(event.value))
+
+    def toggle(self) -> None:
+        """Toggle search bar visibility."""
+        self._visible = not self._visible
+        if self._visible:
+            self.add_class("visible")
+            # Focus the input
+            try:
+                self.query_one(Input).focus()
+            except Exception:
+                pass
+        else:
+            self.remove_class("visible")
+            self.query = ""
+
+    def show(self) -> None:
+        """Show the search bar."""
+        if not self._visible:
+            self.toggle()
+
+    def hide(self) -> None:
+        """Hide the search bar."""
+        if self._visible:
+            self.toggle()
+
+    def clear(self) -> None:
+        """Clear the search input."""
+        try:
+            input_widget = self.query_one(Input)
+            input_widget.value = ""
+        except Exception:
+            pass
+        self.query = ""
+
+
+# =============================================================================
+# Collapsible Stats Widget
+# =============================================================================
+
+class CollapsibleStats(Container):
+    """Collapsible container for advanced statistics.
+
+    Features:
+    - Expand/collapse with click or keyboard
+    - GITS-themed styling
+    - Contains detailed stats
+    """
+
+    DEFAULT_CSS = f"""
+    CollapsibleStats {{
+        width: 100%;
+        height: auto;
+        background: {THEME.bg1};
+        border-top: solid {THEME.bg3};
+        padding: 0 1;
+    }}
+
+    CollapsibleStats > #stats-header {{
+        background: {THEME.bg2};
+        color: {THEME.cyan};
+        padding: 0 1;
+        text-style: bold;
+        height: 1;
+    }}
+
+    CollapsibleStats > #stats-content {{
+        padding: 1;
+        color: {THEME.text};
+        display: none;
+    }}
+
+    CollapsibleStats.expanded > #stats-content {{
+        display: block;
+    }}
+    """
+
+    def __init__(
+        self,
+        title: str = "Advanced Stats",
+        id: str | None = None,
+    ) -> None:
+        """Initialize the collapsible stats."""
+        super().__init__(id=id)
+        self._title = title
+        self._expanded = False
+
+    def compose(self):
+        """Compose the collapsible stats."""
+        yield Static(f"▶ {self._title}", id="stats-header")
+        yield Static("", id="stats-content")
+
+    def on_click(self) -> None:
+        """Toggle on click."""
+        self.toggle()
+
+    def toggle(self) -> None:
+        """Toggle expanded state."""
+        self._expanded = not self._expanded
+        header = self.query_one("#stats-header", Static)
+        content = self.query_one("#stats-content", Static)
+
+        if self._expanded:
+            header.update(f"▼ {self._title}")
+            self.add_class("expanded")
+        else:
+            header.update(f"▶ {self._title}")
+            self.remove_class("expanded")
+
+    def update_content(self, content: str) -> None:
+        """Update the stats content."""
+        stats_content = self.query_one("#stats-content", Static)
+        stats_content.update(content)
+
+
+# =============================================================================
+# Data Table Widgets
+# =============================================================================
 
 
 class SkillsDataTable(DataTable):
