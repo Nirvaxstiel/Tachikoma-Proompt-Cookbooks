@@ -383,17 +383,28 @@ def get_model_usage_stats() -> dict[str, dict]:
 
 
 def get_session_skills(session_id: str) -> list[Skill]:
-    """Get skills loaded in a session by parsing tool calls from parts."""
+    """Get skills loaded in a session by parsing tool calls from parts.
+
+    Skills are stored as tool calls with:
+    - part.tool = "skill"
+    - part.state.input.name = "skill-name"
+
+    Args:
+        session_id: The session ID to query
+
+    Returns:
+        List of Skill objects with invocation counts
+    """
     b = _builder()
     if b is None:
         return []
 
     skills = []
-    skill_data = {}  # Track skill details: {skill_name: {count, first_loaded, last_loaded}}
+    skill_data: dict[str, dict] = {}  # Track skill details
 
     with b._conn() as conn:
-        # Get parts with tool invocations for skills
-        # Skills are tracked in the part table with detailed state
+        # Get parts with skill tool invocations
+        # The skill tool has: tool="skill", state.input.name="skill-name"
         rows = conn.execute(
             """
             SELECT p.data, p.time_created
@@ -402,8 +413,9 @@ def get_session_skills(session_id: str) -> list[Skill]:
             WHERE m.session_id = ?
             AND json_valid(p.data) = 1
             AND json_extract(p.data, '$.type') = 'tool'
+            AND json_extract(p.data, '$.tool') = 'skill'
             ORDER BY p.time_created ASC
-        """,
+            """,
             (session_id,),
         ).fetchall()
 
@@ -418,31 +430,30 @@ def get_session_skills(session_id: str) -> list[Skill]:
                 part = json.loads(data)
                 tool_name = part.get("tool", "")
 
-                # Track skill invocations (either 'skill' tool or skill-specific tools)
-                if tool_name == "skill" or "skill" in tool_name.lower():
-                    # Extract skill name from tool state input
+                # Skill tool has the name in state.input.name
+                if tool_name == "skill":
                     state = part.get("state", {})
                     input_data = state.get("input", {})
+                    skill_name = input_data.get("name", "")
 
-                    # Try to get skill name from various possible locations
-                    skill_name = input_data.get("name") or input_data.get("skill_name") or tool_name
+                    if not skill_name:
+                        continue
 
-                    if skill_name and skill_name not in skill_data:
+                    # Track this skill
+                    if skill_name not in skill_data:
                         skill_data[skill_name] = {
                             "count": 0,
                             "first_loaded": time_created,
                             "last_loaded": time_created,
-                            "tool_name": tool_name
                         }
 
-                    if skill_name in skill_data:
-                        skill_data[skill_name]["count"] += 1
-                        skill_data[skill_name]["last_loaded"] = time_created
+                    skill_data[skill_name]["count"] += 1
+                    skill_data[skill_name]["last_loaded"] = time_created
 
             except (json.JSONDecodeError, KeyError, AttributeError):
                 continue
 
-        # Convert to Skill objects with enhanced data
+        # Convert to Skill objects
         for skill_name, data in skill_data.items():
             skills.append(
                 Skill(
