@@ -23,7 +23,8 @@ from textual.reactive import reactive
 from textual.widgets import Header, Static
 
 from . import db
-from .models import ModelUsage, Session, SessionStats, SessionTokens, SessionTree, build_session_tree
+from .enhanced_widgets import ActivitySparkline, SkillsDataTable, TodoProgressBar, TodosDataTable
+from .models import ModelUsage, Session, SessionStats, SessionTokens, SessionTree, Todo, build_session_tree
 from .session_tree import SessionTreeWidget
 from .theme import THEME
 from .widgets import (
@@ -31,8 +32,6 @@ from .widgets import (
     render_details,
     render_model_usage,
     render_session_tokens,
-    render_skills,
-    render_todos,
 )
 
 
@@ -84,15 +83,35 @@ class ModelUsageLoaded(Message):
         self.models = models
 
 
+class SkillsLoaded(Message):
+    """Posted when skills are loaded for a session."""
+
+    def __init__(self, session_id: str, skills: list) -> None:
+        super().__init__()
+        self.session_id = session_id
+        self.skills = skills
+
+
+class TodosLoaded(Message):
+    """Posted when todos are loaded for a session."""
+
+    def __init__(self, session_id: str, todos: list[Todo]) -> None:
+        super().__init__()
+        self.session_id = session_id
+        self.todos = todos
+
+
 class DashboardApp(App):
     """Main dashboard application with GITS-themed visuals.
 
     Features:
     - Interactive session tree with native Textual Tree widget
+    - DataTable for skills and todos
+    - Sparkline for activity visualization
+    - Progress bar for todo completion
     - Reactive state management
     - Background data loading
     - Token/cost tracking
-    - Real-time updates
     """
 
     # Reactive state
@@ -102,6 +121,9 @@ class DashboardApp(App):
     stats_cache: reactive[dict[str, SessionStats]] = reactive(dict)
     tokens_cache: reactive[dict[str, SessionTokens]] = reactive(dict)
     model_usage: reactive[list[ModelUsage]] = reactive(list)
+    skills_cache: reactive[dict[str, list]] = reactive(dict)
+    todos_cache: reactive[dict[str, list[Todo]]] = reactive(dict)
+    activity_data: reactive[list[float]] = reactive(list)
 
     # Configuration
     CSS = f"""
@@ -141,47 +163,65 @@ class DashboardApp(App):
     }}
 
     /* Details Panel - CYAN border */
-    #details {{
+    #details-container {{
         width: 100%;
         height: 100%;
         border: solid {THEME.cyan};
-        padding: 1;
         background: {THEME.bg1};
+    }}
+
+    #details {{
+        padding: 1;
         color: {THEME.text};
         overflow-y: auto;
+        height: 1fr;
     }}
 
     /* Tokens Panel - TEAL border */
-    #tokens {{
+    #tokens-container {{
         width: 100%;
         height: 100%;
         border: solid {THEME.teal};
-        padding: 1;
         background: {THEME.bg1};
+    }}
+
+    #tokens {{
+        padding: 1;
         color: {THEME.text};
         overflow-y: auto;
+        height: 1fr;
     }}
 
     /* Skills Panel - ORANGE border */
-    #skills {{
+    #skills-container {{
         width: 100%;
         height: 100%;
         border: solid {THEME.orange};
-        padding: 1;
         background: {THEME.bg1};
-        color: {THEME.text};
-        overflow-y: auto;
+    }}
+
+    #skills-header {{
+        background: {THEME.orange};
+        color: {THEME.bg0};
+        padding: 0 1;
+        text-style: bold;
+        height: 1;
     }}
 
     /* Todos Panel - RED border for pop! */
-    #todos {{
+    #todos-container {{
         width: 100%;
         height: 100%;
         border: solid {THEME.red};
-        padding: 1;
         background: {THEME.bg1};
-        color: {THEME.text};
-        overflow-y: auto;
+    }}
+
+    #todos-header {{
+        background: {THEME.red};
+        color: {THEME.bg0};
+        padding: 0 1;
+        text-style: bold;
+        height: 1;
     }}
 
     /* Aggregation Bar */
@@ -191,6 +231,14 @@ class DashboardApp(App):
         border: solid {THEME.muted};
         padding: 1;
         color: {THEME.text};
+    }}
+
+    /* Activity Bar */
+    #activity-bar {{
+        width: 100%;
+        height: auto;
+        background: {THEME.bg1};
+        padding: 0 1;
     }}
 
     /* Footer */
@@ -207,19 +255,19 @@ class DashboardApp(App):
         border: solid {THEME.red};
     }}
 
-    #details:focus {{
+    #details-container:focus {{
         border: solid {THEME.red};
     }}
 
-    #tokens:focus {{
+    #tokens-container:focus {{
         border: solid {THEME.red};
     }}
 
-    #skills:focus {{
+    #skills-container:focus {{
         border: solid {THEME.red};
     }}
 
-    #todos:focus {{
+    #todos-container:focus {{
         border: solid {THEME.red};
     }}
     """
@@ -265,10 +313,27 @@ class DashboardApp(App):
 
             # Right panel: Details, Tokens, Skills, Todos
             with Vertical(id="right-panel"):
-                yield Static("◇ DETAILS", id="details")
-                yield Static("◈ TOKENS", id="tokens")
-                yield Static("◆ SKILLS", id="skills")
-                yield Static("● TODOS", id="todos")
+                # Details panel
+                with Vertical(id="details-container"):
+                    yield Static("◇ DETAILS", id="details")
+
+                # Tokens panel
+                with Vertical(id="tokens-container"):
+                    yield Static("◈ TOKENS", id="tokens")
+
+                # Skills panel with DataTable
+                with Vertical(id="skills-container"):
+                    yield Static("◆ SKILLS", id="skills-header")
+                    yield SkillsDataTable(id="skills-table")
+
+                # Todos panel with DataTable and progress
+                with Vertical(id="todos-container"):
+                    yield Static("● TODOS", id="todos-header")
+                    yield TodosDataTable(id="todos-table")
+
+        # Activity bar with sparkline
+        with Vertical(id="activity-bar"):
+            yield ActivitySparkline(id="activity-sparkline")
 
         yield Static("", id="aggregation")
         yield Static(self._footer_text(), id="footer-bar")
@@ -277,19 +342,15 @@ class DashboardApp(App):
         """Initialize dashboard on mount."""
         self._load_data()
         self._load_model_usage()
+        self._update_activity_data()
         self.set_interval(self.interval / 1000, self._load_data)
+        self.set_interval(5.0, self._update_activity_data)  # Update activity every 5s
 
     @work(exclusive=True, thread=True)
     def _load_data(self) -> None:
-        """Load data from database in background worker.
-
-        This uses Textual's @work decorator to run in a separate thread,
-        preventing UI blocking during database queries.
-        """
-        # Fetch sessions
+        """Load data from database in background worker."""
         sessions = db.get_sessions(self.cwd_filter)
 
-        # Check if changed
         sessions_data = [
             {
                 "id": s.id,
@@ -324,21 +385,62 @@ class DashboardApp(App):
         models = db.get_all_model_usage()
         self.post_message(ModelUsageLoaded(models))
 
+    @work(exclusive=True, thread=True)
+    def _load_skills(self, session_id: str) -> None:
+        """Load skills for a session in background."""
+        skills = db.get_session_skills(session_id)
+        self.post_message(SkillsLoaded(session_id, skills))
+
+    @work(exclusive=True, thread=True)
+    def _load_todos(self, session_id: str) -> None:
+        """Load todos for a session in background."""
+        todos = db.get_todos(session_id)
+        self.post_message(TodosLoaded(session_id, todos))
+
+    def _update_activity_data(self) -> None:
+        """Update activity sparkline data."""
+        # Generate activity data based on recent sessions
+        import time
+
+        now = int(time.time())
+        # Create 20 data points for last 20 minutes
+        activity = []
+        for i in range(20):
+            # Count sessions active in each minute bucket
+            bucket_time = now - (i * 60)
+            count = sum(
+                1 for s in self.sessions
+                if s.updated_seconds > bucket_time - 60
+            )
+            activity.append(float(count))
+
+        # Reverse so most recent is on the right
+        activity.reverse()
+        self.activity_data = activity
+
+        # Update sparkline
+        try:
+            sparkline = self.query_one(ActivitySparkline)
+            sparkline.update_data(activity)
+        except Exception:
+            pass  # Widget may not be mounted yet
+
     def on_sessions_loaded(self, event: SessionsLoaded) -> None:
         """Handle sessions loaded event."""
         self.sessions = event.sessions
         self.session_trees = event.trees
 
-        # Update the tree widget
         tree_widget = self.query_one(SessionTreeWidget)
         tree_widget.update_sessions(event.trees)
 
         self._update_aggregation()
+        self._update_activity_data()
 
-        # Load stats for selected session
         if self.selected_session:
             self._load_stats(self.selected_session.id)
             self._load_tokens(self.selected_session.id)
+            self._load_skills(self.selected_session.id)
+            self._load_todos(self.selected_session.id)
 
     def on_stats_loaded(self, event: StatsLoaded) -> None:
         """Handle stats loaded event."""
@@ -356,6 +458,18 @@ class DashboardApp(App):
         """Handle model usage loaded event."""
         self.model_usage = event.models
 
+    def on_skills_loaded(self, event: SkillsLoaded) -> None:
+        """Handle skills loaded event."""
+        self.skills_cache = {**self.skills_cache, event.session_id: event.skills}
+        if self.selected_session and self.selected_session.id == event.session_id:
+            self._update_skills()
+
+    def on_todos_loaded(self, event: TodosLoaded) -> None:
+        """Handle todos loaded event."""
+        self.todos_cache = {**self.todos_cache, event.session_id: event.todos}
+        if self.selected_session and self.selected_session.id == event.session_id:
+            self._update_todos()
+
     def on_session_tree_widget_selected(
         self, event: SessionTreeWidget.Selected
     ) -> None:
@@ -364,10 +478,10 @@ class DashboardApp(App):
         if node and node.data:
             self.selected_session = node.data
             self._update_details()
-            self._update_skills()
-            self._update_todos()
             self._load_stats(node.data.id)
             self._load_tokens(node.data.id)
+            self._load_skills(node.data.id)
+            self._load_todos(node.data.id)
 
     def _update_aggregation(self) -> None:
         """Update aggregation panel."""
@@ -386,29 +500,39 @@ class DashboardApp(App):
     def _update_tokens(self) -> None:
         """Update tokens panel."""
         tokens_widget = self.query_one("#tokens", Static)
-        if self.selected_session:
+        if self._show_model_panel:
+            tokens_widget.update(render_model_usage(self.model_usage))
+        elif self.selected_session:
             tokens = self.tokens_cache.get(self.selected_session.id)
             tokens_widget.update(render_session_tokens(tokens))
         else:
             tokens_widget.update("[dim]No session selected[/dim]")
 
     def _update_skills(self) -> None:
-        """Update skills panel."""
-        skills = self.query_one("#skills", Static)
+        """Update skills panel with DataTable."""
+        skills_table = self.query_one(SkillsDataTable)
         if self.selected_session:
-            session_skills = db.get_session_skills(self.selected_session.id)
-            skills.update(render_skills(session_skills))
+            skills = self.skills_cache.get(self.selected_session.id)
+            if skills is None:
+                # Load if not cached
+                self._load_skills(self.selected_session.id)
+                skills = []
+            skills_table.update_skills(skills)
         else:
-            skills.update(render_skills(None))
+            skills_table.update_skills(None)
 
     def _update_todos(self) -> None:
-        """Update todos panel."""
-        todos = self.query_one("#todos", Static)
+        """Update todos panel with DataTable."""
+        todos_table = self.query_one(TodosDataTable)
         if self.selected_session:
-            session_todos = db.get_todos(self.selected_session.id)
-            todos.update(render_todos(session_todos))
+            todos = self.todos_cache.get(self.selected_session.id)
+            if todos is None:
+                # Load if not cached
+                self._load_todos(self.selected_session.id)
+                todos = []
+            todos_table.update_todos(todos)
         else:
-            todos.update(render_todos([]))
+            todos_table.update_todos([])
 
     def action_toggle_filter(self) -> None:
         """Toggle CWD filter."""
@@ -418,22 +542,17 @@ class DashboardApp(App):
         self._sessions_hash = ""  # Force refresh
         self._load_data()
 
-        # Update footer
         footer = self.query_one("#footer-bar", Static)
         footer.update(self._footer_text())
 
     def action_toggle_model_panel(self) -> None:
         """Toggle model usage panel (show in tokens area)."""
         self._show_model_panel = not self._show_model_panel
-
-        tokens_widget = self.query_one("#tokens", Static)
-        if self._show_model_panel:
-            tokens_widget.update(render_model_usage(self.model_usage))
-        else:
-            self._update_tokens()
+        self._update_tokens()
 
     def action_refresh(self) -> None:
         """Force refresh data."""
         self._sessions_hash = ""  # Force reload
         self._load_data()
         self._load_model_usage()
+        self._update_activity_data()

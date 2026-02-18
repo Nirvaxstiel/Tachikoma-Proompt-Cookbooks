@@ -234,7 +234,6 @@ def test_widget_rendering() -> bool:
         # Test token rendering
         tokens = db.get_session_tokens(db.get_sessions()[0].id) if db.get_sessions() else SessionTokens(session_id="test")
         rendered = render_session_tokens(tokens)
-        # Check length instead of printing (avoids unicode issues)
         if len(str(rendered)) == 0:
             print("  [X] FAILED: Token rendering empty")
             return False
@@ -266,49 +265,52 @@ def test_widget_rendering() -> bool:
 
         return True
 
-    except UnicodeEncodeError:
-        # Unicode errors are expected on Windows console - rendering still works
-        print(f"  [+] OK: Widget rendering works (unicode display issue on console)")
-        return True
     except Exception as e:
-        # Avoid printing traceback which may contain unicode
         error_msg = str(e).encode('ascii', errors='replace').decode('ascii')
         print(f"  [X] FAILED: {error_msg}")
         return False
-        print(f"  [+] OK: Token rendering works")
 
-        # Test model usage rendering
-        models = db.get_all_model_usage()
-        rendered = render_model_usage(models)
-        if len(str(rendered)) == 0:
-            print("  [X] FAILED: Model usage rendering empty")
-            return False
-        print(f"  [+] OK: Model usage rendering works")
 
-        # Test details rendering
-        sessions = db.get_sessions()
-        if sessions:
-            rendered = render_details(sessions[0])
-            if len(str(rendered)) == 0:
-                print("  [X] FAILED: Details rendering empty")
-                return False
-            print(f"  [+] OK: Details rendering works")
+def test_enhanced_widgets() -> bool:
+    """Test enhanced widgets (DataTable, Sparkline, etc.)."""
+    print("Testing enhanced widgets...")
 
-        # Test aggregation rendering
-        rendered = render_aggregation(sessions)
-        if len(str(rendered)) == 0:
-            print("  [X] FAILED: Aggregation rendering empty")
-            return False
-        print(f"  [+] OK: Aggregation rendering works")
+    try:
+        from tachikoma_dashboard.enhanced_widgets import (
+            SkillsDataTable,
+            TodosDataTable,
+            ActivitySparkline,
+            TodoProgressBar,
+        )
+        from tachikoma_dashboard.models import Skill, Todo
+
+        # Test SkillsDataTable - can only test creation without app context
+        skills_table = SkillsDataTable()
+        print(f"  [+] OK: SkillsDataTable created")
+
+        # Test TodosDataTable - can only test creation without app context
+        todos_table = TodosDataTable()
+        print(f"  [+] OK: TodosDataTable created")
+
+        # Test ActivitySparkline
+        sparkline = ActivitySparkline()
+        sparkline.update_data([1.0, 2.0, 3.0, 2.0, 1.0])
+        print(f"  [+] OK: ActivitySparkline created and updated")
+
+        # Test TodoProgressBar
+        progress = TodoProgressBar()
+        progress.update_progress(3, 5)
+        print(f"  [+] OK: TodoProgressBar created and updated")
+
+        # Note: DataTable requires active app context to add columns/rows
+        # Full testing is done when running the actual dashboard
+        print(f"  [!] NOTE: DataTable full test requires running app")
 
         return True
 
-    except UnicodeEncodeError:
-        # Unicode errors are expected on Windows console - rendering still works
-        print(f"  [+] OK: Widget rendering works (unicode display issue on console)")
-        return True
     except Exception as e:
-        print(f"  [X] FAILED: {e}")
+        error_msg = str(e).encode('ascii', errors='replace').decode('ascii')
+        print(f"  [X] FAILED: {error_msg}")
         return False
 
 
@@ -329,6 +331,7 @@ def main():
         ("Token Tracking", test_token_tracking),
         ("Session Tree Widget", test_session_tree_widget),
         ("Widget Rendering", test_widget_rendering),
+        ("Enhanced Widgets", test_enhanced_widgets),
     ]
 
     results = []
