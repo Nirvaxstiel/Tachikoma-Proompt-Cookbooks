@@ -6,7 +6,7 @@ A real-time TUI dashboard for monitoring OpenCode agent sessions.
 
 The Tachikoma Dashboard provides a visual interface for monitoring agent activity, sessions, skills, and tasks. Built with [Textual](https://textual.textualize.io/), it features a GITS (Ghost in the Shell) themed aesthetic with red accent highlights.
 
-![Dashboard Preview](../../assets/tachikoma-dashboard/alpha-preview-1.png)
+![Dashboard Preview](/assets/tachikoma-dashboard/alpha-preview-1.png)
 
 ## Features
 
@@ -90,29 +90,29 @@ tachikoma-dashboard --json | jq '.[0].title'
 
 ### Panels
 
-| Panel | Border | Purpose |
-|-------|--------|---------|
-| Session Tree | Green | Hierarchical view of all sessions |
-| Details | Cyan | Selected session information |
-| Skills | Orange | Loaded skills with invocation counts |
-| Todos | Red | Active tasks with priority levels |
+| Panel        | Border | Purpose                              |
+| ------------ | ------ | ------------------------------------ |
+| Session Tree | Green  | Hierarchical view of all sessions    |
+| Details      | Cyan   | Selected session information         |
+| Skills       | Orange | Loaded skills with invocation counts |
+| Todos        | Red    | Active tasks with priority levels    |
 
 ### Status Indicators
 
-| Icon | Status | Color | Meaning |
-|------|--------|-------|---------|
-| ● | Working | Green | Active < 30 seconds |
-| ◐ | Active | Orange | Active < 5 minutes |
-| ○ | Idle | Muted | No recent activity |
+| Icon | Status  | Color  | Meaning             |
+| ---- | ------- | ------ | ------------------- |
+| ●    | Working | Green  | Active < 30 seconds |
+| ◐    | Active  | Orange | Active < 5 minutes  |
+| ○    | Idle    | Muted  | No recent activity  |
 
 ## Keybindings
 
-| Key | Action |
-|-----|--------|
+| Key     | Action                 |
+| ------- | ---------------------- |
 | `Enter` | Select focused session |
-| `Tab` | Toggle CWD filter |
-| `R` | Refresh data |
-| `Q` | Quit dashboard |
+| `Tab`   | Toggle CWD filter      |
+| `R`     | Refresh data           |
+| `Q`     | Quit dashboard         |
 
 ## Theme
 
@@ -120,21 +120,21 @@ The dashboard uses the GITS (Ghost in the Shell) color theme:
 
 ### Primary Colors
 
-| Name | Hex | Usage |
-|------|-----|-------|
-| Green | `#00ff9f` | Primary accent, success, working status |
-| Cyan | `#26c6da` | Secondary accent, info, labels |
-| Red | `#ff0066` | Highlights, high priority, focus states |
-| Orange | `#ffa726` | Warnings, active status |
+| Name   | Hex       | Usage                                   |
+| ------ | --------- | --------------------------------------- |
+| Green  | `#00ff9f` | Primary accent, success, working status |
+| Cyan   | `#26c6da` | Secondary accent, info, labels          |
+| Red    | `#ff0066` | Highlights, high priority, focus states |
+| Orange | `#ffa726` | Warnings, active status                 |
 
 ### Background Colors
 
-| Name | Hex | Usage |
-|------|-----|-------|
-| BG0 | `#0a0e14` | Screen background |
-| BG1 | `#0d1117` | Panel background |
-| BG2 | `#13171f` | Element background |
-| BG3 | `#1a2332` | Border color |
+| Name | Hex       | Usage              |
+| ---- | --------- | ------------------ |
+| BG0  | `#0a0e14` | Screen background  |
+| BG1  | `#0d1117` | Panel background   |
+| BG2  | `#13171f` | Element background |
+| BG3  | `#1a2332` | Border color       |
 
 ### Customization
 
@@ -306,18 +306,18 @@ tachikoma-dashboard --json
 
 ### Configuration Files
 
-| File | Purpose |
-|------|---------|
+| File             | Purpose                        |
+| ---------------- | ------------------------------ |
 | `pyproject.toml` | Project metadata, dependencies |
-| `FONTS.md` | Font installation instructions |
+| `FONTS.md`       | Font installation instructions |
 
 ### Test Files
 
-| File | Purpose |
-|------|---------|
-| `test_smoke.py` | Full smoke tests |
+| File                    | Purpose             |
+| ----------------------- | ------------------- |
+| `test_smoke.py`         | Full smoke tests    |
 | `test_smoke_no_rich.py` | Minimal smoke tests |
-| `tests/*.py` | Pytest unit tests |
+| `tests/*.py`            | Pytest unit tests   |
 
 ## See Also
 

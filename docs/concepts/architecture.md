@@ -9,11 +9,13 @@ Tachikoma uses an **orchestrator pattern**: it receives all requests, figures ou
 **Why This Matters:**
 
 **Without routing:**
+
 - "Do thing" problem — model doesn't know what you mean
 - Wrong tool usage — using a generalist for specialist tasks
 - "Lost in the middle" — dumping all context causes AI to ignore important stuff
 
 **With routing:**
+
 - Intent classification — knows what you want before acting
 - Selective context — only loads what's relevant, not everything
 - Right specialist — uses the best tool for the job
@@ -41,13 +43,13 @@ Tachikoma:
 
 ## Components
 
-| Component | Location | What It Does |
-|-----------|----------|---------------|
-| **Primary Agent** | `.opencode/agents/tachikoma.md` | Always-on orchestrator, coordinates everything |
-| **Intent Classifier** | `.opencode/skills/intent-classifier/SKILL.md` | Classifies requests into intents |
-| **Intent Routes** | `.opencode/config/intent-routes.yaml` | Maps intents → skills/subagents |
-| **Confidence Routes** | `.opencode/config/intent-routes.yaml` | Configures confidence-based escalation |
-| **Context Modules** | `.opencode/context-modules/*.md` | Project rules by priority |
+| Component             | Location                                      | What It Does                                   |
+| --------------------- | --------------------------------------------- | ---------------------------------------------- |
+| **Primary Agent**     | `.opencode/agents/tachikoma.md`               | Always-on orchestrator, coordinates everything |
+| **Intent Classifier** | `.opencode/skills/intent-classifier/SKILL.md` | Classifies requests into intents               |
+| **Intent Routes**     | `.opencode/config/intent-routes.yaml`         | Maps intents → skills/subagents                |
+| **Confidence Routes** | `.opencode/config/intent-routes.yaml`         | Configures confidence-based escalation         |
+| **Context Modules**   | `.opencode/context-modules/*.md`              | Project rules by priority                      |
 
 ## Request Flow
 
@@ -86,6 +88,7 @@ User Request
 ```
 
 **At any point**, Tachikoma can:
+
 - **Ask for clarification** (if intent is unclear)
 - **Delegate to subagent** (if context is too large)
 - **Use a workflow** (sequential: implement → verify → format)
@@ -95,12 +98,12 @@ User Request
 
 We don't use a sledgehammer to crack nuts. Match strategy to task complexity:
 
-| Complexity | Strategy | Estimated Latency |
-|------------|----------|------------------|
-| **Low** | Direct response | 1-2s |
-| **Medium** | Single skill | 5-15s |
-| **High** | Multi-skill | 15-45s |
-| **Very High** | Full orchestration | 45-120s |
+| Complexity    | Strategy           | Estimated Latency |
+| ------------- | ------------------ | ----------------- |
+| **Low**       | Direct response    | 1-2s              |
+| **Medium**    | Single skill       | 5-15s             |
+| **High**      | Multi-skill        | 15-45s            |
+| **Very High** | Full orchestration | 45-120s           |
 
 **Research backing:** Tool use improves accuracy by +20% but adds 40x latency. Using tools for simple tasks wastes time. Using direct responses for complex tasks causes hallucinations. We pick the right tool for the job.
 
@@ -109,6 +112,7 @@ We don't use a sledgehammer to crack nuts. Match strategy to task complexity:
 ### The Problem: "Lost in the Middle"
 
 Research shows LLMs have U-shaped attention bias:
+
 - Tokens at **beginning** and **end** get high attention
 - Tokens in **middle** get ignored regardless of relevance
 - Performance drops 10-20% when key info is in the middle
@@ -141,11 +145,11 @@ Notice speed is last. We prefer correct over fast, consistent over clever.
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
+| File                                  | Purpose                                     |
+| ------------------------------------- | ------------------------------------------- |
 | `.opencode/config/intent-routes.yaml` | Route definitions (intent → skill/subagent) |
 | `.opencode/config/intent-routes.yaml` | Route definitions (intent → skill/subagent) |
-| `.opencode/agents/tachikoma.md` | Orchestrator definition |
+| `.opencode/agents/tachikoma.md`       | Orchestrator definition                     |
 
 See [File Locations](../getting-started.md#file-locations) for full structure.
 

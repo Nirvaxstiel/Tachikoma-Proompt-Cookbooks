@@ -170,18 +170,29 @@ class SessionTreeWidget(Tree[Session]):
             node_icon = self.ICON_LEAF
             node_color = THEME.text
 
-        # Truncate title if needed
+        # Truncate title if needed and extract agent name
         title = session.title
-        if len(title) > 30:
-            title = title[:27] + "..."
+        agent_name = "unknown"
 
-        # Format runtime
-        runtime = _format_duration(session.duration)
+        # Try to extract agent name from title patterns
+        # Pattern: "task: agent_name" or "task - agent_name"
+        if ":" in title:
+            parts = title.split(":", 1)
+            if len(parts) > 1:
+                agent_name = parts[1].strip()
+        elif "-" in title:
+            parts = title.split("-", 1)
+            if len(parts) > 1:
+                agent_name = parts[1].strip()
+
+        # Truncate title for display
+        if len(title) > 20:
+            title = title[:17] + "..."
 
         # Truncate CWD
-        cwd = _truncate_path(session.directory, 15)
+        cwd = _truncate_path(session.directory, 18)
 
-        # Build the label
+        # Build of the label
         label = Text()
 
         # Status icon with color
@@ -191,19 +202,21 @@ class SessionTreeWidget(Tree[Session]):
         label.append(f"{node_icon} ", style=Style(color=node_color))
 
         # Title
-        label.append(title, style=Style(color=THEME.text))
-
-        # Runtime (muted)
-        label.append(f" [{runtime}]", style=Style(color=THEME.muted))
+        label.append(title, style=Style(color=THEME.text, bold=True))
 
         # CWD (cyan, dimmed)
         label.append(f" ~{cwd}", style=Style(color=THEME.cyan, dim=True))
 
-        # Subagent badge
+        # [sub] or [main] badge with agent name
         if is_subagent:
             label.append(
-                " [SUB]",
+                f" [sub] {agent_name}",
                 style=Style(color=THEME.red, bold=True)
+            )
+        else:
+            label.append(
+                f" [main] {agent_name}",
+                style=Style(color=THEME.green, bold=True)
             )
 
         # Apply the provided style

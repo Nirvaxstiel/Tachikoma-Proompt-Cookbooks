@@ -71,6 +71,13 @@ export default defineConfig({
           ]
         },
         {
+          text: 'Dashboard',
+          collapsed: true,
+          items: [
+            { text: 'Overview', link: '/dashboard/' },
+          ]
+        },
+        {
           text: 'Research',
           collapsed: true,
           items: [
@@ -276,6 +283,32 @@ export default defineConfig({
             { text: 'RLM', link: '/research/rlm' },
             { text: 'Cost-Aware Routing', link: '/research/cost-aware-routing' },
             { text: 'Modularity', link: '/research/modularity' },
+          ]
+        }
+      ],
+      '/dashboard/': [
+        {
+          text: 'Dashboard',
+          items: [
+            { text: 'Overview', link: '/dashboard/' },
+          ]
+        },
+        {
+          text: 'Capabilities',
+          collapsed: true,
+          items: [
+            { text: 'Overview', link: '/capabilities/index' },
+            { text: 'Intent Routing', link: '/capabilities/intent-routing' },
+            { text: 'Context Management', link: '/capabilities/context-management' },
+            { text: 'Skill Execution', link: '/capabilities/skill-execution' },
+          ]
+        },
+        {
+          text: 'Internals',
+          collapsed: true,
+          items: [
+            { text: 'Overview', link: '/internals/' },
+            { text: 'Database Schema', link: '/internals/opencode-database' },
           ]
         }
       ],

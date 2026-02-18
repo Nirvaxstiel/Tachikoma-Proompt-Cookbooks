@@ -30,7 +30,18 @@ LAYOUT_CSS = f"""
     layout: grid;
     grid-size: 2;
     grid-gutter: 1;
+    grid-columns: 1fr 1fr;
     height: 1fr;
+}}
+
+#left-panel {{
+    width: 100%;
+    height: 100%;
+    layout: grid;
+    grid-size: 1;
+    grid-rows: 2fr 1fr;
+    grid-gutter: 1;
+    column-span: 1;
 }}
 
 #right-panel {{
@@ -39,6 +50,8 @@ LAYOUT_CSS = f"""
     layout: grid;
     grid-size: 1;
     grid-rows: 1fr 1fr 1fr 1fr;
+    grid-gutter: 1;
+    column-span: 1;
 }}
 
 #activity-bar {{
@@ -99,6 +112,11 @@ SESSION_TREE_CSS = f"""
     height: 1;
 }}
 
+SessionTreeWidget {{
+    height: 100%;
+    overflow-y: auto;
+}}
+
 #session-tree-container:focus {{
     border: solid {THEME.red};
 }}
@@ -128,7 +146,7 @@ DETAILS_CSS = f"""
     padding: 1;
     color: {THEME.text};
     overflow-y: auto;
-    height: 1fr;
+    height: 100%;
 }}
 
 #details-container:focus {{
@@ -160,7 +178,7 @@ TOKENS_CSS = f"""
     padding: 1;
     color: {THEME.text};
     overflow-y: auto;
-    height: 1fr;
+    height: 100%;
 }}
 
 #tokens-container:focus {{
@@ -283,6 +301,50 @@ FOOTER_CSS = f"""
 """
 
 # =============================================================================
+# Error Details Panel Styles
+# =============================================================================
+
+ERROR_DETAILS_CSS = f"""
+#error-details-container {{
+    width: 100%;
+    height: 100%;
+    border: solid {THEME.error};
+    background: {THEME.bg1};
+}}
+
+#error-details-container.hidden {{
+    display: none;
+}}
+
+#error-header {{
+    background: {THEME.error};
+    color: {THEME.bg0};
+    padding: 0 1;
+    text-style: bold;
+    height: 1;
+}}
+
+#error-details {{
+    padding: 1;
+    color: {THEME.text};
+    overflow-y: auto;
+    height: 100%;
+}}
+
+/* Tighten spacing in grid panels */
+#left-panel > Vertical,
+#right-panel > Vertical {{
+    margin: 0 0 0 0;
+    padding: 0;
+    height: 100%;
+}}
+
+Vertical {{
+    margin: 0 0 0 0;
+}}
+"""
+
+# =============================================================================
 # Collapsible Styles
 # =============================================================================
 
@@ -318,6 +380,7 @@ DASHBOARD_CSS = (
     + SESSION_TREE_CSS
     + DETAILS_CSS
     + TOKENS_CSS
+    + ERROR_DETAILS_CSS
     + SKILLS_CSS
     + TODOS_CSS
     + SEARCH_CSS

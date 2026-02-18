@@ -17,17 +17,17 @@ python .opencode/tools/smoke_test.py
 
 ### Scripts
 
-| Type | Tests |
-|------|-------|
-| Python | Syntax, imports, shebang, CLI, execution |
-| Shell | Shebang, syntax, executable, help, execution |
+| Type   | Tests                                        |
+| ------ | -------------------------------------------- |
+| Python | Syntax, imports, shebang, CLI, execution     |
+| Shell  | Shebang, syntax, executable, help, execution |
 
 ### Tools
 
-| Tool | Tests |
-|------|-------|
-| Dashboard | Database connection, session queries, tree building |
-| Unit Tests | 85+ pytest tests for models, widgets, rendering |
+| Tool       | Tests                                               |
+| ---------- | --------------------------------------------------- |
+| Dashboard  | Database connection, session queries, tree building |
+| Unit Tests | 85+ pytest tests for models, widgets, rendering     |
 
 ## Test Commands
 
@@ -40,7 +40,7 @@ python .opencode/tools/smoke_test.py
 # Python scripts only
 python .opencode/tools/smoke_test.py --type python
 
-# Shell scripts only  
+# Shell scripts only
 python .opencode/tools/smoke_test.py --type shell
 
 # Specific file
@@ -79,7 +79,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
       - run: python .opencode/tools/smoke_test.py --fail-fast
 ```
 
@@ -93,15 +93,16 @@ python .opencode/tools/smoke_test.py --fail-fast || exit 1
 
 ## Test Results
 
-| Status | Meaning |
-|--------|---------|
-| ✅ PASS | All checks passed |
-| ❌ FAIL | Critical failure |
+| Status  | Meaning            |
+| ------- | ------------------ |
+| ✅ PASS | All checks passed  |
+| ❌ FAIL | Critical failure   |
 | ⚠️ WARN | Non-critical issue |
-| ⏭️ SKIP | Not applicable |
+| ⏭️ SKIP | Not applicable     |
 
 ## Adding Tests
 
 For detailed information on adding tests, see:
+
 - `.opencode/tools/SMOKE_TESTS.md` - Full documentation
 - [Dashboard Testing](./dashboard/index.md#testing) - Dashboard-specific tests

@@ -10,7 +10,7 @@ All styled with GITS theme (green primary, red accents).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any, Optional, Sequence
 
 from rich.style import Style
 from rich.text import Text
@@ -294,7 +294,11 @@ def render_session_tokens(tokens: SessionTokens | None) -> Text:
 
 
 def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
-    """Render model usage panel (without header - header is in app.py)."""
+    """Render model usage panel (without header - header is in app.py).
+
+    Args:
+        models: List of model usage objects
+    """
     if not models:
         return Text("(No model data)", style=Style(color=THEME.muted))
 
@@ -319,7 +323,7 @@ def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
 
     for model in models[:5]:
         model_line = Text()
-        model_line.append("◆ ", style=Style(color=THEME.red))
+        model_line.append("  ", style=Style(color=THEME.red))
         model_line.append(
             format_model_name(model.provider, model.model),
             style=Style(color=THEME.text, bold=True)
@@ -338,15 +342,27 @@ def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
                 stats_line.append(f" ({model.last_error_type})", style=Style(color=THEME.muted))
 
         # Display rate limit info with cooldown
-        if model.last_rate_limit:
+        if model.last_rate_limit and model.retry_after_ms:
             import time
             time_since_sec = int(time.time()) - (model.last_rate_limit // 1000)
             remaining = model.rate_limit_cooldown_remaining
+            total_wait_sec = model.retry_after_ms // 1000
+
+            time_since_str = format_duration(time_since_sec)
+            remaining_str = format_duration(remaining)
+            total_wait_str = format_duration(total_wait_sec)
 
             if remaining > 0:
-                stats_line.append(f"  ⚠ cooldown: {format_duration(remaining)} remaining", style=Style(color=THEME.orange))
+                stats_line.append(f"  ⚠ cooldown: {remaining_str} remaining (of {total_wait_str})", style=Style(color=THEME.orange))
             else:
-                stats_line.append(f"  ⚠ rate limited {format_duration(time_since_sec)} ago", style=Style(color=THEME.orange))
+                expired_ago = time_since_sec - total_wait_sec
+                expired_str = format_duration(expired_ago)
+                stats_line.append(f"  ⚠ rate limit expired {expired_str} ago (was {total_wait_str})", style=Style(color=THEME.orange))
+        elif model.last_rate_limit:
+            # Rate limit without retry_after
+            import time
+            time_since_sec = int(time.time()) - (model.last_rate_limit // 1000)
+            stats_line.append(f"  ⚠ rate limited {format_duration(time_since_sec)} ago", style=Style(color=THEME.orange))
 
         lines.append(stats_line)
 

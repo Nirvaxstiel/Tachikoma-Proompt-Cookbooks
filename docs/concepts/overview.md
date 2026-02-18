@@ -5,6 +5,7 @@ A smart dispatcher for your AI assistant that routes requests to the right speci
 ## What and Why
 
 Instead of throwing every request at one general-purpose model, Tachikoma:
+
 - **Classifies your request** - Figures out what you want to do
 - **Routes to the right specialist** - Uses the best tool for the job
 - **Loads relevant context** - Brings in project-specific rules
@@ -12,12 +13,14 @@ Instead of throwing every request at one general-purpose model, Tachikoma:
 ### Why This Matters
 
 **Without Tachikoma:**
+
 - One model tries to do everything
 - Works for simple tasks, fails at complex ones
 - Frequent confusion and hallucinations
 - Slower, less reliable
 
 **With Tachikoma:**
+
 - Specialists handle what they're good at
 - Consistent, high-quality results
 - Fewer mistakes and hallucinations
@@ -44,26 +47,26 @@ Tachikoma:
 
 ## Core Intents
 
-| Intent | What It Means | Example |
-|--------|---------------|---------|
-| `debug` | Fix issues | "fix bug", "why is this broken" |
-| `implement` | Write code | "add feature", "create component" |
-| `review` | Analyze code | "review this code", "check for issues" |
-| `research` | Find info | "find docs", "research API" |
-| `git` | Version control | "commit changes", "create PR" |
-| `document` | Documentation | "update README", "write docs" |
-| `complex` | Large context | "refactor entire codebase", "analyze all files" |
+| Intent      | What It Means   | Example                                         |
+| ----------- | --------------- | ----------------------------------------------- |
+| `debug`     | Fix issues      | "fix bug", "why is this broken"                 |
+| `implement` | Write code      | "add feature", "create component"               |
+| `review`    | Analyze code    | "review this code", "check for issues"          |
+| `research`  | Find info       | "find docs", "research API"                     |
+| `git`       | Version control | "commit changes", "create PR"                   |
+| `document`  | Documentation   | "update README", "write docs"                   |
+| `complex`   | Large context   | "refactor entire codebase", "analyze all files" |
 
 ## Extended Intents
 
-| Intent | Description | Skill |
-|--------|-------------|---------|
-| `refactor` | Restructure code | [code-agent](../capabilities/skill-execution.md) |
-| `skill-compose` | Combine skills | [skill-composer](../capabilities/skill-chains.md) |
-| `optimize` | Context/token optimization | [context-manager](../capabilities/context-management.md) |
-| `verify` | High-reliability generation | [verifier-code-agent](../capabilities/skill-execution.md) |
-| `reflect` | Self-critique and verification | [reflection-orchestrator](../capabilities/skill-execution.md) |
-| `edit-optimize` | Model-aware edit format | [model-aware-editor](../capabilities/skill-execution.md) |
+| Intent          | Description                    | Skill                                                         |
+| --------------- | ------------------------------ | ------------------------------------------------------------- |
+| `refactor`      | Restructure code               | [code-agent](../capabilities/skill-execution.md)              |
+| `skill-compose` | Combine skills                 | [skill-composer](../capabilities/skill-chains.md)             |
+| `optimize`      | Context/token optimization     | [context-manager](../capabilities/context-management.md)      |
+| `verify`        | High-reliability generation    | [verifier-code-agent](../capabilities/skill-execution.md)     |
+| `reflect`       | Self-critique and verification | [reflection-orchestrator](../capabilities/skill-execution.md) |
+| `edit-optimize` | Model-aware edit format        | [model-aware-editor](../capabilities/skill-execution.md)      |
 
 See [Intent Routing](../capabilities/intent-routing.md) for complete configuration.
 
@@ -71,32 +74,32 @@ See [Intent Routing](../capabilities/intent-routing.md) for complete configurati
 
 For multi-step tasks, intents can be combined:
 
-| Composite | Components | When It Triggers |
-|-----------|-------------|-------------------|
-| `research-and-implement` | research + implement | "research X, then implement" |
-| `implement-and-test` | implement + debug | "implement X and test it" |
-| `refactor-and-test` | implement + debug | "refactor X and ensure tests pass" |
+| Composite                | Components           | When It Triggers                   |
+| ------------------------ | -------------------- | ---------------------------------- |
+| `research-and-implement` | research + implement | "research X, then implement"       |
+| `implement-and-test`     | implement + debug    | "implement X and test it"          |
+| `refactor-and-test`      | implement + debug    | "refactor X and ensure tests pass" |
 
 ## Context Modules
 
 Project-specific rules that Tachikoma loads automatically:
 
-| Module | Priority | Purpose |
-|--------|----------|---------|
-| `core-contract` | 0 | Universal rules (always first) |
-| `coding-standards` | 10 | Code patterns |
-| `commenting-rules` | 15 | Comments |
-| `git-workflow` | 20 | Git conventions |
-| `research-methods` | 30 | Investigation methodology |
+| Module             | Priority | Purpose                        |
+| ------------------ | -------- | ------------------------------ |
+| `core-contract`    | 0        | Universal rules (always first) |
+| `coding-standards` | 10       | Code patterns                  |
+| `commenting-rules` | 15       | Comments                       |
+| `git-workflow`     | 20       | Git conventions                |
+| `research-methods` | 30       | Investigation methodology      |
 
 See [Context Modules](../capabilities/customization/context-modules.md) to add your own.
 
 ## Skills vs Subagents
 
-| Type | Use When | Description |
-|------|----------|-------------|
-| **Skill** | Simple, fast tasks | Routine work, normal context |
-| **Subagent** | Complex tasks | Large context, multi-step reasoning |
+| Type         | Use When           | Description                         |
+| ------------ | ------------------ | ----------------------------------- |
+| **Skill**    | Simple, fast tasks | Routine work, normal context        |
+| **Subagent** | Complex tasks      | Large context, multi-step reasoning |
 
 See [Subagents](../capabilities/subagents.md) for details.
 
@@ -125,6 +128,7 @@ See [Architecture](architecture.md) for detailed system design.
 Tachikoma is built on research-backed patterns from peer-reviewed papers.
 
 Key findings include:
+
 - **Position Bias** — Selective context loading addresses U-shaped attention bias
 - **Tool-Augmented LLMs** — Cost-aware routing balances speed and accuracy
 - **Modular Skills** — Specialized components beat monolithic approaches
@@ -134,7 +138,7 @@ See [Research Overview](../research/overview.md) for complete references and det
 
 ## Named After
 
-**Tachikoma** — curious AI tanks from *Ghost in the Shell*. Always learning.
+**Tachikoma** — curious AI tanks from _Ghost in the Shell_. Always learning.
 
 ## Next Steps
 

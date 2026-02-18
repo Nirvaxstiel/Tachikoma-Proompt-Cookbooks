@@ -71,6 +71,7 @@ your-project/
 3. Tachikoma should respond by classifying your intent and explaining what it can do
 
 **Example response:**
+
 ```
 I can help you with various tasks:
 
@@ -111,20 +112,25 @@ No manual configuration needed - it just works out of the box!
 ## Common Questions
 
 **Q: Do I need to configure anything?**
-A: No! Tachikoma works out of the box. Just install and start asking questions.
+
+> A: No! Tachikoma works out of the box. Just install and start asking questions.
 
 **Q: Which AI agents work with Tachikoma?**
-A: Any agent that supports the [Agent Skills](https://agentskills.io) standard, including OpenCodeAI, Claude Code, and others.
+
+> A: Any agent that supports the [Agent Skills](https://agentskills.io) standard, including OpenCodeAI, Claude Code, and others.
 
 **Q: Can I customize Tachikoma for my project?**
-A: Yes! You can add custom skills, agents, and context modules. See the [Customization](capabilities/customization/overview.md) section.
+
+> A: Yes! You can add custom skills, agents, and context modules. See the [Customization](capabilities/customization/overview.md) section.
 
 **Q: How do I update Tachikoma?**
-A: Just run the install script again or update manually from the repository.
+
+> A: Just run the install script again or update manually from the repository.
 
 ## Support
 
 If you run into issues:
+
 1. Check [Troubleshooting](troubleshooting.md) for common problems
 2. Review [AGENTS.md](https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/blob/master/AGENTS.md) for system details
 3. Check the [Agent Skills Specification](capabilities/skills-specification.md)

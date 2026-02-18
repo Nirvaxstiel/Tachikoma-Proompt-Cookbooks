@@ -899,6 +899,65 @@ def get_all_model_usage() -> list[ModelUsage]:
     return sorted(result, key=lambda x: x.total_tokens, reverse=True)
 
 
+def get_all_errors(limit: int = 10) -> list[ModelError]:
+    """Get all errors across all models, sorted by recency.
+
+    Args:
+        limit: Maximum number of errors to return
+
+    Returns:
+        List of ModelError objects sorted by timestamp (newest first)
+    """
+    b = _builder()
+    if b is None:
+        return []
+
+    errors = []
+
+    with b._conn() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                m.session_id,
+                m.data,
+                m.time_created
+            FROM message m
+            WHERE json_valid(m.data) = 1
+            AND json_extract(m.data, '$.role') = 'assistant'
+            AND json_extract(m.data, '$.error') IS NOT NULL
+            ORDER BY m.time_created DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+
+        for row in rows:
+            data = row["data"]
+            if not data:
+                continue
+
+            try:
+                msg = json.loads(data)
+                error = msg.get("error", {})
+
+                errors.append(
+                    ModelError(
+                        session_id=row["session_id"],
+                        provider=msg.get("providerID", "unknown"),
+                        model=msg.get("modelID", "unknown"),
+                        error_name=error.get("name", "Unknown"),
+                        error_message=error.get("data", {}).get("message", ""),
+                        timestamp=row["time_created"],
+                        time_created=row["time_created"],
+                    )
+                )
+
+            except (json.JSONDecodeError, KeyError):
+                continue
+
+    return errors
+
+
 def get_model_error_history(
     provider: str,
     model: str,

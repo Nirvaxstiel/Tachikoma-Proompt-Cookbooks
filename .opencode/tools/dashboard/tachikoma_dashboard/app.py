@@ -109,10 +109,11 @@ class DashboardApp(App):
     sessions: reactive[list[Session]] = reactive(list)
     session_trees: reactive[list[SessionTree]] = reactive(list)
     selected_session: reactive[Optional[Session]] = reactive(None)
+    show_error_details: reactive[bool] = reactive(False)
     stats_cache: reactive[dict[str, SessionStats]] = reactive(dict)
     model_usage: reactive[list[ModelUsage]] = reactive(list)
     skills_cache: reactive[dict[str, list]] = reactive(dict)
-    todos_cache: reactive[dict[str, list[Todo]]] = reactive(dict)
+    todos_cache: reactive[dict[str, list]] = reactive(dict)
     activity_data: reactive[list[float]] = reactive(list)
     search_query: reactive[str] = reactive("")
 
@@ -123,6 +124,7 @@ class DashboardApp(App):
         Binding("slash", "toggle_search", "Search", show=True),
         Binding("escape", "close_search", "Close", show=False),
         Binding("r", "refresh", "Refresh", show=True),
+        Binding("e", "toggle_error_details", "Model Errors", show=False),
     ]
 
     def __init__(
@@ -152,6 +154,7 @@ class DashboardApp(App):
         return (
             f"[bold]/[/bold] Search{search_status} │ "
             f"[bold]Tab[/bold] Filter{filter_status} │ "
+            f"[bold]E[/bold] Errors │ "
             f"[bold]R[/bold] Refresh │ "
             f"[bold]Q[/bold] Quit"
         )
@@ -165,23 +168,30 @@ class DashboardApp(App):
         yield Header()
 
         with Horizontal(id="main-grid"):
-            # Left panel: Session Tree
-            with Vertical(id="session-tree-container"):
-                yield Static("◈ SESSION TREE", id="session-tree-title")
-                yield SearchBar(id="search-bar")
-                yield SessionTreeWidget("Sessions", id="session-tree")
+            # Left panel: Session Tree + Details
+            with Vertical(id="left-panel"):
+                # Session Tree
+                with Vertical(id="session-tree-container"):
+                    yield Static("◈ SESSION TREE", id="session-tree-title")
+                    yield SearchBar(id="search-bar")
+                    yield SessionTreeWidget("Sessions", id="session-tree")
 
-            # Right panel: Details, Tokens, Skills, Todos
-            with Vertical(id="right-panel"):
                 # Details panel with header
                 with Vertical(id="details-container"):
                     yield Static("◇ DETAILS", id="details-header")
                     yield Static("", id="details")
 
+            # Right panel: Model Usage, Skills, Todos, Error Details
+            with Vertical(id="right-panel"):
                 # Tokens panel with header
                 with Vertical(id="tokens-container"):
-                    yield Static("◈ MODEL USAGE", id="tokens-header")
+                    yield Static("", id="tokens-header")
                     yield Static("", id="tokens")
+
+                # Error details panel (hidden by default)
+                with Vertical(id="error-details-container", classes="hidden"):
+                    yield Static("", id="error-header")
+                    yield Static("", id="error-details")
 
                 # Skills panel with DataTable
                 with Vertical(id="skills-container"):
@@ -211,6 +221,9 @@ class DashboardApp(App):
         self._update_activity_data()
         self.set_interval(self.interval / 1000, self._load_data)
         self.set_interval(5.0, self._update_activity_data)
+
+        # Initialize panel headers
+        self._update_panel_headers()
 
     # =========================================================================
     # Data Loading Methods
@@ -334,6 +347,7 @@ class DashboardApp(App):
     def on_model_usage_loaded(self, event: ModelUsageLoaded) -> None:
         """Handle model usage loaded event."""
         self.model_usage = event.models
+
         self._update_tokens()
 
     def on_session_tree_widget_selected(self, event: SessionTreeWidget.Selected) -> None:
@@ -418,6 +432,43 @@ class DashboardApp(App):
         except Exception:
             pass  # Widget not ready yet
 
+    def _update_error_details(self) -> None:
+        """Update error details panel - shows all errors from all models."""
+        from .widgets import render_model_error_details
+
+        try:
+            error_widget = self.query_one("#error-details", Static)
+            if self.show_error_details:
+                # Get all errors from database
+                errors = db.get_all_errors(limit=10)
+                error_widget.update(render_model_error_details(errors))
+            else:
+                error_widget.update("")
+        except Exception:
+            pass  # Widget not ready yet
+
+    def _update_panel_headers(self) -> None:
+        """Update panel headers based on current state."""
+        # Update tokens header
+        try:
+            tokens_header = self.query_one("#tokens-header", Static)
+            if self.show_error_details:
+                tokens_header.update("◈ MODEL USAGE (E to hide errors)")
+            else:
+                tokens_header.update("◈ MODEL USAGE (E for errors)")
+        except Exception:
+            pass
+
+        # Update error header
+        try:
+            error_header = self.query_one("#error-header", Static)
+            if self.show_error_details:
+                error_header.update("⚠ ALL ERRORS (Latest 10)")
+            else:
+                error_header.update("⚠ MODEL ERRORS (Press E to show)")
+        except Exception:
+            pass
+
     # =========================================================================
     # Action Methods
     # =========================================================================
@@ -461,3 +512,23 @@ class DashboardApp(App):
         self._load_data()
         self._load_model_usage()
         self._update_activity_data()
+
+    def action_toggle_error_details(self) -> None:
+        """Toggle error details panel."""
+        self.show_error_details = not self.show_error_details
+        self._update_tokens()
+        self._update_error_details()
+
+        # Toggle hidden class on error panel
+        try:
+            error_container = self.query_one("#error-details-container", Vertical)
+            if self.show_error_details:
+                error_container.remove_class("hidden")
+            else:
+                error_container.add_class("hidden")
+        except Exception:
+            pass
+
+        # Update headers
+        self._update_panel_headers()
+
