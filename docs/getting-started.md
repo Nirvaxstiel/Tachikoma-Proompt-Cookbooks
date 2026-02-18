@@ -87,11 +87,15 @@ What would you like help with?
 
 ## How It Works
 
-Tachikoma automatically:
-1. **Classifies your request** - Figures out what you want to do
-2. **Loads relevant context** - Brings in project-specific rules
-3. **Routes to the right skill** - Uses the best tool for the job
-4. **Executes and reports** - Does the work and tells you what happened
+Tachikoma follows a **mandatory 5-phase workflow** on every request:
+
+1. **Classify Intent** — Figures out what you want to do (debug, implement, research, etc.)
+2. **Load Context** — Loads project-specific rules relevant to this task
+3. **Load Skill** — Loads the appropriate skill with detailed instructions
+4. **Execute** — Follows skill guidance to complete the task
+5. **Report** — Tells you what happened with confidence level
+
+> **Note**: Phases 1-3 are mandatory. Skipping them is a contract violation.
 
 No manual configuration needed - it just works out of the box!
 

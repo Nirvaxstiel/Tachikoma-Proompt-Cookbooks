@@ -389,102 +389,79 @@ class DashboardApp(App):
 
         # Auto-select first session if none selected
         if not self.selected_session and event.sessions:
-            self.selected_session = event.sessions[0]
-            self._update_details()
-            self._update_tokens()
-            self._load_stats(self.selected_session.id)
-            self._load_tokens(self.selected_session.id)
-            self._load_skills(self.selected_session.id)
-            self._load_todos(self.selected_session.id)
-        elif self.selected_session:
-            self._load_stats(self.selected_session.id)
-            self._load_tokens(self.selected_session.id)
-            self._load_skills(self.selected_session.id)
-            self._load_todos(self.selected_session.id)
+            self._select_session(event.sessions[0])
 
-    def on_stats_loaded(self, event: StatsLoaded) -> None:
-        """Handle stats loaded event.
+    def _select_session(self, session: Session) -> None:
+        """Select a session and load all its data.
+
+        This is the single entry point for session selection.
+        All panels update based on this selection.
 
         Args:
-            event: The StatsLoaded message
+            session: The session to select
         """
-        self.stats_cache = {**self.stats_cache, event.session_id: event.stats}
+        if session == self.selected_session:
+            return
+
+        self.selected_session = session
+
+        # Clear old data
+        self.stats_cache = {}
+        self.skills_cache = {}
+        self.todos_cache = {}
+
+        # Show loading state in panels
+        self._update_details()
+        self._update_tokens()
+        self._update_skills()
+        self._update_todos()
+
+        # Load all data for this session
+        self._load_stats(session.id)
+        self._load_skills(session.id)
+        self._load_todos(session.id)
+
+    def on_stats_loaded(self, event: StatsLoaded) -> None:
+        """Handle stats loaded event."""
+        self.stats_cache = {event.session_id: event.stats}
         if self.selected_session and self.selected_session.id == event.session_id:
             self._update_details()
 
     def on_tokens_loaded(self, event: TokensLoaded) -> None:
-        """Handle tokens loaded event.
-
-        Args:
-            event: The TokensLoaded message
-        """
-        self.tokens_cache = {**self.tokens_cache, event.session_id: event.tokens}
+        """Handle tokens loaded event."""
+        self.tokens_cache = {event.session_id: event.tokens}
 
     def on_model_usage_loaded(self, event: ModelUsageLoaded) -> None:
-        """Handle model usage loaded event.
-
-        Args:
-            event: The ModelUsageLoaded message
-        """
+        """Handle model usage loaded event."""
         self.model_usage = event.models
-        # Always update tokens panel when model usage loads
         self._update_tokens()
 
     def on_skills_loaded(self, event: SkillsLoaded) -> None:
-        """Handle skills loaded event.
-
-        Args:
-            event: The SkillsLoaded message
-        """
-        self.skills_cache = {**self.skills_cache, event.session_id: event.skills}
+        """Handle skills loaded event."""
+        self.skills_cache = {event.session_id: event.skills}
         if self.selected_session and self.selected_session.id == event.session_id:
             self._update_skills()
 
     def on_todos_loaded(self, event: TodosLoaded) -> None:
-        """Handle todos loaded event.
-
-        Args:
-            event: The TodosLoaded message
-        """
-        self.todos_cache = {**self.todos_cache, event.session_id: event.todos}
+        """Handle todos loaded event."""
+        self.todos_cache = {event.session_id: event.todos}
         if self.selected_session and self.selected_session.id == event.session_id:
             self._update_todos()
 
     def on_session_tree_widget_selected(
         self, event: SessionTreeWidget.Selected
     ) -> None:
-        """Handle session selection from tree widget.
-
-        Args:
-            event: The Selected message from SessionTreeWidget
-        """
-        session = event.session
-        if session:
-            self.selected_session = session
-            self._update_details()
-            self._update_tokens()
-            self._load_stats(session.id)
-            self._load_tokens(session.id)
-            self._load_skills(session.id)
-            self._load_todos(session.id)
+        """Handle session selection from tree widget."""
+        if event.session:
+            self._select_session(event.session)
 
     def on_tree_node_highlighted(self, event) -> None:
-        """Handle tree node highlight event (cursor movement).
-
-        This is called when the user navigates the tree with arrow keys.
-        """
-        # Get the session from the tree widget
+        """Handle tree node highlight event (cursor movement)."""
         try:
             tree_widget = self.query_one(SessionTreeWidget)
             session = tree_widget.get_selected_session()
-            if session and session != self.selected_session:
-                self.selected_session = session
-                self._update_details()
-                self._update_tokens()
-                self._load_stats(session.id)
-                self._load_tokens(session.id)
-                self._load_skills(session.id)
-                self._load_todos(session.id)
+            if session:
+                self._select_session(session)
         except Exception:
             pass
 
@@ -521,9 +498,8 @@ class DashboardApp(App):
             details.update("[dim]No session selected[/dim]")
 
     def _update_tokens(self) -> None:
-        """Update tokens panel with model usage (always visible)."""
+        """Update tokens panel with model usage."""
         tokens_widget = self.query_one("#tokens", Static)
-        # Always show model usage
         tokens_widget.update(render_model_usage(self.model_usage))
 
     def _update_skills(self) -> None:
@@ -532,9 +508,10 @@ class DashboardApp(App):
         if self.selected_session:
             skills = self.skills_cache.get(self.selected_session.id)
             if skills is None:
-                self._load_skills(self.selected_session.id)
-                skills = []
-            skills_table.update_skills(skills)
+                # Show loading state
+                skills_table.update_skills(None)
+            else:
+                skills_table.update_skills(skills)
         else:
             skills_table.update_skills(None)
 
@@ -544,9 +521,10 @@ class DashboardApp(App):
         if self.selected_session:
             todos = self.todos_cache.get(self.selected_session.id)
             if todos is None:
-                self._load_todos(self.selected_session.id)
-                todos = []
-            todos_table.update_todos(todos)
+                # Show loading state
+                todos_table.update_todos([])
+            else:
+                todos_table.update_todos(todos)
         else:
             todos_table.update_todos([])
 

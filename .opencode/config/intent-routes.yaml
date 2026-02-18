@@ -219,6 +219,25 @@ routes:
     strategy: direct
     notes: Use for context cleanup, token reduction, efficiency tuning
 
+  # Explore: Creative exploration with strategic variance
+  explore:
+    description: Creative exploration, unconventional approaches, "surprise me" tasks
+    confidence_threshold: 0.5
+    context_modules:
+      - 00-core-contract
+    skill: analysis-agent
+    skill_load_instruction: 'skill({ name: "analysis-agent" })'
+    skill_usage: "Load skill, explore with creative variance enabled"
+    invoke_via: skill
+    tools:
+      - Read
+      - Grep
+      - Bash
+    strategy: direct
+    variance: high
+    temperature_override: 0.7
+    notes: "Use when user wants creative/exploratory output. Enables strategic variance for interesting results."
+
   # Verify: Generator-Verifier-Reviser pattern for high-reliability tasks
   verify:
     description: High-reliability code generation with verification loop
@@ -609,3 +628,73 @@ intent_keywords:
     - "context cleanup"
     - "efficiency"
     - "prune"
+
+  explore:
+    - "surprise me"
+    - "creative"
+    - "unconventional"
+    - "explore"
+    - "experiment"
+    - "try something different"
+    - "interesting"
+    - "novel"
+
+# ============================================
+# STRATEGIC VARIANCE
+# ============================================
+# Strategic variance introduces controlled randomness to produce
+# more interesting/creative outputs SOMETIMES (not always).
+#
+# Variance Levels:
+#   - low: Standard deterministic behavior (default)
+#   - medium: 20% chance of creative deviation
+#   - high: 40% chance of creative deviation, higher temperature
+#
+# Use Cases:
+#   - Brainstorming sessions
+#   - Exploratory coding
+#   - "Surprise me" requests
+#   - Learning/demonstration scenarios
+#
+# IMPORTANT: Strategic variance should NOT be used for:
+#   - Security-critical code
+#   - Production deployments
+#   - Data migrations
+#   - Any task requiring deterministic output
+# ============================================
+strategic_variance:
+  enabled: true
+  
+  levels:
+    low:
+      probability: 0.0
+      temperature: 0.0
+      description: "Fully deterministic, no variance"
+    
+    medium:
+      probability: 0.2
+      temperature: 0.5
+      description: "Occasional creative deviation"
+    
+    high:
+      probability: 0.4
+      temperature: 0.7
+      description: "Frequent creative deviation, more interesting outputs"
+
+  # Default variance by intent
+  default_variance:
+    debug: low          # Must be deterministic
+    implement: low      # Code should be correct
+    review: low         # Analysis should be accurate
+    research: medium    # Some exploration OK
+    git: low            # Version control must be precise
+    document: medium    # Documentation can be creative
+    complex: medium     # Complex tasks may benefit from exploration
+    explore: high       # Explicitly requested creativity
+    
+  # Intents that MUST NEVER have variance (safety)
+  variance_forbidden:
+    - verify            # Verification must be deterministic
+    - security-audit    # Security must be precise
+    - production-deploy # Deployments must be predictable
+

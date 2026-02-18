@@ -401,7 +401,7 @@ def cmd_classify(args):
         return 1
 
     # Display results
-    intent = result.get("intent", "unknown")
+    intent = result.get("intent", "unclear")
     confidence = result.get("confidence", 0)
     action = result.get("suggested_action", "unknown")
     complexity = result.get("complexity", 0)

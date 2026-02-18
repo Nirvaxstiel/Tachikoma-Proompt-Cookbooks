@@ -2,11 +2,18 @@
 
 This document describes how the agent system works.
 
+> **Architecture**: The system follows this order:
+> 1. `AGENTS.md` (this file) - System overview
+> 2. `.opencode/agents/tachikoma.md` - Agent definition with mandatory workflow
+> 3. `.opencode/skills/*/SKILL.md` - Capability modules
+
 ## How It Works
 
 ```
-User Query → Tachikoma → Route to Skill/Subagent → Result
+User Query → [MUST: Classify] → [MUST: Load Context] → [MUST: Load Skill] → Execute → Report
 ```
+
+**Every request MUST go through all phases. Skipping phases is a contract violation.**
 
 1. User sends a request to Tachikoma
 2. Tachikoma figures out what kind of task it is

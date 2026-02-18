@@ -236,25 +236,44 @@ def get_session_tool_call_count(session_id: str) -> int:
 
 
 def get_last_user_message(session_id: str) -> Optional[str]:
+    """Get the last user message text from parts.
+
+    User message content is stored in the part table with type='text',
+    not in the message table's format.body field.
+
+    Args:
+        session_id: The session ID to query
+
+    Returns:
+        The last user message text or None
+    """
     b = _builder()
     if b is None:
         return None
 
     with b._conn() as conn:
+        # Get text parts from user messages
         r = conn.execute(
             """
-            SELECT data FROM message
-            WHERE session_id = ?
-            AND json_valid(data) = 1
-            AND json_extract(data, '$.role') = 'user'
-            ORDER BY time_created DESC
+            SELECT p.data
+            FROM part p
+            JOIN message m ON p.message_id = m.id
+            WHERE m.session_id = ?
+            AND json_extract(m.data, '$.role') = 'user'
+            AND json_valid(p.data) = 1
+            AND json_extract(p.data, '$.type') = 'text'
+            ORDER BY p.time_created DESC
             LIMIT 1
-        """,
+            """,
             (session_id,),
         ).fetchone()
 
         if r:
-            return json_extract(r, "$.format.body")
+            try:
+                data = json.loads(r["data"])
+                return data.get("text", None)
+            except (json.JSONDecodeError, KeyError):
+                return None
         return None
 
 

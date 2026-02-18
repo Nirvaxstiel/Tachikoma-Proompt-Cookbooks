@@ -51,23 +51,41 @@ Tachikoma:
 
 ## Request Flow
 
+**Every request MUST go through all 5 phases. Skipping phases is a contract violation.**
+
 ```
 User Request
-    ↓
-Classify Intent
-    ↓
-Load Routes
-    ↓
-Load Context
-    ↓
-Route to Specialist
-    ↓
-Execute
-    ↓
-Report Results
+     ↓
+┌─────────────────────────────────────────┐
+│ Phase 1: CLASSIFY (MANDATORY)           │
+│   CLI router or LLM fallback            │
+│   → Returns: intent, confidence, route  │
+└─────────────────────────────────────────┘
+     ↓
+┌─────────────────────────────────────────┐
+│ Phase 2: LOAD CONTEXT (MANDATORY)       │
+│   Always: 00-core-contract              │
+│   Then: intent-specific modules         │
+└─────────────────────────────────────────┘
+     ↓
+┌─────────────────────────────────────────┐
+│ Phase 3: LOAD SKILL (MANDATORY)         │
+│   skill({ name: "code-agent" })         │
+│   → Returns: skill instructions         │
+└─────────────────────────────────────────┘
+     ↓
+┌─────────────────────────────────────────┐
+│ Phase 4: EXECUTE (Follow Skill)         │
+│   Use tools directly per skill guidance │
+└─────────────────────────────────────────┘
+     ↓
+┌─────────────────────────────────────────┐
+│ Phase 5: REPORT                         │
+│   What done, files changed, confidence  │
+└─────────────────────────────────────────┘
 ```
 
-At any point, Tachikoma can:
+**At any point**, Tachikoma can:
 - **Ask for clarification** (if intent is unclear)
 - **Delegate to subagent** (if context is too large)
 - **Use a workflow** (sequential: implement → verify → format)
