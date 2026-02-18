@@ -1,7 +1,9 @@
 @echo off
 REM
 REM Smoke Test Runner Wrapper (Windows)
-REM Convenience wrapper for running smoke tests on Windows
+REM - Uses injected Python or bundled Python
+REM - Downloads uv if not present
+REM - Sets environment variables for the session
 REM
 REM Usage:
 REM   run-smoke-tests.bat                # Run all tests
@@ -10,35 +12,120 @@ REM   run-smoke-tests.bat shell          # Test Shell scripts only
 REM   run-smoke-tests.bat --fail-fast    # Stop on first failure
 REM
 
-setlocal enabledelayedexpansion
+setlocal EnableExtensions EnableDelayedExpansion
 
-REM Get script directory
+REM Get script directory and project root
 set "SCRIPT_DIR=%~dp0"
+set "OPENCODE_DIR=%~dp0.."
+set "ASSETS_DIR=%OPENCODE_DIR%\assets"
 
-REM Check if Python is available
+REM ===========================================================================
+REM Python Detection: PATH -> Bundled Python
+REM ===========================================================================
+set "PYTHON="
+set "UV="
+
+REM Try to find Python from PATH first (injected by opencode)
 where python >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    set "PYTHON_CMD=python"
+if %errorlevel% equ 0 (
+    for /f "delims=" %%i in ('where python') do (
+        set "PYTHON=%%i"
+        goto :python_found
+    )
 ) else (
     where python3 >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        set "PYTHON_CMD=python3"
+    if %errorlevel% equ 0 (
+        for /f "delims=" %%i in ('where python3') do (
+            set "PYTHON=%%i"
+            goto :python_found
+        )
     ) else (
-        echo [ERROR] Python not found in PATH
-        echo Please install Python 3.6 or higher
-        exit /b 1
+        REM Try bundled Python in common locations
+        if exist "%ASSETS_DIR%\Python310\python.exe" (
+            set "PYTHON=%ASSETS_DIR%\Python310\python.exe"
+        ) else if exist "%ASSETS_DIR%\Python\python.exe" (
+            set "PYTHON=%ASSETS_DIR%\Python\python.exe"
+        ) else if exist "%OPENCODE_DIR%\Python310\python.exe" (
+            set "PYTHON=%OPENCODE_DIR%\Python310\python.exe"
+        )
     )
 )
 
+:python_found
+
+if not defined PYTHON (
+    echo [ERROR] Python not found in PATH or bundled locations
+    echo Please install Python 3.10+ or place bundled Python in assets folder
+    exit /b 1
+)
+
+echo [INFO] Using Python: %PYTHON%
+
+REM ===========================================================================
+REM UV Detection: PATH -> Bundled UV -> Download
+REM ===========================================================================
+
+REM Try to find uv from PATH first
+where uv >nul 2>&1
+if %errorlevel% equ 0 (
+    for /f "delims=" %%i in ('where uv') do (
+        set "UV=%%i"
+        goto :uv_found
+    )
+)
+
+REM Try bundled uv
+if exist "%ASSETS_DIR%\uv.exe" (
+    set "UV=%ASSETS_DIR%\uv.exe"
+) else if exist "%OPENCODE_DIR%\uv.exe" (
+    set "UV=%OPENCODE_DIR%\uv.exe"
+) else (
+    REM Download uv if not found
+    echo [INFO] uv not found, downloading...
+    powershell -Command "Invoke-WebRequest -Uri 'https://astral.sh/uv/latest/uv-x86_64-pc-windows-msvc.zip' -OutFile '%TEMP%\uv.zip'" 2>nul
+    if exist "%TEMP%\uv.zip" (
+        powershell -Command "Expand-Archive -Path '%TEMP%\uv.zip' -DestinationPath '%ASSETS_DIR%' -Force"
+        del /q "%TEMP%\uv.zip" 2>nul
+    )
+
+    REM Check if uv was downloaded
+    if exist "%ASSETS_DIR%\uv.exe" (
+        set "UV=%ASSETS_DIR%\uv.exe"
+    ) else if exist "%ASSETS_DIR%\uv\uv.exe" (
+        set "UV=%ASSETS_DIR%\uv\uv.exe"
+    )
+)
+
+:uv_found
+
+if defined UV (
+    echo [INFO] Using UV: %UV%
+) else (
+    echo [WARN] UV not found - some features may not work
+)
+
+REM ===========================================================================
+REM Export environment variables for child processes (via setx would be permanent)
+REM For session-only, we pass them to the subprocess
+REM ===========================================================================
+
+echo.
 echo ======================================
 echo Running Smoke Tests
 echo ======================================
-echo Python command: %PYTHON_CMD%
+echo Python: %PYTHON%
+echo UV: %UV%
 echo Arguments: %*
 echo.
 
 REM Run the actual smoke test script
-"%PYTHON_CMD%" "%SCRIPT_DIR%smoke_test.py" %*
+REM Pass PYTHON and UV as environment variables to the subprocess
+set "PYTHON_CMD=%PYTHON%"
+if defined UV (
+    "%PYTHON_CMD%" "%SCRIPT_DIR%smoke_test.py" %*
+) else (
+    "%PYTHON_CMD%" "%SCRIPT_DIR%smoke_test.py" %*
+)
 
 set "EXIT_CODE=%ERRORLEVEL%"
 
