@@ -92,7 +92,7 @@ Place most relevant information where attention is highest:
 
 ### In Tachikoma Framework
 
-**Location:** `.opencode/context/position-aware-loader.py`
+**Location:** `.opencode/context-modules/position-aware-loader.py`
 
 **Key Methods:**
 
@@ -287,4 +287,4 @@ complex:
 
 **Last Updated:** 2026-02-17
 **Research Basis:** Hsieh et al. (ACL 2024), ICML 2025
-**Implementation:** `.opencode/context/position-aware-loader.py`
+**Implementation:** `.opencode/context-modules/position-aware-loader.py`

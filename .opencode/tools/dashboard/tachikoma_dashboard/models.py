@@ -1,9 +1,9 @@
 """Data models for the Tachikoma dashboard."""
 
-from dataclasses import dataclass
-from typing import Optional
-from enum import Enum
 import time
+from dataclasses import dataclass
+from enum import Enum
+from typing import Optional
 
 
 class SessionStatus(Enum):
@@ -97,6 +97,7 @@ class SessionTree:
         self.session = session
         self.children: list[SessionTree] = []
         self._status: Optional[SessionStatus] = None
+        self._is_expanded: bool = True  # Default to expanded
 
     @property
     def status(self) -> SessionStatus:
@@ -105,9 +106,18 @@ class SessionTree:
             self._status = self.session.status
         return self._status
 
+    @property
+    def is_subagent(self) -> bool:
+        """Check if this session is a subagent (has parent_id)."""
+        return self.session.parent_id is not None
+
     def add_child(self, child: "SessionTree") -> None:
         """Add a child session tree."""
         self.children.append(child)
+
+    def toggle_expanded(self) -> None:
+        """Toggle expanded state."""
+        self._is_expanded = not self._is_expanded
 
     def find_by_id(self, session_id: str) -> Optional["SessionTree"]:
         """Find a session tree by ID."""

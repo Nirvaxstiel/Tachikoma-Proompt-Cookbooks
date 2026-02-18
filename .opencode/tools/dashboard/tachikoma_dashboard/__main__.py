@@ -4,8 +4,8 @@ import argparse
 import sys
 import json
 
-from .app import DashboardApp
-from . import db
+from tachikoma_dashboard.app import DashboardApp
+from tachikoma_dashboard import db
 
 
 def main() -> int:

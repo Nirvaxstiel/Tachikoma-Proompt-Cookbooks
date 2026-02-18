@@ -207,7 +207,7 @@ Next steps:
 
 **Files changed**:
 - docs/security-findings.md (created)
-- .opencode/context/50-prompt-safety.md (updated)
+- .opencode/context-modules/50-prompt-safety.md (updated)
 
 **Next steps**:
 - Fix JWT secret (use environment variable)

@@ -156,6 +156,18 @@ When something feels wrong, check against these parameters to understand why.
 
 ---
 
+## 11. Artifact Consent
+
+Before creating persistent artifacts, agents must:
+- Verify task explicitly requests artifact
+- Check for existing artifacts to integrate with
+- Ask user for consent unless clearly in scope
+- Prefer terminal output for temporary information
+
+**Silent artifact creation is prohibited.**
+
+---
+
 ## Final Rule
 
 When in doubt:

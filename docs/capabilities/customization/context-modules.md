@@ -37,6 +37,7 @@ Context modules define how your project works — coding standards, workflow pat
 |--------|----------|---------|-------------|
 | `00-core-contract` | 0 | Universal rules (ALWAYS first) | Every task |
 | `10-coding-standards` | 10 | Code style and design patterns | Coding tasks (implement/debug/review/refactor) |
+| `11-artifacts-policy` | 11 | Artifact consent and workspace protection | Every task |
 | `12-commenting-rules` | 12 | Comment guidelines | Coding tasks (coupled with coding-standards) |
 | `20-git-workflow` | 20 | Git conventions | Git operations |
 | `30-research-methods` | 30 | Investigation methodology | Research tasks |
@@ -59,10 +60,10 @@ Context modules define how your project works — coding standards, workflow pat
 
 ### Step 1: Create Module File
 
-Create a new file in `.opencode/context/`:
+Create a new file in `.opencode/context-modules/`:
 
 ```bash
-touch .opencode/context/40-my-project-rules.md
+touch .opencode/context-modules/40-my-project-rules.md
 ```
 
 ### Step 2: Module Frontmatter
@@ -801,6 +802,7 @@ Some modules are coupled — if you load one, Tachikoma automatically loads the 
 | Module | Coupled With | Reason |
 |--------|--------------|--------|
 | `10-coding-standards` | `12-commenting-rules` | Coding tasks need both style and comment rules |
+| `11-artifacts-policy` | Applies to all skills | Artifact consent applies to all skills that create files |
 
 ### Custom Couplings
 

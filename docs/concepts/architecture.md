@@ -126,7 +126,7 @@ Notice speed is last. We prefer correct over fast, consistent over clever.
 | File | Purpose |
 |------|---------|
 | `.opencode/config/intent-routes.yaml` | Route definitions (intent → skill/subagent) |
-| `.opencode/context/navigation.md` | Context module index |
+| `.opencode/context-modules/navigation.md` | Context module index |
 | `.opencode/agents/tachikoma.md` | Orchestrator definition |
 
 See [File Locations](../getting-started.md#file-locations) for full structure.

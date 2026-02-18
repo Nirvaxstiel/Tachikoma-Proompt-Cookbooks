@@ -1,4 +1,4 @@
-"""Widgets for Tachikoma dashboard."""
+"""Widgets for Tachikoma dashboard with session tree visualization."""
 
 from typing import Any, Optional
 
@@ -6,6 +6,7 @@ from rich.style import Style
 from rich.text import Text
 
 from .models import Session, SessionStats, SessionStatus, SessionTree, Todo
+from .tree_renderer import render_tree_iterative, debug_tree
 
 # GITS Theme colors
 GITS_BG = "#0a0e14"
@@ -46,6 +47,32 @@ def format_duration(seconds: int) -> str:
     return f"{hours}h{mins:02d}"
 
 
+def render_session_tree(trees: list[SessionTree], debug: bool = False) -> str:
+    """
+    Render session hierarchy as a vertical tree with branching.
+    
+    Uses modern iterative renderer with guard clauses for better debugging.
+    
+    Args:
+        trees: List of root SessionTree nodes
+        debug: Print debug information about tree structure
+    
+    Returns:
+        Rendered tree as string
+    """
+    if not trees:
+        return "No sessions found"
+
+    if debug:
+        debug_tree(trees)
+        print("\n" + "=" * 60 + "\n")
+
+    # Use iterative renderer (no stack overflow on deep trees)
+    lines = render_tree_iterative(trees, debug=debug)
+
+    return "\n".join(lines)
+
+
 def render_details(session: Session | None, stats: SessionStats | None = None) -> Text:
     """Render session details."""
     if not session:
@@ -61,10 +88,13 @@ def render_details(session: Session | None, stats: SessionStats | None = None) -
         truncate_message(stats.last_user_message) if stats and stats.last_user_message else "--"
     )
 
+    # Check if subagent
+    is_subagent = " (subagent)" if session.parent_id else ""
+
     lines = [
         Text()
         + Text("Selected: ", style=Style(bold=True, color=GITS_CYAN))
-        + Text(session.title, style=Style(color=GITS_TEXT)),
+        + Text(session.title + is_subagent, style=Style(color=GITS_TEXT)),
         Text()
         + Text("Status: ", style=Style(bold=True, color=GITS_CYAN))
         + Text(f"{icon_char} ", style=Style(color=icon_color))
@@ -161,23 +191,22 @@ def render_todos(todos: list[Todo]) -> Text:
 
 
 def render_aggregation(sessions: list[Session]) -> Text:
-    """Render root aggregation stats."""
+    """Render aggregation stats for sessions."""
+    if not sessions:
+        return Text("No sessions", style=Style(color=GITS_MUTED))
+
     total = len(sessions)
+    subagent_count = sum(1 for s in sessions if s.parent_id is not None)
     working = sum(1 for s in sessions if s.status == SessionStatus.WORKING)
     active = sum(1 for s in sessions if s.status == SessionStatus.ACTIVE)
 
     text = Text()
     text.append("Sessions: ", style=Style(color=GITS_TEXT))
+    text.append(f"{total}", style=Style(bold=True, color=GITS_GREEN))
+    text.append(f" ({subagent_count} subagents) | ", style=Style(color=GITS_MUTED))
     text.append(f"{working}", style=Style(bold=True, color=GITS_GREEN))
     text.append(" running | ", style=Style(color=GITS_TEXT))
     text.append(f"{active}", style=Style(bold=True, color=GITS_ORANGE))
-    text.append(" active | ", style=Style(color=GITS_TEXT))
-    text.append(f"{total}", style=Style(bold=True, color=GITS_MUTED))
-    text.append(" total", style=Style(color=GITS_TEXT))
+    text.append(" active", style=Style(color=GITS_TEXT))
 
     return text
-
-
-def render_empty_state(message: str) -> Text:
-    """Render an empty state message."""
-    return Text(message, style=Style(color=GITS_MUTED))

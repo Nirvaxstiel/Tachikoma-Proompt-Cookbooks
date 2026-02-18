@@ -122,7 +122,7 @@ routes:
 Your team follows specific coding conventions:
 
 ```bash
-touch .opencode/context/40-team-standards.md
+touch .opencode/context-modules/40-team-standards.md
 ```
 
 ```yaml

@@ -439,6 +439,15 @@ behavior:
       must_co_load:
         - 12-commenting-rules
       reason: "Commenting rules are inseparable from coding standards"
+    # When artifacts-policy loads, it provides consent workflow for all skills
+    11-artifacts-policy:
+      applies_to:
+        - code-agent
+        - workflow-management
+        - task-tracking
+        - verifier-code-agent
+        - self-learning
+      reason: "Artifact consent applies to all skills that create files"
 
 # ============================================
 # CONTEXT MODULE PRIORITY
@@ -447,6 +456,7 @@ behavior:
 module_priority:
   00-core-contract: 0
   10-coding-standards: 10
+  11-artifacts-policy: 11  # Artifact consent - loads after core, before other modules
   12-commenting-rules: 12  # Bumped up from 15 - tightly coupled with coding-standards
   20-git-workflow: 20
   30-research-methods: 30

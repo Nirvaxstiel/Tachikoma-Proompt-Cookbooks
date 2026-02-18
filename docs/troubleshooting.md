@@ -206,7 +206,7 @@ A: Yes! Tachikoma is built on the Agent Skills standard and is compatible with a
 **Solutions:**
 
 1. **Check File Location**
-   - Must be in `.opencode/context/`
+   - Must be in `.opencode/context-modules/`
    - File name must follow pattern: `XX-name.md`
    - XX is the priority (00-99)
 
@@ -590,7 +590,7 @@ When reporting issues:
 |-----------|----------|
 | Skills | `.opencode/skills/my-skill/SKILL.md` |
 | Subagents | `.opencode/agents/subagents/my-subagent/SUBAGENT.md` |
-| Context Modules | `.opencode/context/XX-my-module.md` |
+| Context Modules | `.opencode/context-modules/XX-my-module.md` |
 | Routes | `.opencode/config/intent-routes.yaml` |
 | Intent Classifier | `.opencode/skills/intent-classifier/SKILL.md` |
 
