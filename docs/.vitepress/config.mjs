@@ -16,7 +16,6 @@ export default defineConfig({
       { text: 'Capabilities', link: '/capabilities/index' },
       { text: 'Internals', link: '/internals/' },
       { text: 'Research', link: '/research/overview' },
-      { text: 'Changelog', link: '/changelog' },
     ],
 
     // Enhanced sidebar with all navigation
