@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-import tempfile
+# Add parent directory to path for imports
+import sys
 from pathlib import Path
 from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Add parent directory to path for imports
-import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
@@ -25,8 +24,9 @@ def mock_db_path(tmp_path: Path) -> Path:
 def sample_session_data() -> list[dict]:
     """Sample session data for testing."""
     import time
+
     now = int(time.time() * 1000)
-    
+
     return [
         {
             "id": "session-1",
@@ -62,8 +62,9 @@ def sample_session_data() -> list[dict]:
 def sample_todo_data() -> list[dict]:
     """Sample todo data for testing."""
     import time
+
     now = int(time.time() * 1000)
-    
+
     return [
         {
             "session_id": "session-1",
@@ -96,8 +97,9 @@ def sample_todo_data() -> list[dict]:
 def sample_skill_data() -> list[dict]:
     """Sample skill invocation data for testing."""
     import time
+
     now = int(time.time() * 1000)
-    
+
     return [
         {
             "name": "code-review",
@@ -117,15 +119,18 @@ def sample_skill_data() -> list[dict]:
 
 
 @pytest.fixture
-def mock_db(sample_session_data: list[dict], sample_todo_data: list[dict]) -> Generator[MagicMock, None, None]:
+def mock_db(
+    sample_session_data: list[dict], sample_todo_data: list[dict]
+) -> Generator[MagicMock, None, None]:
     """Mock database module for testing without real DB."""
-    with patch("tachikoma_dashboard.db._db_path") as mock_path, \
-         patch("tachikoma_dashboard.db._builder") as mock_builder:
-        
+    with (
+        patch("tachikoma_dashboard.db._db_path") as mock_path,
+        patch("tachikoma_dashboard.db._builder") as mock_builder,
+    ):
         # Create mock query builder
         builder = MagicMock()
         mock_builder.return_value = builder
-        
+
         # Mock select to return sample data
         def mock_select(table, **kwargs):
             if table.name == "session":
@@ -133,10 +138,10 @@ def mock_db(sample_session_data: list[dict], sample_todo_data: list[dict]) -> Ge
             elif table.name == "todo":
                 return [type("Row", (), row) for row in sample_todo_data]
             return []
-        
+
         builder.select = mock_select
         builder.count = MagicMock(return_value=5)
-        
+
         yield builder
 
 
@@ -144,6 +149,7 @@ def mock_db(sample_session_data: list[dict], sample_todo_data: list[dict]) -> Ge
 def clean_cache():
     """Clear LRU cache before each test."""
     from tachikoma_dashboard.models import _get_status_cached
+
     _get_status_cached.cache_clear()
     yield
     _get_status_cached.cache_clear()

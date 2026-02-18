@@ -20,7 +20,6 @@ from tachikoma_dashboard.db import (
     get_sessions,
     get_skill_usage_stats,
 )
-from tachikoma_dashboard.models import Session
 
 
 def run_dashboard_json() -> dict:
@@ -82,7 +81,7 @@ def test_no_exceptions() -> bool:
     if "error" in result and "stderr" in result:
         stderr = result["stderr"].lower()
         if "traceback" in stderr or "exception" in stderr:
-            print(f"  [X] FAILED: Exception detected")
+            print("  [X] FAILED: Exception detected")
             return False
 
     print("  [+] OK: No exceptions")
@@ -116,9 +115,9 @@ def test_session_queries() -> bool:
             first_session = sessions[0]
             session = get_session_by_id(first_session.id)
             if session:
-                print(f"  [+] OK: Can retrieve session by ID")
+                print("  [+] OK: Can retrieve session by ID")
             else:
-                print(f"  [X] FAILED: Cannot retrieve session by ID")
+                print("  [X] FAILED: Cannot retrieve session by ID")
                 return False
 
         return True
@@ -189,10 +188,6 @@ def test_widget_imports() -> bool:
         from tachikoma_dashboard.models import SessionStatus
         from tachikoma_dashboard.widgets import (
             get_status_icon,
-            render_aggregation,
-            render_details,
-            render_skills,
-            render_todos,
             truncate_message,
         )
 
@@ -201,7 +196,7 @@ def test_widget_imports() -> bool:
         # Test a few functions
         icon, color = get_status_icon(SessionStatus.WORKING)
         msg = truncate_message("This is a test message")
-        print(f"  [+] OK: Widget functions execute correctly")
+        print("  [+] OK: Widget functions execute correctly")
 
         return True
 

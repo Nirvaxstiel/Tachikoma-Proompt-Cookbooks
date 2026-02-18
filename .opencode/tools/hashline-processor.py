@@ -12,18 +12,20 @@ Impact: +8-61% edit success rate, especially for weak models
 
 import hashlib
 import os
-from typing import List, Tuple, Optional
+from typing import List, Optional
 
 
 class HashlineProcessor:
     """Process files with hashline format for edit operations"""
 
     def __init__(self):
-        self.hash_length = 4  # Number of characters for content hash (16M possibilities)
+        self.hash_length = (
+            4  # Number of characters for content hash (16M possibilities)
+        )
 
     def _hash_line(self, line: str) -> str:
         """Generate 2-char hash for a single line"""
-        return hashlib.sha256(line.encode()).hexdigest()[:self.hash_length]
+        return hashlib.sha256(line.encode()).hexdigest()[: self.hash_length]
 
     def generate_hashline(self, content: str, line_number: int) -> str:
         """
@@ -39,7 +41,7 @@ class HashlineProcessor:
         Raises:
             ValueError: If line_number is out of range
         """
-        lines = content.split('\n')
+        lines = content.split("\n")
         if line_number - 1 >= len(lines) or line_number < 1:
             raise ValueError(
                 f"Line {line_number} out of range (file has {len(lines)} lines)"
@@ -75,12 +77,12 @@ class HashlineProcessor:
         if not os.path.exists(filepath):
             raise FileNotFoundError(f"File not found: {filepath}")
 
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             lines = f.readlines()
 
         hashlines = []
         for i, line in enumerate(lines, 1):
-            line_stripped = line.rstrip('\n')
+            line_stripped = line.rstrip("\n")
             line_hash = self._hash_line(line_stripped)
             hashlines.append(f"{i}:{line_hash}|{line_stripped}")
 
@@ -91,7 +93,7 @@ class HashlineProcessor:
         filepath: str,
         target_hash: str,
         new_content: str,
-        verify_hash: bool = True
+        verify_hash: bool = True,
     ) -> bool:
         """
         Apply edit using hashline reference
@@ -118,13 +120,13 @@ class HashlineProcessor:
         hash_to_index = {}
         for idx, hashline in enumerate(current_hashlines):
             # Extract hash prefix (everything before first '|')
-            hash_prefix = hashline.split('|')[0]
+            hash_prefix = hashline.split("|")[0]
             hash_to_index[hash_prefix] = idx
 
         if target_hash not in hash_to_index:
             # Find similar hashes to help debugging
             existing_hashes = list(hash_to_index.keys())
-            line_number = target_hash.split(':')[0] if ':' in target_hash else '?'
+            line_number = target_hash.split(":")[0] if ":" in target_hash else "?"
 
             raise ValueError(
                 f"Hash '{target_hash}' not found in file.\n"
@@ -137,25 +139,22 @@ class HashlineProcessor:
         line_index = hash_to_index[target_hash]
 
         # Read original file
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             lines = f.readlines()
 
         # Update line (preserve original newline style)
         original_line = lines[line_index]
-        original_newline = '\n' if original_line.endswith('\n') else ''
+        original_newline = "\n" if original_line.endswith("\n") else ""
         lines[line_index] = new_content + original_newline
 
         # Write back
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             f.writelines(lines)
 
         return True
 
     def find_hash_line(
-        self,
-        filepath: str,
-        search_text: str,
-        case_sensitive: bool = False
+        self, filepath: str, search_text: str, case_sensitive: bool = False
     ) -> Optional[str]:
         """
         Find a line by content and return its hashline reference
@@ -181,23 +180,20 @@ class HashlineProcessor:
 
         for hashline in hashlines:
             # Remove hashline prefix to get content
-            content_start = hashline.find('|') + 1
+            content_start = hashline.find("|") + 1
             content = hashline[content_start:]
 
             match_content = content if case_sensitive else content.lower()
 
             if search in match_content:
                 # Extract just the hash prefix
-                hash_prefix = hashline.split('|')[0]
-                return hash_prefix + '|'
+                hash_prefix = hashline.split("|")[0]
+                return hash_prefix + "|"
 
         return None
 
     def batch_find_hash_lines(
-        self,
-        filepath: str,
-        search_texts: List[str],
-        case_sensitive: bool = False
+        self, filepath: str, search_texts: List[str], case_sensitive: bool = False
     ) -> dict:
         """
         Find multiple lines by content and return hashline references
@@ -232,13 +228,15 @@ class HashlineProcessor:
         hashlines = self.read_file_with_hashlines(filepath)
 
         return {
-            'total_lines': len(hashlines),
-            'total_chars': sum(len(h) for h in hashlines),
-            'hash_length': self.hash_length,
-            'hash_space_size': 16 ** self.hash_length,  # Total possible hashes
-            'avg_line_length': sum(len(h) for h in hashlines) / len(hashlines) if hashlines else 0,
-            'first_hash': hashlines[0].split('|')[0] if hashlines else None,
-            'last_hash': hashlines[-1].split('|')[0] if hashlines else None,
+            "total_lines": len(hashlines),
+            "total_chars": sum(len(h) for h in hashlines),
+            "hash_length": self.hash_length,
+            "hash_space_size": 16**self.hash_length,  # Total possible hashes
+            "avg_line_length": sum(len(h) for h in hashlines) / len(hashlines)
+            if hashlines
+            else 0,
+            "first_hash": hashlines[0].split("|")[0] if hashlines else None,
+            "last_hash": hashlines[-1].split("|")[0] if hashlines else None,
         }
 
     def verify_integrity(self, filepath: str) -> dict:
@@ -254,15 +252,15 @@ class HashlineProcessor:
         try:
             hashlines = self.read_file_with_hashlines(filepath)
             return {
-                'valid': True,
-                'lines_checked': len(hashlines),
-                'message': f'All {len(hashlines)} lines have valid hashlines'
+                "valid": True,
+                "lines_checked": len(hashlines),
+                "message": f"All {len(hashlines)} lines have valid hashlines",
             }
         except Exception as e:
             return {
-                'valid': False,
-                'error': str(e),
-                'message': f'Hashline verification failed: {str(e)}'
+                "valid": False,
+                "error": str(e),
+                "message": f"Hashline verification failed: {str(e)}",
             }
 
 
@@ -279,38 +277,32 @@ def get_hashline_processor() -> HashlineProcessor:
 
 
 # CLI interface for testing
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
     import sys
 
-    parser = argparse.ArgumentParser(
-        description='Hashline Edit Format Processor'
-    )
-    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    parser = argparse.ArgumentParser(description="Hashline Edit Format Processor")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Read command
-    read_parser = subparsers.add_parser('read', help='Read file with hashlines')
-    read_parser.add_argument('filepath', help='File path to read')
+    read_parser = subparsers.add_parser("read", help="Read file with hashlines")
+    read_parser.add_argument("filepath", help="File path to read")
 
     # Find command
-    find_parser = subparsers.add_parser('find', help='Find line by content')
-    find_parser.add_argument('filepath', help='File path to search')
-    find_parser.add_argument('search_text', help='Text to search for')
-    find_parser.add_argument(
-        '--case-sensitive',
-        action='store_true',
-        help='Match case'
-    )
+    find_parser = subparsers.add_parser("find", help="Find line by content")
+    find_parser.add_argument("filepath", help="File path to search")
+    find_parser.add_argument("search_text", help="Text to search for")
+    find_parser.add_argument("--case-sensitive", action="store_true", help="Match case")
 
     # Edit command
-    edit_parser = subparsers.add_parser('edit', help='Edit file using hashline')
-    edit_parser.add_argument('filepath', help='File path to edit')
-    edit_parser.add_argument('hash', help='Hashline reference (e.g., "22:a3f1")')
-    edit_parser.add_argument('content', help='New line content')
+    edit_parser = subparsers.add_parser("edit", help="Edit file using hashline")
+    edit_parser.add_argument("filepath", help="File path to edit")
+    edit_parser.add_argument("hash", help='Hashline reference (e.g., "22:a3f1")')
+    edit_parser.add_argument("content", help="New line content")
 
     # Verify command
-    verify_parser = subparsers.add_parser('verify', help='Verify hashline integrity')
-    verify_parser.add_argument('filepath', help='File path to verify')
+    verify_parser = subparsers.add_parser("verify", help="Verify hashline integrity")
+    verify_parser.add_argument("filepath", help="File path to verify")
 
     args = parser.parse_args()
 
@@ -321,16 +313,14 @@ if __name__ == '__main__':
     processor = HashlineProcessor()
 
     try:
-        if args.command == 'read':
+        if args.command == "read":
             hashlines = processor.read_file_with_hashlines(args.filepath)
             for line in hashlines:
                 print(line)
 
-        elif args.command == 'find':
+        elif args.command == "find":
             hash_ref = processor.find_hash_line(
-                args.filepath,
-                args.search_text,
-                args.case_sensitive
+                args.filepath, args.search_text, args.case_sensitive
             )
             if hash_ref:
                 print(f"Found: {hash_ref}")
@@ -338,11 +328,9 @@ if __name__ == '__main__':
                 print(f"Not found: '{args.search_text}'")
                 sys.exit(1)
 
-        elif args.command == 'edit':
+        elif args.command == "edit":
             success = processor.apply_hashline_edit(
-                args.filepath,
-                args.hash,
-                args.content
+                args.filepath, args.hash, args.content
             )
             if success:
                 print(f"✓ Edit successful: {args.hash} -> '{args.content}'")
@@ -350,9 +338,9 @@ if __name__ == '__main__':
                 print("✗ Edit failed")
                 sys.exit(1)
 
-        elif args.command == 'verify':
+        elif args.command == "verify":
             result = processor.verify_integrity(args.filepath)
-            if result['valid']:
+            if result["valid"]:
                 print(f"✓ {result['message']}")
             else:
                 print(f"✗ {result['message']}")

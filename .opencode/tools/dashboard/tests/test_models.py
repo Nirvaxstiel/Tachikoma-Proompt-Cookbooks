@@ -15,9 +15,8 @@ import pytest
 
 from tachikoma_dashboard.models import (
     Session,
-    SessionStatus,
     SessionStats,
-    SessionTree,
+    SessionStatus,
     Skill,
     Todo,
     _get_status_cached,
@@ -69,13 +68,13 @@ class TestStatusCaching:
     def test_status_caching(self, clean_cache) -> None:
         """Test that results are cached."""
         now = int(time.time())
-        
+
         # First call
         result1 = _get_status_cached(now - 10, now)
-        
+
         # Second call with same args should return cached value
         result2 = _get_status_cached(now - 10, now)
-        
+
         assert result1 is result2
 
 
@@ -236,10 +235,10 @@ class TestSessionTree:
     def test_build_session_tree_with_children(self, sessions: list[Session]) -> None:
         """Test tree building with parent-child relationships."""
         trees = build_session_tree(sessions)
-        
+
         # Should have 2 roots
         assert len(trees) == 2
-        
+
         # Find root-1
         root_1 = next((t for t in trees if t.session.id == "root-1"), None)
         assert root_1 is not None
@@ -248,7 +247,7 @@ class TestSessionTree:
     def test_tree_find_by_id(self, sessions: list[Session]) -> None:
         """Test finding a node by session ID."""
         trees = build_session_tree(sessions)
-        
+
         # Find child node
         found = trees[0].find_by_id("child-1")
         assert found is not None
@@ -267,12 +266,12 @@ class TestBuildSessionTreePerformance:
     def test_large_tree_performance(self) -> None:
         """Test O(n) performance with large tree."""
         now = int(time.time() * 1000)
-        
+
         # Create 1000 sessions
         sessions = [
             Session(
                 id=f"session-{i}",
-                parent_id=f"session-{i-1}" if i > 0 else None,
+                parent_id=f"session-{i - 1}" if i > 0 else None,
                 project_id="test",
                 title=f"Session {i}",
                 directory="/test",
@@ -281,12 +280,13 @@ class TestBuildSessionTreePerformance:
             )
             for i in range(1000)
         ]
-        
+
         import time as time_module
+
         start = time_module.time()
         trees = build_session_tree(sessions)
         elapsed = time_module.time() - start
-        
+
         # Should complete in under 100ms
         assert elapsed < 0.1
         assert len(trees) == 1  # One chain

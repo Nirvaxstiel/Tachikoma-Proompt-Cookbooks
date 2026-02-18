@@ -13,15 +13,13 @@ import time
 
 import pytest
 
-from tachikoma_dashboard.models import Session, SessionStatus, SessionTree, build_session_tree
+from tachikoma_dashboard.models import Session, build_session_tree
 from tachikoma_dashboard.tree_renderer import (
     NodeType,
     RenderedLine,
-    TreeRenderContext,
     get_branch_chars,
     get_node_styling,
     get_node_type,
-    get_status_icon,
     get_tree_stats,
     render_tree_iterative,
     render_tree_node_line,
@@ -339,12 +337,12 @@ class TestIterativeVsRecursive:
     def test_deep_tree_no_overflow(self) -> None:
         """Test that deep trees don't cause stack overflow."""
         now = int(time.time() * 1000)
-        
+
         # Create a very deep tree (500 levels)
         sessions = [
             Session(
                 id=f"node-{i}",
-                parent_id=f"node-{i-1}" if i > 0 else None,
+                parent_id=f"node-{i - 1}" if i > 0 else None,
                 project_id="p1",
                 title=f"Node {i}",
                 directory="/test",
@@ -353,9 +351,9 @@ class TestIterativeVsRecursive:
             )
             for i in range(500)
         ]
-        
+
         trees = build_session_tree(sessions)
-        
+
         # This should not raise RecursionError
         result = render_tree_iterative(trees)
         assert len(result) == 500

@@ -11,18 +11,19 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Optional
+from typing import Optional, Type
 
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.message import Message
 from textual.reactive import reactive
-from textual.widgets import Header, Static
+from textual.scrollbar import ScrollBarRender
+from textual.widgets import Header, RichLog, Static
 
 from . import db
-from .models import ModelUsage, Session, SessionStats, SessionTree, Todo, build_session_tree
+from .models import ModelUsage, Session, SessionStats, SessionTree, build_session_tree
 from .session_tree import SessionTreeWidget
 from .styles import DASHBOARD_CSS
 from .theme import THEME
@@ -83,6 +84,15 @@ class ModelUsageLoaded(Message):
 # =============================================================================
 
 
+class ThinScrollBarRender(ScrollBarRender):
+    """Custom scrollbar renderer with thinner horizontal bars.
+
+    Uses lower Unicode box-drawing characters that take up less vertical space.
+    """
+
+    HORIZONTAL_BARS: list[str] = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", " "]
+
+
 class DashboardApp(App):
     """Main dashboard application with GITS-themed visuals.
 
@@ -104,6 +114,9 @@ class DashboardApp(App):
 
     # Use extracted CSS
     CSS = DASHBOARD_CSS
+
+    # Use thin horizontal scrollbars
+    SCROLLBAR_RENDERER: Type[ScrollBarRender] = ThinScrollBarRender
 
     # Reactive state
     sessions: reactive[list[Session]] = reactive(list)
@@ -183,25 +196,29 @@ class DashboardApp(App):
 
             # Right panel: Model Usage, Skills, Todos, Error Details
             with Vertical(id="right-panel"):
-                # Tokens panel with header
+                # Tokens panel with header (RichLog for native scrolling)
                 with Vertical(id="tokens-container"):
                     yield Static("", id="tokens-header")
-                    yield Static("", id="tokens")
+                    with ScrollableContainer(id="tokens-scroll"):
+                        yield RichLog(id="tokens-content")
 
-                # Error details panel (hidden by default)
+                # Error details panel (hidden by default) - RichLog for native scrolling
                 with Vertical(id="error-details-container", classes="hidden"):
                     yield Static("", id="error-header")
-                    yield Static("", id="error-details")
+                    with ScrollableContainer(id="error-scroll"):
+                        yield RichLog(id="error-details-content")
 
                 # Skills panel with DataTable
                 with Vertical(id="skills-container"):
                     yield Static("◆ SKILLS", id="skills-header")
-                    yield SkillsDataTable(id="skills-table")
+                    with ScrollableContainer(id="skills-scroll"):
+                        yield SkillsDataTable(id="skills-table")
 
                 # Todos panel with DataTable
                 with Vertical(id="todos-container"):
                     yield Static("● TODOS", id="todos-header")
-                    yield TodosDataTable(id="todos-table")
+                    with ScrollableContainer(id="todos-scroll"):
+                        yield TodosDataTable(id="todos-table")
 
         # Activity bar with sparkline
         with Vertical(id="activity-bar"):
@@ -403,8 +420,8 @@ class DashboardApp(App):
 
     def _update_tokens(self) -> None:
         """Update tokens panel with model usage."""
-        tokens_widget = self.query_one("#tokens", Static)
-        tokens_widget.update(render_model_usage(self.model_usage))
+        tokens_widget = self.query_one("#tokens-content", RichLog)
+        tokens_widget.write(render_model_usage(self.model_usage))
 
     def _update_skills(self) -> None:
         """Update skills panel with DataTable."""
@@ -441,13 +458,13 @@ class DashboardApp(App):
         from .widgets import render_model_error_details
 
         try:
-            error_widget = self.query_one("#error-details", Static)
+            error_widget = self.query_one("#error-details-content", RichLog)
             if self.show_error_details:
-                # Get all errors from database
-                errors = db.get_all_errors(limit=10)
-                error_widget.update(render_model_error_details(errors))
+                # Get all errors from database (increased limit for scrollable panel)
+                errors = db.get_all_errors(limit=50)
+                error_widget.write(render_model_error_details(errors))
             else:
-                error_widget.update("")
+                error_widget.clear()
         except Exception:
             pass  # Widget not ready yet
 
@@ -535,4 +552,3 @@ class DashboardApp(App):
 
         # Update headers
         self._update_panel_headers()
-

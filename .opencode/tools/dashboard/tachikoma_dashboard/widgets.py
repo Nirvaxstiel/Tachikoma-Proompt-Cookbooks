@@ -10,17 +10,27 @@ All styled with GITS theme (green primary, red accents).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Sequence
 
 from rich.style import Style
 from rich.text import Text
 from textual.containers import Container
 from textual.message import Message
 from textual.reactive import reactive
-from textual.widgets import DataTable, Input, Label, ProgressBar, Sparkline, Static
+from textual.widgets import DataTable, Input, Label, ProgressBar, Sparkline
 
-from .models import ModelError, ModelUsage, Session, SessionStats, SessionStatus, SessionTokens, SessionTree, Skill, Todo
-from .theme import PANEL_BORDERS, PRIORITY_COLORS, STATUS_COLORS, THEME
+from .models import (
+    ModelError,
+    ModelUsage,
+    Session,
+    SessionStats,
+    SessionStatus,
+    SessionTokens,
+    SessionTree,
+    Skill,
+    Todo,
+)
+from .theme import PRIORITY_COLORS, STATUS_COLORS, THEME
 
 if TYPE_CHECKING:
     pass
@@ -29,6 +39,7 @@ if TYPE_CHECKING:
 # =============================================================================
 # UTILITY FUNCTIONS (Pure)
 # =============================================================================
+
 
 def get_status_icon(status: SessionStatus) -> tuple[str, str]:
     """Get status icon and color.
@@ -82,22 +93,22 @@ def format_model_name(provider: str, model: str, max_len: int = 25) -> str:
 
     model_short = model.split("/")[-1] if "/" in model else model
     if len(model_short) > max_len:
-        model_short = model_short[:max_len - 3] + "..."
+        model_short = model_short[: max_len - 3] + "..."
 
     return f"{provider_short}/{model_short}"
 
 
 def _make_label_value(label: str, value: str, label_color: str, value_color: str) -> Text:
     """Create a label: value text pair."""
-    return (
-        Text(label + ": ", style=Style(bold=True, color=label_color)) +
-        Text(value, style=Style(color=value_color))
+    return Text(label + ": ", style=Style(bold=True, color=label_color)) + Text(
+        value, style=Style(color=value_color)
     )
 
 
 # =============================================================================
 # RENDERERS (Pure functions returning Rich Text)
 # =============================================================================
+
 
 def render_session_tree(trees: Sequence[SessionTree], debug: bool = False) -> str:
     """Render session hierarchy as a vertical tree."""
@@ -115,7 +126,7 @@ def render_details(
     agent_name: str = "",
 ) -> Text:
     """Render session details panel.
-    
+
     Args:
         session: The session to render
         stats: Session statistics
@@ -163,11 +174,13 @@ def render_skills(skills: Sequence[Any] | None = None) -> Text:
     separator = Text("─" * 25, style=Style(color=THEME.muted))
 
     if not skills:
-        return Text("\n").join([
-            header,
-            separator,
-            Text("(No skills loaded)", style=Style(color=THEME.muted)),
-        ])
+        return Text("\n").join(
+            [
+                header,
+                separator,
+                Text("(No skills loaded)", style=Style(color=THEME.muted)),
+            ]
+        )
 
     lines = [header, separator]
 
@@ -181,15 +194,11 @@ def render_skills(skills: Sequence[Any] | None = None) -> Text:
         skill_line += Text(name, style=Style(color=THEME.text, bold=True))
         lines.append(skill_line)
 
-        lines.append(
-            Text(f"    Invocations: {invocations}", style=Style(color=THEME.muted))
-        )
+        lines.append(Text(f"    Invocations: {invocations}", style=Style(color=THEME.muted)))
 
         if last_used_ms:
             last_used = format_duration(int(last_used_ms / 1000))
-            lines.append(
-                Text(f"    Last Used: {last_used} ago", style=Style(color=THEME.muted))
-            )
+            lines.append(Text(f"    Last Used: {last_used} ago", style=Style(color=THEME.muted)))
 
     return Text("\n").join(lines)
 
@@ -200,11 +209,13 @@ def render_todos(todos: Sequence[Todo]) -> Text:
     separator = Text("─" * 30, style=Style(color=THEME.muted))
 
     if not todos:
-        return Text("\n").join([
-            header,
-            separator,
-            Text("(No pending tasks)", style=Style(color=THEME.muted)),
-        ])
+        return Text("\n").join(
+            [
+                header,
+                separator,
+                Text("(No pending tasks)", style=Style(color=THEME.muted)),
+            ]
+        )
 
     lines = [header, separator]
 
@@ -217,9 +228,7 @@ def render_todos(todos: Sequence[Todo]) -> Text:
             "completed": "●",
         }.get(todo.status, "○")
 
-        content = (
-            todo.content[:40] + "..." if len(todo.content) > 40 else todo.content
-        )
+        content = todo.content[:40] + "..." if len(todo.content) > 40 else todo.content
 
         line = Text()
         line.append(f"{status_icon} ", style=Style(color=priority_color))
@@ -263,11 +272,13 @@ def render_session_tokens(tokens: SessionTokens | None) -> Text:
     separator = Text("─" * 25, style=Style(color=THEME.muted))
 
     if not tokens or tokens.total_tokens == 0:
-        return Text("\n").join([
-            header,
-            separator,
-            Text("(No token data)", style=Style(color=THEME.muted)),
-        ])
+        return Text("\n").join(
+            [
+                header,
+                separator,
+                Text("(No token data)", style=Style(color=THEME.muted)),
+            ]
+        )
 
     lines = [header, separator]
 
@@ -277,14 +288,16 @@ def render_session_tokens(tokens: SessionTokens | None) -> Text:
     lines.append(total_line)
 
     io_line = Text()
-    io_line.append(f"  In: {format_tokens(tokens.total_input_tokens)}", style=Style(color=THEME.muted))
+    io_line.append(
+        f"  In: {format_tokens(tokens.total_input_tokens)}", style=Style(color=THEME.muted)
+    )
     io_line.append("  ", style=Style(color=THEME.muted))
-    io_line.append(f"Out: {format_tokens(tokens.total_output_tokens)}", style=Style(color=THEME.muted))
+    io_line.append(
+        f"Out: {format_tokens(tokens.total_output_tokens)}", style=Style(color=THEME.muted)
+    )
     lines.append(io_line)
 
-    lines.append(
-        Text(f"  Requests: {tokens.request_count}", style=Style(color=THEME.muted))
-    )
+    lines.append(Text(f"  Requests: {tokens.request_count}", style=Style(color=THEME.muted)))
 
     if len(tokens.models) > 0:
         lines.append(Text())
@@ -292,14 +305,12 @@ def render_session_tokens(tokens: SessionTokens | None) -> Text:
 
         for model in tokens.models[:3]:
             model_line = Text()
-            model_line.append(f"  ◇ ", style=Style(color=THEME.cyan))
+            model_line.append("  ◇ ", style=Style(color=THEME.cyan))
             model_line.append(
-                format_model_name(model.provider, model.model),
-                style=Style(color=THEME.text)
+                format_model_name(model.provider, model.model), style=Style(color=THEME.text)
             )
             model_line.append(
-                f" {format_tokens(model.total_tokens)}",
-                style=Style(color=THEME.green)
+                f" {format_tokens(model.total_tokens)}", style=Style(color=THEME.green)
             )
             lines.append(model_line)
 
@@ -322,29 +333,29 @@ def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
     total_errors = sum(m.error_count for m in models)
 
     summary = Text()
-    summary.append(f"Total: ", style=Style(color=THEME.text))
+    summary.append("Total: ", style=Style(color=THEME.text))
     summary.append(format_tokens(total_tokens), style=Style(bold=True, color=THEME.green))
-    summary.append(f" tokens across ", style=Style(color=THEME.text))
+    summary.append(" tokens across ", style=Style(color=THEME.text))
     summary.append(f"{total_requests}", style=Style(bold=True, color=THEME.green))
-    summary.append(f" requests", style=Style(color=THEME.text))
+    summary.append(" requests", style=Style(color=THEME.text))
     if total_errors > 0:
-        summary.append(f"  ", style=Style(color=THEME.text))
+        summary.append("  ", style=Style(color=THEME.text))
         summary.append(f"{total_errors}", style=Style(bold=True, color=THEME.red))
-        summary.append(f" errors", style=Style(color=THEME.text))
+        summary.append(" errors", style=Style(color=THEME.text))
     lines.append(summary)
     lines.append(Text())
 
-    for model in models[:5]:
+    # Show ALL models (no artificial limit)
+    for model in models:
         model_line = Text()
         model_line.append("  ", style=Style(color=THEME.red))
         model_line.append(
-            format_model_name(model.provider, model.model),
-            style=Style(color=THEME.text, bold=True)
+            format_model_name(model.provider, model.model), style=Style(color=THEME.text, bold=True)
         )
         lines.append(model_line)
 
         stats_line = Text()
-        stats_line.append(f"    Tokens: ", style=Style(color=THEME.muted))
+        stats_line.append("    Tokens: ", style=Style(color=THEME.muted))
         stats_line.append(format_tokens(model.total_tokens), style=Style(color=THEME.green))
         stats_line.append(f"  Reqs: {model.request_count}", style=Style(color=THEME.muted))
 
@@ -356,11 +367,6 @@ def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
 
         lines.append(stats_line)
 
-    if len(models) > 5:
-        lines.append(
-            Text(f"  ... and {len(models) - 5} more", style=Style(color=THEME.muted))
-        )
-
     return Text("\n").join(lines)
 
 
@@ -370,16 +376,16 @@ def render_model_error_details(errors: Sequence[ModelError] | None = None) -> Te
     separator = Text("─" * 35, style=Style(color=THEME.muted))
 
     if not errors:
-        return Text("\n").join([
-            header,
-            separator,
-            Text("(No errors recorded)", style=Style(color=THEME.muted)),
-        ])
+        return Text("\n").join(
+            [
+                header,
+                separator,
+                Text("(No errors recorded)", style=Style(color=THEME.muted)),
+            ]
+        )
 
     lines = [header, separator]
-    lines.append(
-        Text(f"Showing {len(errors)} most recent errors", style=Style(color=THEME.muted))
-    )
+    lines.append(Text(f"Showing {len(errors)} most recent errors", style=Style(color=THEME.muted)))
     lines.append(Text())
 
     for i, error in enumerate(errors, 1):
@@ -393,17 +399,14 @@ def render_model_error_details(errors: Sequence[ModelError] | None = None) -> Te
 
         # Error type
         type_line = Text()
-        type_line.append(f"    Type: ", style=Style(color=THEME.muted))
+        type_line.append("    Type: ", style=Style(color=THEME.muted))
         type_line.append(error.error_name, style=Style(color=THEME.red, bold=True))
         lines.append(type_line)
 
-        # Error message (truncated)
-        msg = error.error_message
-        if len(msg) > 60:
-            msg = msg[:57] + "..."
+        # Error message (full message, no truncation)
         msg_line = Text()
-        msg_line.append(f"    Msg: ", style=Style(color=THEME.muted))
-        msg_line.append(msg, style=Style(color=THEME.text))
+        msg_line.append("    Msg: ", style=Style(color=THEME.muted))
+        msg_line.append(error.error_message, style=Style(color=THEME.text))
         lines.append(msg_line)
 
         lines.append(Text())
@@ -414,6 +417,7 @@ def render_model_error_details(errors: Sequence[ModelError] | None = None) -> Te
 # =============================================================================
 # WIDGET CLASSES (Textual interactive components)
 # =============================================================================
+
 
 class SearchBar(Container):
     """Search bar widget for filtering sessions."""
@@ -514,7 +518,7 @@ class SkillsDataTable(DataTable):
         background: {THEME.bg1};
         color: {THEME.text};
         border: none;
-        height: 1fr;
+        height: 100%;
     }}
 
     SkillsDataTable > .datatable--header {{
@@ -556,7 +560,7 @@ class SkillsDataTable(DataTable):
         self.add_column("Calls", width=6)
         self.add_column("Last Used", width=12)
         self._mounted = True
-        
+
         # Apply any pending skills
         if self._pending_skills is not None:
             self._apply_skills(self._pending_skills)
@@ -568,9 +572,9 @@ class SkillsDataTable(DataTable):
             # Not mounted yet, save for later
             self._pending_skills = list(skills) if skills else None
             return
-        
+
         self._apply_skills(skills)
-    
+
     def _apply_skills(self, skills: Sequence[Skill] | None) -> None:
         """Actually apply skills to the table."""
         # Always clear first
@@ -601,7 +605,7 @@ class TodosDataTable(DataTable):
         background: {THEME.bg1};
         color: {THEME.text};
         border: none;
-        height: 1fr;
+        height: 100%;
     }}
 
     TodosDataTable > .datatable--header {{
@@ -649,7 +653,7 @@ class TodosDataTable(DataTable):
         self.add_column("P", width=1)
         self.add_column("Task", width=30)
         self._mounted = True
-        
+
         # Apply any pending todos
         if self._pending_todos is not None:
             self._apply_todos(self._pending_todos)
@@ -661,9 +665,9 @@ class TodosDataTable(DataTable):
             # Not mounted yet, save for later
             self._pending_todos = list(todos) if todos else None
             return
-        
+
         self._apply_todos(todos)
-    
+
     def _apply_todos(self, todos: Sequence[Todo]) -> None:
         """Actually apply todos to the table."""
         self.clear()

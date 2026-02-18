@@ -70,31 +70,33 @@ python .opencode/tools/smoke_test.py --json
 
 #### Python Scripts
 
-| Test | Description | Status |
-|------|-------------|--------|
-| Syntax | Validates Python syntax using `py_compile` | ✅ |
-| Imports | Verifies all external imports are available | ✅ |
-| Shebang | Validates presence of shebang line | ✅ |
-| CLI Interface | Detects `if __name__ == '__main__'` block | ✅ |
-| Execution | Tests script execution with `--help` | ✅ |
+| Test          | Description                                 | Status |
+| ------------- | ------------------------------------------- | ------ |
+| Syntax        | Validates Python syntax using `py_compile`  | ✅     |
+| Imports       | Verifies all external imports are available | ✅     |
+| Shebang       | Validates presence of shebang line          | ✅     |
+| CLI Interface | Detects `if __name__ == '__main__'` block   | ✅     |
+| Execution     | Tests script execution with `--help`        | ✅     |
 
 #### Shell Scripts
 
-| Test | Description | Status |
-|------|-------------|--------|
-| Shebang | Validates presence of shebang line | ✅ |
-| Syntax | Uses `bash -n` for syntax validation | ✅ |
-| Executable | Verifies file is executable | ✅ |
-| Help Command | Tests `help`, `-h`, or `--help` | ✅ |
-| Execution | Tests basic script execution | ✅ |
+| Test         | Description                          | Status |
+| ------------ | ------------------------------------ | ------ |
+| Shebang      | Validates presence of shebang line   | ✅     |
+| Syntax       | Uses `bash -n` for syntax validation | ✅     |
+| Executable   | Verifies file is executable          | ✅     |
+| Help Command | Tests `help`, `-h`, or `--help`      | ✅     |
+| Execution    | Tests basic script execution         | ✅     |
 
 ### Script Discovery
 
 **Included:**
+
 - All `.py` files (Python scripts)
 - All `.sh` and `.bash` files (Shell scripts)
 
 **Excluded Locations:**
+
 - `node_modules/` - npm dependencies
 - `__pycache__/` - Python cache
 - `.git/` - Git metadata
@@ -102,6 +104,7 @@ python .opencode/tools/smoke_test.py --json
 - `dist/`, `build/` - Build artifacts
 
 **Excluded Files:**
+
 - `tachikoma-install.sh` - Rarely changed, manually tested
 
 ## Dashboard Tests
@@ -136,11 +139,11 @@ cd .opencode/tools/dashboard
 
 ### Test Categories
 
-| Category | File | Tests |
-|----------|------|-------|
-| Models | `test_models.py` | 30+ tests for dataclasses, caching, tree building |
-| Widgets | `test_widgets.py` | 25+ tests for rendering functions |
-| Tree Renderer | `test_tree_renderer.py` | 30+ tests for tree rendering |
+| Category      | File                    | Tests                                             |
+| ------------- | ----------------------- | ------------------------------------------------- |
+| Models        | `test_models.py`        | 30+ tests for dataclasses, caching, tree building |
+| Widgets       | `test_widgets.py`       | 25+ tests for rendering functions                 |
+| Tree Renderer | `test_tree_renderer.py` | 30+ tests for tree rendering                      |
 
 ## Adding New Tests
 
@@ -208,7 +211,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
       - name: Run smoke tests
         run: python .opencode/tools/smoke_test.py --fail-fast
       - name: Run dashboard tests
@@ -234,12 +237,12 @@ echo "Smoke tests passed!"
 
 ## Status Codes
 
-| Status | Meaning |
-|--------|---------|
-| PASS | All checks passed |
-| FAIL | Critical checks failed |
-| WARN | Non-critical issues |
-| SKIP | Test not applicable |
+| Status | Meaning                |
+| ------ | ---------------------- |
+| PASS   | All checks passed      |
+| FAIL   | Critical checks failed |
+| WARN   | Non-critical issues    |
+| SKIP   | Test not applicable    |
 
 ## Troubleshooting
 
@@ -267,13 +270,13 @@ echo "Smoke tests passed!"
 
 ### Files Created
 
-| File | Purpose |
-|------|---------|
-| `smoke_test.py` | Main smoke test framework |
-| `run-smoke-tests.bat` | Windows wrapper |
-| `run-smoke-tests.sh` | Unix wrapper |
-| `dashboard/test_smoke*.py` | Dashboard-specific tests |
-| `dashboard/tests/` | Pytest unit tests |
+| File                       | Purpose                   |
+| -------------------------- | ------------------------- |
+| `smoke_test.py`            | Main smoke test framework |
+| `run-smoke-tests.bat`      | Windows wrapper           |
+| `run-smoke-tests.sh`       | Unix wrapper              |
+| `dashboard/test_smoke*.py` | Dashboard-specific tests  |
+| `dashboard/tests/`         | Pytest unit tests         |
 
 ### Architecture
 

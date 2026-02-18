@@ -8,7 +8,6 @@ Usage:
     python .opencode/tools/dashboard/test_smoke_no_rich.py
 """
 
-import json
 import sys
 from pathlib import Path
 
@@ -16,7 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from tachikoma_dashboard import db
-from tachikoma_dashboard.models import Session, SessionTree, build_session_tree
+from tachikoma_dashboard.models import build_session_tree
 
 
 def test_database_connection() -> bool:
@@ -45,9 +44,9 @@ def test_session_queries() -> bool:
             first_session = sessions[0]
             session = db.get_session_by_id(first_session.id)
             if session:
-                print(f"  [+] OK: Can retrieve session by ID")
+                print("  [+] OK: Can retrieve session by ID")
             else:
-                print(f"  [X] FAILED: Cannot retrieve session by ID")
+                print("  [X] FAILED: Cannot retrieve session by ID")
                 return False
 
         return True
@@ -210,7 +209,7 @@ def test_session_tree_widget() -> bool:
         widget = SessionTreeWidget("Sessions")
         widget.update_sessions(trees)
 
-        print(f"  [+] OK: SessionTreeWidget created and populated")
+        print("  [+] OK: SessionTreeWidget created and populated")
         print(f"  [+] OK: Widget has {len(widget._session_map)} sessions mapped")
 
         return True
@@ -228,14 +227,12 @@ def test_widget_rendering() -> bool:
     print("Testing widget rendering...")
 
     try:
-        from tachikoma_dashboard.models import ModelUsage, SessionTokens
+        from tachikoma_dashboard.models import SessionTokens
         from tachikoma_dashboard.widgets import (
             render_aggregation,
             render_details,
             render_model_usage,
             render_session_tokens,
-            render_skills,
-            render_todos,
         )
 
         # Test token rendering
@@ -248,7 +245,7 @@ def test_widget_rendering() -> bool:
         if len(str(rendered)) == 0:
             print("  [X] FAILED: Token rendering empty")
             return False
-        print(f"  [+] OK: Token rendering works")
+        print("  [+] OK: Token rendering works")
 
         # Test model usage rendering
         models = db.get_all_model_usage()
@@ -256,7 +253,7 @@ def test_widget_rendering() -> bool:
         if len(str(rendered)) == 0:
             print("  [X] FAILED: Model usage rendering empty")
             return False
-        print(f"  [+] OK: Model usage rendering works")
+        print("  [+] OK: Model usage rendering works")
 
         # Test details rendering
         sessions = db.get_sessions()
@@ -265,14 +262,14 @@ def test_widget_rendering() -> bool:
             if len(str(rendered)) == 0:
                 print("  [X] FAILED: Details rendering empty")
                 return False
-            print(f"  [+] OK: Details rendering works")
+            print("  [+] OK: Details rendering works")
 
         # Test aggregation rendering
         rendered = render_aggregation(sessions)
         if len(str(rendered)) == 0:
             print("  [X] FAILED: Aggregation rendering empty")
             return False
-        print(f"  [+] OK: Aggregation rendering works")
+        print("  [+] OK: Aggregation rendering works")
 
         return True
 
@@ -287,7 +284,6 @@ def test_enhanced_widgets() -> bool:
     print("Testing widgets...")
 
     try:
-        from tachikoma_dashboard.models import Skill, Todo
         from tachikoma_dashboard.widgets import (
             ActivitySparkline,
             SearchBar,
@@ -298,29 +294,29 @@ def test_enhanced_widgets() -> bool:
 
         # Test SkillsDataTable - can only test creation without app context
         skills_table = SkillsDataTable()
-        print(f"  [+] OK: SkillsDataTable created")
+        print("  [+] OK: SkillsDataTable created")
 
         # Test TodosDataTable - can only test creation without app context
         todos_table = TodosDataTable()
-        print(f"  [+] OK: TodosDataTable created")
+        print("  [+] OK: TodosDataTable created")
 
         # Test ActivitySparkline
         sparkline = ActivitySparkline()
         sparkline.update_data([1.0, 2.0, 3.0, 2.0, 1.0])
-        print(f"  [+] OK: ActivitySparkline created and updated")
+        print("  [+] OK: ActivitySparkline created and updated")
 
         # Test TodoProgressBar
         progress = TodoProgressBar()
         progress.update_progress(3, 5)
-        print(f"  [+] OK: TodoProgressBar created and updated")
+        print("  [+] OK: TodoProgressBar created and updated")
 
         # Test SearchBar
         search_bar = SearchBar()
-        print(f"  [+] OK: SearchBar created")
+        print("  [+] OK: SearchBar created")
 
         # Note: DataTable requires active app context to add columns/rows
         # Full testing is done when running the actual dashboard
-        print(f"  [!] NOTE: DataTable full test requires running app")
+        print("  [!] NOTE: DataTable full test requires running app")
 
         return True
 
@@ -336,17 +332,7 @@ def test_styles_module() -> bool:
 
     try:
         from tachikoma_dashboard.styles import (
-            AGGREGATION_CSS,
             DASHBOARD_CSS,
-            DETAILS_CSS,
-            FOOTER_CSS,
-            LAYOUT_CSS,
-            SCREEN_CSS,
-            SEARCH_CSS,
-            SESSION_TREE_CSS,
-            SKILLS_CSS,
-            TODOS_CSS,
-            TOKENS_CSS,
         )
 
         # Check that CSS is generated
@@ -355,7 +341,7 @@ def test_styles_module() -> bool:
             return False
 
         print(f"  [+] OK: DASHBOARD_CSS generated ({len(DASHBOARD_CSS)} chars)")
-        print(f"  [+] OK: All CSS modules imported")
+        print("  [+] OK: All CSS modules imported")
 
         return True
 
@@ -381,7 +367,7 @@ def test_caching() -> bool:
             print("  [X] FAILED: Cache get returned wrong value")
             return False
 
-        print(f"  [+] OK: TTLCache works")
+        print("  [+] OK: TTLCache works")
 
         # Test cache invalidation
         cache.invalidate("test_key")
@@ -391,14 +377,14 @@ def test_caching() -> bool:
             print("  [X] FAILED: Cache invalidation failed")
             return False
 
-        print(f"  [+] OK: Cache invalidation works")
+        print("  [+] OK: Cache invalidation works")
 
         # Test global cache exists
         if _session_cache is None:
             print("  [X] FAILED: Session cache not initialized")
             return False
 
-        print(f"  [+] OK: Global caches initialized")
+        print("  [+] OK: Global caches initialized")
 
         return True
 

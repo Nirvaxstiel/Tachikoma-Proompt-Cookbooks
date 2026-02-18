@@ -99,6 +99,7 @@ class TestRenderDetails:
     def session(self) -> Session:
         """Create a test session."""
         import time
+
         now = int(time.time() * 1000)
         return Session(
             id="test-id",
@@ -130,6 +131,7 @@ class TestRenderDetails:
     def test_render_details_subagent_badge(self) -> None:
         """Test that subagent session shows SUBAGENT badge."""
         import time
+
         now = int(time.time() * 1000)
         subagent = Session(
             id="sub-id",
@@ -168,6 +170,7 @@ class TestRenderTodos:
     def todos(self) -> list[Todo]:
         """Create test todos."""
         import time
+
         now = int(time.time() * 1000)
         return [
             Todo(
@@ -204,6 +207,7 @@ class TestRenderTodos:
     def test_render_todos_truncation(self) -> None:
         """Test that long todo content is truncated."""
         import time
+
         now = int(time.time() * 1000)
         long_todo = Todo(
             session_id="test",
@@ -225,6 +229,7 @@ class TestRenderAggregation:
     def sessions(self) -> list[Session]:
         """Create test sessions."""
         import time
+
         now = int(time.time() * 1000)
         return [
             Session(

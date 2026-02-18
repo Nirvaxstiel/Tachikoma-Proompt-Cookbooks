@@ -13,12 +13,11 @@ import json
 import os
 import time
 from dataclasses import dataclass
-from functools import lru_cache
 from pathlib import Path
-from typing import Any, Generic, Optional, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from .models import ModelError, ModelUsage, Session, SessionStats, SessionTokens, Skill, Todo
-from .query import MESSAGE, SESSION, TODO, QueryBuilder, json_extract
+from .query import MESSAGE, SESSION, TODO, QueryBuilder
 
 DB_PATH = ".local/share/opencode/opencode.db"
 
@@ -252,7 +251,6 @@ def get_session_message_count(session_id: str) -> int:
 
 def get_session_tool_call_count(session_id: str) -> int:
     """Count assistant messages (contain tool calls)."""
-    import sqlite3
 
     b = _builder()
     if b is None:

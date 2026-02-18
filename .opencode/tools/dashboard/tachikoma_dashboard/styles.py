@@ -18,6 +18,37 @@ from .theme import THEME
 SCREEN_CSS = f"""
 Screen {{
     background: {THEME.bg0};
+    scrollbar-size-vertical: 1;
+    scrollbar-size-horizontal: 1;
+}}
+"""
+
+# =============================================================================
+# Scrollable Container Styles (thin scrollbars)
+# =============================================================================
+
+SCROLLABLE_CSS = f"""
+ScrollableContainer {{
+    scrollbar-size-vertical: 1;
+    scrollbar-size-horizontal: 1;
+    scrollbar-background: {THEME.bg1};
+    scrollbar-color: {THEME.bg3};
+}}
+
+ScrollableContainer:hover {{
+    scrollbar-color: {THEME.cyan};
+}}
+
+/* RichLog styling - horizontal will be thin via custom renderer */
+RichLog {{
+    scrollbar-size-vertical: 1;
+    scrollbar-size-horizontal: 1;
+    scrollbar-background: {THEME.bg1};
+    scrollbar-color: {THEME.bg3};
+}}
+
+RichLog:hover {{
+    scrollbar-color: {THEME.cyan};
 }}
 """
 
@@ -166,6 +197,11 @@ TOKENS_CSS = f"""
     background: {THEME.bg1};
 }}
 
+#tokens-scroll {{
+    height: 1fr;
+    overflow-y: auto;
+}}
+
 #tokens-header {{
     background: {THEME.teal};
     color: {THEME.bg0};
@@ -174,11 +210,15 @@ TOKENS_CSS = f"""
     height: 1;
 }}
 
-#tokens {{
+#tokens-content {{
     padding: 1;
     color: {THEME.text};
-    overflow-y: auto;
     height: 100%;
+}}
+
+#tokens-content RichLog {{
+    background: {THEME.bg1};
+    color: {THEME.text};
 }}
 
 #tokens-container:focus {{
@@ -196,6 +236,11 @@ SKILLS_CSS = f"""
     height: 100%;
     border: solid {THEME.orange};
     background: {THEME.bg1};
+}}
+
+#skills-scroll {{
+    height: 1fr;
+    overflow-y: auto;
 }}
 
 #skills-header {{
@@ -221,6 +266,11 @@ TODOS_CSS = f"""
     height: 100%;
     border: solid {THEME.red};
     background: {THEME.bg1};
+}}
+
+#todos-scroll {{
+    height: 1fr;
+    overflow-y: auto;
 }}
 
 #todos-header {{
@@ -316,6 +366,11 @@ ERROR_DETAILS_CSS = f"""
     display: none;
 }}
 
+#error-scroll {{
+    height: 1fr;
+    overflow-y: auto;
+}}
+
 #error-header {{
     background: {THEME.error};
     color: {THEME.bg0};
@@ -324,36 +379,15 @@ ERROR_DETAILS_CSS = f"""
     height: 1;
 }}
 
-#error-details {{
+#error-details-content {{
     padding: 1;
     color: {THEME.text};
-    overflow-y: scroll;
-    max-height: 100vh;
     height: 100%;
 }}
 
-# Vertical spacing between panels in grid
-#left-panel > Vertical,
-#right-panel > Vertical {{
-    margin: 0 0 0 0;
-    padding: 0;
-    height: 100%;
-}}
-
-Vertical {{
-    margin: 0 0 0 0;
-}}
-
-/* Tighten spacing in grid panels */
-#left-panel > Vertical,
-#right-panel > Vertical {{
-    margin: 0 0 0 0;
-    padding: 0;
-    height: 100%;
-}}
-
-Vertical {{
-    margin: 0 0 0 0;
+#error-details-content RichLog {{
+    background: {THEME.bg1};
+    color: {THEME.text};
 }}
 """
 
@@ -388,6 +422,7 @@ Collapsible > Contents {{
 
 DASHBOARD_CSS = (
     SCREEN_CSS
+    + SCROLLABLE_CSS
     + LAYOUT_CSS
     + PANEL_COMMON_CSS
     + SESSION_TREE_CSS
