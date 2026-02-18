@@ -273,16 +273,15 @@ def test_widget_rendering() -> bool:
 
 def test_enhanced_widgets() -> bool:
     """Test enhanced widgets (DataTable, Sparkline, etc.)."""
-    print("Testing enhanced widgets...")
+    print("Testing widgets...")
 
     try:
-        from tachikoma_dashboard.enhanced_widgets import (
+        from tachikoma_dashboard.widgets import (
             SkillsDataTable,
             TodosDataTable,
             ActivitySparkline,
             TodoProgressBar,
             SearchBar,
-            CollapsibleStats,
         )
         from tachikoma_dashboard.models import Skill, Todo
 
@@ -307,10 +306,6 @@ def test_enhanced_widgets() -> bool:
         # Test SearchBar
         search_bar = SearchBar()
         print(f"  [+] OK: SearchBar created")
-
-        # Test CollapsibleStats
-        collapsible = CollapsibleStats(title="Advanced Stats")
-        print(f"  [+] OK: CollapsibleStats created")
 
         # Note: DataTable requires active app context to add columns/rows
         # Full testing is done when running the actual dashboard

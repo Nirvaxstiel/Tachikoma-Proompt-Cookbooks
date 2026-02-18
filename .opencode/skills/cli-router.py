@@ -16,7 +16,6 @@ import argparse
 import json
 import os
 import sys
-import subprocess
 import re
 from pathlib import Path
 
@@ -103,8 +102,11 @@ def simple_yaml_load(content: str) -> dict:
                     if current_list is not None:
                         current_list.append({key: val})
             else:
-                # Simple list item
+                # Simple list item - strip quotes if present
                 if current_list is not None:
+                    if (item.startswith('"') and item.endswith('"')) or \
+                       (item.startswith("'") and item.endswith("'")):
+                        item = item[1:-1]
                     current_list.append(item)
 
         elif ':' in stripped:
@@ -174,7 +176,7 @@ def simple_yaml_load(content: str) -> dict:
 # Base directories
 SCRIPT_DIR = Path(__file__).parent
 OPENCODE_DIR = SCRIPT_DIR.parent.parent
-CONTEXT_DIR = OPENCODE_DIR / ".opencode" / "context"
+CONTEXT_DIR = OPENCODE_DIR / ".opencode" / "context-modules"
 CONFIG_DIR = OPENCODE_DIR / ".opencode" / "config"
 SKILLS_DIR = OPENCODE_DIR / ".opencode" / "skills"
 
@@ -188,7 +190,7 @@ class Colors:
     CYAN = '\033[0;36m'
     MAGENTA = '\033[0;35m'
     NC = '\033[0m'  # No Color
-    
+
     # ASCII-safe symbols for Windows compatibility
     CHECK = '[+]'
     WARNING = '[!]'
@@ -215,43 +217,170 @@ def print_error(text):
 
 
 # =============================================================================
-# INTENT CLASSIFICATION
+# INTENT CLASSIFICATION (reads from intent-routes.yaml)
 # =============================================================================
+
+def load_intent_keywords() -> dict:
+    """Load intent keywords from intent-routes.yaml"""
+    routes = load_routes()
+    return routes.get("intent_keywords", {})
+
 
 def classify_intent(query: str) -> dict:
     """
-    Classify user intent using fast_heuristic.py script.
+    Classify user intent by matching keywords from intent-routes.yaml.
     Returns structured classification result.
     """
-    heuristic_script = SKILLS_DIR / "intent-classifier" / "scripts" / "fast_heuristic.py"
+    query_lower = query.lower().strip()
+    keywords_map = load_intent_keywords()
     
-    if not heuristic_script.exists():
+    if not keywords_map:
         return {
-            "error": "fast_heuristic.py not found",
-            "fallback": "llm"
+            "intent": "unclear",
+            "confidence": 0.3,
+            "reasoning": "No intent keywords configured",
+            "suggested_action": "llm",
+            "keywords_matched": [],
+            "alternative_intents": [],
+            "workflow": {"needed": False},
+            "skills_bulk": {"needed": False},
+            "complexity": 0.0,
         }
     
-    try:
-        result = subprocess.run(
-            [sys.executable, str(heuristic_script), query, "--json"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-            cwd=str(OPENCODE_DIR)
-        )
+    # Score each intent based on keyword matches
+    scores = {}
+    matched_keywords = {}
+    
+    for intent, keywords in keywords_map.items():
+        matches = []
+        for keyword in keywords:
+            # Use word boundary matching for accuracy
+            pattern = r"\b" + re.escape(keyword.lower()) + r"\b"
+            if re.search(pattern, query_lower):
+                matches.append(keyword)
         
-        if result.returncode == 0:
-            return json.loads(result.stdout)
-        else:
-            return {
-                "error": result.stderr,
-                "fallback": "llm"
-            }
-    except Exception as e:
+        if matches:
+            scores[intent] = len(matches)
+            matched_keywords[intent] = matches
+    
+    if not scores:
         return {
-            "error": str(e),
-            "fallback": "llm"
+            "intent": "unclear",
+            "confidence": 0.3,
+            "reasoning": "No keyword matches found",
+            "suggested_action": "llm",
+            "keywords_matched": [],
+            "alternative_intents": [],
+            "workflow": {"needed": False},
+            "skills_bulk": {"needed": False},
+            "complexity": detect_complexity(query),
         }
+    
+    # Sort by score
+    sorted_intents = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    primary_intent = sorted_intents[0][0]
+    primary_score = sorted_intents[0][1]
+    
+    # Calculate confidence
+    total_score = sum(scores.values())
+    confidence = min(primary_score / max(total_score, 1), 1.0)
+    
+    # Boost confidence if primary is significantly higher
+    if len(sorted_intents) > 1:
+        ratio = primary_score / max(sorted_intents[1][1], 1)
+        if ratio > 2:
+            confidence = min(confidence * 1.2, 1.0)
+    
+    # Determine action based on confidence
+    if confidence >= 0.7:
+        action = "skill"
+    elif confidence >= 0.5:
+        action = "llm"
+    else:
+        action = "llm"
+    
+    # Detect workflow/skills_bulk need
+    workflow = detect_workflow_need(query)
+    skills_bulk = detect_skills_bulk_need(query)
+    
+    if workflow:
+        action = "workflow"
+    elif skills_bulk:
+        action = "skills_bulk"
+    
+    complexity = detect_complexity(query)
+    
+    return {
+        "intent": primary_intent,
+        "confidence": round(confidence, 2),
+        "reasoning": f"Matched keywords: {', '.join(matched_keywords.get(primary_intent, []))}",
+        "suggested_action": action,
+        "keywords_matched": matched_keywords.get(primary_intent, []),
+        "alternative_intents": [
+            {"intent": intent, "score": score} for intent, score in sorted_intents[1:3]
+        ],
+        "workflow": workflow or {"needed": False},
+        "skills_bulk": skills_bulk or {"needed": False},
+        "complexity": round(complexity, 2),
+    }
+
+
+def detect_complexity(query: str) -> float:
+    """Detect task complexity from query"""
+    complexity = 0.0
+    
+    if len(query.split()) > 10:
+        complexity += 0.2
+    if len(query.split()) > 20:
+        complexity += 0.1
+    
+    multi_step_patterns = [
+        r"\band\b", r"\bthen\b", r"\bafter\b", r"\bbefore\b",
+        r"\bfirst\b", r"\bnext\b", r"\bfinally\b",
+    ]
+    
+    for pattern in multi_step_patterns:
+        if re.search(pattern, query, re.IGNORECASE):
+            complexity += 0.15
+    
+    # High-stakes keywords
+    if re.search(r"\b(secure|safe|critical|production|auth|payment)\b", query, re.IGNORECASE):
+        complexity += 0.2
+    
+    return min(complexity, 1.0)
+
+
+def detect_workflow_need(query: str) -> dict:
+    """Detect if query needs sequential workflow"""
+    workflow_patterns = [
+        (r"research.*implement", "research-implement"),
+        (r"implement.*verify", "implement-verify"),
+        (r"implement.*test", "implement-verify"),
+        (r"security.*implement", "security-implement"),
+        (r"review.*reflect", "deep-review"),
+    ]
+    
+    query_lower = query.lower()
+    for pattern, workflow_name in workflow_patterns:
+        if re.search(pattern, query_lower):
+            return {"needed": True, "name": workflow_name}
+    
+    return {"needed": False}
+
+
+def detect_skills_bulk_need(query: str) -> dict:
+    """Detect if query needs multiple skills at once"""
+    bulk_indicators = [
+        "thoroughly", "comprehensive", "full analysis",
+        "multiple", "all angles", "deep dive"
+    ]
+    
+    query_lower = query.lower()
+    for indicator in bulk_indicators:
+        if indicator in query_lower:
+            return {"needed": True, "name": "full-stack"}
+    
+    return {"needed": False}
 
 
 def cmd_classify(args):
@@ -260,24 +389,24 @@ def cmd_classify(args):
         print_error("Query required")
         print("Usage: router.py classify \"fix the bug in auth\"")
         return 1
-    
+
     result = classify_intent(args.query)
-    
+
     print_header(f"INTENT CLASSIFICATION: \"{args.query}\"")
     print()
-    
+
     if "error" in result:
         print_error(f"Classification failed: {result['error']}")
         print(f"Falling back to LLM reasoning")
         return 1
-    
+
     # Display results
     intent = result.get("intent", "unknown")
     confidence = result.get("confidence", 0)
     action = result.get("suggested_action", "unknown")
     complexity = result.get("complexity", 0)
     keywords = result.get("keywords_matched", [])
-    
+
     # Color-code confidence
     if confidence >= 0.8:
         conf_color = Colors.GREEN
@@ -285,28 +414,28 @@ def cmd_classify(args):
         conf_color = Colors.YELLOW
     else:
         conf_color = Colors.RED
-    
+
     print(f"  Intent:        {Colors.CYAN}{intent}{Colors.NC}")
     print(f"  Confidence:    {conf_color}{confidence:.0%}{Colors.NC}")
     print(f"  Action:        {action}")
     print(f"  Complexity:     {complexity:.0%}")
     print(f"  Keywords:      {', '.join(keywords) if keywords else 'none'}")
-    
+
     # Workflow info
     if result.get("workflow", {}).get("needed"):
         wf = result["workflow"].get("name", [])
         print(f"  Workflow:   {Colors.MAGENTA}{wf}{Colors.NC}")
-    
+
     # Skills bulk info
     if result.get("skills_bulk", {}).get("needed"):
         bulk = result["skills_bulk"].get("name", [])
         print(f"  Skills Bulk: {Colors.MAGENTA}{bulk}{Colors.NC}")
-    
+
     # Alternatives
     alt_intents = result.get("alternative_intents", [])
     if alt_intents:
         print(f"  Alternatives:  {', '.join([a['intent'] for a in alt_intents])}")
-    
+
     print()
     return 0
 
@@ -356,7 +485,7 @@ def cmd_route(args):
         # List all routes
         routes = load_routes()
         print_header("AVAILABLE ROUTES")
-        
+
         for name, config in routes.get("routes", {}).items():
             skill = config.get("skill", config.get("subagent", "none"))
             invoke = config.get("invoke_via", "unknown")
@@ -366,12 +495,12 @@ def cmd_route(args):
                 print(f"                      {desc}")
             print()
         return 0
-    
+
     if not args.intent:
         # List all routes
         routes = load_routes()
         print_header("AVAILABLE ROUTES")
-        
+
         for name, config in routes.get("routes", {}).items():
             skill = config.get("skill", config.get("subagent", "none"))
             invoke = config.get("invoke_via", "unknown")
@@ -381,34 +510,34 @@ def cmd_route(args):
                 print(f"                      {desc}")
             print()
         return 0
-    
+
     route = get_route(args.intent)
-    
+
     print_header(f"ROUTE: {args.intent}")
     print()
-    
+
     if not route:
         print_error(f"No route found for intent: {args.intent}")
         print("Use --list to see available routes")
         return 1
-    
+
     # Display route info
     print(f"  Description:   {route.get('description', 'N/A')}")
     print(f"  Skill:         {route.get('skill', 'N/A')}")
     print(f"  Invoke via:    {route.get('invoke_via', 'N/A')}")
     print(f"  Strategy:      {route.get('strategy', 'N/A')}")
     print(f"  Confidence:   {route.get('confidence_threshold', 'N/A')}")
-    
+
     # Context modules
     ctx_modules = route.get("context_modules", [])
     if ctx_modules:
         print(f"  Context:       {', '.join(ctx_modules)}")
-    
+
     # Tools
     tools = route.get("tools", [])
     if tools:
         print(f"  Tools:         {', '.join(tools)}")
-    
+
     print()
     return 0
 
@@ -435,25 +564,25 @@ def cmd_context(args):
 def context_discover():
     """Discover context files"""
     print_header("CONTEXT DISCOVERY")
-    
+
     if not CONTEXT_DIR.exists():
         print_error(f"Context directory not found: {CONTEXT_DIR}")
         return 1
-    
+
     files = list(CONTEXT_DIR.glob("*.md"))
-    
+
     if not files:
         print_warning("No context files found")
         return 0
-    
+
     print(f"Found {len(files)} context files:")
     print()
-    
+
     for f in sorted(files):
         size = f.stat().st_size
         size_str = f"{size/1024:.1f}K" if size > 1024 else f"{size}B"
         print(f"  {Colors.CYAN}{f.name:40}{Colors.NC} {size_str}")
-    
+
     print()
     print_success(f"Discovery complete")
     return 0
@@ -462,14 +591,14 @@ def context_discover():
 def context_status():
     """Show context system status"""
     print_header("CONTEXT SYSTEM STATUS")
-    
+
     if CONTEXT_DIR.exists():
         files = list(CONTEXT_DIR.glob("*.md"))
         total_size = sum(f.stat().st_size for f in files)
         print_success(f"Context directory: {len(files)} files ({total_size/1024:.1f}K)")
     else:
         print_error("Context directory not found")
-    
+
     # Check for temporary files
     tmp_dir = OPENCODE_DIR / ".tmp"
     if tmp_dir.exists():
@@ -477,7 +606,7 @@ def context_status():
         if tmp_files:
             print_warning(f"Temporary files: {len(tmp_files)} files")
             print("  Run: router.py context cleanup")
-    
+
     print()
     return 0
 
@@ -485,14 +614,14 @@ def context_status():
 def context_extract(query: str):
     """Extract info from context files"""
     print_header(f"CONTEXT EXTRACT: {query}")
-    
+
     if not CONTEXT_DIR.exists():
         print_error("Context directory not found")
         return 1
-    
+
     # Search across all context files
     import subprocess
-    
+
     try:
         result = subprocess.run(
             ["grep", "-r", "-i", "-l", query, str(CONTEXT_DIR)],
@@ -500,7 +629,7 @@ def context_extract(query: str):
             text=True,
             timeout=10
         )
-        
+
         if result.stdout:
             files = result.stdout.strip().split("\n")
             print(f"Found in {len(files)} files:")
@@ -511,22 +640,22 @@ def context_extract(query: str):
         else:
             print_warning(f"No matches found for: {query}")
             return 1
-            
+
     except Exception as e:
         print_error(f"Search failed: {e}")
         return 1
-    
+
     return 0
 
 
 def context_organize():
     """Show context organization"""
     print_header("CONTEXT ORGANIZATION")
-    
+
     if not CONTEXT_DIR.exists():
         print_error("Context directory not found")
         return 1
-    
+
     # Group by priority
     priorities = {
         "Core (0-9)": [],
@@ -535,7 +664,7 @@ def context_organize():
         "Methods (30-39)": [],
         "Other (40+)": []
     }
-    
+
     for f in CONTEXT_DIR.glob("*.md"):
         name = f.stem
         # Extract priority number
@@ -554,14 +683,14 @@ def context_organize():
                 priorities["Other (40+)"].append(f.name)
         else:
             priorities["Other (40+)"].append(f.name)
-    
+
     for category, files in priorities.items():
         if files:
             print(f"{Colors.CYAN}{category}:{Colors.NC}")
             for f in sorted(files):
                 print(f"  - {f}")
             print()
-    
+
     return 0
 
 
@@ -575,41 +704,41 @@ def cmd_full(args):
         print_error("Query required")
         print("Usage: router.py full \"fix the bug in auth\"")
         return 1
-    
+
     print_header(f"FULL ROUTING: \"{args.query}\"")
     print()
-    
+
     # Step 1: Classify intent
     print(f"{Colors.YELLOW}[1/3]{Colors.NC} Classifying intent...")
     classification = classify_intent(args.query)
-    
+
     if "error" in classification:
         print_error(f"Classification failed: {classification['error']}")
         return 1
-    
+
     intent = classification.get("intent", "unknown")
     confidence = classification.get("confidence", 0)
-    
+
     print_success(f"Intent: {intent} (confidence: {confidence:.0%})")
     print()
-    
+
     # Step 2: Get route
     print(f"{Colors.YELLOW}[2/3]{Colors.NC} Looking up route...")
     route = get_route(intent)
-    
+
     if not route:
         print_error(f"No route found for intent: {intent}")
         # Try to find similar intent
         routes = load_routes().get("routes", {})
         print(f"Available intents: {', '.join(routes.keys())}")
         return 1
-    
+
     skill = route.get("skill", route.get("subagent", "N/A"))
     invoke_via = route.get("invoke_via", "skill")
-    
+
     print_success(f"Route: {skill} (via {invoke_via})")
     print()
-    
+
     # Step 3: Show context modules
     print(f"{Colors.YELLOW}[3/3]{Colors.NC} Context modules to load:")
     ctx_modules = route.get("context_modules", [])
@@ -620,11 +749,11 @@ def cmd_full(args):
             print(f"  {Colors.GREEN}{Colors.CHECK}{Colors.NC} {ctx} ({size/1024:.1f}K)")
         else:
             print(f"  {Colors.RED}{Colors.ERROR}{Colors.NC} {ctx} (NOT FOUND)")
-    
+
     print()
     print_header("ROUTING DECISION")
     print()
-    
+
     # Final summary
     print(f"  Query:         {args.query}")
     print(f"  Intent:        {Colors.CYAN}{intent}{Colors.NC}")
@@ -632,24 +761,24 @@ def cmd_full(args):
     print(f"  Route to:     {Colors.GREEN}{skill}{Colors.NC}")
     print(f"  Invoke:       {invoke_via}")
     print(f"  Strategy:     {route.get('strategy', 'N/A')}")
-    
+
     # Workflow?
     if classification.get("workflow", {}).get("needed"):
         wf = classification["workflow"].get("name", "")
         print(f"  Workflow:  {Colors.MAGENTA}{wf}{Colors.NC}")
-    
+
     # Skills bulk?
     if classification.get("skills_bulk", {}).get("needed"):
         bulk = classification["skills_bulk"].get("name", "")
         print(f"  Skills Bulk: {Colors.MAGENTA}{bulk}{Colors.NC}")
-    
+
     # Tools needed
     tools = route.get("tools", [])
     if tools:
         print(f"  Tools:        {', '.join(tools)}")
-    
+
     print()
-    
+
     # Output JSON for programmatic use
     if args.json:
         output = {
@@ -665,7 +794,7 @@ def cmd_full(args):
             "skills_bulk": classification.get("skills_bulk", {}).get("name", "")
         }
         print(json.dumps(output, indent=2))
-    
+
     return 0
 
 
@@ -688,37 +817,37 @@ Examples:
   %(prog)s full "add feature" --json         JSON output for scripts
         """
     )
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Commands")
-    
+
     # classify command
     classify_parser = subparsers.add_parser("classify", help="Classify intent from query")
     classify_parser.add_argument("query", nargs="?", help="Query to classify")
-    
+
     # route command
     route_parser = subparsers.add_parser("route", help="Show route for intent")
     route_parser.add_argument("--list", "-l", action="store_true", help="List all routes")
     route_parser.add_argument("intent", nargs="?", help="Intent to look up")
-    
+
     # context command
     context_parser = subparsers.add_parser("context", help="Context operations")
     context_parser.add_argument("--discover", action="store_true", help="Discover context files")
     context_parser.add_argument("--status", action="store_true", help="Show context status")
     context_parser.add_argument("--extract", metavar="QUERY", help="Extract info from context")
     context_parser.add_argument("--organize", action="store_true", help="Show context organization")
-    
+
     # full command
     full_parser = subparsers.add_parser("full", help="Full routing workflow")
     full_parser.add_argument("query", nargs="?", help="User query to route")
     full_parser.add_argument("--json", "-j", action="store_true", help="JSON output")
-    
+
     args = parser.parse_args()
-    
+
     # Default command
     if not args.command:
         parser.print_help()
         return 0
-    
+
     # Route to command
     if args.command == "classify":
         return cmd_classify(args)

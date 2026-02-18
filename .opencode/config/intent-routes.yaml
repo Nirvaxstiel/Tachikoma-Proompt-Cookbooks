@@ -538,6 +538,15 @@ intent_keywords:
     - "quality"
     - "assess"
 
+  refactor:
+    - "refactor"
+    - "restructure"
+    - "improve"
+    - "clean up"
+    - "coherent"
+    - "reorganize"
+    - "simplify"
+
   research:
     - "research"
     - "find"
@@ -567,6 +576,36 @@ intent_keywords:
     - "complex"
     - "large"
     - "many files"
-    - "refactor"
     - "redesign"
     - "architecture"
+    - "migration"
+    - "bulk"
+
+  verify:
+    - "verify"
+    - "validate"
+    - "ensure"
+    - "confirm"
+    - "reliable"
+    - "gvr"
+
+  reflect:
+    - "reflect"
+    - "self-critique"
+    - "adversarial"
+    - "double-check"
+    - "challenge"
+
+  skill-compose:
+    - "combine skills"
+    - "multiple skills"
+    - "compose"
+    - "chain skills"
+    - "orchestrate"
+
+  optimize:
+    - "optimize"
+    - "token"
+    - "context cleanup"
+    - "efficiency"
+    - "prune"

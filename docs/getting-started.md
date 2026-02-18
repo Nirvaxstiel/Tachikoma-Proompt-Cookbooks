@@ -59,7 +59,7 @@ your-project/
 └── .opencode/
     ├── agents/            # Primary agent + subagents
     ├── skills/            # 20 specialized skills
-    ├── context/           # 6 context modules
+    ├── context-modules/           # 6 context modules
     └── config/
         └── intent-routes.yaml  # Routing configuration
 ```

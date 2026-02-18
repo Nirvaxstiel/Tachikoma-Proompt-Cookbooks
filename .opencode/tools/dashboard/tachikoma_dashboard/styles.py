@@ -2,6 +2,11 @@
 
 This module contains all CSS styles for the Tachikoma dashboard,
 organized by component and using the GITS theme colors.
+
+All panels follow a consistent structure:
+- Container with colored border
+- Header bar with accent color background
+- Content area with padding
 """
 
 from .theme import THEME
@@ -46,6 +51,36 @@ LAYOUT_CSS = f"""
 """
 
 # =============================================================================
+# Common Panel Styles (shared by all panels)
+# =============================================================================
+
+PANEL_COMMON_CSS = f"""
+/* Common panel container styles */
+.panel-container {{
+    width: 100%;
+    height: 100%;
+    background: {THEME.bg1};
+    layout: vertical;
+}}
+
+/* Common header bar styles */
+.panel-header {{
+    padding: 0 1;
+    text-style: bold;
+    height: 1;
+    color: {THEME.bg0};
+}}
+
+/* Common content area styles */
+.panel-content {{
+    padding: 1;
+    color: {THEME.text};
+    overflow-y: auto;
+    height: 1fr;
+}}
+"""
+
+# =============================================================================
 # Session Tree Styles
 # =============================================================================
 
@@ -62,6 +97,7 @@ SESSION_TREE_CSS = f"""
     color: {THEME.bg0};
     padding: 0 1;
     text-style: bold;
+    height: 1;
 }}
 
 #session-tree-container:focus {{
@@ -79,6 +115,14 @@ DETAILS_CSS = f"""
     height: 100%;
     border: solid {THEME.cyan};
     background: {THEME.bg1};
+}}
+
+#details-header {{
+    background: {THEME.cyan};
+    color: {THEME.bg0};
+    padding: 0 1;
+    text-style: bold;
+    height: 1;
 }}
 
 #details {{
@@ -103,6 +147,14 @@ TOKENS_CSS = f"""
     height: 100%;
     border: solid {THEME.teal};
     background: {THEME.bg1};
+}}
+
+#tokens-header {{
+    background: {THEME.teal};
+    color: {THEME.bg0};
+    padding: 0 1;
+    text-style: bold;
+    height: 1;
 }}
 
 #tokens {{
@@ -263,6 +315,7 @@ Collapsible > Contents {{
 DASHBOARD_CSS = (
     SCREEN_CSS
     + LAYOUT_CSS
+    + PANEL_COMMON_CSS
     + SESSION_TREE_CSS
     + DETAILS_CSS
     + TOKENS_CSS

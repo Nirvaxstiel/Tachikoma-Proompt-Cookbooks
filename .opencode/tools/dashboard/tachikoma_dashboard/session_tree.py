@@ -85,12 +85,8 @@ class SessionTreeWidget(Tree[Session]):
     SessionTreeWidget {{
         background: {THEME.bg1};
         color: {THEME.text};
-        border: solid {THEME.green};
         padding: 0 1;
-    }}
-
-    SessionTreeWidget:focus {{
-        border: solid {THEME.red};
+        height: 1fr;
     }}
 
     SessionTreeWidget > .tree--guides {{

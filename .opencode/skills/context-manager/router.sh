@@ -14,7 +14,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Base directories
-CONTEXT_DIR=".opencode/context"
+CONTEXT_DIR=".opencode/context-modules"
 TMP_DIR=".tmp"
 
 # Helper functions
@@ -39,37 +39,37 @@ print_error() {
 # Operation: DISCOVER - Find context files
 op_discover() {
     local target="${1:-all}"
-    
+
     print_header "DISCOVER: Finding Context Files"
-    
+
     if [ ! -d "$CONTEXT_DIR" ]; then
         print_error "Context directory not found: $CONTEXT_DIR"
         exit 1
     fi
-    
+
     echo "Searching for context files..."
     echo ""
-    
+
     # Find all markdown files in context directory
     local files=$(find "$CONTEXT_DIR" -name "*.md" -type f | sort)
-    
+
     if [ -z "$files" ]; then
         print_warning "No context files found"
         exit 0
     fi
-    
+
     # Count and display
     local count=$(echo "$files" | wc -l)
     echo "Found $count context files:"
     echo ""
-    
+
     # Display with sizes
     while IFS= read -r file; do
         local size=$(du -h "$file" | cut -f1)
         local basename=$(basename "$file")
         echo "  $basename ($size)"
     done <<< "$files"
-    
+
     echo ""
     print_success "Discovery complete"
     echo ""
@@ -80,24 +80,24 @@ op_discover() {
 op_fetch() {
     local library="$1"
     local topic="${2:-general}"
-    
+
     print_header "FETCH: External Documentation"
-    
+
     if [ -z "$library" ]; then
         print_error "Library name required"
         echo "Usage: fetch <library> [topic]"
         echo "Example: fetch 'React' 'hooks'"
         exit 1
     fi
-    
+
     echo "Library: $library"
     echo "Topic: $topic"
     echo ""
-    
+
     # Create external context directory
     local external_dir="$TMP_DIR/external-context"
     mkdir -p "$external_dir"
-    
+
     # Note about Context7 API
     echo "To fetch live documentation:"
     echo ""
@@ -109,43 +109,43 @@ op_fetch() {
     echo ""
     echo "3. Save to: $external_dir/"
     echo ""
-    
+
     print_warning "External fetching requires Context7 skill (see .opencode/skills/context7/)"
 }
 
 # Operation: HARVEST - Extract from summary files
 op_harvest() {
     local source_file="$1"
-    
+
     print_header "HARVEST: Extracting Context from $source_file"
-    
+
     if [ -z "$source_file" ]; then
         print_error "Source file required"
         echo "Usage: harvest <source-file>"
         echo "Example: harvest ANALYSIS.md"
         exit 1
     fi
-    
+
     if [ ! -f "$source_file" ]; then
         print_error "File not found: $source_file"
         exit 1
     fi
-    
+
     # Extract key sections (assuming markdown format)
     echo "Analyzing $source_file..."
     echo ""
-    
+
     # Count sections
     local sections=$(grep -c "^##" "$source_file" 2>/dev/null || echo "0")
     echo "Found $sections sections"
     echo ""
-    
+
     # Create harvested context file
     local basename=$(basename "$source_file" .md)
     local output="$CONTEXT_DIR/40-${basename,,}.md"
-    
+
     echo "Creating context file: $output"
-    
+
     cat > "$output" << EOF
 ---
 module_id: ${basename,,}
@@ -157,7 +157,7 @@ depends_on:
 
 # ${basename}
 
-**Source:** $source_file  
+**Source:** $source_file
 **Harvested:** $(date '+%Y-%m-%d %H:%M:%S')
 
 ## Key Points
@@ -166,10 +166,10 @@ EOF
 
     # Extract headers and content
     grep "^##" "$source_file" | head -10 >> "$output"
-    
+
     echo "" >> "$output"
     echo "See source file for full details." >> "$output"
-    
+
     print_success "Harvested to $output"
     echo ""
     echo "Next steps:"
@@ -182,16 +182,16 @@ EOF
 op_extract() {
     local file="$1"
     local query="$2"
-    
+
     print_header "EXTRACT: Finding '$query' in $file"
-    
+
     if [ -z "$file" ] || [ -z "$query" ]; then
         print_error "File and query required"
         echo "Usage: extract <file> <query>"
         echo "Example: extract coding-standards.md 'naming conventions'"
         exit 1
     fi
-    
+
     # Check if file exists
     local target="$CONTEXT_DIR/$file"
     if [ ! -f "$target" ]; then
@@ -202,17 +202,17 @@ op_extract() {
             exit 1
         fi
     fi
-    
+
     # Search for query
     echo "Searching in $target..."
     echo ""
-    
+
     # Case-insensitive grep with context
     grep -i -C 3 "$query" "$target" || {
         print_warning "No matches found for '$query'"
         exit 0
     }
-    
+
     echo ""
     print_success "Extraction complete"
 }
@@ -220,36 +220,36 @@ op_extract() {
 # Operation: ORGANIZE - Restructure context
 op_organize() {
     local target="${1:-$CONTEXT_DIR}"
-    
+
     print_header "ORGANIZE: Restructuring Context"
-    
+
     echo "Target: $target"
     echo ""
-    
+
     # Check current structure
     echo "Current structure:"
     ls -la "$target"/*.md 2>/dev/null | awk '{print "  " $9, "(" $5 " bytes)"}' || echo "  No .md files found"
-    
+
     echo ""
     echo "Organization by priority:"
     echo ""
-    
+
     # Group by priority ranges
     echo "Priority 0-9 (Core):"
     ls "$target"/0*.md 2>/dev/null | xargs -n1 basename 2>/dev/null | sed 's/^/  - /' || echo "  None"
-    
+
     echo ""
     echo "Priority 10-19 (Standards):"
     ls "$target"/1*.md 2>/dev/null | xargs -n1 basename 2>/dev/null | sed 's/^/  - /' || echo "  None"
-    
+
     echo ""
     echo "Priority 20-29 (Workflows):"
     ls "$target"/2*.md 2>/dev/null | xargs -n1 basename 2>/dev/null | sed 's/^/  - /' || echo "  None"
-    
+
     echo ""
     echo "Priority 30+ (Methods & Custom):"
     ls "$target"/[3-9]*.md 2>/dev/null | xargs -n1 basename 2>/dev/null | sed 's/^/  - /' || echo "  None"
-    
+
     echo ""
     print_success "Organization analysis complete"
     echo ""
@@ -260,36 +260,36 @@ op_organize() {
 op_cleanup() {
     local target="${1:-$TMP_DIR}"
     local days="${2:-7}"
-    
+
     print_header "CLEANUP: Removing Stale Files"
-    
+
     echo "Target: $target"
     echo "Remove files older than: $days days"
     echo ""
-    
+
     if [ ! -d "$target" ]; then
         print_warning "Directory not found: $target"
         exit 0
     fi
-    
+
     # Find old files
     local old_files=$(find "$target" -type f -mtime +$days 2>/dev/null | head -20)
-    
+
     if [ -z "$old_files" ]; then
         print_success "No stale files found"
         exit 0
     fi
-    
+
     echo "Files to remove:"
     echo "$old_files" | while read -r file; do
         local size=$(du -h "$file" 2>/dev/null | cut -f1)
         local age=$(( ($(date +%s) - $(stat -c %Y "$file" 2>/dev/null || stat -f %m "$file")) / 86400 ))
         echo "  $file ($size, ${age} days old)"
     done
-    
+
     echo ""
     read -p "Remove these files? (y/N): " confirm
-    
+
     if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
         echo "$old_files" | xargs rm -f
         print_success "Cleanup complete"
@@ -301,7 +301,7 @@ op_cleanup() {
 # Operation: STATUS - Show context status
 op_status() {
     print_header "CONTEXT STATUS"
-    
+
     # Context directory
     if [ -d "$CONTEXT_DIR" ]; then
         local context_count=$(find "$CONTEXT_DIR" -name "*.md" -type f | wc -l)
@@ -310,7 +310,7 @@ op_status() {
     else
         print_error "Context directory not found"
     fi
-    
+
     # Temporary files
     if [ -d "$TMP_DIR" ]; then
         local tmp_count=$(find "$TMP_DIR" -type f 2>/dev/null | wc -l)
@@ -322,14 +322,14 @@ op_status() {
             print_success "No temporary files"
         fi
     fi
-    
+
     # Navigation file
     if [ -f "$CONTEXT_DIR/navigation.md" ]; then
         print_success "Navigation file exists"
     else
         print_warning "Navigation file missing - run this skill from project root"
     fi
-    
+
     echo ""
     echo "Operations available:"
     echo "  discover, fetch, harvest, extract, organize, cleanup, status"

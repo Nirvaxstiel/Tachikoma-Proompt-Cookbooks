@@ -154,10 +154,10 @@ def remove_comments(content: str, language: str = "python") -> str:
 def remove_todos(content: str) -> str:
     """Remove TODO/FIXME comments."""
     todo_pattern = _compile_todo_pattern()
-    
+
     lines = content.split("\n")
     filtered = filter(lambda line: not todo_pattern.search(line), lines)
-    
+
     return "\n".join(filtered)
 
 
@@ -165,12 +165,12 @@ def remove_boilerplate(content: str, language: str) -> str:
     """Remove common boilerplate patterns."""
     patterns = _compile_boilerplate_patterns(language)
     lines = content.split("\n")
-    
+
     filtered = filter(
         lambda line: not any(re.match(pattern, line.strip()) for pattern in patterns),
         lines
     )
-    
+
     return "\n".join(filtered)
 
 
@@ -178,17 +178,17 @@ def smart_keep_sections(content: str, important_patterns: List[str]) -> str:
     """Keep only sections matching important patterns."""
     patterns = _compile_important_patterns()
     lines = content.split("\n")
-    
+
     result = []
     include = True
-    
+
     for line in lines:
         if any(re.match(pattern, line.strip(), re.IGNORECASE) for pattern in patterns):
             include = True
-        
+
         if include or line.strip():
             result.append(line)
-    
+
     return "\n".join(result)
 
 
@@ -252,7 +252,7 @@ def prune_context(
     }
 
 
-def find_context_files(base_dir: str = ".opencode/context") -> List[str]:
+def find_context_files(base_dir: str = ".opencode/context-modules") -> List[str]:
     """Find context files that can be pruned."""
     path = Path(base_dir)
     if not path.exists():

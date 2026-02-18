@@ -414,7 +414,7 @@ I'll analyze the auth module for code quality issues...
 
 ## References
 
-See [coding standards](../context/10-coding-standards.md) for baseline expectations.
+See [coding standards](../context-modules/10-coding-standards.md) for baseline expectations.
 ```
 
 ## Best Practices

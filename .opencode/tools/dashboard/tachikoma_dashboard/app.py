@@ -25,23 +25,19 @@ from textual.reactive import reactive
 from textual.widgets import Header, Static
 
 from . import db
-from .enhanced_widgets import (
-    ActivitySparkline,
-    CollapsibleStats,
-    SearchBar,
-    SkillsDataTable,
-    TodoProgressBar,
-    TodosDataTable,
-)
 from .models import ModelUsage, Session, SessionStats, SessionTokens, SessionTree, Todo, build_session_tree
 from .session_tree import SessionTreeWidget
 from .styles import DASHBOARD_CSS
 from .theme import THEME
 from .widgets import (
+    ActivitySparkline,
     render_aggregation,
     render_details,
     render_model_usage,
     render_session_tokens,
+    SearchBar,
+    SkillsDataTable,
+    TodosDataTable,
 )
 
 
@@ -223,13 +219,15 @@ class DashboardApp(App):
 
             # Right panel: Details, Tokens, Skills, Todos
             with Vertical(id="right-panel"):
-                # Details panel
+                # Details panel with header
                 with Vertical(id="details-container"):
-                    yield Static("◇ DETAILS", id="details")
+                    yield Static("◇ DETAILS", id="details-header")
+                    yield Static("", id="details")
 
-                # Tokens panel
+                # Tokens panel with header
                 with Vertical(id="tokens-container"):
-                    yield Static("◈ TOKENS", id="tokens")
+                    yield Static("◈ MODEL USAGE", id="tokens-header")
+                    yield Static("", id="tokens")
 
                 # Skills panel with DataTable
                 with Vertical(id="skills-container"):

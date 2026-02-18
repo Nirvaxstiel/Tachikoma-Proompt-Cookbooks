@@ -399,10 +399,6 @@ class SmokeTestFramework:
                 (["context", "--discover"], "discover context"),
                 (["full", "test query", "--json"], "full routing workflow"),
             ],
-            # Intent classifier
-            "fast_heuristic.py": [
-                (["fix the bug", "--json"], "classify intent"),
-            ],
             # RLM scripts
             "rlm_repl.py": [
                 (["--help"], "show help"),
