@@ -390,29 +390,33 @@ class DashboardApp(App):
 
     def _update_skills(self) -> None:
         """Update skills panel with DataTable."""
-        skills_table = self.query_one(SkillsDataTable)
-        if self.selected_session:
-            skills = self.skills_cache.get(self.selected_session.id)
-            if skills is None:
-                # Show loading state
-                skills_table.update_skills(None)
-            else:
+        try:
+            skills_table = self.query_one(SkillsDataTable)
+            if self.selected_session:
+                # Get skills directly from cache
+                session_id = self.selected_session.id
+                skills = self.skills_cache.get(session_id)
+                # Update the table
                 skills_table.update_skills(skills)
-        else:
-            skills_table.update_skills(None)
+            else:
+                skills_table.update_skills(None)
+        except Exception:
+            pass  # Widget not ready yet
 
     def _update_todos(self) -> None:
         """Update todos panel with DataTable."""
-        todos_table = self.query_one(TodosDataTable)
-        if self.selected_session:
-            todos = self.todos_cache.get(self.selected_session.id)
-            if todos is None:
-                # Show loading state
-                todos_table.update_todos([])
+        try:
+            todos_table = self.query_one(TodosDataTable)
+            if self.selected_session:
+                # Get todos directly from cache
+                session_id = self.selected_session.id
+                todos = self.todos_cache.get(session_id)
+                # Update the table
+                todos_table.update_todos(todos or [])
             else:
-                todos_table.update_todos(todos)
-        else:
-            todos_table.update_todos([])
+                todos_table.update_todos([])
+        except Exception:
+            pass  # Widget not ready yet
 
     # =========================================================================
     # Action Methods
