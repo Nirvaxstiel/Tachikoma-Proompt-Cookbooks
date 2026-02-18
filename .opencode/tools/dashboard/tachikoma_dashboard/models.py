@@ -79,6 +79,17 @@ class SessionStats:
     last_user_message: str | None
 
 
+@dataclass
+class Skill:
+    """Represents a loaded skill with usage metrics."""
+
+    name: str
+    session_id: str
+    time_loaded: int
+    invocation_count: int = 1
+    last_used: int | None = None
+
+
 class SessionTree:
     """Tree structure for session hierarchy."""
 

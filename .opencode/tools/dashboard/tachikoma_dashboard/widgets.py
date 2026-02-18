@@ -1,4 +1,6 @@
-"""Widgets for the Tachikoma dashboard."""
+"""Widgets for Tachikoma dashboard."""
+
+from typing import Any, Optional
 
 from rich.style import Style
 from rich.text import Text
@@ -13,6 +15,25 @@ GITS_RED = "#ff0066"
 GITS_ORANGE = "#ffa726"
 GITS_TEXT = "#b3e5fc"
 GITS_MUTED = "#4a5f6d"
+
+
+def get_status_icon(status: SessionStatus) -> tuple[str, str]:
+    """Get status icon and color."""
+    icons = {
+        SessionStatus.WORKING: ("●", GITS_GREEN),
+        SessionStatus.ACTIVE: ("◐", GITS_ORANGE),
+        SessionStatus.IDLE: ("○", GITS_MUTED),
+    }
+    return icons.get(status, ("?", GITS_MUTED))
+
+
+def truncate_message(msg: str | None, max_length: int = 40) -> str:
+    """Truncate message to max length with ellipsis."""
+    if not msg:
+        return "--"
+    if len(msg) <= max_length:
+        return msg
+    return msg[:max_length] + "..."
 
 
 def format_duration(seconds: int) -> str:
@@ -67,13 +88,35 @@ def render_details(session: Session | None, stats: SessionStats | None = None) -
     return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
 
 
-def render_skills() -> Text:
+def render_skills(skills: list[Any] | None = None) -> Text:
     """Render loaded skills panel."""
+    if not skills or len(skills) == 0:
+        lines = [
+            Text("Loaded Skills", style=Style(bold=True, color=GITS_CYAN)),
+            Text("-" * 20, style=Style(color=GITS_MUTED)),
+            Text("(No skills loaded)", style=Style(color=GITS_MUTED)),
+        ]
+        return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
+
     lines = [
         Text("Loaded Skills", style=Style(bold=True, color=GITS_CYAN)),
         Text("-" * 20, style=Style(color=GITS_MUTED)),
-        Text("(No skills loaded)", style=Style(color=GITS_MUTED)),
     ]
+
+    for skill in skills:
+        invocations = skill.invocation_count if hasattr(skill, 'invocation_count') else 1
+        last_used = (
+            format_duration(int(skill.last_used / 1000))
+            if hasattr(skill, 'last_used') and skill.last_used
+            else "N/A"
+        )
+
+        lines.append(Text())
+        lines.append(Text(f"  • {skill.name}", style=Style(color=GITS_TEXT)))
+        lines.append(Text(f"    Invocations: {invocations}", style=Style(color=GITS_MUTED)))
+        if hasattr(skill, 'last_used') and skill.last_used:
+            lines.append(Text(f"    Last Used: {last_used}", style=Style(color=GITS_MUTED)))
+
     return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
 
 

@@ -12,10 +12,10 @@ from textual.widgets import DataTable, Header, Static
 from . import db
 from .models import Session, SessionStats, SessionStatus, SessionTree, build_session_tree
 from .widgets import (
-    render_aggregation,
     render_empty_state,
     render_skills,
     render_todos,
+    render_aggregation,
 )
 
 # Theme colors
@@ -85,7 +85,8 @@ class DashboardApp(App):
     def _footer_text(self) -> str:
         """Custom footer with icons."""
         # Unicode arrows: ↑ (U+2191) ↓ (U+2193)
-        return "[bold]↑↓[/bold] Navigate | [bold]Tab[/bold] Filter | [bold]R[/bold] Refresh | [bold]Q[/bold] Quit"
+        filter_status = " [red][ON][/red]" if self.cwd_filter else ""
+        return f"[bold]↑↓[/bold] Navigate | [bold]Tab[/bold] Filter{filter_status} | [bold]R[/bold] Refresh | [bold]Q[/bold] Quit"
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -293,12 +294,37 @@ class DashboardApp(App):
     def update_skills(self) -> None:
         """Update the skills panel."""
         widget = self.query_one("#skills-panel", Static)
-        widget.update(render_skills())
+        table = self.query_one("#session-table", DataTable)
+
+        cursor_row = table.cursor_row
+        if cursor_row is None or cursor_row >= len(self.all_sessions):
+            widget.update(render_skills())
+            return
+
+        session = self.all_sessions[cursor_row]
+        skills = db.get_session_skills(session.id)
+        widget.update(render_skills(skills))
 
     def update_aggregation(self) -> None:
-        """Update the aggregation panel."""
+        """Update the aggregation panel with filter status."""
         widget = self.query_one("#aggregation", Static)
-        widget.update(render_aggregation(self.all_sessions))
+
+        # Get base aggregation text
+        agg_text = render_aggregation(self.all_sessions)
+
+        # Add filter status if active
+        if self.cwd_filter:
+            from rich.text import Text
+
+            filter_text = Text(f"  [Filtered: {self._format_cwd(self.cwd_filter)}]")
+            filter_text.stylize(f"bold {RED}")
+            widget.update(Text.assemble(agg_text, filter_text))
+        else:
+            widget.update(agg_text)
+
+        # Update footer to reflect filter status
+        footer = self.query_one("#footer-bar", Static)
+        footer.update(self._footer_text())
 
     def on_data_table_row_highlighted(self, event) -> None:
         """Called when cursor moves to a different row."""
