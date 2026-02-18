@@ -1,229 +1,319 @@
-"""Main TUI application for the Tachikoma dashboard."""
+"""Main TUI application for the Tachikoma dashboard with smart caching."""
 
+import hashlib
+
+from rich.text import Text
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical
-from textual.widgets import Footer, Header, Static
+from textual.containers import Horizontal, Vertical
+from textual.widgets import DataTable, Footer, Header, Static
 
 from . import db
-from .models import Session, SessionStatus, SessionTree, build_session_tree
+from .models import Session, SessionStats, SessionStatus, SessionTree, build_session_tree
 from .widgets import (
     render_aggregation,
-    render_details,
     render_empty_state,
-    render_session_tree,
     render_skills,
     render_todos,
 )
 
-# GITS Theme colors
-GITS_BG = "#0a0e14"
-GITS_BG1 = "#0d1117"
-GITS_GREEN = "#00ff9f"
-GITS_CYAN = "#26c6da"
-GITS_RED = "#ff0066"
-GITS_ORANGE = "#ffa726"
-GITS_TEXT = "#b3e5fc"
-GITS_MUTED = "#4a5f6d"
+# Theme colors
+BG = "#0a0e14"
+BG1 = "#0d1117"
+GREEN = "#00ff9f"
+CYAN = "#26c6da"
+RED = "#ff0066"
+ORANGE = "#ffa726"
+MUTED = "#4a5f6d"
 
-CSS = f"""
-Screen {{
-    background: {GITS_BG};
-}}
 
-#session-tree {{
-    width: 100%;
-    height: 100%;
-    border: solid {GITS_GREEN};
-    padding: 1;
-    background: {GITS_BG1};
-}}
+def _data_hash(data: dict | list) -> str:
+    """Create hash of data for comparison."""
+    import json
 
-#details {{
-    width: 100%;
-    height: 100%;
-    border: solid {GITS_CYAN};
-    padding: 1;
-    background: {GITS_BG1};
-}}
-
-#todos {{
-    width: 100%;
-    height: 100%;
-    border: solid {GITS_RED};
-    padding: 1;
-    background: {GITS_BG1};
-}}
-
-#skills {{
-    width: 100%;
-    height: 100%;
-    border: solid {GITS_ORANGE};
-    padding: 1;
-    background: {GITS_BG1};
-}}
-
-#aggregation {{
-    width: 100%;
-    column-span: 3;
-    border: solid {GITS_MUTED};
-    padding: 1;
-    content-align: center middle;
-    background: {GITS_BG1};
-}}
-
-Header {{
-    background: {GITS_BG};
-    color: {GITS_GREEN};
-}}
-
-Footer {{
-    background: {GITS_BG};
-    color: {GITS_MUTED};
-}}
-
-Static {{
-    height: auto;
-}}
-"""
+    try:
+        return hashlib.md5(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()
+    except (TypeError, ValueError):
+        return str(id(data))  # Fallback to object id
 
 
 class DashboardApp(App):
-    """Main dashboard application."""
+    """Main dashboard application with smart caching."""
 
-    CSS = CSS
+    CSS = f"""
+    Screen {{ background: {BG}; }}
+
+    #main-grid {{ layout: grid; grid-size: 2; grid-gutter: 1; height: 1fr; }}
+
+    #session-table {{ width: 100%; height: 100%; border: solid {GREEN}; background: {BG1}; }}
+    #right-panel {{ width: 100%; height: 100%; layout: vertical; }}
+    #model-panel {{ width: 100%; height: 1fr; border: solid {CYAN}; padding: 1; background: {BG1}; overflow: auto; }}
+    #todos-panel {{ width: 100%; height: 1fr; border: solid {RED}; padding: 1; background: {BG1}; overflow: auto; }}
+    #skills-panel {{ width: 100%; height: 1fr; border: solid {ORANGE}; padding: 1; background: {BG1}; overflow: auto; }}
+    #aggregation {{ width: 100%; height: auto; border: solid {MUTED}; padding: 1; }}
+
+    DataTable {{ background: {BG1}; }}
+    DataTable > .datatable--cursor {{ background: {RED} 30%; }}
+    DataTable > .datatable--hover {{ background: {CYAN} 20%; }}
+    Header {{ background: {BG}; color: {GREEN}; }}
+    Footer {{ background: {BG}; color: {MUTED}; }}
+    """
 
     BINDINGS = [
         Binding("q", "quit", "Quit"),
-        Binding("enter", "select", "Select"),
-        Binding("down", "cursor_down", "Down"),
-        Binding("up", "cursor_up", "Up"),
+        Binding("j", "cursor_down", "Down"),
+        Binding("k", "cursor_up", "Up"),
         Binding("tab", "toggle_filter", "Filter"),
+        Binding("r", "refresh", "Refresh"),
     ]
 
     def __init__(self, interval: int = 2000, cwd: str | None = None):
         super().__init__()
         self.interval = interval
         self.cwd_filter = cwd
-        self.session_trees: list[SessionTree] = []
+
+        # Cached data with hashes for comparison
+        self._sessions_hash: str = ""
+        self._stats_hash: str = ""
+        self._model_stats_hash: str = ""
+
+        # Current data
         self.all_sessions: list[Session] = []
-        self.selected_session_id: str | None = None
-        self._cursor_position = 0
+        self.stats_cache: dict[str, SessionStats] = {}
+        self.model_stats: dict[str, dict] = {}
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Vertical(
-            Static("SESSION TREE", id="session-tree"),
-            id="left-panel",
-        )
-        yield Vertical(
-            Static("DETAILS", id="details"),
-            Static("TODOS", id="todos"),
-            id="middle-panel",
-        )
-        yield Vertical(
-            Static("LOADED SKILLS", id="skills"),
-            id="right-panel",
-        )
-        yield Static("ROOT AGGREGATION", id="aggregation")
+
+        with Horizontal(id="main-grid"):
+            yield DataTable(id="session-table", cursor_type="row")
+
+            with Vertical(id="right-panel"):
+                yield Static("Model Usage", id="model-panel")
+                yield Static("TODOs", id="todos-panel")
+                yield Static("Skills", id="skills-panel")
+
+        yield Static("Aggregation", id="aggregation")
         yield Footer()
 
     def on_mount(self) -> None:
-        self.refresh_sessions()
-        self.set_interval(self.interval / 1000, self.refresh_sessions)
+        table = self.query_one("#session-table", DataTable)
+        table.add_columns("Status", "Session", "CWD", "Duration", "Msgs", "Tools")
+        table.fixed_columns = 1
+        self.refresh_data()
+        self.set_interval(self.interval / 1000, self.refresh_data)
+
+    def _status_text(self, status: SessionStatus) -> Text:
+        icons = {
+            SessionStatus.WORKING: ("●", GREEN),
+            SessionStatus.ACTIVE: ("◐", ORANGE),
+            SessionStatus.IDLE: ("○", MUTED),
+        }
+        icon, color = icons[status]
+        return Text(icon, style=f"bold {color}")
+
+    def _format_duration(self, seconds: int) -> str:
+        if seconds < 60:
+            return f"{seconds}s"
+        minutes, secs = divmod(seconds, 60)
+        if minutes < 60:
+            return f"{minutes}m{secs:02d}"
+        hours, mins = divmod(minutes, 60)
+        return f"{hours}h{mins:02d}"
+
+    def _format_cwd(self, cwd: str) -> str:
+        parts = cwd.replace("\\", "/").split("/")
+        if len(parts) > 2:
+            return "..." + "/".join(parts[-2:])
+        return cwd
 
     @work
-    async def refresh_sessions(self) -> None:
-        """Refresh session data from database."""
+    async def refresh_data(self) -> None:
+        """Refresh data only when it changes."""
+        # Fetch new data
         sessions = db.get_sessions(self.cwd_filter)
-        self.all_sessions = sessions
-        self.session_trees = build_session_tree(sessions)
 
-        # Update UI
-        self.update_session_tree()
-        self.update_details()
-        self.update_skills()
+        # Create hash of sessions
+        sessions_data = [
+            {
+                "id": s.id,
+                "title": s.title,
+                "directory": s.directory,
+                "status": s.status.value,
+                "time_updated": s.time_updated,
+            }
+            for s in sessions
+        ]
+        new_sessions_hash = _data_hash(sessions_data)
+
+        # Only proceed if sessions changed
+        sessions_changed = new_sessions_hash != self._sessions_hash
+
+        if sessions_changed:
+            self.all_sessions = sessions
+            self._sessions_hash = new_sessions_hash
+
+            # Fetch stats for all sessions
+            new_stats = {}
+            for session in sessions:
+                new_stats[session.id] = db.get_session_stats(session.id)
+
+            new_stats_hash = _data_hash(new_stats)
+            stats_changed = new_stats_hash != self._stats_hash
+
+            if stats_changed:
+                self.stats_cache = new_stats
+                self._stats_hash = new_stats_hash
+                self.update_session_table()
+
+        # Always check model stats (they can change independently)
+        new_model_stats = db.get_model_usage_stats()
+        new_model_hash = _data_hash(new_model_stats)
+
+        if new_model_hash != self._model_stats_hash:
+            self.model_stats = new_model_stats
+            self._model_stats_hash = new_model_hash
+            self.update_model_panel()
+
+        # Update dynamic panels (todos/skills) based on selection
         self.update_todos()
-        self.update_aggregation()
+        self.update_skills()
 
-    def update_session_tree(self) -> None:
-        """Update the session tree panel."""
-        tree_widget = self.query_one("#session-tree", Static)
+        # Update aggregation (depends on session count)
+        if sessions_changed:
+            self.update_aggregation()
 
-        if not self.session_trees:
-            tree_widget.update(render_empty_state("No sessions found"))
+    def update_session_table(self) -> None:
+        """Update the session table with current data, preserving cursor position."""
+        table = self.query_one("#session-table", DataTable)
+
+        # Save current cursor position
+        current_row = table.cursor_row
+        current_key = None
+        if current_row is not None and current_row < len(self.all_sessions):
+            current_key = self.all_sessions[current_row].id if self.all_sessions else None
+
+        table.clear()
+
+        if not self.all_sessions:
             return
 
-        tree_widget.update(render_session_tree(self.session_trees, self.selected_session_id))
+        new_row_index = None
+        for idx, session in enumerate(self.all_sessions):
+            stats = self.stats_cache.get(session.id)
 
-    def update_details(self) -> None:
-        """Update the details panel."""
-        details_widget = self.query_one("#details", Static)
+            status = self._status_text(session.status)
+            title = session.title[:35]
+            cwd = self._format_cwd(session.directory)
+            duration = self._format_duration(session.duration)
+            msgs = str(stats.message_count) if stats else "-"
+            tools = str(stats.tool_call_count) if stats else "-"
 
-        if self.selected_session_id:
-            selected = next(
-                (s for s in self.all_sessions if s.id == self.selected_session_id),
-                None,
-            )
-            # Fetch stats for this session
-            stats = db.get_session_stats(self.selected_session_id) if selected else None
-            details_widget.update(render_details(selected, stats))
-        else:
-            details_widget.update(render_details(None))
+            table.add_row(status, title, cwd, duration, msgs, tools, key=session.id)
+
+            if session.id == current_key:
+                new_row_index = idx
+
+        if new_row_index is not None:
+            table.move_cursor(row=new_row_index)
+        elif current_row is not None and self.all_sessions:
+            target = min(current_row, len(self.all_sessions) - 1)
+            table.move_cursor(row=target)
+
+    def update_model_panel(self) -> None:
+        """Update the model usage panel."""
+        widget = self.query_one("#model-panel", Static)
+
+        if not self.model_stats:
+            widget.update("No model usage data available")
+            return
+
+        import time
+
+        now = time.time() * 1000
+
+        lines = []
+        lines.append("[bold cyan]Model Usage Stats[/bold cyan]")
+        lines.append("")
+
+        for model_key, stats in sorted(self.model_stats.items()):
+            lines.append(f"[bold]{model_key}[/bold]")
+            lines.append(f"  Requests: {stats['request_count']}")
+
+            if stats["last_used"]:
+                ago = self._format_time_ago(now - stats["last_used"])
+                lines.append(f"  Last used: {ago} ago")
+
+            if stats["last_rate_limit"]:
+                ago = self._format_time_ago(now - stats["last_rate_limit"])
+                cooldown_ms = 60 * 60 * 1000  # 1 hour
+
+                if (now - stats["last_rate_limit"]) > cooldown_ms:
+                    lines.append(f"  [green]Rate limit: {ago} ago (cleared)[/green]")
+                else:
+                    remaining = int((cooldown_ms - (now - stats["last_rate_limit"])) / 1000 / 60)
+                    lines.append(f"  [red]Rate limit: {ago} ago ({remaining}m remaining)[/red]")
+
+            lines.append("")
+
+        widget.update(Text.from_markup("\n".join(lines)))
+
+    def _format_time_ago(self, ms: float) -> str:
+        seconds = int(ms / 1000)
+        if seconds < 60:
+            return f"{seconds}s"
+        minutes = seconds // 60
+        if minutes < 60:
+            return f"{minutes}m"
+        hours = minutes // 60
+        if hours < 24:
+            return f"{hours}h"
+        days = hours // 24
+        return f"{days}d"
+
+    def update_todos(self) -> None:
+        """Update the TODOs panel for selected session."""
+        widget = self.query_one("#todos-panel", Static)
+        table = self.query_one("#session-table", DataTable)
+
+        cursor_row = table.cursor_row
+        if cursor_row is None or cursor_row >= len(self.all_sessions):
+            widget.update(render_todos([]))
+            return
+
+        session = self.all_sessions[cursor_row]
+        todos = db.get_todos(session.id)
+        widget.update(render_todos(todos))
 
     def update_skills(self) -> None:
         """Update the skills panel."""
-        skills_widget = self.query_one("#skills", Static)
-        skills_widget.update(render_skills())
-
-    def update_todos(self) -> None:
-        """Update the todos panel."""
-        todos_widget = self.query_one("#todos", Static)
-
-        if self.selected_session_id:
-            todos = db.get_todos(self.selected_session_id)
-        else:
-            todos = []
-
-        todos_widget.update(render_todos(todos))
+        widget = self.query_one("#skills-panel", Static)
+        widget.update(render_skills())
 
     def update_aggregation(self) -> None:
         """Update the aggregation panel."""
-        agg_widget = self.query_one("#aggregation", Static)
-        agg_widget.update(render_aggregation(self.all_sessions))
+        widget = self.query_one("#aggregation", Static)
+        widget.update(render_aggregation(self.all_sessions))
+
+    def on_data_table_row_highlighted(self, event) -> None:
+        """Called when cursor moves to a different row."""
+        self.update_todos()
+        self.update_skills()
 
     def action_cursor_down(self) -> None:
-        """Move cursor down in session list."""
-        if self.all_sessions:
-            self._cursor_position = (self._cursor_position + 1) % len(self.all_sessions)
-            self.selected_session_id = self.all_sessions[self._cursor_position].id
-            self.update_session_tree()
-            self.update_details()
+        table = self.query_one("#session-table", DataTable)
+        table.action_cursor_down()
 
     def action_cursor_up(self) -> None:
-        """Move cursor up in session list."""
-        if self.all_sessions:
-            self._cursor_position = (self._cursor_position - 1) % len(self.all_sessions)
-            self.selected_session_id = self.all_sessions[self._cursor_position].id
-            self.update_session_tree()
-            self.update_details()
+        table = self.query_one("#session-table", DataTable)
+        table.action_cursor_up()
 
-    def action_select(self) -> None:
-        """Select the current session."""
-        if self.all_sessions and self._cursor_position < len(self.all_sessions):
-            self.selected_session_id = self.all_sessions[self._cursor_position].id
-            self.update_session_tree()
-            self.update_details()
-            self.update_todos()
+    def action_refresh(self) -> None:
+        self.refresh_data()
 
     def action_toggle_filter(self) -> None:
-        """Toggle filter by current working directory."""
         import os
 
-        if self.cwd_filter:
-            self.cwd_filter = None
-        else:
-            self.cwd_filter = os.getcwd()
-
-        self.refresh_sessions()
+        self.cwd_filter = None if self.cwd_filter else os.getcwd()
+        self.refresh_data()

@@ -2,6 +2,7 @@
 Database queries for OpenCode sessions.
 """
 
+import json
 import os
 from pathlib import Path
 from typing import Optional
@@ -150,3 +151,91 @@ def get_session_count(cwd: Optional[str] = None) -> int:
         return 0
     where = {"directory": cwd} if cwd else None
     return b.count(SESSION, where)
+
+
+def get_model_usage_stats() -> dict[str, dict]:
+    """Get usage stats per model from all messages."""
+    from collections import defaultdict
+
+    b = _builder()
+    if b is None:
+        return {}
+
+    stats = defaultdict(
+        lambda: {
+            "total_tokens": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "request_count": 0,
+            "last_rate_limit": None,
+            "last_used": None,
+        }
+    )
+
+    # Use query builder for assistant messages
+    rows = b.select_json(
+        MESSAGE,
+        json_path="$.role",
+        json_value="assistant",
+        columns=["data", "time_created"],
+        order_by="-time_created",
+    )
+
+    for row in rows:
+        data = row["data"]
+        time_created = row["time_created"]
+
+        if not data:
+            continue
+
+        try:
+            msg = json.loads(data)
+
+            # Get model info
+            provider_id = msg.get("providerID", "unknown")
+            model_id = msg.get("modelID", "unknown")
+            model_key = f"{provider_id}/{model_id}"
+
+            # Update last used
+            if stats[model_key]["last_used"] is None:
+                stats[model_key]["last_used"] = time_created
+
+            # Count requests
+            stats[model_key]["request_count"] = int(stats[model_key]["request_count"] or 0) + 1
+
+        except (json.JSONDecodeError, KeyError):
+            continue
+
+    # For rate limit errors, we need raw SQL for the LIKE queries
+    # The query builder doesn't support complex WHERE clauses with OR/LIKE
+    with b._conn() as conn:
+        error_rows = conn.execute("""
+            SELECT data, time_created FROM message
+            WHERE json_valid(data) = 1
+            AND (
+                json_extract(data, '$.error.code') LIKE '%rate_limit%'
+                OR json_extract(data, '$.error.message') LIKE '%rate limit%'
+                OR json_extract(data, '$.error.message') LIKE '%quota%'
+            )
+            ORDER BY time_created DESC
+        """).fetchall()
+
+        for row in error_rows:
+            data = row["data"]
+            time_created = row["time_created"]
+
+            if not data:
+                continue
+
+            try:
+                msg = json.loads(data)
+                model_key = "unknown/unknown"
+
+                # Update rate limit info
+                if stats[model_key]["last_rate_limit"] is None:
+                    stats[model_key]["last_rate_limit"] = time_created
+
+            except (json.JSONDecodeError, KeyError):
+                continue
+
+    return dict(stats)

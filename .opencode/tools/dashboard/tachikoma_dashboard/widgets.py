@@ -15,77 +15,14 @@ GITS_TEXT = "#b3e5fc"
 GITS_MUTED = "#4a5f6d"
 
 
-def get_status_icon(status: SessionStatus) -> tuple[str, str]:
-    """Get icon and color for session status."""
-    icons = {
-        SessionStatus.WORKING: ("●", GITS_GREEN),
-        SessionStatus.ACTIVE: ("◐", GITS_ORANGE),
-        SessionStatus.IDLE: ("○", GITS_MUTED),
-    }
-    return icons[status]
-
-
 def format_duration(seconds: int) -> str:
-    """Format duration in human-readable format."""
     if seconds < 60:
         return f"{seconds}s"
     minutes, secs = divmod(seconds, 60)
     if minutes < 60:
-        return f"{minutes}m {secs}s"
+        return f"{minutes}m{secs:02d}"
     hours, mins = divmod(minutes, 60)
-    return f"{hours}h {mins}m"
-
-
-def truncate_message(msg: str, max_len: int = 40) -> str:
-    """Truncate message for display."""
-    if not msg:
-        return "--"
-    if len(msg) > max_len:
-        return msg[:max_len] + "..."
-    return msg
-
-
-def render_session_tree(trees: list[SessionTree], selected_id: str | None = None) -> Text:
-    """Render the session tree as text."""
-    # Header
-    header = Text()
-    header.append(" Status   ", style=Style(bold=True, color=GITS_CYAN))
-    header.append(
-        "Session                                        ", style=Style(bold=True, color=GITS_CYAN)
-    )
-    header.append("Directory", style=Style(bold=True, color=GITS_CYAN))
-
-    lines = [header]
-    lines.append(Text("-" * 80, style=Style(color=GITS_MUTED)))
-
-    def add_rows(tree: SessionTree, depth: int = 0) -> None:
-        icon_char, icon_color = get_status_icon(tree.status)
-        title = tree.session.title[:40] if len(tree.session.title) > 40 else tree.session.title
-        directory = (
-            tree.session.directory[:30]
-            if len(tree.session.directory) > 30
-            else tree.session.directory
-        )
-
-        row = Text()
-        row.append(f" {icon_char}  ", style=Style(color=icon_color))
-        if tree.session.id == selected_id:
-            row.append(f"{title}  ", style=Style(bold=True, color=GITS_RED))
-            row.append(f"{directory}  ", style=Style(color=GITS_TEXT))
-            row.append("<<", style=Style(bold=True, color=GITS_RED))
-        else:
-            row.append(f"{title}  ", style=Style(color=GITS_TEXT))
-            row.append(f"{directory}", style=Style(color=GITS_TEXT))
-
-        lines.append(row)
-
-        for child in tree.children:
-            add_rows(child, depth + 1)
-
-    for tree in trees:
-        add_rows(tree)
-
-    return Text("\n", style=Style(color=GITS_MUTED)).join(lines)
+    return f"{hours}h{mins:02d}"
 
 
 def render_details(session: Session | None, stats: SessionStats | None = None) -> Text:

@@ -4,14 +4,14 @@ Type-safe query builder for OpenCode database.
 Validates table/column names at runtime to prevent SQL errors from typos.
 """
 
+import sqlite3
 from dataclasses import dataclass
 from typing import Any
-import sqlite3
-
 
 # =============================================================================
 # Schema - validated at import time
 # =============================================================================
+
 
 @dataclass(frozen=True)
 class Column:
@@ -26,33 +26,42 @@ class Table:
     columns: tuple[Column, ...]
 
 
-SESSION = Table("session", (
-    Column("id", "TEXT"),
-    Column("parent_id", "TEXT"),
-    Column("project_id", "TEXT"),
-    Column("title", "TEXT"),
-    Column("directory", "TEXT"),
-    Column("time_created", "INTEGER"),
-    Column("time_updated", "INTEGER"),
-))
+SESSION = Table(
+    "session",
+    (
+        Column("id", "TEXT"),
+        Column("parent_id", "TEXT"),
+        Column("project_id", "TEXT"),
+        Column("title", "TEXT"),
+        Column("directory", "TEXT"),
+        Column("time_created", "INTEGER"),
+        Column("time_updated", "INTEGER"),
+    ),
+)
 
-MESSAGE = Table("message", (
-    Column("id", "TEXT"),
-    Column("session_id", "TEXT"),
-    Column("time_created", "INTEGER"),
-    Column("time_updated", "INTEGER"),
-    Column("data", "TEXT", True),
-))
+MESSAGE = Table(
+    "message",
+    (
+        Column("id", "TEXT"),
+        Column("session_id", "TEXT"),
+        Column("time_created", "INTEGER"),
+        Column("time_updated", "INTEGER"),
+        Column("data", "TEXT", True),
+    ),
+)
 
-TODO = Table("todo", (
-    Column("session_id", "TEXT"),
-    Column("content", "TEXT"),
-    Column("status", "TEXT"),
-    Column("priority", "TEXT"),
-    Column("position", "INTEGER"),
-    Column("time_created", "INTEGER"),
-    Column("time_updated", "INTEGER"),
-))
+TODO = Table(
+    "todo",
+    (
+        Column("session_id", "TEXT"),
+        Column("content", "TEXT"),
+        Column("status", "TEXT"),
+        Column("priority", "TEXT"),
+        Column("position", "INTEGER"),
+        Column("time_created", "INTEGER"),
+        Column("time_updated", "INTEGER"),
+    ),
+)
 
 TABLES = {t.name: t for t in (SESSION, MESSAGE, TODO)}
 
@@ -60,6 +69,7 @@ TABLES = {t.name: t for t in (SESSION, MESSAGE, TODO)}
 # =============================================================================
 # Query Builder
 # =============================================================================
+
 
 class QueryBuilder:
     def __init__(self, db_path: str):
@@ -92,10 +102,10 @@ class QueryBuilder:
         limit: int | None = None,
     ) -> list[sqlite3.Row]:
         table_obj = self._table(table)
-        
+
         cols = [c.name for c in table_obj.columns] if columns is None else columns
         cols = [self._col(table_obj, c).name for c in cols]
-        
+
         query = f"SELECT {', '.join(cols)} FROM {table_obj.name}"
         params: list[Any] = []
 
@@ -128,14 +138,49 @@ class QueryBuilder:
         with self._conn() as conn:
             return conn.execute(query, params).fetchone()[0]
 
+    def select_json(
+        self,
+        table: str | Table,
+        json_path: str,
+        json_value: Any,
+        columns: list[str] | None = None,
+        order_by: str | None = None,
+    ) -> list[sqlite3.Row]:
+        """Select rows where JSON data matches a value.
+
+        Args:
+            table: Table to query
+            json_path: JSON path like '$.role' or '$.error.code'
+            json_value: Value to match
+            columns: Columns to select (defaults to all)
+            order_by: Column to order by
+        """
+        table_obj = self._table(table)
+        cols = [c.name for c in table_obj.columns] if columns is None else columns
+        cols = [self._col(table_obj, c).name for c in cols]
+
+        query = f"SELECT {', '.join(cols)} FROM {table_obj.name}"
+        query += " WHERE json_valid(data) = 1 AND json_extract(data, ?) = ?"
+        params = [json_path, json_value]
+
+        if order_by:
+            desc = order_by.startswith("-")
+            col = self._col(table_obj, order_by.lstrip("-")).name
+            query += f" ORDER BY {col} {'DESC' if desc else 'ASC'}"
+
+        with self._conn() as conn:
+            return list(conn.execute(query, params))
+
 
 # =============================================================================
 # JSON Helpers
 # =============================================================================
 
+
 def json_extract(row: sqlite3.Row, path: str) -> Any:
     """Extract value from JSON column using '$.field' path syntax."""
     import json
+
     data = row["data"] if "data" in row.keys() else None
     if not data:
         return None
