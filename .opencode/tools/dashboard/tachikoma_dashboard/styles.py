@@ -327,8 +327,21 @@ ERROR_DETAILS_CSS = f"""
 #error-details {{
     padding: 1;
     color: {THEME.text};
-    overflow-y: auto;
+    overflow-y: scroll;
+    max-height: 100vh;
     height: 100%;
+}}
+
+# Vertical spacing between panels in grid
+#left-panel > Vertical,
+#right-panel > Vertical {{
+    margin: 0 1 0 0;
+    padding: 0;
+    height: 100%;
+}}
+
+Vertical {{
+    margin: 0 0 0 0;
 }}
 
 /* Tighten spacing in grid panels */

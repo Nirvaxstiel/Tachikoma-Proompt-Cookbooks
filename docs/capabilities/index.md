@@ -212,5 +212,3 @@ See [Research Overview](../research/overview.md) for the complete research direc
 - [Research](../research/overview.md) - Scientific foundation
 - [Getting Started](../getting-started.md) - Installation and setup
 - [Troubleshooting](../troubleshooting.md) - Common issues
-
-**Last Updated:** 2026-02-17

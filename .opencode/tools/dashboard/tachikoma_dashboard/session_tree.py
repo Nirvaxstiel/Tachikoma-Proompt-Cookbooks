@@ -170,24 +170,35 @@ class SessionTreeWidget(Tree[Session]):
             node_icon = self.ICON_LEAF
             node_color = THEME.text
 
-        # Truncate title if needed and extract agent name
+        # Truncate title for display and extract agent name if available
         title = session.title
-        agent_name = "unknown"
+        agent_name = ""
 
-        # Try to extract agent name from title patterns
-        # Pattern: "task: agent_name" or "task - agent_name"
+        # Try to extract agent name from common patterns
+        # Pattern: "AgentName: task..." or "AgentName - task..."
+        # Only extract if colon or dash appears early in title and first part is short
         if ":" in title:
             parts = title.split(":", 1)
-            if len(parts) > 1:
-                agent_name = parts[1].strip()
-        elif "-" in title:
-            parts = title.split("-", 1)
-            if len(parts) > 1:
-                agent_name = parts[1].strip()
+            first_part = parts[0].strip()
+            # Only treat as agent name if first part is reasonably short (likely an agent name)
+            if len(first_part) < 20:
+                agent_name = first_part
+                title = parts[1].strip()
+        elif " - " in title:
+            parts = title.split(" - ", 1)
+            first_part = parts[0].strip()
+            # Only treat as agent name if first part is reasonably short (likely an agent name)
+            if len(first_part) < 20:
+                agent_name = first_part
+                title = parts[1].strip()
 
         # Truncate title for display
-        if len(title) > 20:
-            title = title[:17] + "..."
+        if len(title) > 25:
+            title = title[:22] + "..."
+
+        # Truncate agent name for badge
+        if len(agent_name) > 8:
+            agent_name = agent_name[:5] + "..."
 
         # Truncate CWD
         cwd = _truncate_path(session.directory, 18)
@@ -207,17 +218,13 @@ class SessionTreeWidget(Tree[Session]):
         # CWD (cyan, dimmed)
         label.append(f" ~{cwd}", style=Style(color=THEME.cyan, dim=True))
 
-        # [sub] or [main] badge with agent name
+        # [sub] or [main] badge with optional agent name
         if is_subagent:
-            label.append(
-                f" [sub] {agent_name}",
-                style=Style(color=THEME.red, bold=True)
-            )
+            badge = f" [sub] {agent_name}" if agent_name else " [sub]"
+            label.append(badge, style=Style(color=THEME.red, bold=True))
         else:
-            label.append(
-                f" [main] {agent_name}",
-                style=Style(color=THEME.green, bold=True)
-            )
+            badge = f" [main] {agent_name}" if agent_name else " [main]"
+            label.append(badge, style=Style(color=THEME.green, bold=True))
 
         # Apply the provided style
         label.stylize(style)

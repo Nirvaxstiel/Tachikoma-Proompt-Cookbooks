@@ -250,9 +250,6 @@ pip install textual rich pytest pytest-cov
 
 ### Code Style
 
-- **Line length**: 100 characters
-- **Type hints**: Required for all functions
-- **Docstrings**: Required for public functions
 - **Linting**: ruff
 - **Type checking**: mypy
 

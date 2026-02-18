@@ -451,7 +451,3 @@ Communication protocol works with other tribal rules:
 **Context**:
 {what was being worked on}
 ```
-
-**Last Updated:** 2026-02-17
-**Tribal Rule:** Universal Rule #8 - Communication
-**Application:** All agents, all interactions, always

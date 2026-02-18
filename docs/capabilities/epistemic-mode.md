@@ -359,7 +359,3 @@ escalation_rules:
 - [Validation](#validation) - How to inspect before acting
 - [Communication Protocol](#communication-protocol) - Structured communication
 - [Research Overview](../research/overview.md) - Research-backed techniques
-
-**Last Updated:** 2026-02-17
-**Tribal Rule:** Universal Rule #1 - Epistemic Mode
-**Application:** All agents, all claims, always
