@@ -185,19 +185,19 @@ class SkillVersionManager:
             return skills
         
         for skill_dir in os.listdir(self.skills_dir):
-            # Skip directories
+            # Build full path to skill directory
             skill_path = os.path.join(self.skills_dir, skill_dir)
             if not os.path.isdir(skill_path):
                 continue
-            
+
             # Check for SKILL.md
-            skill_path = os.path.join(skill_dir, 'SKILL.md')
-            if not os.path.exists(skill_path):
+            skill_md_path = os.path.join(skill_path, 'SKILL.md')
+            if not os.path.exists(skill_md_path):
                 continue
             
             skill_name = skill_dir
             metadata = self._load_skill_manifest(skill_name)
-            
+
             if not metadata:
                 # Create minimal metadata from directory name
                 name = skill_dir.replace('-', ' ').title()
@@ -207,7 +207,11 @@ class SkillVersionManager:
                     'description': '',
                     'deprecated': False
                 }
-            
+
+            # Ensure 'name' key exists
+            if 'name' not in metadata:
+                metadata['name'] = skill_name
+
             # Add to list
             skills.append(metadata)
         
@@ -628,19 +632,20 @@ if __name__ == '__main__':
 
     if args.command == 'list':
         skills = manager.get_all_skills()
-        
+
         print("\n=== ALL SKILLS ===")
         for skill in skills:
-            status = "✓" if not skill['deprecated'] else "⚠️"
-            version = skill['version']
+            is_deprecated = skill.get('deprecated', False)
+            status = "[OK]" if not is_deprecated else "[DEP]"
+            version = skill.get('version', '0.0.0')
             tags = ", ".join(skill.get('tag', []))
-            print(f"\n{status} {skill['name']} v{version}")
-            print(f"    {skill['description']}")
+            print(f"\n{status} {skill.get('name', 'unknown')} v{version}")
+            print(f"    {skill.get('description', '')}")
             if tags:
                 print(f"    Tags: {tags}")
-            if skill['deprecated']:
+            if is_deprecated:
                 print(f"    [DEPRECATED]")
-        
+
         print(f"\nTotal: {len(skills)} skills")
 
     elif args.command == 'info':
