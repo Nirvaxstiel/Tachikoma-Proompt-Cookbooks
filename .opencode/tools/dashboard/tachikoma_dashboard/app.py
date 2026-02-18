@@ -173,7 +173,6 @@ class DashboardApp(App):
         Binding("slash", "toggle_search", "Search", show=True),
         Binding("escape", "close_search", "Close", show=False),
         Binding("r", "refresh", "Refresh", show=True),
-        Binding("m", "toggle_model_panel", "Models", show=True),
     ]
 
     def __init__(
@@ -191,7 +190,6 @@ class DashboardApp(App):
         self.interval = interval
         self.cwd_filter = cwd
         self._sessions_hash: str = ""
-        self._show_model_panel: bool = False
 
     def _footer_text(self) -> str:
         """Generate footer text with filter status.
@@ -202,9 +200,8 @@ class DashboardApp(App):
         filter_status = f" [{THEME.red}][ON][/{THEME.red}]" if self.cwd_filter else ""
         search_status = f" [{THEME.cyan}][SEARCH][/{THEME.cyan}]" if self.search_query else ""
         return (
-            f"[bold]/[/bold] Search │ "
+            f"[bold]/[/bold] Search{search_status} │ "
             f"[bold]Tab[/bold] Filter{filter_status} │ "
-            f"[bold]M[/bold] Models{search_status} │ "
             f"[bold]R[/bold] Refresh │ "
             f"[bold]Q[/bold] Quit"
         )
@@ -392,7 +389,16 @@ class DashboardApp(App):
         self._update_aggregation()
         self._update_activity_data()
 
-        if self.selected_session:
+        # Auto-select first session if none selected
+        if not self.selected_session and event.sessions:
+            self.selected_session = event.sessions[0]
+            self._update_details()
+            self._update_tokens()
+            self._load_stats(self.selected_session.id)
+            self._load_tokens(self.selected_session.id)
+            self._load_skills(self.selected_session.id)
+            self._load_todos(self.selected_session.id)
+        elif self.selected_session:
             self._load_stats(self.selected_session.id)
             self._load_tokens(self.selected_session.id)
             self._load_skills(self.selected_session.id)
@@ -415,8 +421,6 @@ class DashboardApp(App):
             event: The TokensLoaded message
         """
         self.tokens_cache = {**self.tokens_cache, event.session_id: event.tokens}
-        if self.selected_session and self.selected_session.id == event.session_id:
-            self._update_tokens()
 
     def on_model_usage_loaded(self, event: ModelUsageLoaded) -> None:
         """Handle model usage loaded event.
@@ -425,6 +429,8 @@ class DashboardApp(App):
             event: The ModelUsageLoaded message
         """
         self.model_usage = event.models
+        # Always update tokens panel when model usage loads
+        self._update_tokens()
 
     def on_skills_loaded(self, event: SkillsLoaded) -> None:
         """Handle skills loaded event.
@@ -454,14 +460,35 @@ class DashboardApp(App):
         Args:
             event: The Selected message from SessionTreeWidget
         """
-        node = event.node
-        if node and node.data:
-            self.selected_session = node.data
+        session = event.session
+        if session:
+            self.selected_session = session
             self._update_details()
-            self._load_stats(node.data.id)
-            self._load_tokens(node.data.id)
-            self._load_skills(node.data.id)
-            self._load_todos(node.data.id)
+            self._update_tokens()
+            self._load_stats(session.id)
+            self._load_tokens(session.id)
+            self._load_skills(session.id)
+            self._load_todos(session.id)
+
+    def on_tree_node_highlighted(self, event) -> None:
+        """Handle tree node highlight event (cursor movement).
+
+        This is called when the user navigates the tree with arrow keys.
+        """
+        # Get the session from the tree widget
+        try:
+            tree_widget = self.query_one(SessionTreeWidget)
+            session = tree_widget.get_selected_session()
+            if session and session != self.selected_session:
+                self.selected_session = session
+                self._update_details()
+                self._update_tokens()
+                self._load_stats(session.id)
+                self._load_tokens(session.id)
+                self._load_skills(session.id)
+                self._load_todos(session.id)
+        except Exception:
+            pass
 
     def on_search_bar_search_changed(self, event: SearchBar.SearchChanged) -> None:
         """Handle search query changes.
@@ -496,15 +523,10 @@ class DashboardApp(App):
             details.update("[dim]No session selected[/dim]")
 
     def _update_tokens(self) -> None:
-        """Update tokens panel."""
+        """Update tokens panel with model usage (always visible)."""
         tokens_widget = self.query_one("#tokens", Static)
-        if self._show_model_panel:
-            tokens_widget.update(render_model_usage(self.model_usage))
-        elif self.selected_session:
-            tokens = self.tokens_cache.get(self.selected_session.id)
-            tokens_widget.update(render_session_tokens(tokens))
-        else:
-            tokens_widget.update("[dim]No session selected[/dim]")
+        # Always show model usage
+        tokens_widget.update(render_model_usage(self.model_usage))
 
     def _update_skills(self) -> None:
         """Update skills panel with DataTable."""
@@ -566,11 +588,6 @@ class DashboardApp(App):
                     self._load_data()
         except Exception:
             pass
-
-    def action_toggle_model_panel(self) -> None:
-        """Toggle model usage panel."""
-        self._show_model_panel = not self._show_model_panel
-        self._update_tokens()
 
     def action_refresh(self) -> None:
         """Force refresh data."""

@@ -9,6 +9,7 @@ Design principles:
 
 from __future__ import annotations
 
+import time
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from rich.style import Style
@@ -26,6 +27,30 @@ if TYPE_CHECKING:
 TreeDataType = TypeVar("TreeDataType")
 
 
+def _format_duration(seconds: int) -> str:
+    """Format seconds as human-readable duration."""
+    if seconds < 0:
+        return "0s"
+    if seconds < 60:
+        return f"{seconds}s"
+    minutes, secs = divmod(seconds, 60)
+    if minutes < 60:
+        return f"{minutes}m{secs:02d}s"
+    hours, mins = divmod(minutes, 60)
+    return f"{hours}h{mins:02d}m"
+
+
+def _truncate_path(path: str, max_len: int = 20) -> str:
+    """Truncate a path for display, keeping the end."""
+    if len(path) <= max_len:
+        return path
+    # Keep the last part
+    parts = path.replace("\\", "/").split("/")
+    if len(parts) > 1:
+        return ".../" + parts[-1]
+    return "..." + path[-(max_len - 3):]
+
+
 class SessionTreeWidget(Tree[Session]):
     """Interactive tree widget for session hierarchy.
 
@@ -34,6 +59,7 @@ class SessionTreeWidget(Tree[Session]):
     - Expand/collapse with mouse or keyboard
     - Custom GITS-themed labels
     - Status indicators with color coding
+    - Shows CWD, runtime, and agent type
     """
 
     # Icons for tree nodes
@@ -51,9 +77,9 @@ class SessionTreeWidget(Tree[Session]):
     class Selected(Message):
         """Posted when a session is selected."""
 
-        def __init__(self, node: TreeNode[Session]) -> None:
+        def __init__(self, session: Session) -> None:
             super().__init__()
-            self.node = node
+            self.session = session
 
     DEFAULT_CSS = f"""
     SessionTreeWidget {{
@@ -113,7 +139,7 @@ class SessionTreeWidget(Tree[Session]):
         """Render a custom label for each session node.
 
         This overrides the default Tree.render_label to provide
-        GITS-themed labels with status indicators.
+        GITS-themed labels with status indicators and extra info.
 
         Args:
             node: The tree node to render
@@ -150,8 +176,14 @@ class SessionTreeWidget(Tree[Session]):
 
         # Truncate title if needed
         title = session.title
-        if len(title) > 45:
-            title = title[:42] + "..."
+        if len(title) > 30:
+            title = title[:27] + "..."
+
+        # Format runtime
+        runtime = _format_duration(session.duration)
+
+        # Truncate CWD
+        cwd = _truncate_path(session.directory, 15)
 
         # Build the label
         label = Text()
@@ -165,11 +197,17 @@ class SessionTreeWidget(Tree[Session]):
         # Title
         label.append(title, style=Style(color=THEME.text))
 
+        # Runtime (muted)
+        label.append(f" [{runtime}]", style=Style(color=THEME.muted))
+
+        # CWD (cyan, dimmed)
+        label.append(f" ~{cwd}", style=Style(color=THEME.cyan, dim=True))
+
         # Subagent badge
         if is_subagent:
             label.append(
                 " [SUB]",
-                style=Style(color=THEME.red, bold=True, italic=True)
+                style=Style(color=THEME.red, bold=True)
             )
 
         # Apply the provided style
@@ -240,11 +278,20 @@ class SessionTreeWidget(Tree[Session]):
             return True
         return False
 
-    def on_tree_selected(self, event: Tree.Selected) -> None:
-        """Handle tree selection event.
+    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
+        """Handle tree node selection event.
 
-        Posts a Selected message with the selected node.
+        Posts a Selected message with the selected session.
         """
-        # The event has a node attribute
-        if event.node and event.node.data:
-            self.post_message(self.Selected(event.node))
+        node = event.node
+        if node and node.data:
+            self.post_message(self.Selected(node.data))
+
+    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted) -> None:
+        """Handle tree node highlight event (cursor movement).
+
+        Posts a Selected message when cursor moves to a new node.
+        """
+        node = event.node
+        if node and node.data:
+            self.post_message(self.Selected(node.data))
