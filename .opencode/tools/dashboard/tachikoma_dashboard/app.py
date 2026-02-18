@@ -7,7 +7,7 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
-from textual.widgets import DataTable, Footer, Header, Static
+from textual.widgets import DataTable, Header, Static
 
 from . import db
 from .models import Session, SessionStats, SessionStatus, SessionTree, build_session_tree
@@ -57,15 +57,14 @@ class DashboardApp(App):
     DataTable > .datatable--cursor {{ background: {RED} 30%; }}
     DataTable > .datatable--hover {{ background: {CYAN} 20%; }}
     Header {{ background: {BG}; color: {GREEN}; }}
-    Footer {{ background: {BG}; color: {MUTED}; }}
+    #footer-bar {{ background: {BG}; color: {MUTED}; height: auto; padding: 0 1; content-align: center middle; }}
     """
 
     BINDINGS = [
         Binding("q", "quit", "Quit"),
-        Binding("j", "cursor_down", "Down"),
-        Binding("k", "cursor_up", "Up"),
         Binding("tab", "toggle_filter", "Filter"),
         Binding("r", "refresh", "Refresh"),
+        # Note: up/down arrows work by default with DataTable
     ]
 
     def __init__(self, interval: int = 2000, cwd: str | None = None):
@@ -83,6 +82,11 @@ class DashboardApp(App):
         self.stats_cache: dict[str, SessionStats] = {}
         self.model_stats: dict[str, dict] = {}
 
+    def _footer_text(self) -> str:
+        """Custom footer with icons."""
+        # Unicode arrows: ↑ (U+2191) ↓ (U+2193)
+        return "[bold]↑↓[/bold] Navigate | [bold]Tab[/bold] Filter | [bold]R[/bold] Refresh | [bold]Q[/bold] Quit"
+
     def compose(self) -> ComposeResult:
         yield Header()
 
@@ -95,7 +99,7 @@ class DashboardApp(App):
                 yield Static("Skills", id="skills-panel")
 
         yield Static("Aggregation", id="aggregation")
-        yield Footer()
+        yield Static(self._footer_text(), id="footer-bar")
 
     def on_mount(self) -> None:
         table = self.query_one("#session-table", DataTable)
@@ -300,14 +304,6 @@ class DashboardApp(App):
         """Called when cursor moves to a different row."""
         self.update_todos()
         self.update_skills()
-
-    def action_cursor_down(self) -> None:
-        table = self.query_one("#session-table", DataTable)
-        table.action_cursor_down()
-
-    def action_cursor_up(self) -> None:
-        table = self.query_one("#session-table", DataTable)
-        table.action_cursor_up()
 
     def action_refresh(self) -> None:
         self.refresh_data()
