@@ -11,12 +11,11 @@ Key Features:
 - 91.33% accuracy vs fixed-size baselines
 """
 
-import itertools
 import json
 import re
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @lru_cache(maxsize=32)
@@ -370,7 +369,7 @@ class AdaptiveChunker:
 
 # Singleton instance
 _chunker_instance = None
-_instance_lock = None  # Will be imported when needed
+_instance_lock = None  # Lazy import for threading
 
 
 def get_adaptive_chunker(
@@ -392,13 +391,19 @@ def get_adaptive_chunker(
     global _chunker_instance
 
     if _chunker_instance is None:
-        # Note: Lock is not used here for simplicity
-        # In multi-threaded environments, add import threading and use lock
-        _chunker_instance = AdaptiveChunker(
-            initial_chunk_size=initial_chunk_size,
-            min_chunk_size=min_chunk_size,
-            max_chunk_size=max_chunk_size,
-        )
+        global _instance_lock
+        if _instance_lock is None:
+            import threading
+
+            _instance_lock = threading.Lock()
+
+        with _instance_lock:
+            if _chunker_instance is None:  # Double-check locking
+                _chunker_instance = AdaptiveChunker(
+                    initial_chunk_size=initial_chunk_size,
+                    min_chunk_size=min_chunk_size,
+                    max_chunk_size=max_chunk_size,
+                )
 
     return _chunker_instance
 
@@ -473,7 +478,7 @@ if __name__ == "__main__":
 
     elif args.command == "stats":
         stats = chunker.get_stats()
-        print(f"\nChunker Statistics:")
+        print("\nChunker Statistics:")
         print(f"  Current chunk size: {stats['current_chunk_size']:,} characters")
         print(f"  Min chunk size: {stats['min_chunk_size']:,} characters")
         print(f"  Max chunk size: {stats['max_chunk_size']:,} characters")

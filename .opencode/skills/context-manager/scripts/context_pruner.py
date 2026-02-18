@@ -15,13 +15,12 @@ Strategies:
 """
 
 import argparse
-import itertools
 import json
 import re
 import sys
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 # Approximate tokens per character (rough estimate)
 TOKENS_PER_CHAR = 0.25
@@ -329,9 +328,9 @@ def main():
                 )
 
                 if args.dry_run:
-                    print(f"  [DRY RUN - no changes written]")
+                    print("  [DRY RUN - no changes written]")
                 else:
-                    print(f"  [OK] Pruned")
+                    print("  [OK] Pruned")
 
     return 0
 

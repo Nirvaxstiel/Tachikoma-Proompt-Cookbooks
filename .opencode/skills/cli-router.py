@@ -13,14 +13,13 @@ Usage:
 """
 
 import argparse
+import functools
 import json
-import os
 import re
 import sys
 from pathlib import Path
 
 import yaml
-
 
 # Base directories
 SCRIPT_DIR = Path(__file__).parent
@@ -259,7 +258,7 @@ def cmd_classify(args):
 
     if "error" in result:
         print_error(f"Classification failed: {result['error']}")
-        print(f"Falling back to LLM reasoning")
+        print("Falling back to LLM reasoning")
         return 1
 
     # Display results
@@ -307,6 +306,7 @@ def cmd_classify(args):
 # =============================================================================
 
 
+@functools.lru_cache(maxsize=1)
 def load_routes() -> dict:
     """Load intent-routes.yaml configuration"""
     routes_file = CONFIG_DIR / "intent-routes.yaml"
@@ -337,36 +337,32 @@ def get_skills_bulk(bulk_name: str) -> dict:
     return routes.get("skills_bulk", {}).get(bulk_name, {})
 
 
+def _print_routes_list(routes: dict, title: str = "AVAILABLE ROUTES"):
+    """Print formatted list of all routes"""
+    print_header(title)
+
+    for name, config in routes.get("routes", {}).items():
+        skill = config.get("skill", config.get("subagent", "none"))
+        invoke = config.get("invoke_via", "unknown")
+        desc = config.get("description", "")
+        print(f"  {Colors.CYAN}{name:15}{Colors.NC} -> {skill:25} ({invoke})")
+        if desc:
+            print(f"                      {desc}")
+        print()
+
+
 def cmd_route(args):
     """CLI command: show route for intent"""
     if args.list:
         # List all routes
         routes = load_routes()
-        print_header("AVAILABLE ROUTES")
-
-        for name, config in routes.get("routes", {}).items():
-            skill = config.get("skill", config.get("subagent", "none"))
-            invoke = config.get("invoke_via", "unknown")
-            desc = config.get("description", "")
-            print(f"  {Colors.CYAN}{name:15}{Colors.NC} -> {skill:25} ({invoke})")
-            if desc:
-                print(f"                      {desc}")
-            print()
+        _print_routes_list(routes)
         return 0
 
     if not args.intent:
         # List all routes
         routes = load_routes()
-        print_header("AVAILABLE ROUTES")
-
-        for name, config in routes.get("routes", {}).items():
-            skill = config.get("skill", config.get("subagent", "none"))
-            invoke = config.get("invoke_via", "unknown")
-            desc = config.get("description", "")
-            print(f"  {Colors.CYAN}{name:15}{Colors.NC} → {skill:25} ({invoke})")
-            if desc:
-                print(f"                      {desc}")
-            print()
+        _print_routes_list(routes)
         return 0
 
     route = get_route(args.intent)
@@ -443,7 +439,7 @@ def context_discover():
         print(f"  {Colors.CYAN}{f.name:40}{Colors.NC} {size_str}")
 
     print()
-    print_success(f"Discovery complete")
+    print_success("Discovery complete")
     return 0
 
 
