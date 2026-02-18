@@ -29,7 +29,7 @@ LAYOUT_CSS = f"""
 #main-grid {{
     layout: grid;
     grid-size: 2;
-    grid-gutter: 1;
+    grid-gutter: 0;
     grid-columns: 1fr 1fr;
     height: 1fr;
 }}
@@ -39,8 +39,8 @@ LAYOUT_CSS = f"""
     height: 100%;
     layout: grid;
     grid-size: 1;
-    grid-rows: 2fr 1fr;
-    grid-gutter: 1;
+    grid-rows: 3fr 1fr;
+    grid-gutter: 0;
     column-span: 1;
 }}
 
@@ -50,7 +50,7 @@ LAYOUT_CSS = f"""
     layout: grid;
     grid-size: 1;
     grid-rows: 1fr 1fr 1fr 1fr;
-    grid-gutter: 1;
+    grid-gutter: 0;
     column-span: 1;
 }}
 
@@ -335,7 +335,7 @@ ERROR_DETAILS_CSS = f"""
 # Vertical spacing between panels in grid
 #left-panel > Vertical,
 #right-panel > Vertical {{
-    margin: 0 1 0 0;
+    margin: 0 0 0 0;
     padding: 0;
     height: 100%;
 }}

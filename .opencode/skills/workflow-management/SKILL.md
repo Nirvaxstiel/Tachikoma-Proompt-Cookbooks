@@ -24,6 +24,8 @@ tags:
 **Objective:** Understand problem, produce testable requirements.
 
 **Checklist:**
+- [ ] **Inspect actual data** - Query DB, check schema, examine sample rows before making assumptions
+- [ ] **Verify understanding** - Present findings to user: "Here's what I found - does this match?"
 - [ ] Read all code, docs, tests, logs
 - [ ] Define requirements in **EARS Notation**: `WHEN [trigger], THE SYSTEM SHALL [behavior]`
 - [ ] Identify dependencies and constraints

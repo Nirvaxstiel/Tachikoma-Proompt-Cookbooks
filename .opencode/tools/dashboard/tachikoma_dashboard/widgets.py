@@ -109,8 +109,18 @@ def render_session_tree(trees: Sequence[SessionTree], debug: bool = False) -> st
     return "\n".join(render_tree_iterative(list(trees), debug=debug))
 
 
-def render_details(session: Session | None, stats: SessionStats | None = None) -> Text:
-    """Render session details panel."""
+def render_details(
+    session: Session | None,
+    stats: SessionStats | None = None,
+    agent_name: str = "",
+) -> Text:
+    """Render session details panel.
+    
+    Args:
+        session: The session to render
+        stats: Session statistics
+        agent_name: Agent name from message agent field
+    """
     if not session:
         return Text("No session selected", style=Style(color=THEME.muted))
 
@@ -119,11 +129,6 @@ def render_details(session: Session | None, stats: SessionStats | None = None) -
 
     msg_count = stats.message_count if stats else 0
     tool_count = stats.tool_call_count if stats else 0
-    last_msg = (
-        truncate_message(stats.last_user_message)
-        if stats and stats.last_user_message
-        else "--"
-    )
 
     subagent_badge = (
         Text(" [SUBAGENT]", style=Style(color=THEME.red, bold=True))
@@ -131,14 +136,22 @@ def render_details(session: Session | None, stats: SessionStats | None = None) -
         else Text()
     )
 
+    # Determine agent display
+    if agent_name:
+        agent_display = agent_name
+    elif session.is_subagent:
+        agent_display = "(from title)"
+    else:
+        agent_display = "tachikoma"
+
     lines = [
         _make_label_value("Selected", session.title, THEME.cyan, THEME.text) + subagent_badge,
         _make_label_value("Status", f"{icon_char} {session.status.value}", THEME.cyan, icon_color),
         _make_label_value("Duration", duration, THEME.cyan, THEME.text),
         _make_label_value("CWD", session.directory, THEME.cyan, THEME.text),
+        _make_label_value("Agent", agent_display, THEME.cyan, THEME.green),
         _make_label_value("Tool Calls", str(tool_count), THEME.cyan, THEME.green),
         _make_label_value("Messages", str(msg_count), THEME.cyan, THEME.green),
-        _make_label_value("Last User", last_msg, THEME.cyan, THEME.text),
     ]
 
     return Text("\n").join(lines)
@@ -340,29 +353,6 @@ def render_model_usage(models: Sequence[ModelUsage] | None = None) -> Text:
             stats_line.append(f"  Errors: {model.error_count}", style=Style(color=THEME.red))
             if model.last_error_type:
                 stats_line.append(f" ({model.last_error_type})", style=Style(color=THEME.muted))
-
-        # Display rate limit info with cooldown
-        if model.last_rate_limit and model.retry_after_ms:
-            import time
-            time_since_sec = int(time.time()) - (model.last_rate_limit // 1000)
-            remaining = model.rate_limit_cooldown_remaining
-            total_wait_sec = model.retry_after_ms // 1000
-
-            time_since_str = format_duration(time_since_sec)
-            remaining_str = format_duration(remaining)
-            total_wait_str = format_duration(total_wait_sec)
-
-            if remaining > 0:
-                stats_line.append(f"  ⚠ cooldown: {remaining_str} remaining (of {total_wait_str})", style=Style(color=THEME.orange))
-            else:
-                expired_ago = time_since_sec - total_wait_sec
-                expired_str = format_duration(expired_ago)
-                stats_line.append(f"  ⚠ rate limit expired {expired_str} ago (was {total_wait_str})", style=Style(color=THEME.orange))
-        elif model.last_rate_limit:
-            # Rate limit without retry_after
-            import time
-            time_since_sec = int(time.time()) - (model.last_rate_limit // 1000)
-            stats_line.append(f"  ⚠ rate limited {format_duration(time_since_sec)} ago", style=Style(color=THEME.orange))
 
         lines.append(stats_line)
 

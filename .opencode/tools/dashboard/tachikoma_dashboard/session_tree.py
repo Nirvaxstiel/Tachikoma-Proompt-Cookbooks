@@ -128,6 +128,7 @@ class SessionTreeWidget(Tree[Session]):
         self.show_root = False  # Don't show the root node
         self.guide_depth = 3  # Indentation depth
         self._session_map: dict[str, TreeNode[Session]] = {}
+        self._agent_names: dict[str, str] = {}  # session_id -> agent_name
 
     def render_label(
         self, node: TreeNode[Session], base_style: Style, style: Style
@@ -170,27 +171,30 @@ class SessionTreeWidget(Tree[Session]):
             node_icon = self.ICON_LEAF
             node_color = THEME.text
 
-        # Truncate title for display and extract agent name if available
-        title = session.title
-        agent_name = ""
+        # Get agent name from pre-fetched data (from message agent field)
+        # Falls back to title parsing only if not available
+        agent_name = self._agent_names.get(session.id, "")
 
-        # Try to extract agent name from common patterns
-        # Pattern: "AgentName: task..." or "AgentName - task..."
-        # Only extract if colon or dash appears early in title and first part is short
-        if ":" in title:
-            parts = title.split(":", 1)
-            first_part = parts[0].strip()
-            # Only treat as agent name if first part is reasonably short (likely an agent name)
-            if len(first_part) < 20:
-                agent_name = first_part
-                title = parts[1].strip()
-        elif " - " in title:
-            parts = title.split(" - ", 1)
-            first_part = parts[0].strip()
-            # Only treat as agent name if first part is reasonably short (likely an agent name)
-            if len(first_part) < 20:
-                agent_name = first_part
-                title = parts[1].strip()
+        # Title parsing fallback if agent_name not found
+        if not agent_name:
+            title = session.title
+            # Subagent sessions: extract agent name from title
+            # Pattern: "Task: agent_name" or "Task - agent_name"
+            if is_subagent:
+                if ":" in title:
+                    parts = title.split(":", 1)
+                    if len(parts) > 1:
+                        agent_name = parts[1].strip()
+                elif " - " in title:
+                    parts = title.split(" - ", 1)
+                    if len(parts) > 1:
+                        agent_name = parts[1].strip()
+            else:
+                # Main session - default to tachikoma
+                agent_name = "tachikoma"
+        else:
+            # Use the title for display (truncated later)
+            title = session.title
 
         # Truncate title for display
         if len(title) > 25:
@@ -203,7 +207,7 @@ class SessionTreeWidget(Tree[Session]):
         # Truncate CWD
         cwd = _truncate_path(session.directory, 18)
 
-        # Build of the label
+        # Build of label
         label = Text()
 
         # Status icon with color
@@ -218,12 +222,12 @@ class SessionTreeWidget(Tree[Session]):
         # CWD (cyan, dimmed)
         label.append(f" ~{cwd}", style=Style(color=THEME.cyan, dim=True))
 
-        # [sub] or [main] badge with optional agent name
+        # agent: <name> or sub agent: <name> badge
         if is_subagent:
-            badge = f" [sub] {agent_name}" if agent_name else " [sub]"
+            badge = f" sub agent: {agent_name}" if agent_name else " [subagent]"
             label.append(badge, style=Style(color=THEME.red, bold=True))
         else:
-            badge = f" [main] {agent_name}" if agent_name else " [main]"
+            badge = f" agent: {agent_name}" if agent_name else " agent: tachikoma"
             label.append(badge, style=Style(color=THEME.green, bold=True))
 
         # Apply the provided style
@@ -243,6 +247,7 @@ class SessionTreeWidget(Tree[Session]):
         # Clear existing nodes
         self.clear()
         self._session_map.clear()
+        self._agent_names.clear()
 
         if not session_trees:
             self.root.add("No sessions found", data=None)
@@ -256,6 +261,10 @@ class SessionTreeWidget(Tree[Session]):
             # Add this session
             node = parent.add(tree.session.title, data=tree.session)
             self._session_map[tree.session.id] = node
+
+            # Store agent name for this session (pre-fetched from message agent field)
+            if tree.agent_name:
+                self._agent_names[tree.session.id] = tree.agent_name
 
             # Add children
             for child in tree.children:

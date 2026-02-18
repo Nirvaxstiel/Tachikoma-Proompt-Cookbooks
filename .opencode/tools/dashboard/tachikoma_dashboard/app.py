@@ -260,7 +260,9 @@ class DashboardApp(App):
 
         if new_hash != self._sessions_hash:
             self._sessions_hash = new_hash
-            trees = build_session_tree(sessions)
+            # Fetch agent names for all sessions (from message agent field)
+            agent_names = {s.id: db.get_session_agent(s.id) for s in sessions}
+            trees = build_session_tree(sessions, agent_names)
             self.post_message(SessionsLoaded(sessions, trees))
 
     @work(exclusive=True, thread=True)
@@ -393,7 +395,9 @@ class DashboardApp(App):
         details = self.query_one("#details", Static)
         if self.selected_session:
             stats = self.stats_cache.get(self.selected_session.id)
-            details.update(render_details(self.selected_session, stats))
+            # Get agent name from database
+            agent_name = db.get_session_agent(self.selected_session.id)
+            details.update(render_details(self.selected_session, stats, agent_name))
         else:
             details.update("[dim]No session selected[/dim]")
 

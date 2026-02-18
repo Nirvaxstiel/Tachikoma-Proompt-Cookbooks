@@ -7,7 +7,7 @@ compatibility:
   - claude-code
 metadata:
   audience: developers, reviewers
-  workflow: gather → analyze → verify → propose → confirm
+  workflow: investigate → gather → analyze → verify → propose → confirm
 ---
 
 ## Purpose
@@ -36,17 +36,26 @@ If any condition is missing, **do not apply learning**.
 
 This skill performs the following steps:
 
-### 1) History Ingestion
+### 1) Investigate First
+
+**CRITICAL: Never assume. Verify understanding before proceeding.**
+
+- Inspect actual data structures - query databases, check schemas, examine sample rows
+- Present findings to user: "Here's what I found - does this match your understanding?"
+- Wait for confirmation before making assumptions about how things work
+- If working with unfamiliar infrastructure, read the actual source code or documentation
+
+### 2) History Ingestion
 
 Collect:
 
 - The input prompt or ticket
-- The agent’s actions and outputs
+- The agent's actions and outputs
 - Relevant file changes
 - User feedback or satisfaction signal
 - Associated tests or validations
 
-### 2) Pattern Extraction
+### 3) Pattern Extraction
 
 Search for:
 
@@ -56,7 +65,7 @@ Search for:
 - Documentation or context references that were necessary
 - Decisions made based on project specifics
 
-### 3) Hypothesis Generation
+### 4) Hypothesis Generation
 
 For each candidate pattern,
 generate:
@@ -69,7 +78,7 @@ Example proposed rule:
 
 When a `docs/` directory contains an `architecture/` subfolder, the skill should load and summarize those files before search.
 
-### 4) Verification
+### 5) Verification
 
 Confirm each hypothesis by extracting supporting facts:
 
@@ -79,7 +88,7 @@ Confirm each hypothesis by extracting supporting facts:
 
 If evidence is insufficient, drop the hypothesis.
 
-### 5) Patch Drafting
+### 6) Patch Drafting
 
 Generate a **diff or patch** file suitable for inclusion in project context, for example:
 
@@ -97,7 +106,7 @@ Generate a **diff or patch** file suitable for inclusion in project context, for
 +This was inferred from repeated inspection patterns in recent tasks.
 ```
 
-### 6) Presentation for Approval
+### 7) Presentation for Approval
 
 Create a summary that includes:
 

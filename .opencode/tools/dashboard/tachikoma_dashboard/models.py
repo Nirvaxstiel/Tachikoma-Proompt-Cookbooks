@@ -130,21 +130,9 @@ class ModelUsage:
     total_tokens: int = 0
     last_used: Optional[int] = None
     last_rate_limit: Optional[int] = None
-    retry_after_ms: Optional[int] = None
     error_count: int = 0
     last_error: Optional[int] = None
     last_error_type: Optional[str] = None
-
-    @property
-    def rate_limit_cooldown_remaining(self) -> int:
-        """Get remaining cooldown time in seconds."""
-        if not self.last_rate_limit or not self.retry_after_ms:
-            return 0
-
-        import time
-        time_elapsed = int(time.time() * 1000) - self.last_rate_limit
-        remaining = self.retry_after_ms - time_elapsed
-        return max(0, remaining // 1000)
 
 
 @dataclass(frozen=True)
@@ -195,10 +183,11 @@ class SessionTree:
     The tree structure allows for expand/collapse functionality.
     """
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session, agent_name: str = ""):
         self.session = session
         self.children: list[SessionTree] = []
         self._is_expanded: bool = True
+        self.agent_name: str = agent_name  # Pre-fetched from message agent field
 
     @property
     def status(self) -> SessionStatus:
@@ -232,7 +221,10 @@ class SessionTree:
 # Pure tree building function
 
 
-def build_session_tree(sessions: list[Session]) -> list[SessionTree]:
+def build_session_tree(
+    sessions: list[Session],
+    agent_names: Optional[dict[str, str]] = None,
+) -> list[SessionTree]:
     """Build tree structure from flat session list.
 
     This is a pure function that transforms a flat list into a tree.
@@ -240,6 +232,7 @@ def build_session_tree(sessions: list[Session]) -> list[SessionTree]:
 
     Args:
         sessions: List of Session objects (immutable)
+        agent_names: Optional dict mapping session_id to agent name
 
     Returns:
         List of root SessionTree nodes with children attached
@@ -247,8 +240,12 @@ def build_session_tree(sessions: list[Session]) -> list[SessionTree]:
     if not sessions:
         return []
 
+    agent_names = agent_names or {}
+
     # Pass 1: Create all tree nodes
-    node_map: dict[str, SessionTree] = {s.id: SessionTree(s) for s in sessions}
+    node_map: dict[str, SessionTree] = {
+        s.id: SessionTree(s, agent_name=agent_names.get(s.id, "")) for s in sessions
+    }
 
     # Pass 2: Build parent-child relationships
     roots: list[SessionTree] = []
