@@ -37,11 +37,11 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules # COUPLED: Must load with coding-standards
     skill: code-agent
     skill_load_instruction: 'skill({ name: "code-agent" })'
     skill_usage: "Load skill, then follow its workflow (inspect→extract→validate→implement→verify→stop) using tools directly"
-    invoke_via: skill  # skill = load and follow | subagent = delegate
+    invoke_via: skill # skill = load and follow | subagent = delegate
     tools:
       - Read
       - Grep
@@ -56,7 +56,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules # COUPLED: Must load with coding-standards
     skill: code-agent
     skill_load_instruction: 'skill({ name: "code-agent" })'
     skill_usage: "Load skill, then follow its workflow (inspect→extract→validate→implement→verify→stop) using tools directly"
@@ -76,7 +76,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules # COUPLED: Must load with coding-standards
       - 30-research-methods
     skill: analysis-agent
     skill_load_instruction: 'skill({ name: "analysis-agent" })'
@@ -95,7 +95,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules # COUPLED: Must load with coding-standards
     skill: code-agent
     skill_load_instruction: 'skill({ name: "code-agent" })'
     skill_usage: "Load skill, then follow its refactoring workflow using tools directly"
@@ -148,7 +148,7 @@ routes:
     confidence_threshold: 0.6
     context_modules:
       - 00-core-contract
-      - 12-commenting-rules  # Documentation includes code comments
+      - 12-commenting-rules # Documentation includes code comments
     skill: self-learning
     skill_load_instruction: 'skill({ name: "self-learning" })'
     skill_usage: "Load skill, then follow its documentation workflow using tools directly"
@@ -169,7 +169,7 @@ routes:
     fallback_subagent: rlm-subcall
     subagent_invoke_instruction: "task(subagent_type='rlm-optimized', description='...', prompt='...')"
     subagent_usage: "Delegate task to subagent and wait for completion"
-    invoke_via: subagent  # subagent = delegate via task() | skill = load and follow
+    invoke_via: subagent # subagent = delegate via task() | skill = load and follow
     tools:
       - Read
     strategy: rlm
@@ -191,7 +191,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules # COUPLED: Must load with coding-standards
     skill: skill-composer
     skill_load_instruction: 'skill({ name: "skill-composer" })'
     skill_usage: "Load skill, then follow its composition workflow using tools directly"
@@ -245,7 +245,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules # COUPLED: Must load with coding-standards
     skill: verifier-code-agent
     skill_load_instruction: 'skill({ name: "verifier-code-agent" })'
     skill_usage: "Load skill, then follow its verify workflow using tools directly"
@@ -265,7 +265,7 @@ routes:
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules # COUPLED: Must load with coding-standards
     skill: reflection-orchestrator
     skill_load_instruction: 'skill({ name: "reflection-orchestrator" })'
     skill_usage: "Load skill, then follow its reflection workflow using tools directly"
@@ -319,7 +319,7 @@ workflows:
       - 10-coding-standards
       - 12-commenting-rules
 
-  # Research-then-implement workflow  
+  # Research-then-implement workflow
   research-implement:
     description: "Research followed by implementation"
     skills: [research-agent, context7, code-agent, formatter]
@@ -375,7 +375,8 @@ workflows:
 skills_bulk:
   coding-all:
     description: "All coding skills available"
-    skills: [code-agent, verifier-code-agent, formatter, reflection-orchestrator]
+    skills:
+      [code-agent, verifier-code-agent, formatter, reflection-orchestrator]
 
   research-all:
     description: "All research skills available"
@@ -383,7 +384,15 @@ skills_bulk:
 
   full-stack:
     description: "Full coding + research capabilities"
-    skills: [code-agent, verifier-code-agent, research-agent, context7, formatter, reflection-orchestrator]
+    skills:
+      [
+        code-agent,
+        verifier-code-agent,
+        research-agent,
+        context7,
+        formatter,
+        reflection-orchestrator,
+      ]
 
 # ============================================
 # COMPOSITE INTENTS
@@ -391,20 +400,20 @@ skills_bulk:
 composite:
   enabled: true
   resolution_strategy: union
-  
+
   definitions:
     - name: implement-and-test
       components:
         - implement
         - debug
       description: Write code and verify it works
-      
+
     - name: research-and-implement
       components:
         - research
         - implement
       description: Investigate then implement solution
-      
+
     - name: refactor-and-test
       components:
         - implement
@@ -419,12 +428,12 @@ fallback:
   low_confidence:
     action: ask
     message: "I'm not sure how to categorize this request. Could you clarify what you're trying to do?"
-  
+
   # When no route matches
   no_match:
     action: ask
     message: "I don't recognize this type of task. Please describe your goal in different terms."
-  
+
   # When skill/agent is unavailable
   unavailable:
     action: escalate
@@ -436,21 +445,21 @@ fallback:
 behavior:
   # Always load core-contract first
   always_load_core: true
-  
+
   # Maximum number of context modules to load
   max_context_modules: 5
-  
+
   # When to delegate vs handle directly
   delegation_threshold:
     tokens: 2000
     confidence: 0.7
-  
+
   # Whether to report routing decisions to user
   report_routing: true
-  
+
   # Whether to include alternative intents in reports
   report_alternatives: true
-  
+
   # Context coupling rules
   module_coupling:
     # When coding-standards loads, commenting-rules MUST also load
@@ -475,8 +484,8 @@ behavior:
 module_priority:
   00-core-contract: 0
   10-coding-standards: 10
-  11-artifacts-policy: 11  # Artifact consent - loads after core, before other modules
-  12-commenting-rules: 12  # Bumped up from 15 - tightly coupled with coding-standards
+  11-artifacts-policy: 11 # Artifact consent - loads after core, before other modules
+  12-commenting-rules: 12 # Bumped up from 15 - tightly coupled with coding-standards
   20-git-workflow: 20
   30-research-methods: 30
   50-prompt-safety: 50
@@ -664,18 +673,18 @@ intent_keywords:
 # ============================================
 strategic_variance:
   enabled: true
-  
+
   levels:
     low:
       probability: 0.0
       temperature: 0.0
       description: "Fully deterministic, no variance"
-    
+
     medium:
       probability: 0.2
       temperature: 0.5
       description: "Occasional creative deviation"
-    
+
     high:
       probability: 0.4
       temperature: 0.7
@@ -683,18 +692,18 @@ strategic_variance:
 
   # Default variance by intent
   default_variance:
-    debug: low          # Must be deterministic
-    implement: low      # Code should be correct
-    review: low         # Analysis should be accurate
-    research: medium    # Some exploration OK
-    git: low            # Version control must be precise
-    document: medium    # Documentation can be creative
-    complex: medium     # Complex tasks may benefit from exploration
-    explore: high       # Explicitly requested creativity
-    
+    debug: low # Must be deterministic
+    implement: low # Code should be correct
+    review: low # Analysis should be accurate
+    research: medium # Some exploration OK
+    git: low # Version control must be precise
+    document: medium # Documentation can be creative
+    complex: medium # Complex tasks may benefit from exploration
+    explore: high # Explicitly requested creativity
+
   # Intents that MUST NEVER have variance (safety)
   variance_forbidden:
-    - verify            # Verification must be deterministic
-    - security-audit    # Security must be precise
+    - verify # Verification must be deterministic
+    - security-audit # Security must be precise
     - production-deploy # Deployments must be predictable
 

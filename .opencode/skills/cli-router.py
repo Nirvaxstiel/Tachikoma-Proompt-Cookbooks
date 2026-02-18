@@ -15,13 +15,14 @@ Usage:
 import argparse
 import json
 import os
-import sys
 import re
+import sys
 from pathlib import Path
 
 # Try to import yaml, provide fallback instructions if not available
 try:
     import yaml
+
     YAML_AVAILABLE = True
 except ImportError:
     YAML_AVAILABLE = False
@@ -33,7 +34,7 @@ def simple_yaml_load(content: str) -> dict:
     Minimal YAML parser for Tachikoma config files.
     Handles basic structures: nested dicts, lists, comments.
     """
-    lines = content.split('\n')
+    lines = content.split("\n")
     result = {}
     stack = [(result, -1)]  # (current_dict, indent_level)
     current_list = None
@@ -45,7 +46,7 @@ def simple_yaml_load(content: str) -> dict:
         stripped = line.lstrip()
 
         # Skip empty lines and comments
-        if not stripped or stripped.startswith('#'):
+        if not stripped or stripped.startswith("#"):
             i += 1
             continue
 
@@ -59,14 +60,14 @@ def simple_yaml_load(content: str) -> dict:
         current_dict, _ = stack[-1]
 
         # Check if it's a list item
-        if stripped.startswith('- '):
+        if stripped.startswith("- "):
             item = stripped[2:].strip()
 
             # Remove inline comments from list items
-            if '#' in item:
+            if "#" in item:
                 # Only remove if # is preceded by whitespace or at start
-                hash_idx = item.find('#')
-                if hash_idx > 0 and item[hash_idx-1] in ' \t':
+                hash_idx = item.find("#")
+                if hash_idx > 0 and item[hash_idx - 1] in " \t":
                     item = item[:hash_idx].rstrip()
                 elif hash_idx == 0:
                     i += 1
@@ -78,15 +79,15 @@ def simple_yaml_load(content: str) -> dict:
                 current_list = current_dict[current_key]
 
             # Check if item has a key: value
-            if ':' in item:
-                key, val = item.split(':', 1)
+            if ":" in item:
+                key, val = item.split(":", 1)
                 key = key.strip()
                 val = val.strip()
 
                 # Remove inline comments from value
-                if '#' in val:
-                    hash_idx = val.find('#')
-                    if hash_idx > 0 and val[hash_idx-1] in ' \t':
+                if "#" in val:
+                    hash_idx = val.find("#")
+                    if hash_idx > 0 and val[hash_idx - 1] in " \t":
                         val = val[:hash_idx].rstrip()
 
                 if not val:
@@ -104,19 +105,20 @@ def simple_yaml_load(content: str) -> dict:
             else:
                 # Simple list item - strip quotes if present
                 if current_list is not None:
-                    if (item.startswith('"') and item.endswith('"')) or \
-                       (item.startswith("'") and item.endswith("'")):
+                    if (item.startswith('"') and item.endswith('"')) or (
+                        item.startswith("'") and item.endswith("'")
+                    ):
                         item = item[1:-1]
                     current_list.append(item)
 
-        elif ':' in stripped:
-            key, val = stripped.split(':', 1)
+        elif ":" in stripped:
+            key, val = stripped.split(":", 1)
             key = key.strip()
             val = val.strip()
 
             # Remove inline comments
-            if '#' in val:
-                val = val[:val.index('#')].strip()
+            if "#" in val:
+                val = val[: val.index("#")].strip()
 
             current_key = key
             current_list = None
@@ -127,14 +129,14 @@ def simple_yaml_load(content: str) -> dict:
                 next_indent = None
                 for j in range(i + 1, min(i + 10, len(lines))):
                     next_line = lines[j].lstrip()
-                    if next_line and not next_line.startswith('#'):
+                    if next_line and not next_line.startswith("#"):
                         next_indent = len(lines[j]) - len(lines[j].lstrip())
                         break
 
                 if next_indent is not None and next_indent > indent:
                     # Check if next line is a list item
-                    next_stripped = lines[i + 1].lstrip() if i + 1 < len(lines) else ''
-                    if next_stripped.startswith('- '):
+                    next_stripped = lines[i + 1].lstrip() if i + 1 < len(lines) else ""
+                    if next_stripped.startswith("- "):
                         # This will be a list, initialize empty list
                         current_dict[key] = []
                         current_list = current_dict[key]
@@ -145,17 +147,17 @@ def simple_yaml_load(content: str) -> dict:
                 else:
                     # Empty value, treat as null
                     current_dict[key] = None
-            elif val.startswith('[') and val.endswith(']'):
+            elif val.startswith("[") and val.endswith("]"):
                 # Inline list
-                items = [v.strip().strip('"\'') for v in val[1:-1].split(',')]
+                items = [v.strip().strip("\"'") for v in val[1:-1].split(",")]
                 current_dict[key] = items
             elif val.startswith('"') and val.endswith('"'):
                 current_dict[key] = val[1:-1]
             elif val.startswith("'") and val.endswith("'"):
                 current_dict[key] = val[1:-1]
-            elif val.lower() == 'true':
+            elif val.lower() == "true":
                 current_dict[key] = True
-            elif val.lower() == 'false':
+            elif val.lower() == "false":
                 current_dict[key] = False
             else:
                 try:
@@ -173,6 +175,7 @@ def simple_yaml_load(content: str) -> dict:
 
     return result
 
+
 # Base directories
 SCRIPT_DIR = Path(__file__).parent
 OPENCODE_DIR = SCRIPT_DIR.parent.parent
@@ -183,25 +186,26 @@ SKILLS_DIR = OPENCODE_DIR / ".opencode" / "skills"
 
 class Colors:
     """ANSI colors for terminal output - ASCII safe for Windows"""
-    RED = '\033[0;31m'
-    GREEN = '\033[0;32m'
-    YELLOW = '\033[1;33m'
-    BLUE = '\033[0;34m'
-    CYAN = '\033[0;36m'
-    MAGENTA = '\033[0;35m'
-    NC = '\033[0m'  # No Color
+
+    RED = "\033[0;31m"
+    GREEN = "\033[0;32m"
+    YELLOW = "\033[1;33m"
+    BLUE = "\033[0;34m"
+    CYAN = "\033[0;36m"
+    MAGENTA = "\033[0;35m"
+    NC = "\033[0m"  # No Color
 
     # ASCII-safe symbols for Windows compatibility
-    CHECK = '[+]'
-    WARNING = '[!]'
-    ERROR = '[x]'
-    ARROW = '->'
+    CHECK = "[+]"
+    WARNING = "[!]"
+    ERROR = "[x]"
+    ARROW = "->"
 
 
 def print_header(text):
-    print(f"{Colors.BLUE}{'='*60}{Colors.NC}")
+    print(f"{Colors.BLUE}{'=' * 60}{Colors.NC}")
     print(f"{Colors.BLUE}{text}{Colors.NC}")
-    print(f"{Colors.BLUE}{'='*60}{Colors.NC}")
+    print(f"{Colors.BLUE}{'=' * 60}{Colors.NC}")
 
 
 def print_success(text):
@@ -220,6 +224,7 @@ def print_error(text):
 # INTENT CLASSIFICATION (reads from intent-routes.yaml)
 # =============================================================================
 
+
 def load_intent_keywords() -> dict:
     """Load intent keywords from intent-routes.yaml"""
     routes = load_routes()
@@ -233,7 +238,7 @@ def classify_intent(query: str) -> dict:
     """
     query_lower = query.lower().strip()
     keywords_map = load_intent_keywords()
-    
+
     if not keywords_map:
         return {
             "intent": "unclear",
@@ -246,11 +251,11 @@ def classify_intent(query: str) -> dict:
             "skills_bulk": {"needed": False},
             "complexity": 0.0,
         }
-    
+
     # Score each intent based on keyword matches
     scores = {}
     matched_keywords = {}
-    
+
     for intent, keywords in keywords_map.items():
         matches = []
         for keyword in keywords:
@@ -258,11 +263,11 @@ def classify_intent(query: str) -> dict:
             pattern = r"\b" + re.escape(keyword.lower()) + r"\b"
             if re.search(pattern, query_lower):
                 matches.append(keyword)
-        
+
         if matches:
             scores[intent] = len(matches)
             matched_keywords[intent] = matches
-    
+
     if not scores:
         return {
             "intent": "unclear",
@@ -275,22 +280,22 @@ def classify_intent(query: str) -> dict:
             "skills_bulk": {"needed": False},
             "complexity": detect_complexity(query),
         }
-    
+
     # Sort by score
     sorted_intents = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     primary_intent = sorted_intents[0][0]
     primary_score = sorted_intents[0][1]
-    
+
     # Calculate confidence
     total_score = sum(scores.values())
     confidence = min(primary_score / max(total_score, 1), 1.0)
-    
+
     # Boost confidence if primary is significantly higher
     if len(sorted_intents) > 1:
         ratio = primary_score / max(sorted_intents[1][1], 1)
         if ratio > 2:
             confidence = min(confidence * 1.2, 1.0)
-    
+
     # Determine action based on confidence
     if confidence >= 0.7:
         action = "skill"
@@ -298,18 +303,18 @@ def classify_intent(query: str) -> dict:
         action = "llm"
     else:
         action = "llm"
-    
+
     # Detect workflow/skills_bulk need
     workflow = detect_workflow_need(query)
     skills_bulk = detect_skills_bulk_need(query)
-    
+
     if workflow:
         action = "workflow"
     elif skills_bulk:
         action = "skills_bulk"
-    
+
     complexity = detect_complexity(query)
-    
+
     return {
         "intent": primary_intent,
         "confidence": round(confidence, 2),
@@ -328,25 +333,32 @@ def classify_intent(query: str) -> dict:
 def detect_complexity(query: str) -> float:
     """Detect task complexity from query"""
     complexity = 0.0
-    
+
     if len(query.split()) > 10:
         complexity += 0.2
     if len(query.split()) > 20:
         complexity += 0.1
-    
+
     multi_step_patterns = [
-        r"\band\b", r"\bthen\b", r"\bafter\b", r"\bbefore\b",
-        r"\bfirst\b", r"\bnext\b", r"\bfinally\b",
+        r"\band\b",
+        r"\bthen\b",
+        r"\bafter\b",
+        r"\bbefore\b",
+        r"\bfirst\b",
+        r"\bnext\b",
+        r"\bfinally\b",
     ]
-    
+
     for pattern in multi_step_patterns:
         if re.search(pattern, query, re.IGNORECASE):
             complexity += 0.15
-    
+
     # High-stakes keywords
-    if re.search(r"\b(secure|safe|critical|production|auth|payment)\b", query, re.IGNORECASE):
+    if re.search(
+        r"\b(secure|safe|critical|production|auth|payment)\b", query, re.IGNORECASE
+    ):
         complexity += 0.2
-    
+
     return min(complexity, 1.0)
 
 
@@ -359,27 +371,31 @@ def detect_workflow_need(query: str) -> dict:
         (r"security.*implement", "security-implement"),
         (r"review.*reflect", "deep-review"),
     ]
-    
+
     query_lower = query.lower()
     for pattern, workflow_name in workflow_patterns:
         if re.search(pattern, query_lower):
             return {"needed": True, "name": workflow_name}
-    
+
     return {"needed": False}
 
 
 def detect_skills_bulk_need(query: str) -> dict:
     """Detect if query needs multiple skills at once"""
     bulk_indicators = [
-        "thoroughly", "comprehensive", "full analysis",
-        "multiple", "all angles", "deep dive"
+        "thoroughly",
+        "comprehensive",
+        "full analysis",
+        "multiple",
+        "all angles",
+        "deep dive",
     ]
-    
+
     query_lower = query.lower()
     for indicator in bulk_indicators:
         if indicator in query_lower:
             return {"needed": True, "name": "full-stack"}
-    
+
     return {"needed": False}
 
 
@@ -387,12 +403,12 @@ def cmd_classify(args):
     """CLI command: classify intent"""
     if not args.query:
         print_error("Query required")
-        print("Usage: router.py classify \"fix the bug in auth\"")
+        print('Usage: router.py classify "fix the bug in auth"')
         return 1
 
     result = classify_intent(args.query)
 
-    print_header(f"INTENT CLASSIFICATION: \"{args.query}\"")
+    print_header(f'INTENT CLASSIFICATION: "{args.query}"')
     print()
 
     if "error" in result:
@@ -444,6 +460,7 @@ def cmd_classify(args):
 # ROUTE LOOKUP
 # =============================================================================
 
+
 def load_routes() -> dict:
     """Load intent-routes.yaml configuration"""
     routes_file = CONFIG_DIR / "intent-routes.yaml"
@@ -452,7 +469,7 @@ def load_routes() -> dict:
         print_error(f"Routes file not found: {routes_file}")
         return {}
 
-    with open(routes_file, encoding='utf-8') as f:
+    with open(routes_file, encoding="utf-8") as f:
         content = f.read()
 
     if YAML_AVAILABLE:
@@ -546,6 +563,7 @@ def cmd_route(args):
 # CONTEXT OPERATIONS
 # =============================================================================
 
+
 def cmd_context(args):
     """CLI command: context operations"""
     if args.discover:
@@ -580,7 +598,7 @@ def context_discover():
 
     for f in sorted(files):
         size = f.stat().st_size
-        size_str = f"{size/1024:.1f}K" if size > 1024 else f"{size}B"
+        size_str = f"{size / 1024:.1f}K" if size > 1024 else f"{size}B"
         print(f"  {Colors.CYAN}{f.name:40}{Colors.NC} {size_str}")
 
     print()
@@ -595,7 +613,9 @@ def context_status():
     if CONTEXT_DIR.exists():
         files = list(CONTEXT_DIR.glob("*.md"))
         total_size = sum(f.stat().st_size for f in files)
-        print_success(f"Context directory: {len(files)} files ({total_size/1024:.1f}K)")
+        print_success(
+            f"Context directory: {len(files)} files ({total_size / 1024:.1f}K)"
+        )
     else:
         print_error("Context directory not found")
 
@@ -627,7 +647,7 @@ def context_extract(query: str):
             ["grep", "-r", "-i", "-l", query, str(CONTEXT_DIR)],
             capture_output=True,
             text=True,
-            timeout=10
+            timeout=10,
         )
 
         if result.stdout:
@@ -662,13 +682,13 @@ def context_organize():
         "Standards (10-19)": [],
         "Workflows (20-29)": [],
         "Methods (30-39)": [],
-        "Other (40+)": []
+        "Other (40+)": [],
     }
 
     for f in CONTEXT_DIR.glob("*.md"):
         name = f.stem
         # Extract priority number
-        match = re.match(r'^(\d+)', name)
+        match = re.match(r"^(\d+)", name)
         if match:
             priority = int(match.group(1))
             if priority < 10:
@@ -698,14 +718,15 @@ def context_organize():
 # FULL ROUTING WORKFLOW
 # =============================================================================
 
+
 def cmd_full(args):
     """CLI command: full routing workflow (classify + route + context)"""
     if not args.query:
         print_error("Query required")
-        print("Usage: router.py full \"fix the bug in auth\"")
+        print('Usage: router.py full "fix the bug in auth"')
         return 1
 
-    print_header(f"FULL ROUTING: \"{args.query}\"")
+    print_header(f'FULL ROUTING: "{args.query}"')
     print()
 
     # Step 1: Classify intent
@@ -746,7 +767,9 @@ def cmd_full(args):
         ctx_file = CONTEXT_DIR / f"{ctx}.md"
         if ctx_file.exists():
             size = ctx_file.stat().st_size
-            print(f"  {Colors.GREEN}{Colors.CHECK}{Colors.NC} {ctx} ({size/1024:.1f}K)")
+            print(
+                f"  {Colors.GREEN}{Colors.CHECK}{Colors.NC} {ctx} ({size / 1024:.1f}K)"
+            )
         else:
             print(f"  {Colors.RED}{Colors.ERROR}{Colors.NC} {ctx} (NOT FOUND)")
 
@@ -791,7 +814,7 @@ def cmd_full(args):
             "context_modules": ctx_modules,
             "tools": tools,
             "workflow": classification.get("workflow", {}).get("name", ""),
-            "skills_bulk": classification.get("skills_bulk", {}).get("name", "")
+            "skills_bulk": classification.get("skills_bulk", {}).get("name", ""),
         }
         print(json.dumps(output, indent=2))
 
@@ -801,6 +824,7 @@ def cmd_full(args):
 # =============================================================================
 # MAIN
 # =============================================================================
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -815,26 +839,38 @@ Examples:
   %(prog)s context extract "naming"         Search context
   %(prog)s full "implement auth"            Full routing workflow
   %(prog)s full "add feature" --json         JSON output for scripts
-        """
+        """,
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # classify command
-    classify_parser = subparsers.add_parser("classify", help="Classify intent from query")
+    classify_parser = subparsers.add_parser(
+        "classify", help="Classify intent from query"
+    )
     classify_parser.add_argument("query", nargs="?", help="Query to classify")
 
     # route command
     route_parser = subparsers.add_parser("route", help="Show route for intent")
-    route_parser.add_argument("--list", "-l", action="store_true", help="List all routes")
+    route_parser.add_argument(
+        "--list", "-l", action="store_true", help="List all routes"
+    )
     route_parser.add_argument("intent", nargs="?", help="Intent to look up")
 
     # context command
     context_parser = subparsers.add_parser("context", help="Context operations")
-    context_parser.add_argument("--discover", action="store_true", help="Discover context files")
-    context_parser.add_argument("--status", action="store_true", help="Show context status")
-    context_parser.add_argument("--extract", metavar="QUERY", help="Extract info from context")
-    context_parser.add_argument("--organize", action="store_true", help="Show context organization")
+    context_parser.add_argument(
+        "--discover", action="store_true", help="Discover context files"
+    )
+    context_parser.add_argument(
+        "--status", action="store_true", help="Show context status"
+    )
+    context_parser.add_argument(
+        "--extract", metavar="QUERY", help="Extract info from context"
+    )
+    context_parser.add_argument(
+        "--organize", action="store_true", help="Show context organization"
+    )
 
     # full command
     full_parser = subparsers.add_parser("full", help="Full routing workflow")

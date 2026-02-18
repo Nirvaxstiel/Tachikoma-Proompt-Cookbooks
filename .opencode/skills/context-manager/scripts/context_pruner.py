@@ -15,13 +15,13 @@ Strategies:
 """
 
 import argparse
+import itertools
 import json
 import re
 import sys
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Generator
 from functools import lru_cache
-import itertools
+from pathlib import Path
+from typing import Dict, Generator, List, Optional, Tuple
 
 # Approximate tokens per character (rough estimate)
 TOKENS_PER_CHAR = 0.25
@@ -168,7 +168,7 @@ def remove_boilerplate(content: str, language: str) -> str:
 
     filtered = filter(
         lambda line: not any(re.match(pattern, line.strip()) for pattern in patterns),
-        lines
+        lines,
     )
 
     return "\n".join(filtered)

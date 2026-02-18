@@ -14,11 +14,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from tachikoma_dashboard.db import (
-    get_sessions,
+    _db_path,
     get_session_by_id,
     get_session_skills,
+    get_sessions,
     get_skill_usage_stats,
-    _db_path,
 )
 from tachikoma_dashboard.models import Session
 
@@ -149,7 +149,9 @@ def test_skill_tracking() -> bool:
                 if skills:
                     found_skills = True
                     skill_names = [s.name for s in skills]
-                    print(f"  [+] OK: Session '{session.title[:30]}' has {len(skills)} skills: {', '.join(skill_names[:5])}")
+                    print(
+                        f"  [+] OK: Session '{session.title[:30]}' has {len(skills)} skills: {', '.join(skill_names[:5])}"
+                    )
                     break
 
             if not found_skills:
@@ -165,6 +167,7 @@ def test_skill_tracking() -> bool:
     except Exception as e:
         print(f"  [X] FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -183,15 +186,15 @@ def test_widget_imports() -> bool:
         if str(parent_dir) not in sys.path:
             sys.path.insert(0, str(parent_dir))
 
+        from tachikoma_dashboard.models import SessionStatus
         from tachikoma_dashboard.widgets import (
             get_status_icon,
-            truncate_message,
-            render_details,
-            render_todos,
-            render_skills,
             render_aggregation,
+            render_details,
+            render_skills,
+            render_todos,
+            truncate_message,
         )
-        from tachikoma_dashboard.models import SessionStatus
 
         print("  [+] OK: All widget functions importable")
 
@@ -205,6 +208,7 @@ def test_widget_imports() -> bool:
     except Exception as e:
         print(f"  [X] FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 

@@ -1,11 +1,11 @@
 """CLI entry point for the Tachikoma dashboard."""
 
 import argparse
-import sys
 import json
+import sys
 
-from tachikoma_dashboard.app import DashboardApp
 from tachikoma_dashboard import db
+from tachikoma_dashboard.app import DashboardApp
 
 
 def main() -> int:

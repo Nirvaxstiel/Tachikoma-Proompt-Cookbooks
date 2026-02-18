@@ -482,13 +482,33 @@ class SkillsDataTable(DataTable):
             zebra_stripes=True,
             cell_padding=1,
         )
+        self._pending_skills: list[Skill] | None = None
+        self._mounted = False
 
     def on_mount(self) -> None:
+        """Set up columns on mount."""
         self.add_column("Skill", width=20)
         self.add_column("Calls", width=6)
         self.add_column("Last Used", width=12)
+        self._mounted = True
+        
+        # Apply any pending skills
+        if self._pending_skills is not None:
+            self._apply_skills(self._pending_skills)
+            self._pending_skills = None
 
     def update_skills(self, skills: Sequence[Skill] | None) -> None:
+        """Update the table with new skills data."""
+        if not self._mounted:
+            # Not mounted yet, save for later
+            self._pending_skills = list(skills) if skills else None
+            return
+        
+        self._apply_skills(skills)
+    
+    def _apply_skills(self, skills: Sequence[Skill] | None) -> None:
+        """Actually apply skills to the table."""
+        # Always clear first
         self.clear()
 
         if not skills:
@@ -555,13 +575,32 @@ class TodosDataTable(DataTable):
             zebra_stripes=True,
             cell_padding=1,
         )
+        self._pending_todos: list[Todo] | None = None
+        self._mounted = False
 
     def on_mount(self) -> None:
+        """Set up columns on mount."""
         self.add_column("Status", width=3)
         self.add_column("P", width=1)
         self.add_column("Task", width=30)
+        self._mounted = True
+        
+        # Apply any pending todos
+        if self._pending_todos is not None:
+            self._apply_todos(self._pending_todos)
+            self._pending_todos = None
 
     def update_todos(self, todos: Sequence[Todo]) -> None:
+        """Update the table with new todos data."""
+        if not self._mounted:
+            # Not mounted yet, save for later
+            self._pending_todos = list(todos) if todos else None
+            return
+        
+        self._apply_todos(todos)
+    
+    def _apply_todos(self, todos: Sequence[Todo]) -> None:
+        """Actually apply todos to the table."""
         self.clear()
 
         if not todos:

@@ -36,6 +36,7 @@ T = TypeVar("T")
 @dataclass
 class CacheEntry(Generic[T]):
     """Cache entry with timestamp."""
+
     value: T
     timestamp: float
 
@@ -120,6 +121,7 @@ _model_usage_cache: TTLCache[list[ModelUsage]] = TTLCache(ttl=10)
 # Database Path Helpers
 # =============================================================================
 
+
 def _db_path() -> Path:
     """Get the path to the OpenCode database.
 
@@ -143,6 +145,7 @@ def _builder() -> QueryBuilder | None:
 # =============================================================================
 # Session Queries
 # =============================================================================
+
 
 def get_sessions(cwd: Optional[str] = None) -> list[Session]:
     """Get all sessions, optionally filtered by directory.
@@ -577,14 +580,10 @@ def get_skill_usage_stats(cwd: Optional[str] = None) -> dict[str, dict]:
             s["session_count"] = len(s["sessions"])
             s["sessions"] = list(s["sessions"])
             s["avg_duration_ms"] = (
-                s["total_duration_ms"] / s["total_invocations"]
-                if s["total_invocations"] > 0
-                else 0
+                s["total_duration_ms"] / s["total_invocations"] if s["total_invocations"] > 0 else 0
             )
             s["success_rate"] = (
-                s["success_count"] / s["total_invocations"]
-                if s["total_invocations"] > 0
-                else 0.0
+                s["success_count"] / s["total_invocations"] if s["total_invocations"] > 0 else 0.0
             )
 
     return stats

@@ -8,8 +8,8 @@ Usage:
     python .opencode/tools/dashboard/test_smoke_no_rich.py
 """
 
-import sys
 import json
+import sys
 from pathlib import Path
 
 # Add parent directory to path
@@ -103,6 +103,7 @@ def test_skill_tracking() -> bool:
     except Exception as e:
         print(f"  [X] FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -169,7 +170,9 @@ def test_token_tracking() -> bool:
         # Test session tokens
         session = sessions[0]
         tokens = db.get_session_tokens(session.id)
-        print(f"  [+] OK: Session has {tokens.total_tokens} tokens, {tokens.request_count} requests")
+        print(
+            f"  [+] OK: Session has {tokens.total_tokens} tokens, {tokens.request_count} requests"
+        )
         print(f"  [+] OK: {len(tokens.models)} models used")
 
         # Test all model usage
@@ -178,13 +181,16 @@ def test_token_tracking() -> bool:
 
         if models:
             top_model = models[0]
-            print(f"  [+] OK: Top model: {top_model.provider}/{top_model.model} ({top_model.total_tokens} tokens)")
+            print(
+                f"  [+] OK: Top model: {top_model.provider}/{top_model.model} ({top_model.total_tokens} tokens)"
+            )
 
         return True
 
     except Exception as e:
         print(f"  [X] FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -194,8 +200,8 @@ def test_session_tree_widget() -> bool:
     print("Testing session tree widget...")
 
     try:
-        from tachikoma_dashboard.session_tree import SessionTreeWidget
         from tachikoma_dashboard.models import build_session_tree
+        from tachikoma_dashboard.session_tree import SessionTreeWidget
 
         sessions = db.get_sessions()
         trees = build_session_tree(sessions)
@@ -212,6 +218,7 @@ def test_session_tree_widget() -> bool:
     except Exception as e:
         print(f"  [X] FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -221,18 +228,22 @@ def test_widget_rendering() -> bool:
     print("Testing widget rendering...")
 
     try:
+        from tachikoma_dashboard.models import ModelUsage, SessionTokens
         from tachikoma_dashboard.widgets import (
-            render_session_tokens,
-            render_model_usage,
+            render_aggregation,
             render_details,
+            render_model_usage,
+            render_session_tokens,
             render_skills,
             render_todos,
-            render_aggregation,
         )
-        from tachikoma_dashboard.models import SessionTokens, ModelUsage
 
         # Test token rendering
-        tokens = db.get_session_tokens(db.get_sessions()[0].id) if db.get_sessions() else SessionTokens(session_id="test")
+        tokens = (
+            db.get_session_tokens(db.get_sessions()[0].id)
+            if db.get_sessions()
+            else SessionTokens(session_id="test")
+        )
         rendered = render_session_tokens(tokens)
         if len(str(rendered)) == 0:
             print("  [X] FAILED: Token rendering empty")
@@ -266,7 +277,7 @@ def test_widget_rendering() -> bool:
         return True
 
     except Exception as e:
-        error_msg = str(e).encode('ascii', errors='replace').decode('ascii')
+        error_msg = str(e).encode("ascii", errors="replace").decode("ascii")
         print(f"  [X] FAILED: {error_msg}")
         return False
 
@@ -276,14 +287,14 @@ def test_enhanced_widgets() -> bool:
     print("Testing widgets...")
 
     try:
-        from tachikoma_dashboard.widgets import (
-            SkillsDataTable,
-            TodosDataTable,
-            ActivitySparkline,
-            TodoProgressBar,
-            SearchBar,
-        )
         from tachikoma_dashboard.models import Skill, Todo
+        from tachikoma_dashboard.widgets import (
+            ActivitySparkline,
+            SearchBar,
+            SkillsDataTable,
+            TodoProgressBar,
+            TodosDataTable,
+        )
 
         # Test SkillsDataTable - can only test creation without app context
         skills_table = SkillsDataTable()
@@ -314,7 +325,7 @@ def test_enhanced_widgets() -> bool:
         return True
 
     except Exception as e:
-        error_msg = str(e).encode('ascii', errors='replace').decode('ascii')
+        error_msg = str(e).encode("ascii", errors="replace").decode("ascii")
         print(f"  [X] FAILED: {error_msg}")
         return False
 
@@ -325,17 +336,17 @@ def test_styles_module() -> bool:
 
     try:
         from tachikoma_dashboard.styles import (
+            AGGREGATION_CSS,
             DASHBOARD_CSS,
-            SCREEN_CSS,
-            LAYOUT_CSS,
-            SESSION_TREE_CSS,
             DETAILS_CSS,
-            TOKENS_CSS,
+            FOOTER_CSS,
+            LAYOUT_CSS,
+            SCREEN_CSS,
+            SEARCH_CSS,
+            SESSION_TREE_CSS,
             SKILLS_CSS,
             TODOS_CSS,
-            SEARCH_CSS,
-            AGGREGATION_CSS,
-            FOOTER_CSS,
+            TOKENS_CSS,
         )
 
         # Check that CSS is generated
@@ -349,7 +360,7 @@ def test_styles_module() -> bool:
         return True
 
     except Exception as e:
-        error_msg = str(e).encode('ascii', errors='replace').decode('ascii')
+        error_msg = str(e).encode("ascii", errors="replace").decode("ascii")
         print(f"  [X] FAILED: {error_msg}")
         return False
 
@@ -392,7 +403,7 @@ def test_caching() -> bool:
         return True
 
     except Exception as e:
-        error_msg = str(e).encode('ascii', errors='replace').decode('ascii')
+        error_msg = str(e).encode("ascii", errors="replace").decode("ascii")
         print(f"  [X] FAILED: {error_msg}")
         return False
 
@@ -436,14 +447,14 @@ def main():
     for test_name, status in results:
         status_char = "+" if status == "PASS" else "X"
         status_str = f"{status_char} {test_name:30s} ... {status}"
-        
+
         # Windows-safe: print without encoding issues
         try:
             print(status_str)
         except UnicodeEncodeError:
             # Fallback to ASCII
-            print(status_str.encode('ascii', errors='replace').decode('ascii'))
-    
+            print(status_str.encode("ascii", errors="replace").decode("ascii"))
+
     passed = sum(1 for _, status in results if status == "PASS")
     total = len(results)
 

@@ -1,11 +1,9 @@
 """Main TUI application for the Tachikoma dashboard.
 
 Design principles:
-- Textual reactive patterns for state management
-- Background workers for database queries
+- Selection-based data loading (synchronous, fast queries)
 - Centralized GITS theme with RED accents
 - Native Textual widgets for interactivity
-- Lazy loading and caching for performance
 - Extracted CSS for maintainability
 """
 
@@ -13,7 +11,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-from functools import lru_cache
 from typing import Optional
 
 from textual import work
@@ -25,25 +22,24 @@ from textual.reactive import reactive
 from textual.widgets import Header, Static
 
 from . import db
-from .models import ModelUsage, Session, SessionStats, SessionTokens, SessionTree, Todo, build_session_tree
+from .models import ModelUsage, Session, SessionStats, SessionTree, Todo, build_session_tree
 from .session_tree import SessionTreeWidget
 from .styles import DASHBOARD_CSS
 from .theme import THEME
 from .widgets import (
     ActivitySparkline,
-    render_aggregation,
-    render_details,
-    render_model_usage,
-    render_session_tokens,
     SearchBar,
     SkillsDataTable,
     TodosDataTable,
+    render_aggregation,
+    render_details,
+    render_model_usage,
 )
-
 
 # =============================================================================
 # Utility Functions
 # =============================================================================
+
 
 def _data_hash(data: list[dict]) -> str:
     """Create hash of data for change detection (pure function).
@@ -55,9 +51,7 @@ def _data_hash(data: list[dict]) -> str:
         MD5 hash string (16 chars) or empty string on error
     """
     try:
-        return hashlib.md5(
-            json.dumps(data, sort_keys=True, default=str).encode()
-        ).hexdigest()[:16]
+        return hashlib.md5(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()[:16]
     except (TypeError, ValueError):
         return ""
 
@@ -65,6 +59,7 @@ def _data_hash(data: list[dict]) -> str:
 # =============================================================================
 # Message Classes
 # =============================================================================
+
 
 class SessionsLoaded(Message):
     """Posted when sessions are loaded from database."""
@@ -75,24 +70,6 @@ class SessionsLoaded(Message):
         self.trees = trees
 
 
-class StatsLoaded(Message):
-    """Posted when stats are loaded for a session."""
-
-    def __init__(self, session_id: str, stats: SessionStats) -> None:
-        super().__init__()
-        self.session_id = session_id
-        self.stats = stats
-
-
-class TokensLoaded(Message):
-    """Posted when token data is loaded for a session."""
-
-    def __init__(self, session_id: str, tokens: SessionTokens) -> None:
-        super().__init__()
-        self.session_id = session_id
-        self.tokens = tokens
-
-
 class ModelUsageLoaded(Message):
     """Posted when model usage data is loaded."""
 
@@ -101,27 +78,10 @@ class ModelUsageLoaded(Message):
         self.models = models
 
 
-class SkillsLoaded(Message):
-    """Posted when skills are loaded for a session."""
-
-    def __init__(self, session_id: str, skills: list) -> None:
-        super().__init__()
-        self.session_id = session_id
-        self.skills = skills
-
-
-class TodosLoaded(Message):
-    """Posted when todos are loaded for a session."""
-
-    def __init__(self, session_id: str, todos: list[Todo]) -> None:
-        super().__init__()
-        self.session_id = session_id
-        self.todos = todos
-
-
 # =============================================================================
 # Main Application
 # =============================================================================
+
 
 class DashboardApp(App):
     """Main dashboard application with GITS-themed visuals.
@@ -129,19 +89,15 @@ class DashboardApp(App):
     Features:
     - Interactive session tree with native Textual Tree widget
     - DataTable for skills and todos
-    - Sparkline for activity visualization
-    - Progress bar for todo completion
+    - Selection-based data loading
     - Search/filter functionality
-    - Collapsible advanced stats
-    - Reactive state management
-    - Background data loading
     - Token/cost tracking
 
     Keybindings:
+    - Arrow keys: Navigate sessions
     - Enter: Select session
     - Tab: Toggle CWD filter
     - /: Toggle search
-    - M: Toggle model usage panel
     - R: Refresh data
     - Q: Quit
     """
@@ -152,10 +108,8 @@ class DashboardApp(App):
     # Reactive state
     sessions: reactive[list[Session]] = reactive(list)
     session_trees: reactive[list[SessionTree]] = reactive(list)
-    filtered_sessions: reactive[list[Session]] = reactive(list)
     selected_session: reactive[Optional[Session]] = reactive(None)
     stats_cache: reactive[dict[str, SessionStats]] = reactive(dict)
-    tokens_cache: reactive[dict[str, SessionTokens]] = reactive(dict)
     model_usage: reactive[list[ModelUsage]] = reactive(list)
     skills_cache: reactive[dict[str, list]] = reactive(dict)
     todos_cache: reactive[dict[str, list[Todo]]] = reactive(dict)
@@ -275,9 +229,9 @@ class DashboardApp(App):
         if self.search_query:
             query_lower = self.search_query.lower()
             sessions = [
-                s for s in sessions
-                if query_lower in s.title.lower()
-                or query_lower in s.directory.lower()
+                s
+                for s in sessions
+                if query_lower in s.title.lower() or query_lower in s.directory.lower()
             ]
 
         sessions_data = [
@@ -297,50 +251,10 @@ class DashboardApp(App):
             self.post_message(SessionsLoaded(sessions, trees))
 
     @work(exclusive=True, thread=True)
-    def _load_stats(self, session_id: str) -> None:
-        """Load stats for a session in background.
-
-        Args:
-            session_id: The session ID to load stats for
-        """
-        stats = db.get_session_stats(session_id)
-        self.post_message(StatsLoaded(session_id, stats))
-
-    @work(exclusive=True, thread=True)
-    def _load_tokens(self, session_id: str) -> None:
-        """Load token data for a session in background.
-
-        Args:
-            session_id: The session ID to load tokens for
-        """
-        tokens = db.get_session_tokens(session_id)
-        self.post_message(TokensLoaded(session_id, tokens))
-
-    @work(exclusive=True, thread=True)
     def _load_model_usage(self) -> None:
         """Load model usage data in background."""
         models = db.get_all_model_usage()
         self.post_message(ModelUsageLoaded(models))
-
-    @work(exclusive=True, thread=True)
-    def _load_skills(self, session_id: str) -> None:
-        """Load skills for a session in background.
-
-        Args:
-            session_id: The session ID to load skills for
-        """
-        skills = db.get_session_skills(session_id)
-        self.post_message(SkillsLoaded(session_id, skills))
-
-    @work(exclusive=True, thread=True)
-    def _load_todos(self, session_id: str) -> None:
-        """Load todos for a session in background.
-
-        Args:
-            session_id: The session ID to load todos for
-        """
-        todos = db.get_todos(session_id)
-        self.post_message(TodosLoaded(session_id, todos))
 
     def _update_activity_data(self) -> None:
         """Update activity sparkline data.
@@ -353,10 +267,7 @@ class DashboardApp(App):
         activity = []
         for i in range(20):
             bucket_time = now - (i * 60)
-            count = sum(
-                1 for s in self.sessions
-                if s.updated_seconds > bucket_time - 60
-            )
+            count = sum(1 for s in self.sessions if s.updated_seconds > bucket_time - 60)
             activity.append(float(count))
 
         activity.reverse()
@@ -405,52 +316,27 @@ class DashboardApp(App):
 
         self.selected_session = session
 
-        # Clear old data
-        self.stats_cache = {}
-        self.skills_cache = {}
-        self.todos_cache = {}
+        # Load all data synchronously (queries are fast)
+        stats = db.get_session_stats(session.id)
+        skills = db.get_session_skills(session.id)
+        todos = db.get_todos(session.id)
 
-        # Show loading state in panels
+        # Update caches
+        self.stats_cache = {session.id: stats}
+        self.skills_cache = {session.id: skills}
+        self.todos_cache = {session.id: todos}
+
+        # Update all panels
         self._update_details()
-        self._update_tokens()
         self._update_skills()
         self._update_todos()
-
-        # Load all data for this session
-        self._load_stats(session.id)
-        self._load_skills(session.id)
-        self._load_todos(session.id)
-
-    def on_stats_loaded(self, event: StatsLoaded) -> None:
-        """Handle stats loaded event."""
-        self.stats_cache = {event.session_id: event.stats}
-        if self.selected_session and self.selected_session.id == event.session_id:
-            self._update_details()
-
-    def on_tokens_loaded(self, event: TokensLoaded) -> None:
-        """Handle tokens loaded event."""
-        self.tokens_cache = {event.session_id: event.tokens}
 
     def on_model_usage_loaded(self, event: ModelUsageLoaded) -> None:
         """Handle model usage loaded event."""
         self.model_usage = event.models
         self._update_tokens()
 
-    def on_skills_loaded(self, event: SkillsLoaded) -> None:
-        """Handle skills loaded event."""
-        self.skills_cache = {event.session_id: event.skills}
-        if self.selected_session and self.selected_session.id == event.session_id:
-            self._update_skills()
-
-    def on_todos_loaded(self, event: TodosLoaded) -> None:
-        """Handle todos loaded event."""
-        self.todos_cache = {event.session_id: event.todos}
-        if self.selected_session and self.selected_session.id == event.session_id:
-            self._update_todos()
-
-    def on_session_tree_widget_selected(
-        self, event: SessionTreeWidget.Selected
-    ) -> None:
+    def on_session_tree_widget_selected(self, event: SessionTreeWidget.Selected) -> None:
         """Handle session selection from tree widget."""
         if event.session:
             self._select_session(event.session)

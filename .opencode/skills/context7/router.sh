@@ -39,7 +39,7 @@ check_deps() {
         print_error "curl is required but not installed"
         exit 1
     fi
-    
+
     if ! command -v jq &> /dev/null; then
         print_warning "jq is recommended for better JSON formatting"
     fi
@@ -49,32 +49,32 @@ check_deps() {
 op_search() {
     local library="$1"
     local query="${2:-general}"
-    
+
     print_header "SEARCH: Finding Library"
-    
+
     if [ -z "$library" ]; then
         print_error "Library name required"
         echo "Usage: search <library> [topic]"
         echo "Example: search 'React' 'hooks'"
         exit 1
     fi
-    
+
     echo "Library: $library"
     echo "Query: $query"
     echo ""
-    
+
     # URL encode spaces
     local encoded_lib=$(echo "$library" | sed 's/ /%20/g')
     local encoded_query=$(echo "$query" | sed 's/ /%20/g')
-    
+
     echo "Searching Context7 API..."
     echo ""
-    
+
     local response=$(curl -s "${API_BASE}/libs/search?libraryName=${encoded_lib}&query=${encoded_query}")
-    
+
     # Check if we got results
     local count=$(echo "$response" | grep -o '"results":\[' | wc -l)
-    
+
     if [ "$count" -eq 0 ] || [ -z "$response" ]; then
         print_warning "No libraries found matching '$library'"
         echo ""
@@ -84,11 +84,11 @@ op_search() {
         echo "  - Using a broader query"
         exit 0
     fi
-    
+
     # Parse and display results
     echo "Top results:"
     echo ""
-    
+
     if command -v jq &> /dev/null; then
         echo "$response" | jq -r '.results[0:3] | .[] | "  📚 \(.title)\n     ID: \(.id)\n     Description: \(.description)\n     Snippets: \(.totalSnippets)\n"' 2>/dev/null || {
             print_warning "Could not parse JSON response"
@@ -100,7 +100,7 @@ op_search() {
         echo ""
         echo "  (Install jq for better formatting)"
     fi
-    
+
     echo ""
     print_success "Search complete"
     echo ""
@@ -111,9 +111,9 @@ op_search() {
 op_fetch() {
     local library_id="$1"
     local query="${2:-general}"
-    
+
     print_header "FETCH: Getting Documentation"
-    
+
     if [ -z "$library_id" ]; then
         print_error "Library ID required"
         echo "Usage: fetch <library-id> [topic]"
@@ -123,36 +123,36 @@ op_fetch() {
         echo "  fetch '/fastapi/fastapi' 'dependencies'"
         exit 1
     fi
-    
+
     # Create output directory
     mkdir -p "$OUTPUT_DIR"
-    
+
     # Sanitize library ID for filename
     local safe_id=$(echo "$library_id" | sed 's/[^a-zA-Z0-9_-]/_/g')
     local output_file="${OUTPUT_DIR}/${safe_id}_${query}.txt"
-    
+
     echo "Library ID: $library_id"
     echo "Topic: $query"
     echo "Output: $output_file"
     echo ""
-    
+
     # URL encode query
     local encoded_query=$(echo "$query" | sed 's/ /%20/g')
-    
+
     echo "Fetching from Context7..."
-    
+
     # Fetch documentation
     curl -s "${API_BASE}/context?libraryId=${library_id}&query=${encoded_query}&type=txt" > "$output_file"
-    
+
     # Check if file has content
     if [ ! -s "$output_file" ]; then
         print_error "No content returned (file is empty)"
         rm -f "$output_file"
         exit 1
     fi
-    
+
     local size=$(du -h "$output_file" | cut -f1)
-    
+
     echo ""
     print_success "Documentation saved"
     echo ""
@@ -171,22 +171,22 @@ op_fetch() {
 op_quick() {
     local library="$1"
     local query="${2:-general}"
-    
+
     print_header "QUICK: Search & Fetch"
-    
+
     if [ -z "$library" ]; then
         print_error "Library name required"
         echo "Usage: quick <library> [topic]"
         exit 1
     fi
-    
+
     # Search
     local encoded_lib=$(echo "$library" | sed 's/ /%20/g')
     local encoded_query=$(echo "$query" | sed 's/ /%20/g')
-    
+
     echo "Step 1: Searching for '$library'..."
     local response=$(curl -s "${API_BASE}/libs/search?libraryName=${encoded_lib}&query=${encoded_query}")
-    
+
     # Extract library ID
     local library_id=""
     if command -v jq &> /dev/null; then
@@ -194,15 +194,15 @@ op_quick() {
     else
         library_id=$(echo "$response" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
     fi
-    
+
     if [ -z "$library_id" ]; then
         print_error "Could not find library: $library"
         exit 1
     fi
-    
+
     echo "Found: $library_id"
     echo ""
-    
+
     # Fetch
     op_fetch "$library_id" "$query"
 }
@@ -210,31 +210,31 @@ op_quick() {
 # List cached docs
 op_list() {
     print_header "CACHED DOCUMENTATION"
-    
+
     if [ ! -d "$OUTPUT_DIR" ]; then
         print_warning "No cached documentation found"
         echo ""
         echo "Use 'search' or 'fetch' to get documentation"
         exit 0
     fi
-    
+
     local files=$(find "$OUTPUT_DIR" -name "*.txt" -type f 2>/dev/null | sort)
-    
+
     if [ -z "$files" ]; then
         print_warning "No cached documentation found"
         exit 0
     fi
-    
+
     echo "Cached files:"
     echo ""
-    
+
     while IFS= read -r file; do
         local size=$(du -h "$file" | cut -f1)
         local age=$(( ($(date +%s) - $(stat -c %Y "$file" 2>/dev/null || stat -f %m "$file")) / 86400 ))
         local basename=$(basename "$file")
         echo "  $basename ($size, ${age} days old)"
     done <<< "$files"
-    
+
     echo ""
     print_success "Found $(echo "$files" | wc -l) cached files"
     echo ""
@@ -244,34 +244,34 @@ op_list() {
 # Cleanup old cached docs
 op_cleanup() {
     local days="${1:-7}"
-    
+
     print_header "CLEANUP: Remove Old Documentation"
-    
+
     if [ ! -d "$OUTPUT_DIR" ]; then
         print_warning "No cache directory found"
         exit 0
     fi
-    
+
     echo "Remove files older than: $days days"
     echo ""
-    
+
     local old_files=$(find "$OUTPUT_DIR" -name "*.txt" -type f -mtime +$days 2>/dev/null)
-    
+
     if [ -z "$old_files" ]; then
         print_success "No old files to remove"
         exit 0
     fi
-    
+
     echo "Files to remove:"
     echo "$old_files" | while read -r file; do
         local size=$(du -h "$file" | cut -f1)
         local age=$(( ($(date +%s) - $(stat -c %Y "$file" 2>/dev/null || stat -f %m "$file")) / 86400 ))
         echo "  $file ($size, ${age} days old)"
     done
-    
+
     echo ""
     read -p "Remove these files? (y/N): " confirm
-    
+
     if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
         echo "$old_files" | xargs rm -f
         print_success "Cleanup complete"

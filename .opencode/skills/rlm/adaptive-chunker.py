@@ -11,24 +11,26 @@ Key Features:
 - 91.33% accuracy vs fixed-size baselines
 """
 
+import itertools
 import json
 import re
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Generator
 from functools import lru_cache
-import itertools
+from typing import Any, Dict, Generator, List, Optional, Tuple
 
 
 @lru_cache(maxsize=32)
 def _compile_content_type_patterns():
     """Cache compiled regex patterns for content type detection"""
     return {
-        'json_obj': re.compile(r"^\{.*\}$", re.DOTALL),
-        'json_arr': re.compile(r"^\[.*\]$", re.DOTALL),
-        'markdown': re.compile(r"^#{1,6}\s"),
-        'log': re.compile(r"^\[\d{4}-\d{2}-\d{2}]"),
-        'code': [
-            re.compile(r"^(import|def|class|from|function|const|let|var|interface|type)\s+"),
+        "json_obj": re.compile(r"^\{.*\}$", re.DOTALL),
+        "json_arr": re.compile(r"^\[.*\]$", re.DOTALL),
+        "markdown": re.compile(r"^#{1,6}\s"),
+        "log": re.compile(r"^\[\d{4}-\d{2}-\d{2}]"),
+        "code": [
+            re.compile(
+                r"^(import|def|class|from|function|const|let|var|interface|type)\s+"
+            ),
             re.compile(r"^(public|private|protected|async|await)\s+"),
             re.compile(r"^(if|for|while|switch|try|catch|return)\s*\("),
         ],
@@ -46,8 +48,14 @@ def _compile_semantic_patterns(content_type: str) -> List[re.Pattern]:
         return [re.compile(r"^\[\d{4}-\d{2}-\d{2}]", re.MULTILINE)]
     elif content_type == "code":
         return [
-            re.compile(r"^(def |class |function |class |interface |type |struct )", re.MULTILINE),
-            re.compile(r"^(public |private |protected |static |async )\s+(def |class |function )", re.MULTILINE),
+            re.compile(
+                r"^(def |class |function |class |interface |type |struct )",
+                re.MULTILINE,
+            ),
+            re.compile(
+                r"^(public |private |protected |static |async )\s+(def |class |function )",
+                re.MULTILINE,
+            ),
         ]
     elif content_type == "text":
         return [re.compile(r"\n\n+")]
@@ -104,18 +112,18 @@ class AdaptiveChunker:
         content_stripped = content.strip()
         patterns = _compile_content_type_patterns()
 
-        if patterns['json_obj'].match(content_stripped):
+        if patterns["json_obj"].match(content_stripped):
             return ContentType.JSON
-        if patterns['json_arr'].match(content_stripped):
+        if patterns["json_arr"].match(content_stripped):
             return ContentType.JSON
 
-        if patterns['markdown'].match(content_stripped):
+        if patterns["markdown"].match(content_stripped):
             return ContentType.MARKDOWN
 
-        if patterns['log'].match(content_stripped):
+        if patterns["log"].match(content_stripped):
             return ContentType.LOG
 
-        for pattern in patterns['code']:
+        for pattern in patterns["code"]:
             if pattern.match(content_stripped):
                 return ContentType.CODE
 
