@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Widgets for Tachikoma dashboard.
 
 Architecture:
@@ -530,33 +531,11 @@ class SearchBar(Container):
 class SkillsDataTable(DataTable):
     """DataTable widget for displaying skills."""
 
-    DEFAULT_CSS = f"""
-    SkillsDataTable {{
-        background: {THEME.bg1};
-        color: {THEME.text};
-        border: none;
+    # CSS is now in theme.py DASHBOARD_CSS - minimal override only
+    DEFAULT_CSS = """
+    SkillsDataTable {
         height: 100%;
-    }}
-
-    SkillsDataTable > .datatable--header {{
-        background: {THEME.bg2};
-        color: {THEME.orange};
-        text-style: bold;
-    }}
-
-    SkillsDataTable > .datatable--cursor {{
-        background: {THEME.bg3};
-        color: {THEME.text};
-    }}
-
-    SkillsDataTable > .datatable--hover {{
-        background: {THEME.bg2};
-    }}
-
-    SkillsDataTable:focus .datatable--cursor {{
-        background: {THEME.bg3};
-        color: {THEME.green};
-    }}
+    }
     """
 
     def __init__(self, id: str | None = None) -> None:
@@ -617,33 +596,11 @@ class SkillsDataTable(DataTable):
 class TodosDataTable(DataTable):
     """DataTable widget for displaying todos."""
 
-    DEFAULT_CSS = f"""
-    TodosDataTable {{
-        background: {THEME.bg1};
-        color: {THEME.text};
-        border: none;
+    # CSS is now in theme.py DASHBOARD_CSS - minimal override only
+    DEFAULT_CSS = """
+    TodosDataTable {
         height: 100%;
-    }}
-
-    TodosDataTable > .datatable--header {{
-        background: {THEME.bg2};
-        color: {THEME.red};
-        text-style: bold;
-    }}
-
-    TodosDataTable > .datatable--cursor {{
-        background: {THEME.bg3};
-        color: {THEME.text};
-    }}
-
-    TodosDataTable > .datatable--hover {{
-        background: {THEME.bg2};
-    }}
-
-    TodosDataTable:focus .datatable--cursor {{
-        background: {THEME.bg3};
-        color: {THEME.green};
-    }}
+    }
     """
 
     STATUS_ICONS = {
@@ -719,7 +676,6 @@ class ActivitySparkline(Sparkline):
 
     DEFAULT_CSS = f"""
     ActivitySparkline {{
-        height: 1;
         margin: 0 1;
     }}
 

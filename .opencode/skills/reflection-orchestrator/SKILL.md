@@ -172,6 +172,64 @@ This skill composes with:
 - **@verifier-code-agent**: Add reflection after verification
 - **@code-review**: Use reflection templates for deeper review
 - **@research-agent**: Use for verifying research findings
+- **@code-agent/scripts/context/compression_evaluator.py**: Use probe-based evaluation for measuring output quality
+
+### Probe-Based Evaluation Integration
+
+**Purpose:** Instead of generic summaries, generate specific questions (probes) that test factual retention, artifact tracking, work continuity, and decision rationale.
+
+**Probe Types:**
+- **RECALL**: Factual retention tests ("What was the original error that started this session?")
+- **ARTIFACT**: File tracking tests ("Which files have we modified? Describe what changed in each.")
+- **CONTINUATION**: Work continuity tests ("What should we do next?")
+- **DECISION**: Reasoning retention tests ("What key decisions did we make and why?")
+
+**Integration Point:** Use probe-based evaluation to verify that outputs maintain critical information after reflection stages.
+
+**Example Usage:**
+```python
+from opencode.scripts.context.compression_evaluator import ProbeGenerator, ProbeType, EvaluationResult
+
+# After self-critique phase
+probes = ProbeGenerator(conversation_history).generate_probes()
+
+# Test against revised solution
+evaluator = CompressionEvaluator()
+for probe in probes:
+    evaluation = evaluator.evaluate(
+        probe=probe,
+        response=revised_solution,
+        compressed_context=reflected_context
+    )
+
+# Analyze results
+summary = evaluator.get_summary()
+if summary["average_score"] < 3.5:
+    # Add to self-critique findings
+    add_issue("Low probe-based evaluation score: {summary['average_score']}")
+```
+
+**Benefits:**
+- 10-30% better evaluation than summary-based approaches
+- Identifies specific failure modes
+- Provides actionable feedback for improvement
+- Multi-dimensional scoring (6 dimensions: accuracy, completeness, artifact trail, continuity, instruction following)
+
+**Dimensions Evaluated:**
+- accuracy_factual (0.6 weight)
+- accuracy_technical (0.4 weight)
+- artifact_files_created (0.3 weight)
+- artifact_files_modified (0.4 weight)
+- artifact_key_details (0.3 weight)
+- continuity_work_state (0.4 weight)
+- continuity_todo_state (0.3 weight)
+- continuity_reasoning (0.3 weight)
+- completeness_coverage (0.6 weight)
+- completeness_depth (0.4 weight)
+- instruction_format (0.5 weight)
+- instruction_constraints (0.5 weight)
+
+See: `.opencode/scripts/context/compression_evaluator.py` for implementation details.
 
 ## Output Format
 

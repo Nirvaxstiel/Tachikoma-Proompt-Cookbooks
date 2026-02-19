@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Edit Format Selector
 Auto-detects model and selects optimal edit format

@@ -81,33 +81,11 @@ class SessionTreeWidget(Tree[Session]):
             super().__init__()
             self.session = session
 
-    DEFAULT_CSS = f"""
-    SessionTreeWidget {{
-        background: {THEME.bg1};
-        color: {THEME.text};
-        padding: 0 1;
+    # CSS is now in theme.py DASHBOARD_CSS - minimal override only
+    DEFAULT_CSS = """
+    SessionTreeWidget {
         height: 1fr;
-    }}
-
-    SessionTreeWidget > .tree--guides {{
-        color: {THEME.muted};
-    }}
-
-    SessionTreeWidget > .tree--guides-selected {{
-        color: {THEME.red};
-    }}
-
-    SessionTreeWidget > .tree--guides-hover {{
-        color: {THEME.cyan};
-    }}
-
-    SessionTreeWidget:focus .tree--cursor {{
-        background: {THEME.bg3};
-    }}
-
-    SessionTreeWidget .tree--highlight-line {{
-        background: {THEME.bg2};
-    }}
+    }
     """
 
     def __init__(

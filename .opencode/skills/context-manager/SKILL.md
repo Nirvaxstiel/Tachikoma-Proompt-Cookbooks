@@ -269,4 +269,59 @@ User Request
 
 ---
 
+## Integration with Production Patterns
+
+### Structured Summarization (Anchored Iterative)
+
+**Purpose:** Maintain persistent structured summaries with explicit sections that force preservation during context compression.
+
+**Integration Point:** Use structured summarization when harvesting or organizing context to prevent silent information drift.
+
+**Template:**
+```python
+## Session Intent
+{intent}
+
+## Files Modified
+{files_modified}
+
+## Files Read (Not Modified)
+{files_read}
+
+## Decisions Made
+{decisions}
+
+## Current State
+{current_state}
+
+## Next Steps
+{next_steps}
+```
+
+**Benefits:**
+- 2.2-2.5/5.0 artifact trail integrity (vs baseline 1.5/5.0)
+- Explicit sections act as checklists
+- Easier verification of what was preserved
+- Reduces re-fetch costs
+
+**Implementation:** See `.opencode/patterns/production-patterns.md` for details.
+
+### Progressive Disclosure
+
+**Purpose:** Load summaries first, details only on demand. Never load full content upfront.
+
+**Benefits:** Up to 80% token savings for large document collections.
+
+**Integration Point:** Apply progressive disclosure when dealing with large document sets or multi-step workflows.
+
+### Probe-Based Evaluation
+
+**Purpose:** Generate specific questions (probes) instead of generic summaries to test factual retention and artifact tracking.
+
+**Integration Point:** Use probe-based evaluation to verify context quality after operations.
+
+See: `.opencode/scripts/context/compression_evaluator.py` and `.opencode/skills/reflection-orchestrator/SKILL.md` for details.
+
+---
+
 **Context Manager Skill** - Zero-token context operations for Tachikoma 🚀
