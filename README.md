@@ -2,58 +2,43 @@
     <img width="300px" src= "assets/tachikoma1.png" alt="tachikoma1.png">
 </p>
 
-# Tachikoma 🕷️
+# Tachikoma
 
-**Agent coordination system for AI-assisted development.**
+Routes requests to the right specialist. Classifies intent, loads relevant context, executes.
 
-A modular framework that helps AI agents understand your project, follow your conventions, and route tasks to the right specialist.
+Named after the curious AI tanks from _Ghost in the Shell_.
 
-Named after the curious, chatty AI tanks from _Ghost in the Shell_ — always learning, always asking questions.
+---
+
+## What It Does
+
+```
+User: "Fix the auth bug"
+    ↓
+1. Classify: debug intent (95% confidence)
+2. Load: coding-standards + commenting-rules
+3. Route: code-agent skill
+4. Execute: Bug fixed
+```
 
 ---
 
 ## Core Concepts
 
-- **Orchestrator Pattern** — Primary agent coordinates all activity
-- **Intent-Based Routing** — Classifies requests, routes to appropriate skills/subagents
-- **Context Modules** — Project-specific rules load based on task type
-- **Self-Learning** — Tracks patterns, suggests improvements
-
----
-
-## How It Works
-
-Tachikoma handles every request, classifies the intent, loads relevant context, and routes to the appropriate skill or subagent.
-
-For detailed architecture, see [docs/concepts/overview.md](docs/concepts/overview.md).
-
----
-
-## 🎨 Themes
-
-Ghost in the Shell inspired themes for OpenCode terminal:
-
-| Theme                     | View       | Dark                                                      | Light                                               |
-| ------------------------- | ---------- | --------------------------------------------------------- | --------------------------------------------------- |
-| ghost-in-the-shell        | Start Page | ![start](assets/tachikoma-dark-theme-gits-solid.png)      | ![start](assets/tachikoma-light-theme-gits.png)     |
-| lucent-ghost-in-the-shell | Start Page | ![start](assets/tachikoma-dark-theme-gits-lucent.png)     | ![start](assets/tachikoma-light-theme-gits.png)     |
-| ghost-in-the-shell        | Menu       | ![menu](assets/tachikoma-dark-theme-gits-solid-menu.png)  | ![menu](assets/tachikoma-light-theme-gits-menu.png) |
-| lucent-ghost-in-the-shell | Menu       | ![menu](assets/tachikoma-dark-theme-gits-lucent-menu.png) | ![menu](assets/tachikoma-light-theme-gits-menu.png) |
-| ghost-in-the-shell        | Chat       | ![chat](assets/tachikoma-dark-theme-gits-solid-chat.png)  | ![chat](assets/tachikoma-light-theme-gits-chat.png) |
-| lucent-ghost-in-the-shell | Chat       | ![chat](assets/tachikoma-dark-theme-gits-lucent-chat.png) | ![chat](assets/tachikoma-light-theme-gits-chat.png) |
-
-> Light mode uses solid colors — transparency doesn't work well in light mode.
+| Concept | What It Means |
+|---------|---------------|
+| **Orchestrator** | Primary agent coordinates all activity |
+| **Intent Routing** | Classifies requests, routes to appropriate skills |
+| **Context Modules** | Project-specific rules load based on task type |
+| **Skills** | Specialized capabilities for specific tasks |
+| **Subagents** | Workers for large-context or parallel tasks |
 
 ---
 
 ## Quick Install
 
 ```bash
-# Install to current directory
 curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
-
-# Optional flag to include pre-packaged python executables
-curl -sS ... | bash -s -- --include-prepackaged-python
 ```
 
 Or copy `AGENTS.md` and `.opencode/` to your repo root.
@@ -64,48 +49,50 @@ Full guide: [docs/getting-started.md](docs/getting-started.md)
 
 ## Documentation
 
-| Guide         | Where                                                                                      |
-| ------------- | ------------------------------------------------------------------------------------------ |
-| Full docs     | [docs/](docs/)                                                                             |
-| Skills        | [.opencode/skills/\*/SKILL.md](.opencode/skills/)                                          |
+| What | Where |
+|------|-------|
+| Overview | [docs/concepts/overview.md](docs/concepts/overview.md) |
+| Skills | [.opencode/skills/\*/SKILL.md](.opencode/skills/) |
 | Customization | [docs/capabilities/customization/overview.md](docs/capabilities/customization/overview.md) |
 
 ---
 
-## 🤖 Tested Models
+## Tested Models
 
-| Model               | Notes                                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------------------- |
-| Claude 4.6 Opus     | Big guns, big brains, big wallet sinkhole                                                               |
-| Claude 4.6 Sonnet   | Much more sane compared to Opus. Not much different I feel between 4.5 and this. Use whatever's cheaper |
-| Kimi K2.5           | Strong alternative to Sonnet                                                                            |
-| GLM 5               | Honestly it feels like Sonnet 4.6 and its cheaper. More testing required.                               |
-| Minimax M2.5        | Shockingly good                                                                                         |
-| Claude 4.5 Sonnet   | Current sweet spot                                                                                      |
-| GLM 4.7             | Almost as good as Sonnet                                                                                |
-| Gemini 3 Deep Think | ARC-AGI-2: 84.6%, Codeforces 3455Elo                                                                    |
-| o1/o3 Pro           | Excellent for complex reasoning                                                                         |
-| GPT-5.3 series      | Much better than previous                                                                               |
-
-> **Copilot** is doing a lot of the heavy lifting — I'm turning the knobs and trying **every model it'll let me** 😄
+| Model | Notes |
+|-------|-------|
+| Claude 4.6 Sonnet | Current sweet spot |
+| GLM 5 | Feels like Sonnet, cheaper |
+| Kimi K2.5 | Strong alternative |
+| Minimax M2.5 | Shockingly good |
+| Gemini 3 Deep Think | ARC-AGI-2: 84.6% |
 
 ---
 
-## Research & Credits
+## Themes
 
-Built on peer-reviewed LLM research:
+Ghost in the Shell inspired themes for OpenCode terminal:
 
-| Paper                                  | Basis                           |
-| -------------------------------------- | ------------------------------- |
-| Tool-Augmented LLMs (arXiv:2601.02663) | Cost-aware routing              |
-| Agentic Proposing (arXiv:2602.03279)   | Skill composition               |
-| ARC-AGI Benchmark                      | Intelligence efficiency metrics |
-| MIT RLM                                | Adaptive chunking               |
+| Theme | View | Dark | Light |
+|-------|------|------|-------|
+| ghost-in-the-shell | Start | ![start](assets/tachikoma-dark-theme-gits-solid.png) | ![start](assets/tachikoma-light-theme-gits.png) |
+| lucent-ghost-in-the-shell | Start | ![start](assets/tachikoma-dark-theme-gits-lucent.png) | ![start](assets/tachikoma-light-theme-gits.png) |
 
-RLM concept based on [brainqub3/Claude Code RLM](https://github.com/brainqub3/claude_code_RLM).
+---
+
+## Research Basis
+
+| Paper | Basis |
+|-------|-------|
+| Tool-Augmented LLMs (arXiv:2601.02663) | Cost-aware routing |
+| Agentic Proposing (arXiv:2602.03279) | Skill composition |
+| ARC-AGI Benchmark | Intelligence efficiency |
+| MIT RLM | Adaptive chunking |
+
+RLM concept: [brainqub3/Claude Code RLM](https://github.com/brainqub3/claude_code_RLM)
 
 ---
 
 ## License
 
-MIT — Do whatever. Fork it, hack it, use it in closed-source.
+MIT
