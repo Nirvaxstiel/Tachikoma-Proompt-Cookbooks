@@ -27,6 +27,19 @@ model_formats:
   grok: hashline
   glm: hashline
   minimax: hashline
+  
+  # Additional open-source models
+  llama: str_replace_fuzzy
+  codellama: str_replace_fuzzy
+  qwen: str_replace_fuzzy  # or hashline for larger models
+  deepseek: hashline
+  mistral: str_replace
+  phi: str_replace_fuzzy
+  yi: hashline
+  internlm: str_replace_fuzzy
+  command-r: str_replace
+  solar: str_replace_fuzzy
+  mixtral: str_replace
 
 # User-added models (higher priority than above)
 # Add custom models here or use: python .opencode/core/edit-format-selector.py add <model> <format>

@@ -879,6 +879,8 @@ For skills that manage workflows:
 2. Execute (follow the plan)
    ↓
 3. Document (record what happened)
+   ↓
+4. Reflect (question approach, flag issues)
 ```
 
 ## Tips for Effective Skills

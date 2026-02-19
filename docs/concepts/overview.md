@@ -59,6 +59,22 @@ Project-specific rules loaded automatically:
 ```
 User Request
     ↓
+[MUST] Intent Classification
+    ↓
+[MUST] Route → Skill or Subagent
+    ↓
+[MUST] Load Context Modules
+    ↓
+[MUST] Execute
+    ↓
+[FREE] Reflect
+    ↓
+Return Results
+```
+
+**Structure at the start, freedom at the end.**
+User Request
+    ↓
 Intent Classification
     ↓
 Route → Skill or Subagent

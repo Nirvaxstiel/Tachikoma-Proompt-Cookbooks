@@ -167,6 +167,7 @@ All agents (primary and subagents) must:
 2. **Downgrade when uncertain**
 3. **Stop when confidence is `unknown`**
 4. **Never present speculation as fact**
+5. **Reflect** — After execution, question if confidence was accurate
 
 ## Best Practices
 

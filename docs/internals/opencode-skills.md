@@ -120,6 +120,11 @@ Skills are loaded in stages:
 2. **Instructions** (< 5000 tokens): Full `SKILL.md` loaded when skill is activated
 3. **Resources** (as needed): Scripts, references, assets loaded on demand
 
+After loading, reflect:
+- Was the skill content sufficient?
+- Should I add more instructions?
+- Are there edge cases to document?
+
 ## Skill Tool
 
 The `skill` tool loads a skill into context:

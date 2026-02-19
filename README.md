@@ -19,7 +19,12 @@ User: "Fix the auth bug"
 2. Load: coding-standards + commenting-rules
 3. Route: code-agent skill
 4. Execute: Bug fixed
+5. Reflect: Flag related issues, suggest improvements
 ```
+
+**Structure at the start, freedom at the end.**
+
+Phases 1-4 are mandatory. Phase 5 is free — the agent can question its approach, flag concerns, or suggest improvements.
 
 ---
 

@@ -24,6 +24,7 @@ Execution:
 1. skill({ name: "code-agent" })      → generates code
 2. skill({ name: "verifier-code-agent" }) → verifies result
 3. skill({ name: "formatter" })       → cleans up
+4. Reflect → question approach, flag issues
 ```
 
 ### Available Workflows

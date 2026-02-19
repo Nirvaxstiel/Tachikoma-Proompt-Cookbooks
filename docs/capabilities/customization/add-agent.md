@@ -200,6 +200,11 @@ Tachikoma should delegate to this subagent when:
 3. Prioritized recommendations
 4. Estimated effort for fixes
 
+### Phase 6: Reflect
+1. Was the analysis comprehensive?
+2. Did I miss any areas?
+3. Should I recommend follow-up?
+
 ## Tools Available
 
 - `Read`: Read any file in the codebase

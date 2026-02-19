@@ -94,6 +94,7 @@ Strategy:
 1. Load only relevant modules
 2. Load in priority order
 3. Delegate large context to subagent
+4. Reflect on whether context was sufficient
 
 ## See Also
 

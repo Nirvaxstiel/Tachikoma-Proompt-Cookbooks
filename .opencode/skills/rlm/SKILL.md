@@ -79,11 +79,11 @@ If the user didn't supply arguments, ask for:
    paths = chunker.create_chunks_file(content, output_dir='.opencode/rlm_state/chunks')
    ```
 
-   **Benefits of Adaptive Chunking**:
-   - 91.33% accuracy vs fixed-size baselines (MIT research)
-   - Respects semantic boundaries (functions, headings, JSON objects)
-   - Auto-adjusts chunk size based on processing time
-   - Content type detection (JSON, Markdown, Code, Logs, Text)
+    **Benefits of Adaptive Chunking**:
+    - 28.3% improvement over base model (MIT research)
+    - Respects semantic boundaries (functions, headings, JSON objects)
+    - Auto-adjusts chunk size based on processing time
+    - Content type detection (JSON, Markdown, Code, Logs, Text)
 
    **Supported Content Types**:
    - **JSON**: Splits at top-level objects
@@ -152,7 +152,6 @@ If the user didn't supply arguments, ask for:
     - Processes 5 chunks in parallel
     - Sequential waves, parallel chunks
     - Early termination on high-confidence answers
-    - Reduces processing time from minutes to seconds
 
     **Implementation**: `.opencode/skills/rlm/parallel-processor.py`
     - Class: `ParallelWaveProcessor`

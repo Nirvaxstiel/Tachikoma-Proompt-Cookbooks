@@ -213,6 +213,11 @@ async function defaultAgent() {
 }
 ```
 
+After agent execution, reflect:
+- Was the right agent selected?
+- Should I adjust permissions?
+- Are there edge cases to handle?
+
 ## Subagent Spawning
 
 ```typescript

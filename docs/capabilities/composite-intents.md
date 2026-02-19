@@ -13,6 +13,8 @@ Composite: research-and-implement
     ↓
 1. research: Investigate X
 2. implement: Build solution
+    ↓
+Reflect: Question approach, flag issues, suggest improvements
 ```
 
 ## Available Composites

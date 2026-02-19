@@ -73,6 +73,23 @@ def format_duration(seconds: int) -> str:
     return f"{hours}h{mins:02d}m"
 
 
+def format_time_ago(timestamp_ms: int) -> str:
+    """Format a timestamp (milliseconds) as time ago.
+
+    Args:
+        timestamp_ms: Unix timestamp in milliseconds (UTC)
+
+    Returns:
+        Human-readable time ago string (e.g., "5m30s ago")
+    """
+    import time
+
+    now_ms = int(time.time() * 1000)
+    elapsed_ms = now_ms - timestamp_ms
+    elapsed_seconds = elapsed_ms // 1000
+    return format_duration(elapsed_seconds)
+
+
 def format_tokens(tokens: int) -> str:
     """Format token count with K/M suffixes."""
     if tokens < 1000:
@@ -197,8 +214,8 @@ def render_skills(skills: Sequence[Any] | None = None) -> Text:
         lines.append(Text(f"    Invocations: {invocations}", style=Style(color=THEME.muted)))
 
         if last_used_ms:
-            last_used = format_duration(int(last_used_ms / 1000))
-            lines.append(Text(f"    Last Used: {last_used} ago", style=Style(color=THEME.muted)))
+            last_used = format_time_ago(int(last_used_ms))
+            lines.append(Text(f"    Last Used: {last_used}", style=Style(color=THEME.muted)))
 
     return Text("\n").join(lines)
 
@@ -392,7 +409,7 @@ def render_model_error_details(errors: Sequence[ModelError] | None = None) -> Te
         error_line = Text()
 
         # Error number and time
-        time_ago = format_duration(int((int(error.time_created) // 1000)))
+        time_ago = format_time_ago(error.time_created)
         error_line.append(f"{i}. ", style=Style(color=THEME.red, bold=True))
         error_line.append(f"[{time_ago} ago]", style=Style(color=THEME.muted))
         lines.append(error_line)

@@ -485,6 +485,7 @@ Test components individually:
 2. Gradually add complexity
 3. Identify where it fails
 4. Fix the specific issue
+5. Reflect on what went wrong
 
 ## Performance Issues
 

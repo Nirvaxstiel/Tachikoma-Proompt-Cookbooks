@@ -85,6 +85,12 @@ User Request
 │ Phase 5: REPORT                         │
 │   What done, files changed, confidence  │
 └─────────────────────────────────────────┘
+     ↓
+┌─────────────────────────────────────────┐
+│ Phase 6: REFLECT (Freedom)              │
+│   Revisit, rethink, re-evaluate         │
+│   Question approach, flag issues        │
+└─────────────────────────────────────────┘
 ```
 
 **At any point**, Tachikoma can:

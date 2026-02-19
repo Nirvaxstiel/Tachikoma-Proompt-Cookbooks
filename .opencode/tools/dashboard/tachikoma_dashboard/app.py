@@ -421,6 +421,7 @@ class DashboardApp(App):
     def _update_tokens(self) -> None:
         """Update tokens panel with model usage."""
         tokens_widget = self.query_one("#tokens-content", RichLog)
+        tokens_widget.clear()
         tokens_widget.write(render_model_usage(self.model_usage))
 
     def _update_skills(self) -> None:
@@ -462,6 +463,7 @@ class DashboardApp(App):
             if self.show_error_details:
                 # Get all errors from database (increased limit for scrollable panel)
                 errors = db.get_all_errors(limit=50)
+                error_widget.clear()
                 error_widget.write(render_model_error_details(errors))
             else:
                 error_widget.clear()

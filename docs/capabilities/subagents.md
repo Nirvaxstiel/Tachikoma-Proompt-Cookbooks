@@ -56,6 +56,8 @@ User Request → Classify → Determine Strategy
     ├── explore → task(subagent_type='explore', ...)
     ├── deep-research → task(subagent_type='general', ...)
     └── complex → task(subagent_type='rlm-optimized', ...)
+    ↓
+Reflect on results (freedom to question, expand, flag issues)
 ```
 
 ## When to Use What

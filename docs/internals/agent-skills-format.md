@@ -188,6 +188,11 @@ Skills load in stages:
 
 Keep `SKILL.md` under 500 lines. Move details to separate files.
 
+After loading, reflect:
+- Was the skill content sufficient?
+- Should I add more instructions?
+- Are there edge cases to document?
+
 ## File References
 
 Use relative paths from skill root:
