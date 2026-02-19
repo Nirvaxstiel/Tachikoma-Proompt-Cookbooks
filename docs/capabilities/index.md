@@ -53,7 +53,7 @@ Confidence labeling for every claim.
 
 Optimizes context placement for transformer attention.
 
-### [Verification Loops](./verification-loops.md)
+### [Verification Loops](../research/verification-loops.md)
 
 Reflection after execution improves quality.
 
