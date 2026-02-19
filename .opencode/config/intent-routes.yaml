@@ -126,6 +126,25 @@ routes:
     strategy: direct
     notes: Use for learning APIs, understanding code, exploring solutions
 
+  # DevOps: CI/CD, pipelines, deployments, automation
+  devops:
+    description: CI/CD pipelines, deployments, automation, infrastructure
+    confidence_threshold: 0.6
+    low_confidence_threshold: 0.4  # Trigger self-learning if below this
+    context_modules:
+      - 00-core-contract
+      - 20-git-workflow  # CI/CD is related to git workflows
+    skill: research-agent  # Still research-oriented (config/docs)
+    skill_load_instruction: 'skill({ name: "research-agent" })'
+    skill_usage: "Load skill, then follow research methodology for DevOps config"
+    invoke_via: skill
+    tools:
+      - Read
+      - WebFetch
+      - Grep
+    strategy: direct
+    notes: Use for GitHub Actions, GitLab CI, Jenkins, deployments, infrastructure config
+
   # Git: Version control operations
   git:
     description: Version control operations, commits, PRs
@@ -498,6 +517,21 @@ behavior:
   # Whether to include alternative intents in reports
   report_alternatives: true
 
+  # Auto self-learning triggers
+  # When confidence falls below threshold after execution, invoke self-learning
+  auto_self_learning:
+    enabled: true
+    low_confidence_threshold: 0.4  # Trigger when final confidence < 0.4
+    intents_with_learning:
+      - devops      # New intent - learn patterns
+      - research    # How-to questions often ambiguous
+      - explore     # Codebase exploration patterns
+    intents_without_learning:
+      - debug       # High-stakes - don't learn from failures
+      - implement   # High-stakes - don't learn from failures
+      - git         # Well-defined, low ambiguity
+    note: "User approval required before applying any learned changes"
+
   # Context coupling rules
   module_coupling:
     # When coding-standards loads, commenting-rules MUST also load
@@ -624,6 +658,25 @@ intent_keywords:
     - "look up"
     - "search"
     - "discover"
+
+  devops:
+    - "deploy"
+    - "deployment"
+    - "ci"
+    - "cd"
+    - "pipeline"
+    - "workflow"
+    - "github actions"
+    - "gitlab ci"
+    - "jenkins"
+    - "automation"
+    - "build"
+    - "release"
+    - "infrastructure"
+    - "devops"
+    - ".yml"
+    - ".yaml"
+    - ".github"
 
   git:
     - "git"
