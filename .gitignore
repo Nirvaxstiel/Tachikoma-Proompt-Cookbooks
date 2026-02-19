@@ -460,15 +460,7 @@ env/
 # pip cache
 pip-cache/
 
-# Site-packages modifications (when using --system with UV)
-.opencode/assets/Python310/Lib/site-packages/yaml/
-.opencode/assets/Python310/Lib/site-packages/PyYAML*/
-.opencode/assets/Python310/Lib/site-packages/_yaml*
+**/site-packages/**
 
-# =============================================================================
-# Test/Temporary Files
-# =============================================================================
-
-# Test documents
-test.md
-dashboard_detailed_plan.md
+# Tachikoma update backups (generated during install/updates)
+.opencode-backup/

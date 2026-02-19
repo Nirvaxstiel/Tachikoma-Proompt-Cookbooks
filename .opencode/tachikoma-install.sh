@@ -82,6 +82,27 @@ log_error() {
     sync
 }
 
+# Styled log functions for update status (Ghost in the Shell theme)
+log_modified() {
+    printf "${ORANGE}[MODIFIED]${NO_COLOR} %s\n" "$1" >&2
+    sync
+}
+
+log_added() {
+    printf "${GREEN}[ADDED]${NO_COLOR} %s\n" "$1" >&2
+    sync
+}
+
+log_deleted() {
+    printf "${RED}[DELETED]${NO_COLOR} %s\n" "$1" >&2
+    sync
+}
+
+log_unchanged() {
+    printf "${DIM}[UNCHANGED]${NO_COLOR} %s\n" "$1" >&2
+    sync
+}
+
 # Detect system Python - returns 0 (found) or 1 (not found) for shell compatibility
 # Sets PYTHON_CMD and HAS_PYTHON (true/false)
 check_python() {
@@ -320,10 +341,50 @@ EOF
         ADDED_COUNT=0
         DELETED_COUNT=0
 
-        # Find all files in current installation
+        # Load ignore patterns from current .gitignore for filtering
+        # Also check new .gitignore to ensure we have patterns to work with
+        IGNORE_PATTERNS=()
+        GITIGNORE_SOURCE="$CURRENT_OPENCODE/.gitignore"
+
+        # Use new .gitignore if current doesn't exist
+        if [ ! -f "$GITIGNORE_SOURCE" ] && [ -f "$NEW_OPENCODE/.gitignore" ]; then
+            GITIGNORE_SOURCE="$NEW_OPENCODE/.gitignore"
+        fi
+
+        # Load patterns from .gitignore
+        if [ -f "$GITIGNORE_SOURCE" ]; then
+            while IFS= read -r line || [[ -n "$line" ]]; do
+                # Skip empty lines and comments
+                [[ -z "$line" || "$line" =~ ^# ]] && continue
+                # Strip carriage return (Windows line endings) and trailing slash
+                line="${line//$'\r'/}"
+                line="${line%/}"
+                [[ -n "$line" ]] && IGNORE_PATTERNS+=("$line")
+            done < <(tr -d '\r' < "$GITIGNORE_SOURCE")
+            log_info "Loaded ${#IGNORE_PATTERNS[@]} ignore patterns from .gitignore"
+        fi
+
+        # Helper to check if path matches any ignore pattern
+        # Matches if path starts with pattern or contains pattern as directory component
+        should_ignore() {
+            local rel_path="$1"
+            for pattern in "${IGNORE_PATTERNS[@]}"; do
+                # Skip extension-only patterns (e.g., *.pyc) - NOT patterns starting with .
+                [[ "$pattern" == *.* && "$pattern" != .* ]] && continue
+                # Match: starts with pattern, OR contains pattern as directory component (with or without leading /)
+                if [[ "$rel_path" == "$pattern"* ]] || [[ "$rel_path" == *"/$pattern"* ]] || [[ "$rel_path" == *"/$pattern" ]] || [[ "$rel_path" == *"$pattern" ]]; then
+                    return 0
+                fi
+            done
+            return 1
+        }
+
+        # Find all files in current installation (respecting .gitignore)
         while IFS= read -r -d '' file; do
-            # Get relative path from .opencode
+            # Get relative path and check if ignored
             rel_path="${file#$CURRENT_OPENCODE/}"
+            should_ignore "$rel_path" && continue
+
             new_file="$NEW_OPENCODE/$rel_path"
 
             if [ -f "$new_file" ]; then
@@ -334,7 +395,8 @@ EOF
                     mkdir -p "$backup_subdir"
                     cp -p "$file" "$backup_subdir/"
                     MODIFIED_COUNT=$((MODIFIED_COUNT + 1))
-                    echo "- **MODIFIED**: %s\n" "$rel_path" >> "$DIFF_FILE"
+                    printf -- "- **MODIFIED**: \`%s\`\n" "$rel_path" >> "$DIFF_FILE"
+                    log_modified "$rel_path"
                 fi
             else
                 # File only exists in current (will be deleted)
@@ -342,18 +404,38 @@ EOF
                 mkdir -p "$backup_subdir"
                 cp -p "$file" "$backup_subdir/"
                 DELETED_COUNT=$((DELETED_COUNT + 1))
-                echo "- **DELETED**: %s\n" "$rel_path" >> "$DIFF_FILE"
+                printf -- "- **DELETED**: \`%s\`\n" "$rel_path" >> "$DIFF_FILE"
+                log_deleted "$rel_path"
             fi
         done < <(find "$CURRENT_OPENCODE" -type f -print0 2>/dev/null)
 
-        # Find new files (exist in new but not in current)
+        # Find new files (exist in new but not in current) - respect .gitignore from new version
+        IGNORE_PATTERNS_NEW=()
+        if [ -f "$NEW_OPENCODE/.gitignore" ]; then
+            while IFS= read -r line; do
+                [[ -z "$line" || "$line" =~ ^# ]] && continue
+                IGNORE_PATTERNS_NEW+=("${line%/}")
+            done < "$NEW_OPENCODE/.gitignore"
+        fi
+
+        should_ignore_new() {
+            local rel_path="$1"
+            for pattern in "${IGNORE_PATTERNS_NEW[@]}"; do
+                [[ "$rel_path" == "$pattern"* ]] && return 0
+            done
+            return 1
+        }
+
         while IFS= read -r -d '' file; do
             rel_path="${file#$NEW_OPENCODE/}"
+            should_ignore_new "$rel_path" && continue
+
             current_file="$CURRENT_OPENCODE/$rel_path"
 
             if [ ! -f "$current_file" ]; then
                 ADDED_COUNT=$((ADDED_COUNT + 1))
-                echo "- **ADDED**: %s\n" "$rel_path" >> "$DIFF_FILE"
+                printf -- "- **ADDED**: \`%s\`\n" "$rel_path" >> "$DIFF_FILE"
+                log_added "$rel_path"
             fi
         done < <(find "$NEW_OPENCODE" -type f -print0 2>/dev/null)
 
@@ -371,34 +453,29 @@ Files backed up to: \`.opencode-backup/\`
 EOF
 
         if [ $MODIFIED_COUNT -gt 0 ]; then
-            p "" >> "$DIFF_FILE"
-            p "### Modified Files" >> "$DIFF_FILE"
-            p "" >> "$DIFF_FILE"
-            p "These files were overwritten. Previous versions backed up to \`.opencode-backup/\`" >> "$DIFF_FILE"
-            p "" >> "$DIFF_FILE"
+            printf "\n### Modified Files\n\n" >> "$DIFF_FILE"
+            printf "These files were overwritten. Previous versions backed up to \`.opencode-backup/\`\n\n" >> "$DIFF_FILE"
         fi
 
         if [ $DELETED_COUNT -gt 0 ]; then
-            p "" >> "$DIFF_FILE"
-            p "### Deleted Files" >> "$DIFF_FILE"
-            p "" >> "$DIFF_FILE"
-            p "These files were removed. Previous versions backed up to \`.opencode-backup/\`" >> "$DIFF_FILE"
-            p "" >> "$DIFF_FILE"
+            printf "\n### Deleted Files\n\n" >> "$DIFF_FILE"
+            printf "These files were removed. Previous versions backed up to \`.opencode-backup/\`\n\n" >> "$DIFF_FILE"
         fi
 
         if [ $ADDED_COUNT -gt 0 ]; then
-            p "" >> "$DIFF_FILE"
-            p "### Added Files" >> "$DIFF_FILE"
-            p "" >> "$DIFF_FILE"
-            p "These files are new in this version:" >> "$DIFF_FILE"
-            p "" >> "$DIFF_FILE"
+            printf "\n### Added Files\n\n" >> "$DIFF_FILE"
+            printf "These files are new in this version:\n\n" >> "$DIFF_FILE"
         fi
 
+        # Output styled summary
+        [ "$MODIFIED_COUNT" -gt 0 ] && log_modified "$MODIFIED_COUNT files - Previous versions backed up to .opencode-backup/"
+        [ "$ADDED_COUNT" -gt 0 ] && log_added "$ADDED_COUNT new files in this version"
+        [ "$DELETED_COUNT" -gt 0 ] && log_deleted "$DELETED_COUNT files removed"
+        [ "$MODIFIED_COUNT" -eq 0 ] && [ "$ADDED_COUNT" -eq 0 ] && [ "$DELETED_COUNT" -eq 0 ] && log_unchanged "No changes detected"
         log_success "Backup created: .opencode-backup/"
-        log_info "Modified: $MODIFIED_COUNT | Added: $ADDED_COUNT | Deleted: $DELETED_COUNT"
 
         # Show backup location
-        if [ $MODIFIED_COUNT -gt 0 ] || [ $DELETED_COUNT -gt 0 ]; then
+        if [ "$MODIFIED_COUNT" -gt 0 ] || [ "$DELETED_COUNT" -gt 0 ]; then
             log_info "Previous versions saved to: .opencode-backup/"
             log_info "Diff report: .opencode-backup/diff.md"
         fi
@@ -446,6 +523,22 @@ bun.lock
 assets/
 plugins/
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+
 # IDE
 .vscode/
 .idea/
@@ -453,6 +546,13 @@ plugins/
 # OS
 .DS_Store
 Thumbs.db
+
+# Runtime generated
+cache/
+rlm_state/
+
+# Update backups (generated by tachikoma-install.sh)
+.opencode-backup/
 EOF
     log_success ".opencode/.gitignore"
 fi
