@@ -1,7 +1,7 @@
 #!/bin/bash
 # Tachikoma Dashboard Bootstrapper
 # - Uses injected Python or bundled Python
-# - Downloads uv if not present
+# - Uses uv from PATH or bundled binary
 # - Creates venv if needed
 # - Runs the dashboard or tests
 
@@ -64,19 +64,22 @@ if [ ! -f "$PYTHON" ]; then
     exit 1
 fi
 
-# Find or download uv
-if [ ! -f "$UV" ]; then
-    echo "Downloading uv..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    # Move to assets if installed elsewhere
-    if [ -f "$HOME/.local/bin/uv" ]; then
-        cp "$HOME/.local/bin/uv" "$UV"
-        chmod +x "$UV"
-    fi
+# Find uv - try PATH first (injected by opencode), then bundled
+if command -v uv &> /dev/null; then
+    UV=$(command -v uv)
+else
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*)
+            UV="$ASSETS_DIR/uv.exe"
+            ;;
+        *)
+            UV="$ASSETS_DIR/uv"
+            ;;
+    esac
 fi
 
 if [ ! -f "$UV" ]; then
-    echo "Error: uv not found and could not be downloaded" >&2
+    echo "Error: uv not found in PATH or at $UV" >&2
     exit 1
 fi
 

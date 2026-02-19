@@ -12,7 +12,7 @@ export POSIXLY_CORRECT=1
 BRANCH="master"
 USE_GITLAB=false
 TARGET_DIR=""
-INCLUDE_PREPACKAGED=false
+USE_PACKAGED=false
 
 REPO_OWNER="Nirvaxstiel"
 REPO_NAME="Tachikoma-Proompt-Cookbooks"
@@ -82,13 +82,13 @@ log_error() {
     sync
 }
 
-# Detect system Python - returns 0 (found) or 1 (not found)
-# Sets PYTHON_CMD and HAS_PYTHON
+# Detect system Python - returns 0 (found) or 1 (not found) for shell compatibility
+# Sets PYTHON_CMD and HAS_PYTHON (true/false)
 check_python() {
-    command -v python3 &> /dev/null && PYTHON_CMD="python3" && HAS_PYTHON=0 && return 0
-    command -v python  &> /dev/null && PYTHON_CMD="python"  && HAS_PYTHON=0 && return 0
+    command -v python3 &> /dev/null && PYTHON_CMD="python3" && HAS_PYTHON=true && return 0
+    command -v python  &> /dev/null && PYTHON_CMD="python"  && HAS_PYTHON=true && return 0
     PYTHON_CMD=""
-    HAS_PYTHON=1
+    HAS_PYTHON=false
     return 1
 }
 
@@ -102,7 +102,7 @@ is_interactive() {
 ask_use_packaged_python() {
     # Non-interactive mode: don't use packaged Python unless --include-prepackaged-python was passed
     ! is_interactive && {
-        echo ""
+        p ""
         return
     }
 
@@ -121,24 +121,14 @@ ask_use_packaged_python() {
     p "  ${GREEN}Yes${NO_COLOR}/${GREEN}y${NO_COLOR}  - Yes, use pre-packaged Python (recommended)\n"
     p "  ${RED}No${NO_COLOR}/${RED}n${NO_COLOR}  - No, I'll handle Python myself\n"
     p "\n"
-
+    p "  Choice:"
     # Prompt for choice
-    [ -t 0 ] && {
-        printf "%sChoice%s [Y/n]: " "$CYAN" "$NO_COLOR"
-        sync
-        read -r choice
-    } || {
-        # Try /dev/tty for interactive input
-        [ -t 1 ] && {
-            p_err "%sChoice%s [Y/n]: " "$CYAN" "$NO_COLOR"
-            read -r choice </dev/tty
-        }
-    }
+    read -r choice
 
     # Return true for yes, false for no (default: true)
     case "$choice" in
-        [nN][oO]|[nN]) echo false ;;
-        *)             echo true  ;;
+        [nN][oO]|[nN]) USE_PACKAGED=false ;;
+        *)             USE_PACKAGED=true  ;;
     esac
 }
 
@@ -157,7 +147,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --include-prepackaged-python)
-            INCLUDE_PREPACKAGED=true
+            USE_PACKAGED=true
             shift
             ;;
         -h|--help)
@@ -229,7 +219,7 @@ fi
 INSTALL_DIR="$(pwd)"
 
 # Check for system Python (before download)
-check_python [ "$HAS_PYTHON" -eq 0 ] && log_info "Found Python: ${GREEN}$PYTHON_CMD${NO_COLOR}"
+check_python [ "$HAS_PYTHON" = true ] && log_info "Found Python: ${GREEN}$PYTHON_CMD${NO_COLOR}"
 
 log_info "Installing from ${SOURCE_NAME} (${BRANCH})"
 log_info "Target: ${INSTALL_DIR}"
@@ -239,7 +229,7 @@ if [ ! -d ".git" ]; then
 fi
 
 TEMP_DIR=$(mktemp -d)
-trap "rm -rf $TEMP_DIR" EXIT
+# Note: We don't trap rm -rf here anymore - backup persists in .opencode-backup/
 
 cd "$TEMP_DIR"
 
@@ -269,19 +259,17 @@ fi
 cd "$EXTRACTED_DIR"
 
 # Determine whether to use packaged Python
-# Returns: 0 (use packaged), 1 (don't use)
 # Priority: 1) --include-prepackaged-python flag, 2) system Python, 3) ask user
-USE_PACKAGED=1  # 1 = false (don't use), 0 = true (use)
+# USE_PACKAGED: true = use packaged Python, false = don't use (default)
 
 # Check flag first - must exist AND file exists
-[ "$INCLUDE_PREPACKAGED" = true ] && [ -f ".opencode/assets/Python310/python.exe" ] && {
-    USE_PACKAGED=0
-    log_info "Pre-packaged Python"
+[ "$USE_PACKAGED" = true ] && [ -f ".opencode/assets/Python310/python.exe" ] && {
+    log_info "Pre-packaged Python enabled"
 }
 
-# No system Python? Ask user (only runs if USE_PACKAGED is still 1)
-{ [ "$HAS_PYTHON" -eq 1 ] && [ "$USE_PACKAGED" -eq 1 ]; } && {
-    [ "$(ask_use_packaged_python)" = "true" ] && USE_PACKAGED=0
+# No system Python? Ask user (only runs if USE_PACKAGED is still false)
+{ [ "$HAS_PYTHON" = false ] && [ "$USE_PACKAGED" = false ]; } && {
+    ask_use_packaged_python
 }
 
 p "\n"
@@ -295,13 +283,123 @@ else
 fi
 
 if [ -d ".opencode" ]; then
-    if [ -d "${INSTALL_DIR}/.opencode" ]; then
-        OLD_OPENCODE_BACKUP="${TEMP_DIR}/.opencode.old.$$"
-        mv "${INSTALL_DIR}/.opencode" "$OLD_OPENCODE_BACKUP" 2>/dev/null || true
-        rm -rf "$OLD_OPENCODE_BACKUP" 2>/dev/null || true
+    BACKUP_DIR="${INSTALL_DIR}/.opencode-backup"
+    CURRENT_OPENCODE="${INSTALL_DIR}/.opencode"
+    NEW_OPENCODE="${PWD}/.opencode"
+
+    # Check if this is an update (existing .opencode directory)
+    if [ -d "$CURRENT_OPENCODE" ]; then
+        log_info "Existing installation detected - generating backup..."
+
+        # Create backup directory with timestamp
+        mkdir -p "$BACKUP_DIR"
+
+        # Generate diff report
+        DIFF_FILE="$BACKUP_DIR/diff.md"
+
+        # Initialize diff report
+        cat > "$DIFF_FILE" << EOF
+# Tachikoma Update Diff Report
+
+Generated: $(date '+%Y-%m-%d %H:%M:%S')
+Source: ${SOURCE_NAME} (${BRANCH})
+
+## Summary
+
+EOF
+
+        # Count and categorize changes
+        MODIFIED_COUNT=0
+        ADDED_COUNT=0
+        DELETED_COUNT=0
+
+        # Find all files in current installation
+        while IFS= read -r -d '' file; do
+            # Get relative path from .opencode
+            rel_path="${file#$CURRENT_OPENCODE/}"
+            new_file="$NEW_OPENCODE/$rel_path"
+
+            if [ -f "$new_file" ]; then
+                # File exists in both - check if different
+                if ! diff -q "$file" "$new_file" > /dev/null 2>&1; then
+                    # Files differ - backup old version
+                    backup_subdir="$BACKUP_DIR/$(dirname "$rel_path")"
+                    mkdir -p "$backup_subdir"
+                    cp -p "$file" "$backup_subdir/"
+                    MODIFIED_COUNT=$((MODIFIED_COUNT + 1))
+                    echo "- **MODIFIED**: %s\n" "$rel_path" >> "$DIFF_FILE"
+                fi
+            else
+                # File only exists in current (will be deleted)
+                backup_subdir="$BACKUP_DIR/$(dirname "$rel_path")"
+                mkdir -p "$backup_subdir"
+                cp -p "$file" "$backup_subdir/"
+                DELETED_COUNT=$((DELETED_COUNT + 1))
+                echo "- **DELETED**: %s\n" "$rel_path" >> "$DIFF_FILE"
+            fi
+        done < <(find "$CURRENT_OPENCODE" -type f -print0 2>/dev/null)
+
+        # Find new files (exist in new but not in current)
+        while IFS= read -r -d '' file; do
+            rel_path="${file#$NEW_OPENCODE/}"
+            current_file="$CURRENT_OPENCODE/$rel_path"
+
+            if [ ! -f "$current_file" ]; then
+                ADDED_COUNT=$((ADDED_COUNT + 1))
+                echo "- **ADDED**: %s\n" "$rel_path" >> "$DIFF_FILE"
+            fi
+        done < <(find "$NEW_OPENCODE" -type f -print0 2>/dev/null)
+
+        # Complete the summary
+        cat >> "$DIFF_FILE" << EOF
+
+- Modified: $MODIFIED_COUNT files
+- Added: $ADDED_COUNT files
+- Deleted: $DELETED_COUNT files
+
+## Details
+
+Files backed up to: \`.opencode-backup/\`
+
+EOF
+
+        if [ $MODIFIED_COUNT -gt 0 ]; then
+            p "" >> "$DIFF_FILE"
+            p "### Modified Files" >> "$DIFF_FILE"
+            p "" >> "$DIFF_FILE"
+            p "These files were overwritten. Previous versions backed up to \`.opencode-backup/\`" >> "$DIFF_FILE"
+            p "" >> "$DIFF_FILE"
+        fi
+
+        if [ $DELETED_COUNT -gt 0 ]; then
+            p "" >> "$DIFF_FILE"
+            p "### Deleted Files" >> "$DIFF_FILE"
+            p "" >> "$DIFF_FILE"
+            p "These files were removed. Previous versions backed up to \`.opencode-backup/\`" >> "$DIFF_FILE"
+            p "" >> "$DIFF_FILE"
+        fi
+
+        if [ $ADDED_COUNT -gt 0 ]; then
+            p "" >> "$DIFF_FILE"
+            p "### Added Files" >> "$DIFF_FILE"
+            p "" >> "$DIFF_FILE"
+            p "These files are new in this version:" >> "$DIFF_FILE"
+            p "" >> "$DIFF_FILE"
+        fi
+
+        log_success "Backup created: .opencode-backup/"
+        log_info "Modified: $MODIFIED_COUNT | Added: $ADDED_COUNT | Deleted: $DELETED_COUNT"
+
+        # Show backup location
+        if [ $MODIFIED_COUNT -gt 0 ] || [ $DELETED_COUNT -gt 0 ]; then
+            log_info "Previous versions saved to: .opencode-backup/"
+            log_info "Diff report: .opencode-backup/diff.md"
+        fi
     fi
 
-    cp -r ".opencode" "${INSTALL_DIR}/"
+    # Remove existing .opencode and copy new version
+    rm -rf "$CURRENT_OPENCODE"
+    cp -r "$NEW_OPENCODE" "$CURRENT_OPENCODE"
 
     CLEANUP_PATHS=(
         "${INSTALL_DIR}/.opencode/node_modules"
@@ -310,7 +408,7 @@ if [ -d ".opencode" ]; then
         "${INSTALL_DIR}/.opencode/.gitignore"
     )
 
-    [ "$USE_PACKAGED" -eq 1 ] && {
+    [ "$USE_PACKAGED" = false ] && {
         CLEANUP_PATHS+=(
             "${INSTALL_DIR}/.opencode/assets"
             "${INSTALL_DIR}/.opencode/plugins"
@@ -389,7 +487,7 @@ p "${MAGENTA}┃${NO_COLOR}   ${WHITE}Installation complete${NO_COLOR}          
 p "${MAGENTA}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${NO_COLOR}\n"
 p "\n"
 
-[ "$USE_PACKAGED" -eq 1 ] && [ "$HAS_PYTHON" -eq 1 ] && {
+[ "$USE_PACKAGED" = false ] && [ "$HAS_PYTHON" = false ] && {
     p "${ORANGE}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓${NO_COLOR}\n"
     p "${ORANGE}┃${NO_COLOR}  ${WHITE}⚠  PYTHON SETUP REQUIRED  ⚠${NO_COLOR}     ${ORANGE}┃${NO_COLOR}\n"
     p "${ORANGE}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${NO_COLOR}\n"
@@ -403,8 +501,20 @@ p "\n"
     p "\n"
 }
 
+# Cleanup temp directory (backup is preserved in .opencode-backup/)
+rm -rf "$TEMP_DIR" 2>/dev/null || true
+
 p "Run ${MAGENTA}opencode${NO_COLOR} to start\n"
 p "\n"
+
+# Show backup info if this was an update
+if [ -d "${INSTALL_DIR}/.opencode-backup" ]; then
+    p "${WHITE}Backup available:${NO_COLOR}\n"
+    p "  ${DIM}Previous versions:${NO_COLOR} ${CYAN}.opencode-backup/${NO_COLOR}\n"
+    p "  ${DIM}Diff report:${NO_COLOR} ${CYAN}.opencode-backup/diff.md${NO_COLOR}\n"
+    p "\n"
+fi
+
 p "${WHITE}To update:${NO_COLOR}\n"
 p "\n"
 p "${DIM}  # Option 1: Run the script directly${NO_COLOR}\n"

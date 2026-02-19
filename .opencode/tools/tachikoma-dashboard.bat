@@ -1,7 +1,7 @@
 @echo off
 REM Tachikoma Dashboard Bootstrapper
 REM - Uses injected Python or bundled Python
-REM - Downloads uv if not present
+REM - Uses uv from PATH or bundled binary
 REM - Creates venv if needed
 REM - Runs the dashboard or tests
 
@@ -48,17 +48,22 @@ if not exist "%PYTHON%" (
     exit /b 1
 )
 
-REM Find or download uv
-set "UV=%ASSETS_DIR%\uv.exe"
-if not exist "%UV%" (
-    echo Downloading uv...
-    powershell -Command "Invoke-WebRequest -Uri 'https://astral.sh/uv/latest/uv-x86_64-pc-windows-msvc.zip' -OutFile '%TEMP%\uv.zip'"
-    powershell -Command "Expand-Archive -Path '%TEMP%\uv.zip' -DestinationPath '%ASSETS_DIR%' -Force"
-    del /q "%TEMP%\uv.zip" 2>nul
-    if not exist "%UV%" (
-        echo Error: Failed to download uv
-        exit /b 1
+REM Find uv - try PATH first (injected by opencode), then bundled
+where uv >nul 2>&1
+if %errorlevel% equ 0 (
+    for /f "delims=" %%i in ('where uv') do (
+        set "UV=%%i"
+        goto :uv_found
     )
+) else (
+    set "UV=%ASSETS_DIR%\uv.exe"
+)
+
+:uv_found
+
+if not exist "%UV%" (
+    echo Error: uv not found in PATH or at %ASSETS_DIR%\uv.exe
+    exit /b 1
 )
 
 REM Change to dashboard directory
