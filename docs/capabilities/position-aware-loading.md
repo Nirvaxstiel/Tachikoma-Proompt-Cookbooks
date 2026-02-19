@@ -210,6 +210,11 @@ Result: High-relevance content gets highest attention
    - Reuse relevance scores for repeated queries
    - Reduces computation overhead
 
+5. **Reflect After Loading**
+   - Was the context sufficient?
+   - Did I miss important info?
+   - Should I load more?
+
 ### DON'T ❌
 
 1. **Don't Over-Optimize Position**

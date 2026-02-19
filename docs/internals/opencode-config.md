@@ -235,6 +235,11 @@ function merge(target: Info, source: Info): Info {
 }
 ```
 
+After config changes, reflect:
+- Did the config work as expected?
+- Are there conflicts to resolve?
+- Should I adjust precedence?
+
 ## Managed Config (Enterprise)
 
 Admin-controlled config that overrides everything:

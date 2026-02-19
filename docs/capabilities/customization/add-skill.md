@@ -479,6 +479,12 @@ Test unusual situations:
 - Empty files
 - Network failures
 
+### 4. Reflect After Testing
+
+- Did the skill work as expected?
+- Are there edge cases to add?
+- Should I adjust the instructions?
+
 ## Best Practices
 
 ### ✅ DO

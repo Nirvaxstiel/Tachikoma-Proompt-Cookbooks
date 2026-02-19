@@ -4,21 +4,39 @@ This document describes how the agent system works.
 
 > **Architecture**: The system follows this order:
 > 1. `AGENTS.md` (this file) - System overview
-> 2. `.opencode/agents/tachikoma.md` - Agent definition with mandatory workflow
+> 2. `.opencode/agents/tachikoma.md` - Agent definition with workflow
 > 3. `.opencode/skills/*/SKILL.md` - Capability modules
 
 ## How It Works
 
 ```
-User Query → [MUST: Classify] → [MUST: Load Context] → [MUST: Load Skill] → Execute → Report
+User Query → [MUST: Classify] → [MUST: Load Context] → [MUST: Load Skill] → [MUST: Execute] → [FREE: Reflect]
 ```
 
-**Every request MUST go through all phases. Skipping phases is a contract violation.**
+**Structure at the start, freedom at the end.**
 
-1. User sends a request to Tachikoma
-2. Tachikoma figures out what kind of task it is
-3. Tachikoma loads relevant context and routes to the right skill
-4. Result is returned to the user
+The mandatory phases ensure consistency and correctness. The reflection phase ensures quality and continuous improvement.
+
+## Workflow Phases
+
+### ⚠️ Mandatory Phases
+
+1. **Classify** — Determine the intent (debug, implement, research, etc.)
+2. **Load Context** — Load relevant project rules
+3. **Load Skill** — Load the appropriate skill
+4. **Execute** — Follow skill instructions
+
+These phases MUST be followed. Skipping them is a contract violation.
+
+### 🦋 Reflection Phase (Freedom)
+
+After execution, the agent is FREE to:
+
+- **Revisit** — Did I actually solve the problem?
+- **Rethink** — Was my approach the best one?
+- **Re-evaluate** — Is my confidence level accurate?
+
+The agent may ask follow-up questions, flag concerns, suggest improvements, or admit uncertainty.
 
 ## Intent Classification
 
@@ -44,7 +62,7 @@ Context modules contain project-specific rules and conventions.
 |--------|--------------|
 | 00-core-contract.md | Foundational rules |
 | 10-coding-standards.md | Code style |
-| 11-artifacts-policy.md | Artifact consent and workspace protection |
+| 11-artifacts-policy.md | Artifact consent |
 | 12-commenting-rules.md | Comment guidelines |
 | 20-git-workflow.md | Git conventions |
 | 30-research-methods.md | How to investigate |
@@ -56,64 +74,64 @@ When loading coding-standards, also load commenting-rules. They go together.
 
 ## Behavioral Policies
 
-The Tachikoma system enforces several behavioral policies to ensure quality and user experience:
+### Structure at the Start
+
+The mandatory workflow ensures:
+- Consistent behavior across sessions
+- Correct routing to specialists
+- Relevant context loaded
+- Skill constraints followed
+
+### Freedom at the End
+
+The reflection phase allows:
+- Questioning the approach taken
+- Flagging issues noticed during execution
+- Suggesting improvements (with user consent)
+- Admitting uncertainty
+- Proposing next steps
 
 ### Artifact Consent
 
-Before creating persistent artifacts (files, documentation, test scripts), agents must:
+Before creating persistent artifacts (files, documentation, test scripts):
 - Verify task explicitly requests the artifact
 - Check for existing artifacts to integrate with
 - Ask user for consent unless clearly in scope
-- Prefer terminal output for temporary information
-
-**Module**: `11-artifacts-policy.md` (Priority 11)
-
-**Applies to**: code-agent, workflow-management, task-tracking, verifier-code-agent, self-learning
-
-### Core Contract
-
-Foundational rules that apply to all tasks:
-- Externalized context mode (filesystem is truth)
-- Minimal change principle
-- Reuse before creation
-- Validation before action
-
-**Module**: `00-core-contract.md` (Priority 0)
 
 ### Loading Strategy
 
 Policies are loaded based on task intent and priority order:
 1. Core rules always load (priority 0)
-2. Domain-specific rules load as needed (coding, research, git)
+2. Domain-specific rules load as needed
 3. Higher priority modules load before lower priority
-4. Coupled modules load together (coding-standards + commenting-rules)
+4. Coupled modules load together
 
 ## How Tachikoma Routes Requests
 
-### Step 1: Classify Intent
-
-Tachikoma runs a quick classification:
+### Step 1: Classify Intent (Mandatory)
 
 ```
 bash python .opencode/skills/cli-router.py full "{query}" --json
 ```
 
-This returns the intent, confidence level, and which skill to use.
+Returns intent, confidence level, and suggested skill.
 
-If confidence is low, Tachikoma falls back to reasoning about the request directly.
+### Step 2: Load Context (Mandatory)
 
-### Step 2: Load Context
+Load relevant context modules based on intent.
 
-Based on the intent, Tachikoma loads the relevant context modules. It loads only what's needed, not everything.
-
-### Step 3: Route to Skill or Subagent
+### Step 3: Route to Skill (Mandatory)
 
 - Simple tasks: Load the skill and execute
-- Complex tasks: Delegate to a subagent like rlm-subcall
+- Complex tasks: Delegate to a subagent
 
-### Step 4: Return Result
+### Step 4: Execute (Mandatory)
 
-Tachikoma reports what was done, confidence level, and any next steps.
+Follow the skill's instructions.
+
+### Step 5: Reflect (Freedom)
+
+Revisit, rethink, re-evaluate. Ask questions, flag concerns, suggest improvements.
 
 ## File Structure
 
@@ -127,10 +145,10 @@ Tachikoma reports what was done, confidence level, and any next steps.
 │           ├── rlm-subcall.md    # Large context
 │           └── rlm-optimized.md   # Optimized RLM
 ├── skills/                       # Capability modules
-├── context/                      # Project context
+├── context-modules/              # Project context
 ├── config/
 │   └── intent-routes.yaml        # Route definitions
-└── tools/                       # Helper tools
+└── tools/                        # Helper tools
 ```
 
 ## How to Use Skills
@@ -161,19 +179,20 @@ Tachikoma labels its confidence:
 - `speculation` - Logical inference, limited evidence
 - `unknown` - Cannot determine
 
-When confidence drops below 0.5, Tachikoma asks for clarification instead of guessing.
+When confidence is low, Tachikoma asks for clarification.
 
 ## Research Background
 
 The system design is based on published research:
 
-- **Position Bias**: LLMs pay more attention to tokens at the start and end of context. Loading only relevant context helps.
-- **Tool-Augmented LLMs**: Tools add latency but improve accuracy. The system balances this by using tools for complex tasks.
+- **Position Bias**: LLMs pay more attention to tokens at the start and end of context.
+- **Tool-Augmented LLMs**: Tools add latency but improve accuracy.
 - **Modularity**: Smaller, focused components work better than large monolithic prompts.
+- **Verification Loops**: Reflection after execution improves quality.
 
-See `.opencode/docs/research/` for details.
+See `docs/research/` for details.
 
 ---
 
-**Version:** 3.2.0
-**Last Updated:** 2026-02-17
+**Version:** 3.4.0
+**Last Updated:** 2026-02-19

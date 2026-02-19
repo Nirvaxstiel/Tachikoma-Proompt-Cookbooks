@@ -100,6 +100,11 @@ python .opencode/tools/smoke_test.py --fail-fast || exit 1
 | ⚠️ WARN | Non-critical issue |
 | ⏭️ SKIP | Not applicable     |
 
+After running tests, reflect:
+- Did I break anything?
+- Are there edge cases to add?
+- Should I update the tests?
+
 ## Adding Tests
 
 For detailed information on adding tests, see:

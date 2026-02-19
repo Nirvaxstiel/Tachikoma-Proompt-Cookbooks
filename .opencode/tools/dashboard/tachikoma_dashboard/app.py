@@ -23,10 +23,9 @@ from textual.scrollbar import ScrollBarRender
 from textual.widgets import Header, RichLog, Static
 
 from . import db
-from .models import ModelUsage, Session, SessionStats, SessionTree, build_session_tree
+from .models import ModelUsage, Session, SessionStats, SessionStatus, SessionTree, build_session_tree
 from .session_tree import SessionTreeWidget
-from .styles import DASHBOARD_CSS
-from .theme import THEME
+from .theme import DASHBOARD_CSS, THEME
 from .widgets import (
     ActivitySparkline,
     SearchBar,
@@ -151,7 +150,19 @@ class DashboardApp(App):
             interval: Refresh interval in milliseconds
             cwd: Working directory filter (None for all)
         """
+        # Register GITS theme with Textual before calling super()
+        # This must happen before App.__init__ processes theme attribute
         super().__init__()
+        
+        # Register custom GITS themes
+        from .theme import TEXTUAL_THEME, TEXTUAL_THEME_LIGHT
+        self.register_theme(TEXTUAL_THEME)
+        self.register_theme(TEXTUAL_THEME_LIGHT)
+        
+        # Activate the dark theme by default
+        self.theme = "gits-dark"
+        
+        # Initialize app state
         self.interval = interval
         self.cwd_filter = cwd
         self._sessions_hash: str = ""
@@ -222,6 +233,7 @@ class DashboardApp(App):
 
         # Activity bar with sparkline
         with Vertical(id="activity-bar"):
+            yield Static("Activity (last 20 min)", id="activity-label")
             yield ActivitySparkline(id="activity-sparkline")
 
         yield Static("", id="aggregation")
@@ -292,6 +304,7 @@ class DashboardApp(App):
         """Update activity sparkline data.
 
         Generates activity data based on recent session updates.
+        Counts sessions updated within each 1-minute bucket.
         """
         import time
 
@@ -299,11 +312,44 @@ class DashboardApp(App):
         activity = []
         for i in range(20):
             bucket_time = now - (i * 60)
-            count = sum(1 for s in self.sessions if s.updated_seconds > bucket_time - 60)
+            # Count sessions updated in this specific 1-minute window
+            count = sum(
+                1
+                for s in self.sessions
+                if bucket_time - 60 < s.updated_seconds <= bucket_time
+            )
             activity.append(float(count))
 
         activity.reverse()
         self.activity_data = activity
+
+        # Calculate status breakdown for current minute (last bucket)
+        bucket_time = now
+        sessions_now = [
+            s for s in self.sessions
+            if bucket_time - 60 < s.updated_seconds <= bucket_time
+        ]
+        working = sum(1 for s in sessions_now if s.status == SessionStatus.WORKING)
+        active = sum(1 for s in sessions_now if s.status == SessionStatus.ACTIVE)
+        idle = sum(1 for s in sessions_now if s.status == SessionStatus.IDLE)
+
+        # Update label with current activity and status breakdown
+        total_now = len(sessions_now)
+        status_parts = []
+        if working:
+            status_parts.append(f"{working} working")
+        if active:
+            status_parts.append(f"{active} active")
+        if idle:
+            status_parts.append(f"{idle} idle")
+        
+        status_str = ", ".join(status_parts) if status_parts else "all idle"
+        
+        try:
+            label = self.query_one("#activity-label", Static)
+            label.update(f"Activity (last 20 min) — {total_now} now ({status_str})")
+        except Exception:
+            pass
 
         try:
             sparkline = self.query_one(ActivitySparkline)
@@ -421,6 +467,7 @@ class DashboardApp(App):
     def _update_tokens(self) -> None:
         """Update tokens panel with model usage."""
         tokens_widget = self.query_one("#tokens-content", RichLog)
+        tokens_widget.clear()
         tokens_widget.write(render_model_usage(self.model_usage))
 
     def _update_skills(self) -> None:
@@ -462,6 +509,7 @@ class DashboardApp(App):
             if self.show_error_details:
                 # Get all errors from database (increased limit for scrollable panel)
                 errors = db.get_all_errors(limit=50)
+                error_widget.clear()
                 error_widget.write(render_model_error_details(errors))
             else:
                 error_widget.clear()

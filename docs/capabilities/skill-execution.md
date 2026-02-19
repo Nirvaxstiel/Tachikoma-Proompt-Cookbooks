@@ -8,7 +8,7 @@ Specialized capabilities for specific tasks.
 2. Route specifies skill
 3. SKILL.md loads
 4. Skill executes
-5. Result returns
+5. Reflect on results
 
 ## Available Skills
 

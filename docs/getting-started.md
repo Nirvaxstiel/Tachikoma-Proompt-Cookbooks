@@ -57,9 +57,13 @@ Every request goes through 5 phases:
 2. **Load Context** — Project rules for this task
 3. **Load Skill** — Appropriate specialist
 4. **Execute** — Do the work
-5. **Report** — What happened + confidence
+5. **Reflect** — Revisit, rethink, re-evaluate
 
-Phases 1-3 are mandatory. Skipping them is a contract violation.
+Phases 1-4 are mandatory. Skipping them is a contract violation.
+
+Phase 5 is free — the agent can question its approach, flag concerns, or suggest improvements.
+
+**Structure at the start, freedom at the end.**
 
 ## Next Steps
 

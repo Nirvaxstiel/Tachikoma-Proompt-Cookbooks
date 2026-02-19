@@ -392,6 +392,12 @@ For each issue, provide:
 - Why it's a problem
 - Suggested fix (with code example if helpful)
 
+### 5. Reflect
+After analysis, question:
+- Did I miss anything?
+- Are there related files to check?
+- Should I suggest deeper investigation?
+
 ## Example Usage
 
 **User:** "Review the auth module for quality issues"

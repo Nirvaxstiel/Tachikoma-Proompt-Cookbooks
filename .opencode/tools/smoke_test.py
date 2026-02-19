@@ -478,7 +478,11 @@ class SmokeTestFramework:
             ".venv",
             "dist",
             "build",
+            "cache",
         }
+
+        # Load additional exclusions from .gitignore
+        self._load_gitignore_exclusions()
 
         # Specific files to exclude (rarely changed, manually tested, or cause issues)
         self.exclude_files = {"tachikoma-install.sh", "run-smoke-tests.sh"}
@@ -511,6 +515,23 @@ class SmokeTestFramework:
             "edit_format_optimizer.py": [
                 (["--help"], "show help"),
             ],
+            # Dashboard test scripts
+            "test_smoke_no_rich.py": [
+                (["--help"], "show help"),
+            ],
+            "test_smoke.py": [
+                (["--help"], "show help"),
+            ],
+            # Production scripts
+            "production_monitor.py": [
+                (["--help"], "show help"),
+                (["list"], "list samples"),
+            ],
+            # Tools
+            "hashline-processor.py": [
+                (["--help"], "show help"),
+                (["read", "--help"], "read command help"),
+            ],
         }
 
         # Known test arguments for shell scripts
@@ -537,6 +558,35 @@ class SmokeTestFramework:
                 (["help"], "show help"),
             ],
         }
+
+    def _load_gitignore_exclusions(self) -> None:
+        """Load and parse .gitignore to get additional exclusions."""
+        gitignore_paths = [
+            self.base_dir / ".gitignore",
+            self.base_dir.parent / ".gitignore",
+        ]
+
+        for gitignore_path in gitignore_paths:
+            if gitignore_path.exists():
+                try:
+                    with open(gitignore_path, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            # Skip comments and empty lines
+                            if not line or line.startswith("#"):
+                                continue
+                            # Skip negation patterns for now
+                            if line.startswith("!"):
+                                continue
+                            # Handle directory patterns (ending with /)
+                            if line.endswith("/"):
+                                dir_name = line.rstrip("/")
+                                self.exclude_dirs.add(dir_name)
+                            # Handle directory names
+                            elif "/" not in line and not line.startswith("*"):
+                                self.exclude_dirs.add(line)
+                except Exception:
+                    pass
 
     def discover_scripts(
         self, script_type: Optional[str] = None, specific_file: Optional[str] = None
@@ -734,12 +784,17 @@ class SmokeTestFramework:
 
             # Extract imports
             imports = set()
+            relative_imports = 0
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
                     for alias in node.names:
                         imports.add(alias.name.split(".")[0])
                 elif isinstance(node, ast.ImportFrom):
                     if node.module:
+                        # Skip relative imports (starting with . or ..)
+                        if node.level > 0:
+                            relative_imports += 1
+                            continue
                         imports.add(node.module.split(".")[0])
 
             # Standard library modules
@@ -766,10 +821,22 @@ class SmokeTestFramework:
                 "ast",
             }
 
+            # Optional/dev dependencies that shouldn't trigger warnings
+            optional_deps = {
+                "pytest",
+                "pytest_cov",
+            }
+
             # Check external imports
-            external = imports - stdlib
+            external = imports - stdlib - optional_deps
             if not external:
                 return True, "No external imports"
+
+            # Add script directory to sys.path temporarily to find local packages
+            original_path = sys.path.copy()
+            script_dir = str(script_path.parent)
+            if script_dir not in sys.path:
+                sys.path.insert(0, script_dir)
 
             missing = []
             for imp in external:
@@ -777,6 +844,9 @@ class SmokeTestFramework:
                     __import__(imp)
                 except ImportError:
                     missing.append(imp)
+
+            # Restore original sys.path
+            sys.path[:] = original_path
 
             if missing:
                 return False, f"Missing imports: {', '.join(missing)}"

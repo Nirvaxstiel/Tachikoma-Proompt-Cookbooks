@@ -444,8 +444,8 @@ def process_chunks_parallel(
         return process_chunks_sequential(chunks, query, subagent_callback)
 
     processor = get_parallel_processor(max_concurrent=5)
-    return processor.process_all_chunks_sync(
-        all_chunk_paths=chunks, query=query, subagent_callback=subagent_callback
+    return processor.process_all_chunks(
+        chunk_paths=chunks, query=query, callback=subagent_callback
     )
 
 

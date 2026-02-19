@@ -282,6 +282,13 @@ else
     log_warn "AGENTS.md not found"
 fi
 
+if [ -f "opencode.json" ]; then
+    cp "opencode.json" "${INSTALL_DIR}/opencode.json"
+    log_success "opencode.json"
+else
+    log_warn "opencode.json not found"
+fi
+
 if [ -d ".opencode" ]; then
     BACKUP_DIR="${INSTALL_DIR}/.opencode-backup"
     CURRENT_OPENCODE="${INSTALL_DIR}/.opencode"

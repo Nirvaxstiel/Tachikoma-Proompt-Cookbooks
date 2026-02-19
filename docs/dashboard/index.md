@@ -263,6 +263,10 @@ ruff check tachikoma_dashboard/
 mypy tachikoma_dashboard/
 ```
 
+### After Development
+
+Run tests and verify the dashboard works correctly.
+
 ## Troubleshooting
 
 ### "Database not found"

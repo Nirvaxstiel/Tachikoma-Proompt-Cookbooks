@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Edit Format Selector
 Auto-detects model and selects optimal edit format
@@ -46,6 +47,9 @@ class EditFormat(Enum):
     STR_REPLACE_FUZZY = "str_replace_fuzzy"
     APPLY_PATCH = "apply_patch"
     HASHLINE = "hashline"
+    WHOLE = "whole"
+    UDIFF = "udiff"
+    EDITBLOCK = "editblock"
 
 
 # =============================================================================
@@ -173,6 +177,9 @@ FALLBACK_CHAINS: Dict[EditFormat, List[EditFormat]] = {
     ],
     EditFormat.APPLY_PATCH: [EditFormat.STR_REPLACE, EditFormat.HASHLINE],
     EditFormat.HASHLINE: [EditFormat.STR_REPLACE, EditFormat.APPLY_PATCH],
+    EditFormat.WHOLE: [EditFormat.STR_REPLACE, EditFormat.HASHLINE],
+    EditFormat.UDIFF: [EditFormat.STR_REPLACE, EditFormat.STR_REPLACE_FUZZY, EditFormat.HASHLINE],
+    EditFormat.EDITBLOCK: [EditFormat.STR_REPLACE, EditFormat.STR_REPLACE_FUZZY, EditFormat.HASHLINE],
 }
 
 FORMAT_DESCRIPTIONS: Dict[EditFormat, Dict[str, str]] = {
@@ -196,6 +203,21 @@ FORMAT_DESCRIPTIONS: Dict[EditFormat, Dict[str, str]] = {
         "best_for": "Grok, GLM, smaller models",
         "description": "Content-hash anchoring",
     },
+    EditFormat.WHOLE: {
+        "name": "whole",
+        "best_for": "Small files (<400 lines)",
+        "description": "Rewrite entire file",
+    },
+    EditFormat.UDIFF: {
+        "name": "udiff",
+        "best_for": "GPT-4 Turbo family",
+        "description": "Simplified unified diff",
+    },
+    EditFormat.EDITBLOCK: {
+        "name": "editblock",
+        "best_for": "Most models",
+        "description": "Aider-style search/replace blocks",
+    },
 }
 
 MODEL_NOTES: Dict[str, List[str]] = {
@@ -204,6 +226,17 @@ MODEL_NOTES: Dict[str, List[str]] = {
     "claude": ["Claude excels with str_replace (92-95% success rate)"],
     "gpt": ["GPT works best with apply_patch (91-94% success rate)"],
     "gemini": ["Gemini works best with str_replace_fuzzy (93% success rate)"],
+    "llama": ["CodeLlama benefits from fuzzy matching"],
+    "codellama": ["CodeLlama benefits from fuzzy matching"],
+    "qwen": ["Use fuzzy matching, or hashline for larger models"],
+    "deepseek": ["Strong reasoning, hashline helps"],
+    "mistral": ["Strong model that handles str_replace well"],
+    "phi": ["Strong reasoning models, hashline helps"],
+    "yi": ["Hashline helps with mechanical edit tasks"],
+    "internlm": ["Large models, benefit from fuzzy matching"],
+    "command-r": ["Cohere models, str_replace works well"],
+    "solar": ["Use fuzzy matching"],
+    "mixtral": ["Strong models that handle str_replace well"],
 }
 
 
@@ -237,8 +270,8 @@ def select_format(
         if pattern in model:
             return fmt, 0.90, f"Config: {model} contains '{pattern}' -> {fmt.value}"
 
-    # Default
-    return EditFormat.HASHLINE, 0.5, f"Unknown model '{model}', defaulting to hashline"
+    # Default to hashline for reliability
+    return EditFormat.HASHLINE, 0.7, f"Unknown model '{model}', defaulting to hashline for reliability"
 
 
 def get_fallback_chain(format_type: EditFormat) -> List[EditFormat]:

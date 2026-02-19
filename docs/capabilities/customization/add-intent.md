@@ -76,6 +76,12 @@ User: "Migrate database to add new column"
 → Should load: relevant context modules
 ```
 
+### Step 4: Reflect After Testing
+
+- Did the intent trigger correctly?
+- Was confidence appropriate?
+- Should I adjust keywords or threshold?
+
 ## Route Configuration
 
 ### Required Fields

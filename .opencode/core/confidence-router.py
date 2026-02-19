@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Confidence-Based Task Router
 Routes tasks based on confidence scores

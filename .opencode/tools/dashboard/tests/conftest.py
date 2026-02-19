@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Pytest configuration and fixtures for Tachikoma Dashboard tests."""
 
 from __future__ import annotations

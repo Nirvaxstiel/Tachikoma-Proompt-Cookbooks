@@ -264,6 +264,10 @@ OpenCode's telemetry lacks skill-specific metrics that would be useful for optim
 - Add separate telemetry for advanced metrics
 - Combine in dashboard for unified view
 
+### Phase 3: Evaluate Telemetry
+
+After implementing telemetry, evaluate whether the metrics help improve skills.
+
 ## Conclusion
 
 OpenCode provides **adequate tracking for basic skill usage** through its tool invocation system. We can leverage this to:

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Position-Aware Context Loader
 Optimizes context placement based on U-shaped attention bias

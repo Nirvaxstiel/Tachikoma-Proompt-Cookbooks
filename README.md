@@ -19,7 +19,12 @@ User: "Fix the auth bug"
 2. Load: coding-standards + commenting-rules
 3. Route: code-agent skill
 4. Execute: Bug fixed
+5. Reflect: Flag related issues, suggest improvements
 ```
+
+**Structure at the start, freedom at the end.**
+
+Phases 1-4 are mandatory. Phase 5 is free — the agent can question its approach, flag concerns, or suggest improvements.
 
 ---
 
@@ -66,6 +71,8 @@ Full guide: [docs/getting-started.md](docs/getting-started.md)
 | Kimi K2.5 | Strong alternative |
 | Minimax M2.5 | Shockingly good |
 | Gemini 3 Deep Think | ARC-AGI-2: 84.6% |
+| GPT Codex 5.3 | Waiting for access for my sub |
+| GPT Codex 5.2 | It's ok |
 
 ---
 
@@ -78,18 +85,13 @@ Ghost in the Shell inspired themes for OpenCode terminal:
 | ghost-in-the-shell | Start | ![start](assets/tachikoma-dark-theme-gits-solid.png) | ![start](assets/tachikoma-light-theme-gits.png) |
 | lucent-ghost-in-the-shell | Start | ![start](assets/tachikoma-dark-theme-gits-lucent.png) | ![start](assets/tachikoma-light-theme-gits.png) |
 
+> Other screenshots [here](/assets/)
+
 ---
 
 ## Research Basis
 
-| Paper | Basis |
-|-------|-------|
-| Tool-Augmented LLMs (arXiv:2601.02663) | Cost-aware routing |
-| Agentic Proposing (arXiv:2602.03279) | Skill composition |
-| ARC-AGI Benchmark | Intelligence efficiency |
-| MIT RLM | Adaptive chunking |
-
-RLM concept: [brainqub3/Claude Code RLM](https://github.com/brainqub3/claude_code_RLM)
+Links and stuff are in the `docs/` either on the [vitepress](https://nirvaxstiel.github.io/Tachikoma-Proompt-Cookbooks/), or [text](/docs)
 
 ---
 

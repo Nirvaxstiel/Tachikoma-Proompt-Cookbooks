@@ -20,7 +20,7 @@ User: "Implement authentication system"
 3. Route matches intent → specialist
 4. Context loads
 5. Skill executes
-6. Result returns
+6. Reflect on results
 
 ## Configuration
 

@@ -20,6 +20,41 @@ def get_app():
 
 
 # Expose theme for external use
-from .theme import THEME, GITSTheme
+from .theme import (
+    THEME,
+    ColorPalette,
+    TEXTUAL_THEME,
+    TEXTUAL_THEME_LIGHT,
+    DASHBOARD_CSS,
+    STATUS_COLORS,
+    PRIORITY_COLORS,
+    PANEL_BORDERS,
+    register_themes,
+    # Utility functions
+    lighten,
+    darken,
+    blend,
+    hex_with_alpha,
+)
 
-__all__ = ["get_app", "THEME", "GITSTheme", "__version__"]
+# Alias for backward compatibility
+GITSTheme = ColorPalette
+
+__all__ = [
+    "get_app",
+    "THEME",
+    "ColorPalette",
+    "GITSTheme",  # Backward compat alias
+    "TEXTUAL_THEME",
+    "TEXTUAL_THEME_LIGHT",
+    "DASHBOARD_CSS",
+    "STATUS_COLORS",
+    "PRIORITY_COLORS",
+    "PANEL_BORDERS",
+    "register_themes",
+    "lighten",
+    "darken",
+    "blend",
+    "hex_with_alpha",
+    "__version__",
+]

@@ -288,6 +288,11 @@ description: Optimizes edit format per model
    - Run full test suite if available
    - Manual test critical paths
 
+6. **Reflect**
+   - Did the changes work as expected?
+   - Are there edge cases to test?
+   - Should I add more tests?
+
 ### Continuous Integration
 
 Add smoke tests to CI/CD pipeline to catch issues automatically:

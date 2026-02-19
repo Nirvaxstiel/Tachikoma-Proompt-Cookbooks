@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Adaptive Chunker for RLM
 Based on: MIT Recursive Language Models paper (arXiv:2512.24601)
@@ -8,7 +9,7 @@ Key Features:
 - Semantic-aware chunking (markdown headings, JSON objects, code functions)
 - Adaptive chunk size based on processing time (optimal ~10 seconds)
 - Content type detection (JSON, Markdown, Code, Logs, Text)
-- 91.33% accuracy vs fixed-size baselines
+- 28.3% improvement over base model (from paper)
 """
 
 import json

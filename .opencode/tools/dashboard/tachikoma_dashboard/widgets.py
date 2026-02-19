@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Widgets for Tachikoma dashboard.
 
 Architecture:
@@ -71,6 +72,23 @@ def format_duration(seconds: int) -> str:
         return f"{minutes}m{secs:02d}s"
     hours, mins = divmod(minutes, 60)
     return f"{hours}h{mins:02d}m"
+
+
+def format_time_ago(timestamp_ms: int) -> str:
+    """Format a timestamp (milliseconds) as time ago.
+
+    Args:
+        timestamp_ms: Unix timestamp in milliseconds (UTC)
+
+    Returns:
+        Human-readable time ago string (e.g., "5m30s ago")
+    """
+    import time
+
+    now_ms = int(time.time() * 1000)
+    elapsed_ms = now_ms - timestamp_ms
+    elapsed_seconds = elapsed_ms // 1000
+    return format_duration(elapsed_seconds)
 
 
 def format_tokens(tokens: int) -> str:
@@ -197,8 +215,8 @@ def render_skills(skills: Sequence[Any] | None = None) -> Text:
         lines.append(Text(f"    Invocations: {invocations}", style=Style(color=THEME.muted)))
 
         if last_used_ms:
-            last_used = format_duration(int(last_used_ms / 1000))
-            lines.append(Text(f"    Last Used: {last_used} ago", style=Style(color=THEME.muted)))
+            last_used = format_time_ago(int(last_used_ms))
+            lines.append(Text(f"    Last Used: {last_used}", style=Style(color=THEME.muted)))
 
     return Text("\n").join(lines)
 
@@ -392,7 +410,7 @@ def render_model_error_details(errors: Sequence[ModelError] | None = None) -> Te
         error_line = Text()
 
         # Error number and time
-        time_ago = format_duration(int((int(error.time_created) // 1000)))
+        time_ago = format_time_ago(error.time_created)
         error_line.append(f"{i}. ", style=Style(color=THEME.red, bold=True))
         error_line.append(f"[{time_ago} ago]", style=Style(color=THEME.muted))
         lines.append(error_line)
@@ -513,33 +531,11 @@ class SearchBar(Container):
 class SkillsDataTable(DataTable):
     """DataTable widget for displaying skills."""
 
-    DEFAULT_CSS = f"""
-    SkillsDataTable {{
-        background: {THEME.bg1};
-        color: {THEME.text};
-        border: none;
+    # CSS is now in theme.py DASHBOARD_CSS - minimal override only
+    DEFAULT_CSS = """
+    SkillsDataTable {
         height: 100%;
-    }}
-
-    SkillsDataTable > .datatable--header {{
-        background: {THEME.bg2};
-        color: {THEME.orange};
-        text-style: bold;
-    }}
-
-    SkillsDataTable > .datatable--cursor {{
-        background: {THEME.bg3};
-        color: {THEME.text};
-    }}
-
-    SkillsDataTable > .datatable--hover {{
-        background: {THEME.bg2};
-    }}
-
-    SkillsDataTable:focus .datatable--cursor {{
-        background: {THEME.bg3};
-        color: {THEME.green};
-    }}
+    }
     """
 
     def __init__(self, id: str | None = None) -> None:
@@ -600,33 +596,11 @@ class SkillsDataTable(DataTable):
 class TodosDataTable(DataTable):
     """DataTable widget for displaying todos."""
 
-    DEFAULT_CSS = f"""
-    TodosDataTable {{
-        background: {THEME.bg1};
-        color: {THEME.text};
-        border: none;
+    # CSS is now in theme.py DASHBOARD_CSS - minimal override only
+    DEFAULT_CSS = """
+    TodosDataTable {
         height: 100%;
-    }}
-
-    TodosDataTable > .datatable--header {{
-        background: {THEME.bg2};
-        color: {THEME.red};
-        text-style: bold;
-    }}
-
-    TodosDataTable > .datatable--cursor {{
-        background: {THEME.bg3};
-        color: {THEME.text};
-    }}
-
-    TodosDataTable > .datatable--hover {{
-        background: {THEME.bg2};
-    }}
-
-    TodosDataTable:focus .datatable--cursor {{
-        background: {THEME.bg3};
-        color: {THEME.green};
-    }}
+    }
     """
 
     STATUS_ICONS = {
@@ -702,7 +676,6 @@ class ActivitySparkline(Sparkline):
 
     DEFAULT_CSS = f"""
     ActivitySparkline {{
-        height: 1;
         margin: 0 1;
     }}
 

@@ -335,6 +335,11 @@ For long-running tasks, provide periodic updates:
    - Clear priority of next steps
    - Estimated effort when available
 
+5. **Reflect After Reporting**
+   - Did I communicate clearly?
+   - Did I miss anything important?
+   - Should I ask follow-up questions?
+
 ### DON'T ❌
 
 1. **Don't Hide Uncertainty**

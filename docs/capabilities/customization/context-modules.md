@@ -28,6 +28,7 @@ Context modules define how your project works — coding standards, workflow pat
 4. **Module Ordering:** Loads by priority (lower numbers first)
 5. **Context Injection:** All loaded modules are injected into the agent's context
 6. **Execution:** Agent follows rules from loaded modules
+7. **Reflection:** After execution, question if context was sufficient
 
 ## Available Modules
 

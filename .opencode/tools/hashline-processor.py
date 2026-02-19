@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Hashline Edit Format Processor
 Based on: Can Bölük's "The Harness Problem" research

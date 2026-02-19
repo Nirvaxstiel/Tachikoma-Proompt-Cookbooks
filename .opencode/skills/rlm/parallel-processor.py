@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Parallel Wave Processor for RLM
 Based on: MIT Recursive Language Models paper (arXiv:2512.24601)

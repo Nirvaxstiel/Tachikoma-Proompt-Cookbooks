@@ -73,6 +73,7 @@ Add new intent types for better classification:
 3. **Add Route** — Configure how Tachikoma should use it
 4. **Test** — Verify it works with real requests
 5. **Iterate** — Refine based on usage
+6. **Reflect** — Question if the customization is working as intended
 
 ## Quick Examples
 

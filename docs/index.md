@@ -22,8 +22,8 @@ features:
     details: 20 specialized capabilities for specific tasks.
   - title: Subagents
     details: Workers for large-context and parallel tasks.
-  - title: Verification Patterns
-    details: Generator-verifier-reviser for high reliability.
+  - title: Reflection Phase
+    details: Freedom to revisit, rethink, and re-evaluate after execution.
   - title: Research-Backed
     details: Built on peer-reviewed LLM research.
 ---

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Verification Engine for Generator-Verifier-Reviser
 Implements comprehensive code verification
