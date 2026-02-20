@@ -1,4 +1,15 @@
 # Tachikoma Framework Dependencies
 # Install: pip install -r .opencode/requirements.txt
+# Or use UV: uv pip install -r .opencode/requirements.txt
 
+# Core dependencies
 pyyaml>=6.0
+
+# Dashboard dependencies (optional - for tools/dashboard/)
+# Install separately: cd .opencode/tools/dashboard && uv sync
+# textual>=0.90.0
+# rich>=13.0.0
+
+# Development dependencies (optional)
+# pytest>=8.0.0
+# pytest-cov>=4.0.0

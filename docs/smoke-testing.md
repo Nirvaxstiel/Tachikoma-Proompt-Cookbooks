@@ -5,13 +5,15 @@ The Tachikoma framework includes comprehensive smoke tests to validate that scri
 ## Quick Start
 
 ```bash
-# Run all smoke tests
-python .opencode/tools/smoke_test.py
+# Run all smoke tests (recommended)
+uv run .opencode/tools/smoke_test.py
 
-# Or use the wrapper scripts
-.opencode/tools/run-smoke-tests.bat    # Windows
-./.opencode/tools/run-smoke-tests.sh   # Unix/macOS
+# Or use the wrapper scripts (auto-detects Python/UV)
+.opencode/tools/run-smoke-tests.sh      # Unix/macOS
+.opencode/tools/run-smoke-tests.bat     # Windows
 ```
+
+> **Note**: The AI agent has Python injected into its environment (portable), so it can run scripts directly. For manual user-facing runs, use `uv run` for consistent dependency management.
 
 ## What Gets Tested
 
@@ -35,33 +37,33 @@ python .opencode/tools/smoke_test.py
 
 ```bash
 # All scripts
-python .opencode/tools/smoke_test.py
+uv run .opencode/tools/smoke_test.py
 
 # Python scripts only
-python .opencode/tools/smoke_test.py --type python
+uv run .opencode/tools/smoke_test.py --type python
 
 # Shell scripts only
-python .opencode/tools/smoke_test.py --type shell
+uv run .opencode/tools/smoke_test.py --type shell
 
 # Specific file
-python .opencode/tools/smoke_test.py --file path/to/script.py
+uv run .opencode/tools/smoke_test.py --file path/to/script.py
 
 # JSON output (for CI/CD)
-python .opencode/tools/smoke_test.py --json
+uv run .opencode/tools/smoke_test.py --json
 
 # Stop on first failure
-python .opencode/tools/smoke_test.py --fail-fast
+uv run .opencode/tools/smoke_test.py --fail-fast
 ```
 
 ### Dashboard Tests
 
 ```bash
 # Smoke tests (quick validation)
-python .opencode/tools/dashboard/test_smoke_no_rich.py
+uv run .opencode/tools/dashboard/test_smoke_no_rich.py
 
 # Unit tests (comprehensive)
 cd .opencode/tools/dashboard
-.venv/Scripts/python -m pytest tests/ -v
+uv run pytest tests/ -v
 ```
 
 ## CI/CD Integration
@@ -77,10 +79,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-      - run: python .opencode/tools/smoke_test.py --fail-fast
+      - name: Install UV
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - run: uv run .opencode/tools/smoke_test.py --fail-fast
 ```
 
 ### Pre-commit Hook
@@ -88,7 +89,7 @@ jobs:
 ```bash
 #!/bin/bash
 # .git/hooks/pre-commit
-python .opencode/tools/smoke_test.py --fail-fast || exit 1
+uv run .opencode/tools/smoke_test.py --fail-fast || exit 1
 ```
 
 ## Test Results
@@ -109,5 +110,4 @@ After running tests, reflect:
 
 For detailed information on adding tests, see:
 
-- `.opencode/tools/SMOKE_TESTS.md` - Full documentation
 - [Dashboard Testing](./dashboard/index.md#testing) - Dashboard-specific tests

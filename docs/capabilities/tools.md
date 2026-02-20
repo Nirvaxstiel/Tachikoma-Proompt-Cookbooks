@@ -2,6 +2,8 @@
 
 Development and maintenance tools for the Tachikoma framework.
 
+> **Note**: For manual runs, use `uv run` for consistent dependency management. The AI agent has Python injected into its environment and can run scripts directly.
+
 ## Overview
 
 The `.opencode/tools/` directory contains scripts and utilities for developing, testing, and maintaining the Tachikoma framework. These tools help ensure code quality, catch issues early, and streamline development workflows.
@@ -36,7 +38,7 @@ No installation required. The framework is a self-contained Python script:
 
 ```bash
 # Test all scripts (Python and Shell)
-python .opencode/tools/smoke_test.py
+uv run .opencode/tools/smoke_test.py
 
 # Use convenience wrappers
 ./.opencode/tools/run-smoke-tests.sh       # Unix/Linux/macOS
@@ -47,26 +49,26 @@ python .opencode/tools/smoke_test.py
 
 ```bash
 # Test Python scripts only
-python .opencode/tools/smoke_test.py --type python
+uv run .opencode/tools/smoke_test.py --type python
 
 # Test Shell scripts only
-python .opencode/tools/smoke_test.py --type shell
+uv run .opencode/tools/smoke_test.py --type shell
 ```
 
 **Test Specific File**
 
 ```bash
-python .opencode/tools/smoke_test.py --file .opencode/core/skill-indexer.py
+uv run .opencode/tools/smoke_test.py --file .opencode/core/skill-indexer.py
 ```
 
 **CI/CD Integration**
 
 ```bash
 # Stop on first failure (fail-fast mode)
-python .opencode/tools/smoke_test.py --fail-fast
+uv run .opencode/tools/smoke_test.py --fail-fast
 
 # Output JSON for automated processing
-python .opencode/tools/smoke_test.py --json
+uv run .opencode/tools/smoke_test.py --json
 ```
 
 #### What Gets Tested
@@ -136,7 +138,7 @@ Add to `.git/hooks/pre-commit`:
 
 ```bash
 #!/bin/bash
-python .opencode/tools/smoke_test.py --fail-fast
+uv run .opencode/tools/smoke_test.py --fail-fast
 if [ $? -ne 0 ]; then
     echo "❌ Smoke tests failed. Fix issues before committing."
     exit 1
@@ -157,12 +159,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+      - name: Install UV
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Run smoke tests
-        run: python .opencode/tools/smoke_test.py --fail-fast
+        run: uv run .opencode/tools/smoke_test.py --fail-fast
 ```
 
 **Makefile**
@@ -171,7 +171,7 @@ jobs:
 .PHONY: smoke
 
 smoke:
-    python .opencode/tools/smoke_test.py
+    uv run .opencode/tools/smoke_test.py
 ```
 
 #### Troubleshooting
@@ -215,13 +215,13 @@ Process and generate hashline-based editing format. Hashline editing provides un
 
 ```bash
 # Process file with hashlines
-python .opencode/tools/hashline-processor.py <input_file> <options>
+uv run .opencode/tools/hashline-processor.py <input_file> <options>
 
 # Generate hashlines for file
-python .opencode/tools/hashline-processor.py --generate file.py
+uv run .opencode/tools/hashline-processor.py --generate file.py
 
 # Verify hashline integrity
-python .opencode/tools/hashline-processor.py --verify file.py
+uv run .opencode/tools/hashline-processor.py --verify file.py
 ```
 
 #### Hashline Format
@@ -271,7 +271,7 @@ description: Optimizes edit format per model
 
 2. **Run Smoke Tests**
    ```bash
-   python .opencode/tools/smoke_test.py --type python
+   uv run .opencode/tools/smoke_test.py --type python
    ```
 
 3. **Review Results**
@@ -308,12 +308,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Install UV
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Run smoke tests
-        run: python .opencode/tools/smoke_test.py --fail-fast
+        run: uv run .opencode/tools/smoke_test.py --fail-fast
       - name: Run other tests
-        run: pytest tests/
+        run: uv run pytest tests/
 ```
 
 ## Best Practices

@@ -258,14 +258,16 @@ allowed-tools: Bash(python:*) Read Write
 
 ## Usage
 
+> **Note**: For manual runs, use `uv run` for consistent dependency management. The AI agent has Python injected into its environment and can run scripts directly.
+
 ### Extract Text
-python scripts/extract.py input.pdf --output text.txt
+uv run scripts/extract.py input.pdf --output text.txt
 
 ### Extract Tables
-python scripts/extract.py input.pdf --tables --output tables.csv
+uv run scripts/extract.py input.pdf --tables --output tables.csv
 
 ### Merge PDFs
-python scripts/merge.py file1.pdf file2.pdf --output merged.pdf
+uv run scripts/merge.py file1.pdf file2.pdf --output merged.pdf
 
 ## Supported Formats
 

@@ -26,96 +26,15 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-
-# ===========================================================================
-# Python/UV Runtime Detection
-# ===========================================================================
-class RuntimeConfig:
-    """Detected runtime configuration for Python and UV"""
-
-    python: Optional[str] = None
-    uv: Optional[str] = None
-
-    @classmethod
-    def detect(cls) -> "RuntimeConfig":
-        """Detect Python and UV at runtime"""
-        config = cls()
-
-        # Check environment variables first (set by wrapper scripts)
-        config.python = os.environ.get("PYTHON")
-        config.uv = os.environ.get("UV")
-
-        # If not set, try to find them
-        if not config.python:
-            config.python = cls._find_python()
-        if not config.uv:
-            config.uv = cls._find_uv()
-
-        return config
-
-    @classmethod
-    def _find_python(cls) -> Optional[str]:
-        """Find Python executable"""
-        import shutil as sh
-
-        # Try python first
-        python = sh.which("python")
-        if python:
-            return python
-
-        # Try python3
-        python = sh.which("python3")
-        if python:
-            return python
-
-        # Try common bundled locations
-        script_dir = Path(__file__).parent.resolve()
-        opencode_dir = script_dir.parent  # .opencode/
-        assets_dir = opencode_dir / "assets"
-
-        bundled_locations = [
-            assets_dir / "Python310" / "python.exe",
-            assets_dir / "Python310" / "python",
-            assets_dir / "Python" / "python.exe",
-            assets_dir / "Python" / "python",
-            opencode_dir / "Python310" / "python.exe",
-            opencode_dir / "Python310" / "python",
-        ]
-
-        for loc in bundled_locations:
-            if loc.exists():
-                return str(loc)
-
-        # Fallback to sys.executable
-        return sys.executable
-
-    @classmethod
-    def _find_uv(cls) -> Optional[str]:
-        """Find UV executable"""
-        import shutil as sh
-
-        # Try uv from PATH
-        uv = sh.which("uv")
-        if uv:
-            return uv
-
-        # Try common bundled locations
-        script_dir = Path(__file__).parent.resolve()
-        opencode_dir = script_dir.parent  # .opencode/
-        assets_dir = opencode_dir / "assets"
-
-        bundled_locations = [
-            assets_dir / "uv.exe",
-            assets_dir / "uv",
-            opencode_dir / "uv.exe",
-            opencode_dir / "uv",
-        ]
-
-        for loc in bundled_locations:
-            if loc.exists():
-                return str(loc)
-
-        return None
+# Import centralized path helper
+try:
+    from path_helper import RuntimeConfig, find_python, find_uv
+except ImportError:
+    # Fallback if path_helper is not in path
+    _tools_dir = Path(__file__).parent
+    if str(_tools_dir) not in sys.path:
+        sys.path.insert(0, str(_tools_dir))
+    from path_helper import RuntimeConfig, find_python, find_uv
 
 
 # Initialize runtime config at module load

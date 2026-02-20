@@ -197,10 +197,10 @@ Quick validation that the dashboard works:
 
 ```bash
 # Full smoke tests (requires Rich)
-python .opencode/tools/dashboard/test_smoke.py
+uv run .opencode/tools/dashboard/test_smoke.py
 
 # Minimal smoke tests (no dependencies)
-python .opencode/tools/dashboard/test_smoke_no_rich.py
+uv run .opencode/tools/dashboard/test_smoke_no_rich.py
 ```
 
 ### Unit Tests
@@ -211,13 +211,13 @@ Comprehensive pytest-based tests:
 cd .opencode/tools/dashboard
 
 # Run all tests
-.venv/Scripts/python -m pytest tests/ -v
+uv run pytest tests/ -v
 
 # Run specific test file
-.venv/Scripts/python -m pytest tests/test_models.py -v
+uv run pytest tests/test_models.py -v
 
 # Run with coverage
-.venv/Scripts/python -m pytest tests/ --cov=tachikoma_dashboard
+uv run pytest tests/ --cov=tachikoma_dashboard
 ```
 
 ### Test Structure

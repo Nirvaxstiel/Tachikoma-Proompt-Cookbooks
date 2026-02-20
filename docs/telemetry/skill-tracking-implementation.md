@@ -43,13 +43,13 @@ A standalone CLI tool to analyze skill usage:
 
 ```bash
 # Show all sessions with skills
-python .opencode/tools/dashboard/skill_analytics.py
+uv run .opencode/tools/dashboard/skill_analytics.py
 
 # Show skill usage statistics
-python .opencode/tools/dashboard/skill_analytics.py --stats
+uv run .opencode/tools/dashboard/skill_analytics.py --stats
 
 # Show skills for a specific session
-python .opencode/tools/dashboard/skill_analytics.py --session <session_id>
+uv run .opencode/tools/dashboard/skill_analytics.py --session <session_id>
 ```
 
 ### 4. Documented Capabilities
@@ -101,7 +101,7 @@ These would require additional telemetry infrastructure:
 ### View Skill Usage Statistics
 
 ```bash
-$ python .opencode/tools/dashboard/skill_analytics.py --stats --limit 5
+$ uv run .opencode/tools/dashboard/skill_analytics.py --stats --limit 5
 
 ================================================================================
 SKILL USAGE STATISTICS
@@ -129,7 +129,7 @@ SKILL USAGE STATISTICS
 ### View Sessions with Skills
 
 ```bash
-$ python .opencode/tools/dashboard/skill_analytics.py --limit 3
+$ uv run .opencode/tools/dashboard/skill_analytics.py --limit 3
 
 ================================================================================
 SESSIONS WITH SKILLS
@@ -245,10 +245,10 @@ All changes have been tested and verified:
 
 ```bash
 # Test skill stats
-python .opencode/tools/dashboard/skill_analytics.py --stats
+uv run .opencode/tools/dashboard/skill_analytics.py --stats
 
 # Test session listing
-python .opencode/tools/dashboard/skill_analytics.py
+uv run .opencode/tools/dashboard/skill_analytics.py
 
 # Verify data accuracy
 # (Checked against actual OpenCode database)

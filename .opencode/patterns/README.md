@@ -1,3 +1,5 @@
 # Production Patterns
 
-See production-patterns.md for consolidated patterns from skill references.
+Consolidated patterns extracted from skill references.
+
+> **See**: [production-patterns.md](production-patterns.md) for full documentation.

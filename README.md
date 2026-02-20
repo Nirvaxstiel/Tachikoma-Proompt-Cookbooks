@@ -48,7 +48,26 @@ curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookboo
 
 Or copy `AGENTS.md` and `.opencode/` to your repo root.
 
+> UV and Python are bundled. No system Python required.
+
 Full guide: [docs/getting-started.md](docs/getting-started.md)
+
+---
+
+## Windows Users
+
+```powershell
+# Option 1: Scoop (clean uninstall: scoop uninstall uv python)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+scoop install uv python
+
+# Option 2: Standalone UV (uninstall: delete uv.exe + uv cache clean)
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Option 3: Bundled (use --include-prepackaged-python flag)
+curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
+```
 
 ---
 
