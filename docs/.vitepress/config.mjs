@@ -67,13 +67,40 @@ export default defineConfig({
             { text: 'Agents System', link: '/internals/opencode-agents' },
             { text: 'Configuration', link: '/internals/opencode-config' },
             { text: 'Agent Skills Format', link: '/internals/agent-skills-format' },
+            { text: 'Scripts', link: '/scripts' },
+            { text: 'Production Patterns', link: '/patterns/production-patterns' },
           ]
         },
         {
-          text: 'Dashboard',
+          text: 'Research',
           collapsed: true,
           items: [
-            { text: 'Overview', link: '/dashboard/' },
+            { text: 'Overview', link: '/internals/' },
+            { text: 'Architecture', link: '/internals/opencode-architecture' },
+            { text: 'Database Schema', link: '/internals/opencode-database' },
+            { text: 'Tools System', link: '/internals/opencode-tools' },
+            { text: 'Skills System', link: '/internals/opencode-skills' },
+            { text: 'Agents System', link: '/internals/opencode-agents' },
+            { text: 'Configuration', link: '/internals/opencode-config' },
+            { text: 'Agent Skills Format', link: '/internals/agent-skills-format' },
+            { text: 'Scripts', link: '/scripts' },
+            { text: 'Production Patterns', link: '/patterns/production-patterns' },
+          ]
+        },
+        {
+          text: 'Research',
+          collapsed: true,
+          items: [
+            { text: 'Overview', link: '/internals/' },
+            { text: 'Architecture', link: '/internals/opencode-architecture' },
+            { text: 'Database Schema', link: '/internals/opencode-database' },
+            { text: 'Tools System', link: '/internals/opencode-tools' },
+            { text: 'Skills System', link: '/internals/opencode-skills' },
+            { text: 'Agents System', link: '/internals/opencode-agents' },
+            { text: 'Configuration', link: '/internals/opencode-config' },
+            { text: 'Agent Skills Format', link: '/internals/agent-skills-format' },
+            { text: 'Scripts', link: '/scripts' },
+            { text: 'Production Patterns', link: '/patterns/production-patterns' },
           ]
         },
         {
@@ -259,6 +286,8 @@ export default defineConfig({
             { text: 'Agents System', link: '/internals/opencode-agents' },
             { text: 'Configuration', link: '/internals/opencode-config' },
             { text: 'Agent Skills Format', link: '/internals/agent-skills-format' },
+            { text: 'Scripts', link: '/scripts' },
+            { text: 'Production Patterns', link: '/patterns/production-patterns' },
           ]
         },
         {
@@ -308,6 +337,8 @@ export default defineConfig({
           items: [
             { text: 'Overview', link: '/internals/' },
             { text: 'Database Schema', link: '/internals/opencode-database' },
+            { text: 'Scripts', link: '/scripts' },
+            { text: 'Production Patterns', link: '/patterns/production-patterns' },
           ]
         }
       ],

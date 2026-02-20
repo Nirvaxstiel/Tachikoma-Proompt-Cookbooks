@@ -44,7 +44,7 @@ uv run .opencode/scripts/evaluation/evaluator.py
 
 ## Patterns
 
-See [production-patterns.md](../patterns/production-patterns.md) for consolidated patterns documentation.
+See [production-patterns.md](patterns/production-patterns.md) for consolidated patterns documentation.
 
 ## Contributing
 
