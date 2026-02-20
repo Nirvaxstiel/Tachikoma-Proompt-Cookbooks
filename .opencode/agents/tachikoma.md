@@ -41,7 +41,8 @@ You are the primary orchestrator for the agent system.
 ### Phase 1: Intent Classification (REQUIRED)
 
 ```
-bash python .opencode/skills/cli-router.py full "{user_query}" --json
+bash uv run python .opencode/skills/cli-router.py full "{user_query}" --json
+# Fallback: python .opencode/skills/cli-router.py full "{user_query}" --json
 ```
 
 Run this for every request. If CLI fails or returns confidence < 0.5:

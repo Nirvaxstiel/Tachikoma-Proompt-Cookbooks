@@ -167,14 +167,23 @@ These are reasoning tools, not rigid rules.
 
 ---
 
-## Python Execution with UV
+## Python Execution
 
-When running Python scripts, prefer UV:
+Use `uv run python` for consistent dependency management. Fall back to bare `python` if UV fails:
 
 ```bash
+# Primary approach (recommended)
 uv run python <script.py> [args]
-python <script.py> [args]  # fallback
+
+# Fallback if uv fails (e.g., no pyproject.toml, missing deps)
+python <script.py> [args]
 ```
+
+**When to use each:**
+- `uv run python` - Preferred, ensures consistent dependencies from pyproject.toml
+- `python` - Fallback when UV environment isn't set up or for quick one-liners
+
+**Note:** The project has a root `pyproject.toml` that declares `pyyaml>=6.0` as a dependency.
 
 ---
 
