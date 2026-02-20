@@ -192,7 +192,7 @@ routes:
   # NOTE: Uses RLM skill - see .opencode/skills/rlm/REMOVAL.md for removal
   complex:
     description: Multi-step tasks, large context processing
-    confidence_threshold: 0.5
+    confidence_threshold: 0.3  # LOWERED from 0.5 to trigger more easily
     context_modules:
       - 00-core-contract
     subagent: rlm-optimized
@@ -627,7 +627,7 @@ module_priority:
 # INTENT DETECTION KEYWORDS
 # Used by CLI router for fast pattern matching
 # ============================================
-intent_keywords:
+  intent_keywords:
   debug:
     - "fix"
     - "debug"
@@ -645,6 +645,8 @@ intent_keywords:
     - "build"
     - "make"
     - "feature"
+    - "new"
+    - "design"
 
   review:
     - "review"
@@ -689,6 +691,7 @@ intent_keywords:
     - ".yml"
     - ".yaml"
     - ".github"
+    - "gitlab"
 
   git:
     - "git"
@@ -698,6 +701,7 @@ intent_keywords:
     - "merge"
     - "branch"
     - "pr"
+    - "history"
 
   document:
     - "document"
@@ -715,6 +719,13 @@ intent_keywords:
     - "architecture"
     - "migration"
     - "bulk"
+    - "all files"
+    - "entire directory"
+    - "full scan"
+    - "process dataset"
+    - "analyze file"
+    - "chunk"  # NEW: RLM-related keyword
+    - "recursive"  # NEW: RLM-related keyword
 
   verify:
     - "verify"

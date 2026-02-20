@@ -298,6 +298,7 @@ def _make_helpers(context_ref: Dict[str, Any], buffers_ref: List[str]):
         try:
             # Call opencode CLI with task subagent
             # This is the bridge between Python REPL and opencode's task tool
+            # The CLI path can be overridden with OPENCODE_RLM_CLI_PATH env var
             result = subprocess.run(
                 [
                     RLM_CONFIG["cli_path"],
