@@ -1,6 +1,6 @@
 # Intent Routing Configuration
 # Defines how Tachikoma orchestrator routes tasks based on classified intent
-# Version: 1.1.3
+# Version: 1.1.4
 #
 # ⚠️  CRITICAL: Skill vs Subagent Distinction
 # -----------------------------------------
@@ -25,6 +25,16 @@
 #   2. skill({ name: "verifier-code-agent" }) → execute
 #   3. skill({ name: "formatter" }) → execute
 # -----------------------------------------
+
+# ============================================
+# FEATURE FLAGS
+# ============================================
+# Toggle features on/off for easy migration.
+# Set to false to disable RLM (will fall back to general subagent).
+# ============================================
+features:
+  rlm_enabled: true # Set to false when opencode adds native RLM
+  rlm_skill_path: ".opencode/skills/rlm" # For removal reference
 
 # ============================================
 # INTENT ROUTES
@@ -130,11 +140,11 @@ routes:
   devops:
     description: CI/CD pipelines, deployments, automation, infrastructure
     confidence_threshold: 0.6
-    low_confidence_threshold: 0.4  # Trigger self-learning if below this
+    low_confidence_threshold: 0.4 # Trigger self-learning if below this
     context_modules:
       - 00-core-contract
-      - 20-git-workflow  # CI/CD is related to git workflows
-    skill: research-agent  # Still research-oriented (config/docs)
+      - 20-git-workflow # CI/CD is related to git workflows
+    skill: research-agent # Still research-oriented (config/docs)
     skill_load_instruction: 'skill({ name: "research-agent" })'
     skill_usage: "Load skill, then follow research methodology for DevOps config"
     invoke_via: skill
@@ -179,20 +189,22 @@ routes:
     notes: Use for README updates, docs, and comments
 
   # Complex: Large context or multi-step tasks
+  # NOTE: Uses RLM skill - see .opencode/skills/rlm/REMOVAL.md for removal
   complex:
     description: Multi-step tasks, large context processing
     confidence_threshold: 0.5
     context_modules:
       - 00-core-contract
     subagent: rlm-optimized
-    fallback_subagent: rlm-subcall
+    fallback_subagent: general # Fallback when RLM disabled or unavailable
+    fallback_subagent_when: "features.rlm_enabled == false"
     subagent_invoke_instruction: "task(subagent_type='rlm-optimized', description='...', prompt='...')"
     subagent_usage: "Delegate task to subagent and wait for completion"
     invoke_via: subagent # subagent = delegate via task() | skill = load and follow
     tools:
       - Read
     strategy: rlm
-    notes: Use for large codebases, bulk operations, complex analysis (uses MIT-style adaptive chunking)
+    notes: Use for large codebases, bulk operations, complex analysis (uses MIT-style adaptive chunking). Set features.rlm_enabled=false to use general subagent instead.
 
   # Unclear: When intent cannot be determined
   unclear:
@@ -521,15 +533,15 @@ behavior:
   # When confidence falls below threshold after execution, invoke self-learning
   auto_self_learning:
     enabled: true
-    low_confidence_threshold: 0.4  # Trigger when final confidence < 0.4
+    low_confidence_threshold: 0.4 # Trigger when final confidence < 0.4
     intents_with_learning:
-      - devops      # New intent - learn patterns
-      - research    # How-to questions often ambiguous
-      - explore     # Codebase exploration patterns
+      - devops # New intent - learn patterns
+      - research # How-to questions often ambiguous
+      - explore # Codebase exploration patterns
     intents_without_learning:
-      - debug       # High-stakes - don't learn from failures
-      - implement   # High-stakes - don't learn from failures
-      - git         # Well-defined, low ambiguity
+      - debug # High-stakes - don't learn from failures
+      - implement # High-stakes - don't learn from failures
+      - git # Well-defined, low ambiguity
     note: "User approval required before applying any learned changes"
 
   # Context coupling rules

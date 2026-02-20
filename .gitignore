@@ -445,6 +445,7 @@ env/
 
 # UV cache (generated at runtime)
 .opencode/cache/
+.ruff_cache/
 
 # Python bytecode in assets (prepackaged Python may generate these)
 .opencode/assets/Python310/__pycache__/
@@ -459,7 +460,6 @@ env/
 
 # pip cache
 pip-cache/
-
 **/site-packages/**
 
 # Tachikoma update backups (generated during install/updates)

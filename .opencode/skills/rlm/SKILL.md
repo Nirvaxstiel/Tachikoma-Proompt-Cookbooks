@@ -13,9 +13,14 @@ allowed-tools:
 compatibility:
   - opencode
   - claude-code
+removable: true # Can be removed when opencode adds native RLM
+removal_doc: REMOVAL.md
 ---
 
 # rlm (Recursive Language Model workflow)
+
+> **REMOVAL**: This skill can be removed when opencode adds native RLM support.
+> See `REMOVAL.md` for complete removal checklist.
 
 Use this Skill when:
 
@@ -28,6 +33,7 @@ Use this Skill when:
 - Main Claude Code conversation = the root LM.
 - Persistent Python REPL (`rlm_repl.py`) = the external environment.
 - Subagent `rlm-subcall` = the sub-LM used like `llm_query`.
+- `sub_llm()` function = true RLM recursion (call subagents from REPL).
 
 ## How to run
 
@@ -79,11 +85,11 @@ If the user didn't supply arguments, ask for:
    paths = chunker.create_chunks_file(content, output_dir='.opencode/rlm_state/chunks')
    ```
 
-    **Benefits of Adaptive Chunking**:
-    - 28.3% improvement over base model (MIT research)
-    - Respects semantic boundaries (functions, headings, JSON objects)
-    - Auto-adjusts chunk size based on processing time
-    - Content type detection (JSON, Markdown, Code, Logs, Text)
+   **Benefits of Adaptive Chunking**:
+   - 28.3% improvement over base model (MIT research)
+   - Respects semantic boundaries (functions, headings, JSON objects)
+   - Auto-adjusts chunk size based on processing time
+   - Content type detection (JSON, Markdown, Code, Logs, Text)
 
    **Supported Content Types**:
    - **JSON**: Splits at top-level objects
@@ -93,6 +99,7 @@ If the user didn't supply arguments, ask for:
    - **Text**: Splits at paragraphs
 
    **Performance Optimization**:
+
    ```python
    # Update chunk size based on processing performance
    chunker.adjust_chunk_size(processing_time_ms)
@@ -104,29 +111,75 @@ If the user didn't supply arguments, ask for:
    ```
 
    **Option B: Fixed-size (fallback)**
-
    - Prefer semantic chunking if format is clear (markdown headings, JSON objects, log timestamps).
    - Otherwise, chunk by characters (size around chunk_chars, optional overlap).
 
 4. Materialise chunks as files (so subagents can read them)
 
-   ```bash
-   uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec <<'PY'
-   paths = write_chunks('.opencode/rlm_state/chunks', size=200000, overlap=0)
-   print(len(paths))
-   print(paths[:5])
-   PY
-   ```
+```bash
+uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec <<'PY'
+paths = write_chunks('.opencode/rlm_state/chunks', size=200000, overlap=0)
+print(len(paths))
+print(paths[:5])
+PY
+```
 
- 5. Subcall loop (invoke rlm-subcall agent)
+5.  Subcall loop - TRUE RLM RECURSION ⭐ NEW
 
-    **Option A: Sequential (default for small contexts)**
+    **Option A: Using sub_llm() in REPL (True RLM Pattern)**
+
+    This is the MIT paper's approach - the LLM writes code that calls subagents:
+
+    ```bash
+    uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec <<'PY'
+    # True RLM: LLM writes code that calls sub_llm in loops
+    chunks = chunk_indices(size=50000)
+    results = []
+    for start, end in chunks[:10]:
+        chunk_text = peek(start, end)
+        result = sub_llm("Analyze this chunk for errors", chunk=chunk_text)
+        if result["success"]:
+            results.append(result["result"])
+            print(f"Chunk {start}-{end}: {len(result['result'].get('relevant', []))} findings")
+
+    # Synthesize results
+    print(f"Total findings: {len(results)}")
+    PY
+    ```
+
+    **sub_llm() Parameters**:
+    - `prompt`: The query for the subagent
+    - `chunk`: Raw text chunk to analyze (optional)
+    - `chunk_file`: Path to chunk file (optional, takes precedence)
+    - `agent`: Subagent type (default: rlm-subcall)
+    - `description`: Short task description
+
+    **sub_llm() Returns**:
+
+    ```python
+    {
+        "success": True/False,
+        "result": {...},  # Subagent's structured output
+        "error": "...",   # If failed
+        "chunk_id": "...", # Identifier
+    }
+    ```
+
+    **Environment Variables**:
+    - `OPENCODE_RLM_DISABLED=1` - Disable sub_llm (for testing)
+    - `OPENCODE_RLM_CLI_PATH` - Path to opencode CLI (default: "opencode")
+    - `OPENCODE_RLM_AGENT` - Default subagent (default: "rlm-subcall")
+    - `OPENCODE_RLM_TIMEOUT` - Timeout in seconds (default: 120)
+
+    **Option B: Sequential (manual orchestration)**
+
     ```bash
     for chunk in chunks:
         result = invoke_subagent(chunk, query)
     ```
 
-    **Option B: Parallel waves (for large contexts)** ⭐ NEW PARALLEL FEATURE
+    **Option C: Parallel waves (for large contexts)**
+
     ```python
     # Import parallel processor
     from .parallel_processor import ParallelWaveProcessor, get_parallel_processor
@@ -177,9 +230,10 @@ If the user didn't supply arguments, ask for:
     - Keep subagent outputs compact and structured (JSON preferred).
     - Append each subagent result to buffers (either manually in chat, or by pasting into a REPL add_buffer(...) call).
 
-6. Synthesis
-   - Once enough evidence is collected, synthesise the final answer in the main conversation.
-   - Optionally ask rlm-subcall once more to merge the collected buffers into a coherent draft.
+6.  Synthesis
+
+- Once enough evidence is collected, synthesise the final answer in the main conversation.
+- Optionally ask rlm-subcall once more to merge the collected buffers into a coherent draft.
 
 ## Guardrails
 
@@ -187,3 +241,12 @@ If the user didn't supply arguments, ask for:
 - Use the REPL to locate exact excerpts; quote only what you need.
 - Subagents cannot spawn other subagents. Any orchestration stays in the main conversation.
 - Keep scratch/state files under .opencode/rlm_state/.
+
+## Removal
+
+When opencode adds native RLM support:
+
+1. Set `features.rlm_enabled: false` in `intent-routes.yaml`
+2. Follow checklist in `REMOVAL.md`
+3. Delete `.opencode/skills/rlm/` directory
+4. Delete subagent definitions in `.opencode/agents/subagents/core/rlm-*.md`

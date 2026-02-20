@@ -26,25 +26,32 @@ It also injects helpers:
   - chunk_indices(size=200000, overlap=0) -> list[(start,end)]
   - write_chunks(out_dir, size=200000, overlap=0, prefix='chunk') -> list[str]
   - add_buffer(text: str) -> None
+  - sub_llm(prompt, chunk=None, agent='rlm-subcall') -> dict  # RLM integration
 
 Security note:
   This runs arbitrary Python via exec. Treat it like running code you wrote.
+
+REMOVAL:
+  See REMOVAL.md in the parent directory for complete removal checklist.
+  This skill can be removed when opencode adds native RLM support.
 """
 
 from __future__ import annotations
 
 import argparse
 import io
+import json
 import os
 import pickle
 import re
+import subprocess
 import sys
 import textwrap
 import time
 import traceback
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # Import parallel and adaptive processing (Phase 1.3 and 2.1)
 try:
@@ -57,6 +64,19 @@ except ImportError:
 
 DEFAULT_STATE_PATH = Path(".opencode/rlm_state/state.pkl")
 DEFAULT_MAX_OUTPUT_CHARS = 8000
+
+# ============================================================================
+# RLM INTEGRATION CONFIGURATION
+# ============================================================================
+# These settings control how sub_llm() connects to opencode.
+# Set OPENCODE_RLM_DISABLED=1 to disable sub_llm (for testing/standalone mode).
+# Set OPENCODE_RLM_CLI_PATH to override the opencode CLI path.
+RLM_CONFIG = {
+    "disabled": os.environ.get("OPENCODE_RLM_DISABLED", "0") == "1",
+    "cli_path": os.environ.get("OPENCODE_RLM_CLI_PATH", "opencode"),
+    "default_agent": os.environ.get("OPENCODE_RLM_AGENT", "rlm-subcall"),
+    "timeout_seconds": int(os.environ.get("OPENCODE_RLM_TIMEOUT", "120")),
+}
 
 
 class RlmReplError(RuntimeError):
@@ -196,12 +216,167 @@ def _make_helpers(context_ref: Dict[str, Any], buffers_ref: List[str]):
     def add_buffer(text: str) -> None:
         buffers_ref.append(str(text))
 
+    # ========================================================================
+    # RLM INTEGRATION: sub_llm()
+    # ========================================================================
+    # This function enables true RLM-style recursion by allowing the REPL
+    # to call back to opencode's task tool (subagent delegation).
+    #
+    # Usage:
+    #   result = sub_llm("Find all API endpoints in this chunk", chunk=chunk_text)
+    #   result = sub_llm("Analyze this file", chunk_file="/path/to/chunk.txt")
+    #
+    # The result is a dict with:
+    #   - success: bool
+    #   - result: dict (the subagent's output)
+    #   - error: str (if failed)
+    # ========================================================================
+    def sub_llm(
+        prompt: str,
+        chunk: Optional[str] = None,
+        chunk_file: Optional[str] = None,
+        agent: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Call a subagent (RLM sub-LLM) to process a chunk or query.
+
+        This enables true RLM-style recursion where the REPL can invoke
+        subagents programmatically, just like the MIT paper's sub_LLM().
+
+        Args:
+            prompt: The query/question for the subagent
+            chunk: Raw text chunk to analyze (optional)
+            chunk_file: Path to chunk file (optional, takes precedence over chunk)
+            agent: Subagent type (default: rlm-subcall)
+            description: Short description for the task
+
+        Returns:
+            dict with keys:
+                - success: bool
+                - result: dict (the subagent's structured output)
+                - error: str (if failed)
+                - chunk_id: str (identifier for this chunk)
+
+        Example:
+            # Process chunks in a loop (true RLM pattern)
+            chunks = chunk_indices(size=50000)
+            results = []
+            for start, end in chunks[:10]:
+                chunk_text = peek(start, end)
+                result = sub_llm("Find errors", chunk=chunk_text)
+                if result["success"]:
+                    results.append(result["result"])
+            Final = synthesize(results)
+        """
+        if RLM_CONFIG["disabled"]:
+            return {
+                "success": False,
+                "error": "RLM integration disabled (OPENCODE_RLM_DISABLED=1)",
+                "chunk_id": None,
+            }
+
+        agent = agent or RLM_CONFIG["default_agent"]
+        description = description or f"RLM chunk analysis"
+
+        # Build the full prompt
+        full_prompt = prompt
+        if chunk_file:
+            full_prompt = f"{prompt}\n\nChunk file: {chunk_file}"
+        elif chunk:
+            # Write chunk to temp file for subagent to read
+            chunk_dir = Path(".opencode/rlm_state/chunks")
+            chunk_dir.mkdir(parents=True, exist_ok=True)
+            chunk_id = f"chunk_{time.time_ns()}"
+            chunk_path = chunk_dir / f"{chunk_id}.txt"
+            chunk_path.write_text(chunk, encoding="utf-8")
+            full_prompt = f"{prompt}\n\nChunk file: {chunk_path}"
+        else:
+            # No chunk provided, just use the prompt
+            pass
+
+        try:
+            # Call opencode CLI with task subagent
+            # This is the bridge between Python REPL and opencode's task tool
+            result = subprocess.run(
+                [
+                    RLM_CONFIG["cli_path"],
+                    "task",
+                    "--agent",
+                    agent,
+                    "--description",
+                    description,
+                    "--prompt",
+                    full_prompt,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=RLM_CONFIG["timeout_seconds"],
+            )
+
+            if result.returncode != 0:
+                return {
+                    "success": False,
+                    "error": f"CLI error: {result.stderr}",
+                    "chunk_id": chunk_file or "inline",
+                }
+
+            # Parse the output
+            output = result.stdout.strip()
+
+            # Try to extract JSON from the output
+            # The subagent returns structured JSON
+            try:
+                # Look for JSON in the output
+                json_start = output.find("{")
+                json_end = output.rfind("}") + 1
+                if json_start != -1 and json_end > json_start:
+                    json_str = output[json_start:json_end]
+                    parsed = json.loads(json_str)
+                    return {
+                        "success": True,
+                        "result": parsed,
+                        "raw_output": output,
+                        "chunk_id": chunk_file or "inline",
+                    }
+            except json.JSONDecodeError:
+                pass
+
+            # Return raw output if no JSON found
+            return {
+                "success": True,
+                "result": {"text": output},
+                "raw_output": output,
+                "chunk_id": chunk_file or "inline",
+            }
+
+        except subprocess.TimeoutExpired:
+            return {
+                "success": False,
+                "error": f"Timeout after {RLM_CONFIG['timeout_seconds']}s",
+                "chunk_id": chunk_file or "inline",
+            }
+        except FileNotFoundError:
+            return {
+                "success": False,
+                "error": f"opencode CLI not found at: {RLM_CONFIG['cli_path']}",
+                "chunk_id": chunk_file or "inline",
+                "hint": "Set OPENCODE_RLM_CLI_PATH environment variable",
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "chunk_id": chunk_file or "inline",
+            }
+
     return {
         "peek": peek,
         "grep": grep,
         "chunk_indices": chunk_indices,
         "write_chunks": write_chunks,
         "add_buffer": add_buffer,
+        "sub_llm": sub_llm,
     }
 
 
