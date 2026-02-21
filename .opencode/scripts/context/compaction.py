@@ -24,41 +24,12 @@ PRODUCTION NOTES:
 import hashlib
 import time
 
-
-def estimate_token_count(text: str) -> int:
-    """
-    Estimate token count for text.
-
-    Uses approximation: ~4 characters per token for English.
-
-    WARNING: This is a rough estimate. Actual tokenization varies by:
-    - Model (GPT-5.2, Claude 4.5, Gemini 3 have different tokenizers)
-    - Content type (code typically has higher token density)
-    - Language (non-English may have 2-3x higher token/char ratio)
-
-    Production usage:
-        import tiktoken
-        enc = tiktoken.encoding_for_model("gpt-4")  # Use appropriate model
-        token_count = len(enc.encode(text))
-    """
-    return len(text) // 4
-
-
-def estimate_message_tokens(messages: list) -> int:
-    """Estimate token count for message list."""
-    total = 0
-    for msg in messages:
-        # Count content
-        content = msg.get("content", "")
-        total += estimate_token_count(content)
-
-        # Add overhead for role/formatting
-        total += 10
-
-    return total
+# Import token estimation from context_manager to avoid duplication
+from .context_manager import estimate_token_count, estimate_message_tokens
 
 
 # Compaction Functions
+
 
 def categorize_messages(messages: list) -> dict:
     """
@@ -72,7 +43,7 @@ def categorize_messages(messages: list) -> dict:
         "tool_output": [],
         "conversation": [],
         "retrieved_document": [],
-        "other": []
+        "other": [],
     }
 
     for msg in messages:
@@ -86,7 +57,9 @@ def categorize_messages(messages: list) -> dict:
         elif role == "user":
             categories["conversation"].append({**msg, "category": "conversation"})
         elif "retrieved" in msg.get("tags", []):
-            categories["retrieved_document"].append({**msg, "category": "retrieved_document"})
+            categories["retrieved_document"].append(
+                {**msg, "category": "retrieved_document"}
+            )
         else:
             categories["other"].append({**msg, "category": "other"})
 
@@ -115,12 +88,12 @@ def summarize_tool_output(content: str, max_length: int = 500) -> str:
     import re
 
     # Look for metrics (numbers with context)
-    metrics = re.findall(r'(\w+):\s*([\d.,]+)', content)
+    metrics = re.findall(r"(\w+):\s*([\d.,]+)", content)
 
     # Look for key findings (lines with important keywords)
     keywords = ["result", "found", "total", "success", "error", "value"]
     findings = []
-    for line in content.split('\n'):
+    for line in content.split("\n"):
         if any(kw in line.lower() for kw in keywords):
             findings.append(line.strip())
 
@@ -139,8 +112,10 @@ def summarize_conversation(content: str, max_length: int = 500) -> str:
     # Identify key decisions and questions
     import re
 
-    decisions = re.findall(r'(?i)(?:decided|decision|chose|chosen)[:\s]+([^.]+)', content)
-    questions = re.findall(r'(?:\?|question)[:\s]+([^.]+)', content)
+    decisions = re.findall(
+        r"(?i)(?:decided|decision|chose|chosen)[:\s]+([^.]+)", content
+    )
+    questions = re.findall(r"(?:\?|question)[:\s]+([^.]+)", content)
 
     summary_parts = []
     if decisions:
@@ -155,13 +130,13 @@ def summarize_conversation(content: str, max_length: int = 500) -> str:
 def summarize_document(content: str, max_length: int = 500) -> str:
     """Summarize document content."""
     # Extract first paragraph as summary
-    paragraphs = content.split('\n\n')
+    paragraphs = content.split("\n\n")
     if paragraphs:
         first_para = paragraphs[0].strip()
         # Truncate to first few sentences
-        sentences = first_para.split('. ')
+        sentences = first_para.split(". ")
         if len(sentences) > 2:
-            first_para = '. '.join(sentences[:2]) + '.'
+            first_para = ". ".join(sentences[:2]) + "."
         return first_para[:max_length]
     return "[Document summarized]"
 
@@ -172,6 +147,7 @@ def summarize_general(content: str, max_length: int = 500) -> str:
 
 
 # Observation Masking
+
 
 class ObservationStore:
     def __init__(self, max_size=1000):
@@ -187,7 +163,7 @@ class ObservationStore:
             "content": content,
             "metadata": metadata or {},
             "stored_at": time.time(),
-            "last_accessed": time.time()
+            "last_accessed": time.time(),
         }
         self.order.append(ref_id)
 
@@ -223,23 +199,24 @@ class ObservationStore:
         return masked, ref_id
 
     def _generate_ref_id(self, content: str) -> str:
-        """Generate unique reference ID."""
+        """Generate unique reference ID (8-character MD5 hash)."""
         hash_input = f"{content[:100]}{time.time()}"
         return hashlib.md5(hash_input.encode()).hexdigest()[:8]
 
     def _extract_key_point(self, content: str) -> str:
         """Extract key point from observation."""
         # First substantial line or sentence
-        lines = [l for l in content.split('\n') if len(l) > 20]
+        lines = [l for l in content.split("\n") if len(l) > 20]
         if lines:
             return lines[0][:50] + "..."
-        sentences = content.split('. ')
+        sentences = content.split(". ")
         if sentences:
             return sentences[0][:50] + "..."
         return content[:50] + "..."
 
 
 # Context Budget Management
+
 
 class ContextBudget:
     def __init__(self, total_limit: int):
@@ -250,7 +227,7 @@ class ContextBudget:
             "retrieved_docs": 0,
             "message_history": 0,
             "tool_outputs": 0,
-            "other": 0
+            "other": 0,
         }
         self.reserved = 5000  # Reserved buffer
         self.reservation_limit = total_limit - self.reserved
@@ -282,7 +259,7 @@ class ContextBudget:
             "total_limit": self.total_limit,
             "remaining": self.remaining(),
             "by_category": dict(self.allocated),
-            "utilization_ratio": total / self.total_limit
+            "utilization_ratio": total / self.total_limit,
         }
 
     def should_optimize(self, current_usage: int, metrics: dict = None) -> tuple:
@@ -312,6 +289,7 @@ class ContextBudget:
 
 # Cache Optimization
 
+
 def design_stable_prompt(template: str, dynamic_values: dict) -> str:
     """
     Design prompt to maximize KV-cache stability.
@@ -322,16 +300,17 @@ def design_stable_prompt(template: str, dynamic_values: dict) -> str:
 
     # Replace timestamps
     import re
-    date_pattern = r'\d{4}-\d{2}-\d{2}'
-    result = re.sub(date_pattern, '[DATE_STABLE]', result)
+
+    date_pattern = r"\d{4}-\d{2}-\d{2}"
+    result = re.sub(date_pattern, "[DATE_STABLE]", result)
 
     # Replace session IDs
-    session_pattern = r'Session \d+'
-    result = re.sub(session_pattern, 'Session [STABLE]', result)
+    session_pattern = r"Session \d+"
+    result = re.sub(session_pattern, "Session [STABLE]", result)
 
     # Replace counters
-    counter_pattern = r'\d+/\d+'
-    result = re.sub(counter_pattern, '[COUNTER_STABLE]', result)
+    counter_pattern = r"\d+/\d+"
+    result = re.sub(counter_pattern, "[COUNTER_STABLE]", result)
 
     return result
 
@@ -358,7 +337,7 @@ def calculate_cache_metrics(requests: list, cache: dict) -> dict:
         "hit_rate": hits / total if total > 0 else 0,
         "cache_hits": hits,
         "cache_misses": misses,
-        "recommendations": generate_cache_recommendations(hits, misses)
+        "recommendations": generate_cache_recommendations(hits, misses),
     }
 
 

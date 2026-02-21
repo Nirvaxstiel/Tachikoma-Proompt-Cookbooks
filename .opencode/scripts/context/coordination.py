@@ -351,10 +351,10 @@ class ConsensusManager:
 
     def calculate_weighted_consensus(self, topic_id: str) -> Dict:
         """
-        votes.
+        Calculate weighted consensus from votes.
 
         Weight = confidence * expertise_factor
-        Calculate weighted consensus from"""
+        """
         if topic_id not in self.votes:
             raise ValueError(f"Unknown topic: {topic_id}")
 

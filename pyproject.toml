@@ -16,6 +16,3 @@ dev = [
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
 ]
-
-[tool.uv]
-# UV configuration - enables `uv run python <script>` at project root

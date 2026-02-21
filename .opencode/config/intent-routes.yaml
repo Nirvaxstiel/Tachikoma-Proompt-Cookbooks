@@ -627,7 +627,7 @@ module_priority:
 # INTENT DETECTION KEYWORDS
 # Used by CLI router for fast pattern matching
 # ============================================
-  intent_keywords:
+intent_keywords:
   debug:
     - "fix"
     - "debug"

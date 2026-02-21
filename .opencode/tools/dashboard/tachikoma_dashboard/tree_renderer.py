@@ -16,6 +16,7 @@ from typing import Optional
 
 from .models import Session, SessionStatus, SessionTree
 from .theme import STATUS_COLORS, THEME
+from .widgets import get_status_icon, truncate_message as truncate_title
 
 
 class NodeType(Enum):
@@ -46,11 +47,6 @@ class RenderedLine:
 # Pure utility functions
 
 
-def get_status_icon(status: SessionStatus) -> tuple[str, str]:
-    """Get status icon and color (pure function)."""
-    return STATUS_COLORS.get(status.value, ("?", THEME.muted))
-
-
 def get_node_type(tree: SessionTree) -> NodeType:
     """Determine node type based on tree structure (pure function)."""
     if not tree.children:
@@ -58,13 +54,6 @@ def get_node_type(tree: SessionTree) -> NodeType:
     if tree.is_subagent:
         return NodeType.SUBAGENT
     return NodeType.ROOT
-
-
-def truncate_title(title: str, max_length: int) -> str:
-    """Truncate title with ellipsis (pure function)."""
-    if len(title) <= max_length:
-        return title
-    return title[: max_length - 3] + "..."
 
 
 def get_branch_chars(is_last: bool) -> tuple[str, str]:
