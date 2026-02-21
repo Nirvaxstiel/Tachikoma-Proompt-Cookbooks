@@ -1,5 +1,5 @@
 # Edit Format Model Configuration
-# Config file for edit-format-selector.py
+# Config file for edit-format-selector.ts
 # Stores model -> format mappings for optimal edit success
 
 # Model format mappings (loaded first, then user models can override)

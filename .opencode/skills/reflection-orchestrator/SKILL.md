@@ -172,7 +172,7 @@ This skill composes with:
 - **@verifier-code-agent**: Add reflection after verification
 - **@code-review**: Use reflection templates for deeper review
 - **@research-agent**: Use for verifying research findings
-- **@code-agent/scripts/context/compression_evaluator.py**: Use probe-based evaluation for measuring output quality
+- **@code-agent/cli/compression-evaluator.ts**: Use probe-based evaluation for measuring output quality
 
 ### Probe-Based Evaluation Integration
 
@@ -187,26 +187,29 @@ This skill composes with:
 **Integration Point:** Use probe-based evaluation to verify that outputs maintain critical information after reflection stages.
 
 **Example Usage:**
-```python
-from opencode.scripts.context.compression_evaluator import ProbeGenerator, ProbeType, EvaluationResult
+```typescript
+import { ProbeGenerator, CompressionEvaluator } from './compression-evaluator';
 
-# After self-critique phase
-probes = ProbeGenerator(conversation_history).generate_probes()
+// After self-critique phase
+const generator = new ProbeGenerator(conversationHistory);
+const probes = generator.generateProbes();
 
-# Test against revised solution
-evaluator = CompressionEvaluator()
-for probe in probes:
-    evaluation = evaluator.evaluate(
-        probe=probe,
-        response=revised_solution,
-        compressed_context=reflected_context
-    )
+// Test against revised solution
+const evaluator = new CompressionEvaluator();
+for (const probe of probes) {
+    const evaluation = evaluator.evaluate(
+        probe,
+        revisedSolution,
+        reflectedContext
+    );
+}
 
-# Analyze results
-summary = evaluator.get_summary()
-if summary["average_score"] < 3.5:
-    # Add to self-critique findings
-    add_issue("Low probe-based evaluation score: {summary['average_score']}")
+// Analyze results
+const summary = evaluator.getSummary();
+if (summary.average_score < 3.5) {
+    // Add to self-critique findings
+    addIssue(`Low probe-based evaluation score: ${summary.average_score}`);
+}
 ```
 
 **Benefits:**
@@ -229,7 +232,7 @@ if summary["average_score"] < 3.5:
 - instruction_format (0.5 weight)
 - instruction_constraints (0.5 weight)
 
-See: `.opencode/scripts/context/compression_evaluator.py` for implementation details.
+See: `.opencode/cli/compression-evaluator.ts` for implementation details.
 
 ## Output Format
 

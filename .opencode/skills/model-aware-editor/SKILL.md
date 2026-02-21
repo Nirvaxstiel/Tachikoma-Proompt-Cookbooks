@@ -412,13 +412,13 @@ Test format selection recommendations:
 
 ```bash
 # Get recommendation for auto-detected model
-python .opencode/core/edit-format-selector.py recommend
+bun run .opencode/cli/edit-format-selector.ts recommend
 
 # Get recommendation for specific model
-python .opencode/core/edit-format-selector.py recommend --model glm-4.7
+bun run .opencode/cli/edit-format-selector.ts recommend --model glm-4.7
 
 # Auto-detect model from environment
-python .opencode/core/edit-format-selector.py detect
+bun run .opencode/cli/edit-format-selector.ts detect
 ```
 
 ---

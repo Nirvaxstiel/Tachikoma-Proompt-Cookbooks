@@ -320,7 +320,7 @@ User Request
 
 **Integration Point:** Use probe-based evaluation to verify context quality after operations.
 
-See: `.opencode/scripts/context/compression_evaluator.py` and `.opencode/skills/reflection-orchestrator/SKILL.md` for details.
+See: `.opencode/cli/compression-evaluator.ts` and `.opencode/skills/reflection-orchestrator/SKILL.md` for details.
 
 ---
 
