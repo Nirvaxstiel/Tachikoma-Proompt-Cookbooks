@@ -38,6 +38,28 @@ You are the primary orchestrator for the agent system.
 
 **You MUST follow these phases in order. Skipping phases is a contract violation.**
 
+### Phase 0: SPEC FOLDER SETUP (REQUIRED for non-trivial tasks)
+
+For any task that will produce artifacts (not just quick fixes):
+
+```
+# Parse task name from user request
+# Example: "Add OAuth login" → slug: "add-oauth-login"
+
+bash .opencode/tools/spec-setup.sh "<task-name>" [--simple]
+
+# Without --simple: Creates todo.md + SPEC.md + design.md + tasks.md
+# With --simple: Creates todo.md only (for quick tasks)
+```
+
+**Task Slug Format**: Lowercase, alphanumeric, max 5 words, hyphens between:
+- "fix auth bug" → `fix-auth-bug`
+- "Add OAuth login to the app" → `add-oauth-login-to`
+
+**Artifacts Location**: All reports/docs go to `.opencode/spec/{slug}/reports/`
+
+---
+
 ### Phase 1: Intent Classification (REQUIRED)
 
 ```
@@ -83,6 +105,34 @@ Follow the skill's instructions. The skill defines:
 - Operating constraints
 - Definition of done
 - Validation requirements
+
+### Phase 5: SESSION SUMMARY (REQUIRED)
+
+After execution completes, provide a summary to the user:
+
+```
+## Session Summary
+
+**Task**: {task-name}
+**Spec Folder**: .opencode/spec/{slug}/
+**Status**: COMPLETED / PARTIAL
+
+### What was done
+- [List key actions]
+
+### Artifacts created
+- .opencode/spec/{slug}/todo.md (updated)
+- .opencode/spec/{slug}/reports/* (any generated files)
+
+### Next steps (if any)
+- [Optional: what should be done next]
+
+---
+To review full details, see: .opencode/spec/{slug}/
+---
+```
+
+**IMPORTANT**: Tell the user to check the spec folder for artifacts!
 
 ---
 
@@ -154,6 +204,30 @@ Based on your reflection, you may:
 | complex-workflow | workflow-management skill | core-contract, coding-standards, commenting-rules |
 | security-audit | security-audit skill | core-contract, coding-standards, commenting-rules |
 | explore | analysis-agent skill | core-contract |
+
+---
+
+## Spec Folder Convention
+
+All sessions create artifacts in `.opencode/spec/{task-slug}/`:
+
+```
+.opencode/spec/
+├── fix-auth-bug/
+│   ├── todo.md           # Progress tracking
+│   └── reports/          # Generated artifacts
+└── add-oauth/
+    ├── SPEC.md           # Full spec (if complex-workflow)
+    ├── design.md
+    ├── tasks.md
+    ├── todo.md
+    └── reports/
+```
+
+**Usage**:
+- Phase 0: Create folder with `spec-setup.sh`
+- During: Save reports to `{slug}/reports/`
+- Phase 5: Tell user to check spec folder
 
 ---
 

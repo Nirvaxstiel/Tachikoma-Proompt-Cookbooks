@@ -248,7 +248,7 @@ routes:
   # Complex-Workflow: Multi-phase development with quality gates
   complex-workflow:
     description: Multi-phase development with quality gates, systematic validation
-    confidence_threshold: 0.6
+    confidence_threshold: 0.4  # Lowered from 0.6 to catch more complex tasks
     context_modules:
       - 00-core-contract
       - 10-coding-standards
@@ -847,6 +847,20 @@ intent_keywords:
     - "phase-by-phase"
     - "quality-critical"
     - "validate implementation"
+    # New keywords - feature development
+    - "build feature"
+    - "add authentication"
+    - "implement system"
+    - "create new feature"
+    - "add feature"
+    - "refactor system"
+    # High-stakes keywords
+    - "security"
+    - "payment"
+    - "critical"
+    # Multi-step indicators
+    - "multi-step"
+    - "step by step"
 
   verify:
     - "verify"

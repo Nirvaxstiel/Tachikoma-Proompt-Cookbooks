@@ -215,6 +215,17 @@ def detect_workflow_need(query: str) -> dict:
         (r"implement.*test", "implement-verify"),
         (r"security.*implement", "security-implement"),
         (r"review.*reflect", "deep-review"),
+        # New patterns - feature development (more flexible)
+        (r"add.*authentication", "complex-workflow"),
+        (r"add.*oauth", "complex-workflow"),
+        (r"implement\s+system", "complex-workflow"),
+        (r"build\s+feature", "complex-workflow"),
+        (r"create\s+new\s+feature", "complex-workflow"),
+        # Quality/stages keywords
+        (r"quality\s+checks", "complex-workflow"),
+        (r"production-grade", "complex-workflow"),
+        (r"with\s+validation", "complex-workflow"),
+        (r"step\s+by\s+step", "complex-workflow"),
     ]
 
     query_lower = query.lower()
@@ -456,7 +467,6 @@ def context_status():
     else:
         print_error("Context directory not found")
 
-    # Check for temporary files
     tmp_dir = OPENCODE_DIR / ".tmp"
     if tmp_dir.exists():
         tmp_files = list(tmp_dir.rglob("*"))
@@ -476,7 +486,6 @@ def context_extract(query: str):
         print_error("Context directory not found")
         return 1
 
-    # Search across all context files
     import subprocess
 
     try:
@@ -582,8 +591,29 @@ def cmd_full(args):
 
     # Step 2: Get route
     print(f"{Colors.YELLOW}[2/3]{Colors.NC} Looking up route...")
-    route = get_route(intent)
 
+    # Check if workflow is detected - use workflow route instead
+    workflow = classification.get("workflow", {})
+    if workflow.get("needed"):
+        workflow_name = workflow.get("name", "")
+        # Try to get workflow config, fallback to complex-workflow route
+        wf_config = get_workflow(workflow_name)
+        if wf_config:
+            skills = wf_config.get("skills", [])
+            if skills:
+                intent = workflow_name
+                route = get_route("complex-workflow")
+                print_success(
+                    f"Detected workflow: {workflow_name} -> using workflow-management"
+                )
+            else:
+                route = get_route(intent)
+        else:
+            route = get_route("complex-workflow")
+    else:
+        route = get_route(intent)
+
+    # Ensure route is always set
     if not route:
         print_error(f"No route found for intent: {intent}")
         # Try to find similar intent
