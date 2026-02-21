@@ -29,8 +29,35 @@ is_interactive() {
 # Detect system Python - returns 0 (found) or 1 (not found) for shell compatibility
 # Sets PYTHON_CMD and HAS_PYTHON (true/false)
 check_python() {
-    command -v python3 &> /dev/null && PYTHON_CMD="python3" && HAS_PYTHON=true && return 0
-    command -v python &> /dev/null && PYTHON_CMD="python" && HAS_PYTHON=true && return 0
+    # Packaged Python flag takes precedence
+    if [ "$USE_PACKAGED" = true ]; then
+        PYTHON_CMD="$ASSETS_DIR/Python310/python"
+        HAS_PYTHON=true
+        return 0
+    fi
+
+    # Try UV's Python
+    if command -v uv &> /dev/null; then
+        PYTHON_CMD="uv run python"
+        HAS_PYTHON=true
+        return 0
+    fi
+
+    # Try python3
+    if command -v python3 &> /dev/null; then
+        PYTHON_CMD="python3"
+        HAS_PYTHON=true
+        return 0
+    fi
+
+    # Try python
+    if command -v python &> /dev/null; then
+        PYTHON_CMD="python"
+        HAS_PYTHON=true
+        return 0
+    fi
+
+    # Nothing found
     PYTHON_CMD=""
     HAS_PYTHON=false
     return 1
@@ -158,19 +185,22 @@ fi
 INSTALL_DIR="$(pwd)"
 
 # Check for system Python (before download)
-check_python [ "$HAS_PYTHON" = true ] && sh_print_info "Found Python: ${SH_GREEN}$PYTHON_CMD${SH_NC}"
+check_python [ "$HAS_PYTHON" = true ] && {
+    sh_print_info "Found Python: ${SH_GREEN}$PYTHON_CMD${SH_NC}"
+}
 
 sh_print_info "Installing from ${SOURCE_NAME} (${BRANCH})"
 sh_print_info "Target: ${INSTALL_DIR}"
 sh_print_warn "Not in a git repo"
-fi
 
 TEMP_DIR=$(mktemp -d)
 # Note: We don't trap rm -rf here anymore - backup persists in .opencode-backup/
 
 cd "$TEMP_DIR"
 
-    sh_print_info "Acquiring data..."
+sh_print_info "Acquiring data..."
+
+if ! curl -sSL "$ARCHIVE_URL" -o "repo.tar.gz"; then
     sh_print_error "Failed to acquire data. Branch '${BRANCH}' may not exist."
     exit 1
 fi
@@ -180,7 +210,9 @@ if ! tar -tzf "repo.tar.gz" > /dev/null 2>&1; then
     exit 1
 fi
 
-    sh_print_info "Extracting..."
+sh_print_info "Extracting..."
+
+if ! tar -tzf "repo.tar.gz" > /dev/null 2>&1; then
     sh_print_error "Failed to extract. Branch '${BRANCH}' may not exist."
     exit 1
 fi
@@ -502,6 +534,11 @@ p "${MAGENTA}┃${SH_NC}   ${WHITE}Installation complete${SH_NC}          ${MAGE
 p "${MAGENTA}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${SH_NC}\n"
 p "\n"
 
+# Show warning if no Python found at all (not even via UV)
+# This banner only shows if:
+#   1. User chose not to use packaged Python
+#   2. AND no system Python found
+#   3. AND no UV found (UV implies Python availability)
 [ "$USE_PACKAGED" = false ] && [ "$HAS_PYTHON" = false ] && {
     p "${ORANGE}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓${SH_NC}\n"
     p "${ORANGE}┃${SH_NC}  ${WHITE}⚠  PYTHON SETUP REQUIRED  ⚠${SH_NC}     ${ORANGE}┃${SH_NC}\n"
