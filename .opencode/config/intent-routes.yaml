@@ -46,6 +46,7 @@ routes:
     confidence_threshold: 0.7
     context_modules:
       - 00-core-contract
+      - 11-functional-thinking
       - 10-coding-standards
       - 12-commenting-rules # COUPLED: Must load with coding-standards
     skill: code-agent
@@ -65,6 +66,7 @@ routes:
     confidence_threshold: 0.7
     context_modules:
       - 00-core-contract
+      - 11-functional-thinking
       - 10-coding-standards
       - 12-commenting-rules # COUPLED: Must load with coding-standards
     skill: code-agent
@@ -85,6 +87,7 @@ routes:
     confidence_threshold: 0.7
     context_modules:
       - 00-core-contract
+      - 11-functional-thinking
       - 10-coding-standards
       - 12-commenting-rules # COUPLED: Must load with coding-standards
       - 30-research-methods
@@ -104,6 +107,7 @@ routes:
     confidence_threshold: 0.7
     context_modules:
       - 00-core-contract
+      - 11-functional-thinking
       - 10-coding-standards
       - 12-commenting-rules # COUPLED: Must load with coding-standards
     skill: code-agent
@@ -313,6 +317,7 @@ routes:
     confidence_threshold: 0.6
     context_modules:
       - 00-core-contract
+      - 11-functional-thinking
       - 10-coding-standards
       - 12-commenting-rules # COUPLED: Must load with coding-standards
     skill: verifier-code-agent

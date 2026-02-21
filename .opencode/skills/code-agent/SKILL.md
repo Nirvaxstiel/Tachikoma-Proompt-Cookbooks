@@ -93,13 +93,21 @@ The shell is the primary reasoning surface.
 
 ## Code Style & Design Bias
 
-- Immutable by default
-- Functional / declarative over imperative
-- Prefer expressions over statements
-- Clarity over cleverness
-- Minimal public API surface
+**These patterns implement the functional thinking principles from `11-functional-thinking.md`:**
 
-Document only what is non-obvious or externally constrained.
+- **Immutable by default** → Immutable Mindset principle
+- **Functional / declarative over imperative** → Pipeline Mental Model, Composition Thinking
+- **Prefer expressions over statements** → Expressions Over Statements principle
+- **Explicit dependencies** → Explicit Dependencies principle
+- **Honest type signatures** → Honesty, Totality principles
+- **Minimal public API surface** → Minimize Surface Area principle
+
+**Tradeoff awareness:**
+- Clarity over cleverness
+- Performance when critical (but verify with measurement)
+- Pragmatism over dogmatism
+
+Document only what is non-obvious or externally constrained (aligns with Honesty principle).
 
 ---
 
@@ -230,3 +238,20 @@ Skill usage is tracked via OpenCode's SQLite database.
 ```bash
 python .opencode/tools/dashboard/skill_analytics.py --stats
 ```
+
+---
+
+## Connection to Functional Thinking
+
+This skill operationalizes the principles from `11-functional-thinking.md`:
+
+| Practice | Principle | How It Helps |
+|----------|-----------|--------------|
+| Inspect before acting | Explicit Dependencies | Don't assume structure |
+| Reuse before creating | Composition Thinking | Build on existing abstractions |
+| Smallest change | Minimize Surface Area | Reduce complexity |
+| Immutable data | Immutable Mindset | No hidden state changes |
+| Pure functions | Pure Reasoning | Testable, predictable |
+| Explicit signatures | Honesty Principle | Truthful interfaces |
+
+**For deeper understanding:** See `11-functional-thinking.md` for the philosophical foundation and `10-coding-standards.md` for concrete coding patterns.

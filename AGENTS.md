@@ -5,7 +5,10 @@ This document describes how the agent system works.
 > **Architecture**: The system follows this order:
 > 1. `AGENTS.md` (this file) - System overview
 > 2. `.opencode/agents/tachikoma.md` - Agent definition with workflow
-> 3. `.opencode/skills/*/SKILL.md` - Capability modules
+> 3. `.opencode/context-modules/*/` - Foundational knowledge and principles
+> 4. `.opencode/skills/*/SKILL.md` - Capability modules
+
+> **Note**: Context modules load in layers: Philosophy → Domain → Patterns → Skills
 
 ## How It Works
 
@@ -60,8 +63,9 @@ Context modules contain project-specific rules and conventions.
 
 | Module | What's in it |
 |--------|--------------|
-| 00-core-contract.md | Foundational rules |
-| 10-coding-standards.md | Code style |
+| 00-core-contract.md | Foundational rules (always loads first) |
+| 10-coding-standards.md | Concrete coding patterns |
+| 11-functional-thinking.md | Philosophical principles for clear reasoning |
 | 11-artifacts-policy.md | Artifact consent |
 | 12-commenting-rules.md | Comment guidelines |
 | 20-git-workflow.md | Git conventions |
@@ -70,7 +74,27 @@ Context modules contain project-specific rules and conventions.
 
 Location: `.opencode/context-modules/`
 
-When loading coding-standards, also load commenting-rules. They go together.
+### Context Layering
+
+Context modules load in priority order, building a foundation:
+
+```
+Layer 1: Core Rules
+  00-core-contract.md (foundational contract)
+
+Layer 2: Philosophy & Principles
+  11-functional-thinking.md (cognitive principles for clear reasoning)
+
+Layer 3: Domain-Specific Patterns
+  10-coding-standards.md + 12-commenting-rules.md (coding tasks)
+  20-git-workflow.md (git tasks)
+  30-research-methods.md (research tasks)
+
+Layer 4: Skills
+  Load skill with concrete instructions
+```
+
+**Coupled modules**: coding-standards always loads with commenting-rules.
 
 ## Behavioral Policies
 
@@ -194,5 +218,5 @@ See `docs/research/` for details.
 
 ---
 
-**Version:** 3.4.0
-**Last Updated:** 2026-02-19
+**Version:** 3.5.0
+**Last Updated:** 2026-02-21

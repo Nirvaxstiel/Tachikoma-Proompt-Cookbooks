@@ -1,12 +1,13 @@
 ---
 module_id: coding-standards
 name: Coding Standards
-version: 3.0.0
-description: Code style, patterns, and quality standards. Loaded for all coding tasks.
+version: 4.0.0
+description: Concrete coding patterns and practices implementing functional thinking principles. Loaded for all coding tasks.
 priority: 10
 type: context
 depends_on:
   - core-contract
+  - functional-thinking
 coupled_with: commenting-rules
 exports:
   - first_principle
@@ -20,6 +21,28 @@ exports:
 # Coding Standards
 
 > **COUPLED WITH:** `12-commenting-rules.md` — Always load together.
+> **FOUNDATION:** `11-functional-thinking.md` — This module provides concrete applications of the principles defined there.
+
+---
+
+## Philosophy to Practice Mapping
+
+This module translates the philosophical principles from `11-functional-thinking.md` into concrete coding patterns:
+
+| Principle | Section | Application |
+|-----------|---------|-------------|
+| Immutable Mindset | State Management | Return new data instead of mutating |
+| Pure Reasoning | Testing Standards | Testable, isolated functions |
+| Composition Thinking | Code Organization | Small, composable pieces |
+| Pipeline Mental Model | Async Patterns | Transformations, not steps |
+| Explicit Dependencies | Design Primitives | Pass state explicitly |
+| Totality Principle | Result Types | Handle all cases, especially errors |
+| Declarative Intent | Patterns | Express "what", not "how" |
+| Honesty Principle | Null/Optional Handling | Truthful type signatures |
+| Expressions Over Statements | Code Style | Prefer expressions that return values |
+| Avoid Shared State | State Management | Local state, explicit passing |
+| Higher-Order Thinking | Code Style | Use `map`, `filter`, `reduce` |
+| Minimize Surface Area | Design Primitives | Minimal public APIs |
 
 ---
 
@@ -146,22 +169,34 @@ def process(user):
 
 ### Result Types vs Exceptions
 
-**Prefer Result types for expected failures, throw for unexpected:**
+**Prefer Result types for expected failures, throw for unexpected (Principle: Totality, Honesty)**
 
-```python
+**Principle:** Handle all cases, especially errors. Make error cases part of function signature.
+
+```pseudocode
 # Good: Result type for expected failure
-def parse_config(path) -> Result[Config, ParseError]:
+function parse_config(path) -> Result<Config, ParseError>:
     try:
         return Ok(parse_file(path))
-    except ParseError as e:
+    catch ParseError as e:
         return Err(e)
 
 # Good: Throw for unexpected/critical errors
-def connect_db(config):
+function connect_db(config):
     if not config.connection_string:
         raise ValueError("Missing connection string")  # Programmer error
     return Database.connect(config)
 ```
+
+**When to use Result types:**
+- Expected failures (file not found, invalid input, network timeout)
+- Business logic errors (user not found, insufficient permissions)
+- When you want to force the caller to handle errors
+
+**When to throw exceptions:**
+- Programmer errors (null where not expected, invalid state)
+- Critical failures (out of memory, corrupted data)
+- When you want to bubble up and handle at a higher level
 
 ### Async Patterns
 
@@ -183,39 +218,55 @@ async function fetchData() {
 
 ### State Management
 
-**Immutable first (FP style):**
+**Immutable first (Principle: Immutable Mindset, Avoid Shared State)**
 
-```python
-# Good: Immutable
-def add_item(cart, item):
-    return cart + [item]  # New list
+**Principle:** Create new data structures instead of modifying existing ones. Keep data local to functions that need it.
 
-# Bad: Mutable
-def add_item(cart, item):
-    cart.append(item)  # Mutates input
+```pseudocode
+# Good: Immutable - returns new list
+function add_item(cart, item):
+    return cart + [item]
+
+# Bad: Mutable - modifies input
+function add_item(cart, item):
+    cart.append(item)  # Mutates argument
     return cart
 ```
 
+**Why immutable?**
+- No side effects - caller's data isn't changed
+- Easier to reason about - no hidden state changes
+- Safer in concurrent environments
+- Enables time-travel debugging and undo/redo
+
 ### Null/Optional Handling
 
-**Design away nulls when possible:**
+**Design away nulls when possible (Principle: Honesty)**
 
-```python
-# Good: No null possible
-def find_user(id) -> User | NotFound:
+**Principle:** Interfaces shouldn't lie. If a value might be absent, encode that in the type.
+
+```pseudocode
+# Good: No null possible - explicit alternative
+function find_user(id) -> User | NotFound:
     user = db.get(id)
     if user:
         return user
     return NotFound()
 
 # Acceptable: Optional when null is unavoidable
-def find_user(id) -> User | None:
+function find_user(id) -> User | None:
     return db.get(id)
 
 # Bad: Null without type indication
-def find_user(id):  # Could return None, User, or raise?
+function find_user(id):  # Could return None, User, or raise?
     return db.get(id)
 ```
+
+**Strategies:**
+- **Option/Maybe types:** Encode absence in the type system
+- **Union types:** Use `User | NotFound` instead of `User | null`
+- **Default values:** Return sensible defaults instead of null
+- **Early returns:** Handle null cases early, don't propagate
 
 ---
 
@@ -438,6 +489,27 @@ If blocked: Ask explicitly.
 
 ---
 
-**Version:** 3.0.0
-**Updated:** 2026-02-19
+## Connection to Functional Thinking
+
+This module implements the principles from `11-functional-thinking.md`:
+
+| Practice | Principle | Benefit |
+|----------|-----------|---------|
+| Immutable state | Immutable Mindset | No hidden side effects |
+| Early returns | Composition Thinking | Clearer control flow |
+| Result types | Totality Principle | Forced error handling |
+| Pure functions | Pure Reasoning | Predictable, testable |
+| Pipeline transforms | Pipeline Mental Model | Declarative data flow |
+| Dependency injection | Explicit Dependencies | Transparent requirements |
+| Null-free types | Honesty Principle | Truthful interfaces |
+| Small functions | Composition Thinking | Reusable, focused |
+
+**For deeper understanding:** See `11-functional-thinking.md` for the philosophical foundation behind these patterns.
+
+---
+
+**Version:** 4.0.0
+**Updated:** 2026-02-21
 **Priority:** 10
+**Dependencies:** core-contract, functional-thinking
+**Coupled With:** commenting-rules

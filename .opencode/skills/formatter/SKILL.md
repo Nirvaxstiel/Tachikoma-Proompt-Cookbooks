@@ -277,6 +277,21 @@ bash .opencode/skills/formatter/router.sh cleanup
 
 ---
 
+## Connection to Functional Thinking
+
+This skill operationalizes principles from `11-functional-thinking.md`:
+
+| Practice | Principle | How It Helps |
+|----------|-----------|--------------|
+| Remove debug code | Honesty Principle | Don't hide what changed |
+| Optimize imports | Minimize Surface Area | Only expose what's needed |
+| Type checking | Totality Principle | Handle all cases |
+| Fix linting | Declarative Intent | Let tools handle "how" |
+
+**For deeper understanding:** See `11-functional-thinking.md` for philosophical foundation.
+
+---
+
 ## Configuration
 
 Create project-level configs for consistent formatting:

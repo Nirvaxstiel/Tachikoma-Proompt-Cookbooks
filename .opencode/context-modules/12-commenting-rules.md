@@ -1,13 +1,14 @@
 ---
 module_id: commenting-rules
 name: Commenting Culture & Rules
-version: 2.1.0
+version: 2.2.0
 description: Minimal commenting philosophy - code explains what, comments explain why. Strict enforcement.
 priority: 12
 type: context
 depends_on:
   - core-contract
   - coding-standards
+  - functional-thinking
 coupled_with: coding-standards  # MUST co-load with coding-standards
 exports:
   - comment_philosophy
@@ -23,6 +24,8 @@ exports:
 > **COUPLING RULE:** This module is **inseparable** from `10-coding-standards.md`.
 > When coding-standards loads, commenting-rules **MUST** also load.
 > They form a unified pair for all code-related tasks.
+>
+> **FOUNDATION:** `11-functional-thinking.md` — Minimal comments align with honesty principle and explicit intent.
 
 ## Core Philosophy
 

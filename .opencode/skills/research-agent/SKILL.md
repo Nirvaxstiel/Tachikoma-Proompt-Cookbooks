@@ -122,10 +122,25 @@ If critical information is missing, call it out.
 This skill enforces disciplined research under uncertainty.
 
 Violations include:
-
 - Unframed searching
 - Single-source claims
 - Hidden assumptions
 - Overstated confidence
 
 When unsure: downgrade confidence or stop.
+
+---
+
+## Connection to Functional Thinking
+
+This skill operationalizes principles from `11-functional-thinking.md`:
+
+| Practice | Principle | How It Helps |
+|----------|-----------|--------------|
+| Frame before searching | Explicit Dependencies | State assumptions transparently |
+| Minimum viable context | Minimize Surface Area | Only access what's needed |
+| Source evaluation | Pure Reasoning | Avoid hidden assumptions in sources |
+| Confidence labeling | Honesty Principle | Truthful uncertainty levels |
+| Synthesis from facts | Pipeline Mental Model | Transform information step-by-step |
+
+**For deeper understanding:** See `11-functional-thinking.md` for philosophical foundation.
