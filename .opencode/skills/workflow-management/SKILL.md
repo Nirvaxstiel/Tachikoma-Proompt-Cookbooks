@@ -237,7 +237,7 @@ During UNIFY phase (Phase 8):
   - Effort estimate (S/M/L)?
   - When should it be revisited?
 - [ ] **Create spec/{task-slug}/SUMMARY.md**
-  - Use template: `.opencode/templates/SUMMARY.md`
+  - Use template: `.opencode/agents/tachikoma/templates/SUMMARY.md`
   - Include performance metrics, AC results, accomplishments, decisions, deviations
 - [ ] **Update .opencode/STATE.md**
   - Status: Complete/Partial/Blocked

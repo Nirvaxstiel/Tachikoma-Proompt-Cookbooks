@@ -7,8 +7,9 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OPENCODE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-HANDOFF_DIR="$OPENCODE_DIR/handoffs"
+TACHIKOMA_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+OPENCODE_DIR="$(cd "$TACHIKOMA_DIR/../.." && pwd)"
+HANDOFF_DIR="$TACHIKOMA_DIR/handoffs"
 
 # Colors
 RED='\033[0;31m'

@@ -7,7 +7,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OPENCODE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+TACHIKOMA_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+OPENCODE_DIR="$(cd "$TACHIKOMA_DIR/../.." && pwd)"
 STATE_FILE="$OPENCODE_DIR/STATE.md"
 
 # Colors

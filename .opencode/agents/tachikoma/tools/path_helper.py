@@ -33,7 +33,7 @@ from typing import Optional, Tuple
 
 def _get_opencode_dir() -> Path:
     """Get the .opencode directory path."""
-    # This file is in .opencode/tools/
+    # This file is in .opencode/agents/tachikoma/tools/
     return Path(__file__).parent.parent.resolve()
 
 

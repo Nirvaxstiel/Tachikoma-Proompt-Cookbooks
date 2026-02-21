@@ -15,7 +15,7 @@ Restores context and suggests exactly ONE next action.
 
 Check for handoff documents:
 ```bash
-ls -t .opencode/handoffs/HANDOFF-*.md 2>/dev/null | head -1
+ls -t .opencode/agents/tachikoma/handoffs/HANDOFF-*.md 2>/dev/null | head -1
 ```
 
 If no handoff, read STATE.md directly.
@@ -61,7 +61,7 @@ Verify the action is still valid:
 Session Resumed
 ========================================
 
-From Handoff: .opencode/handoffs/HANDOFF-{date}.md
+From Handoff: .opencode/agents/tachikoma/handoffs/HANDOFF-{date}.md
 (or STATE.md if no handoff)
 
 Last Session:
@@ -101,8 +101,8 @@ Ready to continue. Your context is restored.
 
 If handoff was used and work is continuing, move it to archive:
 ```bash
-mkdir -p .opencode/handoffs/archive
-mv .opencode/handoffs/HANDOFF-{date}.md .opencode/handoffs/archive/
+mkdir -p .opencode/agents/tachikoma/handoffs/archive
+mv .opencode/agents/tachikoma/handoffs/HANDOFF-{date}.md .opencode/agents/tachikoma/handoffs/archive/
 ```
 
 </workflow>

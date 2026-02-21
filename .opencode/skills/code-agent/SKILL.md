@@ -43,7 +43,7 @@ A task is complete when:
    ```bash
    # Get current task slug from STATE.md
    TASK_SLUG=$(grep "^\\*\\*Task\\*\\*:" .opencode/STATE.md | sed 's/.*: //' | tr -d ' ')
-   BOUNDARIES_FILE=".opencode/spec/$TASK_SLUG/boundaries.md"
+   BOUNDARIES_FILE=".opencode/agents/tachikoma/spec/$TASK_SLUG/boundaries.md"
    
    if [ -f "$BOUNDARIES_FILE" ]; then
        echo "Found boundaries for task: $TASK_SLUG"

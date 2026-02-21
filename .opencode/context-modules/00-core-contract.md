@@ -167,11 +167,11 @@ More tasks = more context per plan. Split large phases into multiple plans.
 When referencing prior work:
 ```markdown
 <!-- GOOD: Reference summary -->
-@.opencode/spec/phase-name/plan-name/SUMMARY.md
+@.opencode/agents/tachikoma/spec/phase-name/plan-name/SUMMARY.md
 
 <!-- AVOID: Full plan + summary -->
-@.opencode/spec/phase-name/plan-name/PLAN.md
-@.opencode/spec/phase-name/plan-name/SUMMARY.md
+@.opencode/agents/tachikoma/spec/phase-name/plan-name/PLAN.md
+@.opencode/agents/tachikoma/spec/phase-name/plan-name/SUMMARY.md
 ```
 
 Summaries capture what was built. Plans capture what was intended. After completion, the summary is more useful.

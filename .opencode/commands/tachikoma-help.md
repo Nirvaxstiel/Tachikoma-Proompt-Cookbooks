@@ -159,7 +159,7 @@ These are shell scripts for programmatic use:
 
 **Starting a task:**
 ```
-bash .opencode/tools/spec-setup.sh "add feature"
+bash .opencode/agents/tachikoma/tools/spec-setup.sh "add feature"
 # Fill in SPEC.md with requirements
 # Work on task...
 /tachikoma-unify add-feature 60

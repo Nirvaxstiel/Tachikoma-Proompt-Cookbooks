@@ -22,7 +22,7 @@ Three-file tracking system ensuring accountability through MANDATORY documentati
 
 ## Three-File System Structure
 
-### File 1: Plan File (`.opencode/spec/{slug}/plan.md`)
+### File 1: Plan File (`.opencode/agents/tachikoma/spec/{slug}/plan.md`)
 
 **Purpose:** Define scope, objectives, all phases, and checklists
 
@@ -52,7 +52,7 @@ Three-file tracking system ensuring accountability through MANDATORY documentati
 
 ---
 
-### File 2: Details File (`.opencode/spec/{slug}/details.md`)
+### File 2: Details File (`.opencode/agents/tachikoma/spec/{slug}/details.md`)
 
 **Purpose:** Complete implementation specifications for each task
 
@@ -85,7 +85,7 @@ Three-file tracking system ensuring accountability through MANDATORY documentati
 
 ---
 
-### File 3: Changes File (`.opencode/spec/{slug}/changes.md`)
+### File 3: Changes File (`.opencode/agents/tachikoma/spec/{slug}/changes.md`)
 
 **Purpose:** Progressive tracking of all Added, Modified, Removed files
 
@@ -152,7 +152,7 @@ You **MUST**:
 
 3. **Read corresponding details section**
    - For the specific task you're about to implement
-   - Read entire details markdown from `.opencode/spec/{slug}/details.md`
+   - Read entire details markdown from `.opencode/agents/tachikoma/spec/{slug}/details.md`
    - FULLY understand all implementation requirements before proceeding
 
 4. **Gather additional context**

@@ -29,8 +29,8 @@ Usage: `/tachikoma:unify add-auth 45`
 ## Step 1: Compare Planned vs. Actual
 
 Read:
-- `.opencode/spec/{slug}/design.md` - What was planned
-- `.opencode/spec/{slug}/tasks.md` - Task breakdown
+- `.opencode/agents/tachikoma/spec/{slug}/design.md` - What was planned
+- `.opencode/agents/tachikoma/spec/{slug}/tasks.md` - Task breakdown
 - Check git status for actual changes
 
 Document:
@@ -42,7 +42,7 @@ Document:
 
 ## Step 2: Verify Acceptance Criteria
 
-Read `.opencode/spec/{slug}/SPEC.md` for BDD acceptance criteria.
+Read `.opencode/agents/tachikoma/spec/{slug}/SPEC.md` for BDD acceptance criteria.
 
 For each AC (AC-1, AC-2, AC-3...):
 1. Run verification steps if available
@@ -53,9 +53,9 @@ For each AC (AC-1, AC-2, AC-3...):
 
 ## Step 3: Create SUMMARY.md
 
-Use template: `.opencode/templates/SUMMARY.md`
+Use template: `.opencode/agents/tachikoma/templates/SUMMARY.md`
 
-Create `.opencode/spec/{slug}/SUMMARY.md` with:
+Create `.opencode/agents/tachikoma/spec/{slug}/SUMMARY.md` with:
 - Performance metrics (duration, timestamps)
 - Acceptance criteria results (Pass/Fail)
 - Accomplishments (what was built)
@@ -70,7 +70,7 @@ Create `.opencode/spec/{slug}/SUMMARY.md` with:
 
 Run the state update:
 ```bash
-bash .opencode/tools/state-update.sh complete-task "{slug}" "{duration}"
+bash .opencode/agents/tachikoma/tools/state-update.sh complete-task "{slug}" "{duration}"
 ```
 
 Also manually add:
@@ -82,7 +82,7 @@ Also manually add:
 
 ## Step 5: Update todo.md
 
-Mark all tasks complete in `.opencode/spec/{slug}/todo.md`
+Mark all tasks complete in `.opencode/agents/tachikoma/spec/{slug}/todo.md`
 Add completion timestamp
 
 ---
@@ -108,7 +108,7 @@ Files created:
   ├── STATE.md (updated)
   └── todo.md (updated)
 
-Review SUMMARY.md: .opencode/spec/{slug}/SUMMARY.md
+Review SUMMARY.md: .opencode/agents/tachikoma/spec/{slug}/SUMMARY.md
 Review STATE.md: .opencode/STATE.md
 ```
 

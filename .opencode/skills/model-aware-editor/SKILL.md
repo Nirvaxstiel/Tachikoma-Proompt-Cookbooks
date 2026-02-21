@@ -91,23 +91,23 @@ replace "2:f1" with "  return "Hello, World!";"
 
 **Best for**: Models struggling with exact matches (Grok, smaller models)
 
-**Implementation**: `.opencode/tools/hashline-processor.py`
+**Implementation**: `.opencode/agents/tachikoma/tools/hashline-processor.py`
 - Class: `HashlineProcessor`
 - Methods: `read_file_with_hashlines()`, `apply_hashline_edit()`, `find_hash_line()`
 
 **CLI Usage**:
 ```bash
 # Read file with hashlines
-python3 .opencode/tools/hashline-processor.py read /path/to/file.py
+python3 .opencode/agents/tachikoma/tools/hashline-processor.py read /path/to/file.py
 
 # Find line by content
-python3 .opencode/tools/hashline-processor.py find /path/to/file.py "return"
+python3 .opencode/agents/tachikoma/tools/hashline-processor.py find /path/to/file.py "return"
 
 # Edit using hashline
-python3 .opencode/tools/hashline-processor.py edit /path/to/file.py "2:f1" "new content"
+python3 .opencode/agents/tachikoma/tools/hashline-processor.py edit /path/to/file.py "2:f1" "new content"
 
 # Verify integrity
-python3 .opencode/tools/hashline-processor.py verify /path/to/file.py
+python3 .opencode/agents/tachikoma/tools/hashline-processor.py verify /path/to/file.py
 ```
 
 **Python Usage**:

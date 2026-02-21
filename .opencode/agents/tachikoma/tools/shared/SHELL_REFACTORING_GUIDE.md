@@ -5,7 +5,7 @@ This document guides the migration of shell scripts to use shared utilities.
 ## New Shared Files Created
 
 ### 1. Shell Utilities
-**File:** `.opencode/tools/shared/shell-utils.sh`
+**File:** `.opencode/agents/tachikoma/tools/shared/shell-utils.sh`
 
 **Purpose:** Centralized shell utilities for Tachikoma scripts
 
@@ -48,7 +48,7 @@ sh_print_script_end $? "My Script"
 ```
 
 ### 2. Batch Utilities
-**File:** `.opencode/tools/shared/batch-utils.bat`
+**File:** `.opencode/agents/tachikoma/tools/shared/batch-utils.bat`
 
 **Purpose:** Centralized batch utilities for Tachikoma scripts
 

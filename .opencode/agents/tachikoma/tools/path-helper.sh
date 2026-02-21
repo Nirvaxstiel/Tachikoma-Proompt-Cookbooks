@@ -17,8 +17,9 @@
 
 # Get directories relative to this script's location
 _PATH_HELPER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OPENCODE_DIR="$(cd "$_PATH_HELPER_DIR/.." && pwd)"
-ASSETS_DIR="$OPENCODE_DIR/assets"
+TACHIKOMA_DIR="$(cd "$_PATH_HELPER_DIR/.." && pwd)"
+OPENCODE_DIR="$(cd "$TACHIKOMA_DIR/../.." && pwd)"
+ASSETS_DIR="$TACHIKOMA_DIR/assets"
 
 # Colors for output (optional, only if terminal supports it)
 if [ -t 1 ]; then
@@ -72,8 +73,6 @@ find_python() {
         "$ASSETS_DIR/Python310/python3"
         "$ASSETS_DIR/Python/python.exe"
         "$ASSETS_DIR/Python/python"
-        "$OPENCODE_DIR/Python310/python.exe"
-        "$OPENCODE_DIR/Python310/python"
     )
     
     for loc in "${bundled_locations[@]}"; do
@@ -135,8 +134,6 @@ find_uv() {
     local bundled_locations=(
         "$ASSETS_DIR/uv.exe"
         "$ASSETS_DIR/uv"
-        "$OPENCODE_DIR/uv.exe"
-        "$OPENCODE_DIR/uv"
     )
     
     for loc in "${bundled_locations[@]}"; do
@@ -306,5 +303,5 @@ get_python_dir() {
 
 # Get UV cache directory
 get_uv_cache_dir() {
-    echo "$OPENCODE_DIR/cache/uv"
+    echo "$TACHIKOMA_DIR/cache/uv"
 }

@@ -46,7 +46,7 @@ For any task that will produce artifacts (not just quick fixes):
 # Parse task name from user request
 # Example: "Add OAuth login" → slug: "add-oauth-login"
 
-bash .opencode/tools/spec-setup.sh "<task-name>"
+bash .opencode/agents/tachikoma/tools/spec-setup.sh "<task-name>"
 
 # Creates: todo.md + SPEC.md + design.md + tasks.md + boundaries.md
 ```
@@ -55,7 +55,7 @@ bash .opencode/tools/spec-setup.sh "<task-name>"
 - "fix auth bug" → `fix-auth-bug`
 - "Add OAuth login to app" → `add-oauth-login-to`
 
-**Artifacts Location**: All reports/docs go to `.opencode/spec/{slug}/reports/`
+**Artifacts Location**: All reports/docs go to `.opencode/agents/tachikoma/spec/{slug}/reports/`
 
 **Note**: spec-setup.sh automatically initializes `.opencode/STATE.md` if it doesn't exist
 
@@ -152,7 +152,7 @@ Read spec/{slug}/SPEC.md for BDD acceptance criteria:
 - If any AC fails: Do not mark task complete
 
 ### Step 3: Create SUMMARY.md
-Use template: .opencode/templates/SUMMARY.md
+Use template: .opencode/agents/tachikoma/templates/SUMMARY.md
 Create spec/{slug}/SUMMARY.md with:
 - Performance metrics (duration, timestamps)
 - Acceptance criteria results (Pass/Fail)
@@ -163,7 +163,7 @@ Create spec/{slug}/SUMMARY.md with:
 - Files created/modified
 
 ### Step 4: Update STATE.md
-Run: bash .opencode/tools/state-update.sh complete-task "{slug}" "{duration}"
+Run: bash .opencode/agents/tachikoma/tools/state-update.sh complete-task "{slug}" "{duration}"
 This updates:
 - Status: Complete/Partial/Blocked
 - Last Activity: What was completed
@@ -203,16 +203,16 @@ After UNIFY completes, provide a summary to the user:
 ## Session Summary
 
 **Task**: {task-name}
-**Spec Folder**: .opencode/spec/{slug}/
+**Spec Folder**: .opencode/agents/tachikoma/spec/{slug}/
 **Status**: COMPLETED / PARTIAL
 
 ### What was done
 - [List key actions]
 
 ### Artifacts created
-- .opencode/spec/{slug}/SUMMARY.md (from UNIFY)
-- .opencode/spec/{slug}/todo.md (updated)
-- .opencode/spec/{slug}/reports/* (any generated files)
+- .opencode/agents/tachikoma/spec/{slug}/SUMMARY.md (from UNIFY)
+- .opencode/agents/tachikoma/spec/{slug}/todo.md (updated)
+- .opencode/agents/tachikoma/spec/{slug}/reports/* (any generated files)
 - .opencode/STATE.md (updated)
 
 ### UNIFY Results
@@ -225,7 +225,7 @@ After UNIFY completes, provide a summary to the user:
 - [Optional: what should be done next]
 
 ---
-To review full details, see: .opencode/spec/{slug}/
+To review full details, see: .opencode/agents/tachikoma/spec/{slug}/
 ---
 
 **IMPORTANT**: Tell the user to check the spec folder for artifacts!
@@ -234,34 +234,34 @@ To review full details, see: .opencode/spec/{slug}/
 ## Session Summary
 
 **Task**: {task-name}
-**Spec Folder**: .opencode/spec/{slug}/
+**Spec Folder**: .opencode/agents/tachikoma/spec/{slug}/
 **Status**: COMPLETED / PARTIAL
 
 ### What was done
 - [List key actions]
 
 ### Artifacts created
-- .opencode/spec/{slug}/todo.md (updated)
-- .opencode/spec/{slug}/reports/* (any generated files)
+- .opencode/agents/tachikoma/spec/{slug}/todo.md (updated)
+- .opencode/agents/tachikoma/spec/{slug}/reports/* (any generated files)
 - .opencode/STATE.md (updated)
 
 ### Next steps (if any)
 - [Optional: what should be done next]
 
 ---
-To review full details, see: .opencode/spec/{slug}/
+To review full details, see: .opencode/agents/tachikoma/spec/{slug}/
 ---
 
 **IMPORTANT**: Tell the user to check the spec folder for artifacts!
 **IMPORTANT**: Update .opencode/STATE.md with task completion status!
 ```
-- .opencode/spec/{slug}/reports/* (any generated files)
+- .opencode/agents/tachikoma/spec/{slug}/reports/* (any generated files)
 
 ### Next steps (if any)
 - [Optional: what should be done next]
 
 ---
-To review full details, see: .opencode/spec/{slug}/
+To review full details, see: .opencode/agents/tachikoma/spec/{slug}/
 ---
 ```
 
@@ -342,10 +342,10 @@ Based on your reflection, you may:
 
 ## Spec Folder Convention
 
-All sessions create artifacts in `.opencode/spec/{task-slug}/`:
+All sessions create artifacts in `.opencode/agents/tachikoma/spec/{task-slug}/`:
 
 ```
-.opencode/spec/
+.opencode/agents/tachikoma/spec/
 ├── fix-auth-bug/
 │   ├── todo.md           # Progress tracking
 │   └── reports/          # Generated artifacts

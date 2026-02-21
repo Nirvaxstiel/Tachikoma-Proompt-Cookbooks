@@ -21,14 +21,14 @@ The handoff enables zero-context resumption.
 
 Read:
 - `.opencode/STATE.md` - Current position
-- `.opencode/spec/{slug}/SPEC.md` - Current task requirements (if task active)
-- `.opencode/spec/{slug}/tasks.md` - Task progress (if task active)
+- `.opencode/agents/tachikoma/spec/{slug}/SPEC.md` - Current task requirements (if task active)
+- `.opencode/agents/tachikoma/spec/{slug}/tasks.md` - Task progress (if task active)
 
 ---
 
 ## Step 2: Create Handoff Document
 
-Create `.opencode/handoffs/HANDOFF-{date}.md` with:
+Create `.opencode/agents/tachikoma/handoffs/HANDOFF-{date}.md` with:
 
 ```markdown
 # Handoff: {timestamp}
@@ -111,7 +111,7 @@ Update Session Continuity section:
 **Next action**: {next action}
 **Resume context**: {key info}
 
-**Handoff**: .opencode/handoffs/HANDOFF-{date}.md
+**Handoff**: .opencode/agents/tachikoma/handoffs/HANDOFF-{date}.md
 ```
 
 ---
@@ -123,7 +123,7 @@ Update Session Continuity section:
 Handoff Created
 ========================================
 
-File: .opencode/handoffs/HANDOFF-{date}.md
+File: .opencode/agents/tachikoma/handoffs/HANDOFF-{date}.md
 
 Current Position:
   Task: {slug}

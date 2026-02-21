@@ -7,8 +7,9 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OPENCODE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-SUMMARY_TEMPLATE="$OPENCODE_DIR/templates/SUMMARY.md"
+TACHIKOMA_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+OPENCODE_DIR="$(cd "$TACHIKOMA_DIR/../.." && pwd)"
+SUMMARY_TEMPLATE="$TACHIKOMA_DIR/templates/SUMMARY.md"
 
 # Colors
 RED='\033[0;31m'
@@ -44,7 +45,7 @@ fi
 
 TASK_SLUG="$1"
 DURATION="$2"
-SPEC_DIR="$OPENCODE_DIR/spec/$TASK_SLUG"
+SPEC_DIR="$TACHIKOMA_DIR/spec/$TASK_SLUG"
 SPEC_FILE="$SPEC_DIR/SPEC.md"
 DESIGN_FILE="$SPEC_DIR/design.md"
 TASKS_FILE="$SPEC_DIR/tasks.md"
@@ -222,7 +223,7 @@ if [ -n "$DECISIONS" ]; then
             if [ "$impact" = "$decision" ]; then
                 impact="Affects current task"
             fi
-            bash "$OPENCODE_DIR/tools/state-update.sh" add-decision "$TASK_SLUG" "$decision" "$impact"
+            bash "$TACHIKOMA_DIR/tools/state-update.sh" add-decision "$TASK_SLUG" "$decision" "$impact"
         fi
     done
 fi
@@ -255,7 +256,7 @@ if [ -n "$DEFERRED" ]; then
             fi
             # Extract description (before [)
             desc="${line%% [*}"
-            bash "$OPENCODE_DIR/tools/state-update.sh" add-deferred "$desc" "$TASK_SLUG" "$effort" "$revisit"
+            bash "$TACHIKOMA_DIR/tools/state-update.sh" add-deferred "$desc" "$TASK_SLUG" "$effort" "$revisit"
         fi
     done
 fi
@@ -329,7 +330,7 @@ echo ""
 echo -e "${YELLOW}Step 7: Updating STATE.md...${NC}"
 echo ""
 
-bash "$OPENCODE_DIR/tools/state-update.sh" complete-task "$TASK_SLUG" "$DURATION"
+bash "$TACHIKOMA_DIR/tools/state-update.sh" complete-task "$TASK_SLUG" "$DURATION"
 
 echo ""
 

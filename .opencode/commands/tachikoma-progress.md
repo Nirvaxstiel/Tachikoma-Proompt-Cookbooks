@@ -28,7 +28,7 @@ Read `.opencode/STATE.md` to understand:
 
 ## Step 2: Check for Active Task
 
-If a task slug is set, check `.opencode/spec/{slug}/` for:
+If a task slug is set, check `.opencode/agents/tachikoma/spec/{slug}/` for:
 - todo.md progress
 - Any blockers noted
 

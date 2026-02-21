@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Spec Session Setup
-# Creates .opencode/spec/{task-slug}/ structure for the session
+# Creates .opencode/agents/tachikoma/spec/{task-slug}/ structure for the session
 # =============================================================================
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OPENCODE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-SPEC_DIR="$OPENCODE_DIR/spec"
+TACHIKOMA_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+OPENCODE_DIR="$(cd "$TACHIKOMA_DIR/../.." && pwd)"
+SPEC_DIR="$TACHIKOMA_DIR/spec"
 
 # Colors
 RED='\033[0;31m'
@@ -192,7 +193,7 @@ $TASK_NAME
 
 ---
 
-*Artifacts should be saved to: .opencode/spec/$SLUG/reports/*
+*Artifacts should be saved to: .opencode/agents/tachikoma/spec/$SLUG/reports/*
 EOF
 
 # Create SPEC.md (always)
@@ -411,6 +412,6 @@ echo -e "  ${GREEN}├── design.md${NC}"
 echo -e "  ${GREEN}├── tasks.md${NC}"
 echo -e "  ${GREEN}└── boundaries.md${NC} (protected files/patterns)"
 echo ""
-echo -e "${YELLOW}Remember: Save artifacts to .opencode/spec/$SLUG/reports/${NC}"
+echo -e "${YELLOW}Remember: Save artifacts to .opencode/agents/tachikoma/spec/$SLUG/reports/${NC}"
 echo -e "${YELLOW}Update .opencode/STATE.md when task starts/completes${NC}"
 echo ""

@@ -7,9 +7,10 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OPENCODE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+TACHIKOMA_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+OPENCODE_DIR="$(cd "$TACHIKOMA_DIR/../.." && pwd)"
 STATE_FILE="$OPENCODE_DIR/STATE.md"
-HANDOFF_DIR="$OPENCODE_DIR/handoffs"
+HANDOFF_DIR="$TACHIKOMA_DIR/handoffs"
 mkdir -p "$HANDOFF_DIR"
 
 # Colors
@@ -39,7 +40,7 @@ usage() {
     echo "     - Loop position (PLAN/APPLY/UNIFY markers)"
     echo "  4. Update STATE.md Session Continuity"
     echo ""
-    echo "Output: .opencode/handoffs/HANDOFF-{YYYYMMDD-HHMM}.md"
+    echo "Output: .opencode/agents/tachikoma/handoffs/HANDOFF-{YYYYMMDD-HHMM}.md"
     echo ""
     exit 1
 }
@@ -98,9 +99,9 @@ echo -e "${GREEN}✓ STATE.md read${NC}"
 echo ""
 
 # Read task spec if exists
-SPEC_FILE="$OPENCODE_DIR/spec/$TASK_SLUG/SPEC.md"
-TASKS_FILE="$OPENCODE_DIR/spec/$TASK_SLUG/tasks.md"
-DESIGN_FILE="$OPENCODE_DIR/spec/$TASK_SLUG/design.md"
+SPEC_FILE="$TACHIKOMA_DIR/spec/$TASK_SLUG/SPEC.md"
+TASKS_FILE="$TACHIKOMA_DIR/spec/$TASK_SLUG/tasks.md"
+DESIGN_FILE="$TACHIKOMA_DIR/spec/$TASK_SLUG/design.md"
 
 # Create handoff document
 cat > "$HANDOFF_FILE" << HANDOFF_EOF
@@ -180,7 +181,7 @@ Protected elements from boundaries.md:
 HANDOFF_EOF
 
 # Read boundaries if exists
-BOUNDARIES_FILE="$OPENCODE_DIR/spec/$TASK_SLUG/boundaries.md"
+BOUNDARIES_FILE="$TACHIKOMA_DIR/spec/$TASK_SLUG/boundaries.md"
 if [ -f "$BOUNDARIES_FILE" ]; then
     cat >> "$HANDOFF_FILE" << BOUNDARIES_EOF
 ### Active Boundaries
@@ -243,5 +244,5 @@ echo -e "${BLUE}Handoff Complete${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 echo -e "${YELLOW}To resume from this handoff:${NC}"
-echo -e "${YELLOW}  bash .opencode/tools/resume-handoff.sh HANDOFF-$TIMESTAMP.md${NC}"
+echo -e "${YELLOW}  bash .opencode/agents/tachikoma/tools/resume-handoff.sh HANDOFF-$TIMESTAMP.md${NC}"
 echo ""
