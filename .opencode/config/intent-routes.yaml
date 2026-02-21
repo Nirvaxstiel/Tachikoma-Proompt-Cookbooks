@@ -81,9 +81,9 @@ routes:
     strategy: direct
     notes: Use for new features, components, and implementations
 
-  # Review: Code analysis and auditing
-  review:
-    description: Analyzing code for quality, auditing
+  # Review-General: General code analysis and auditing
+  review-general:
+    description: General code analysis and quality assessment
     confidence_threshold: 0.7
     context_modules:
       - 00-core-contract
@@ -99,7 +99,25 @@ routes:
       - Read
       - Grep
     strategy: direct
-    notes: Use for code quality checks, security audits, and analysis
+    notes: Use for general code analysis, architectural review, explanation
+
+  # Code-Review: Structured PR review with priority classification
+  code-review:
+    description: Structured pull request review with priority classification (CRITICAL/IMPORTANT/SUGGESTION)
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+      - 12-commenting-rules # COUPLED: Must load with coding-standards
+    skill: code-review
+    skill_load_instruction: 'skill({ name: "code-review" })'
+    skill_usage: "Load skill, then follow its structured review workflow with priority classification using tools directly"
+    invoke_via: skill
+    tools:
+      - Read
+      - Grep
+    strategy: direct
+    notes: Use for PR reviews, issue triage, formal code review with structured output
 
   # Refactor: Restructuring existing code
   refactor:
@@ -161,7 +179,7 @@ routes:
 
   # Git: Version control operations
   git:
-    description: Version control operations, commits, PRs
+    description: Version control operations, commits, branches
     confidence_threshold: 0.8
     context_modules:
       - 00-core-contract
@@ -173,7 +191,24 @@ routes:
     tools:
       - Bash
     strategy: direct
-    notes: Use for commits, branches, PRs, and git operations
+    notes: Use for commits, branches, and git operations
+
+  # PR: Pull request descriptions
+  pr:
+    description: Write pull request descriptions documenting changes for future maintainers
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 12-commenting-rules
+    skill: pr
+    skill_load_instruction: 'skill({ name: "pr" })'
+    skill_usage: "Load skill, then follow its PR description writing workflow using tools directly"
+    invoke_via: skill
+    tools:
+      - Read
+      - Bash
+    strategy: direct
+    notes: Use for writing PR descriptions, documenting changes, PR summaries
 
   # Document: Documentation tasks
   document:
@@ -192,11 +227,11 @@ routes:
     strategy: direct
     notes: Use for README updates, docs, and comments
 
-  # Complex: Large context or multi-step tasks
-  # NOTE: Uses RLM skill - see .opencode/skills/rlm/REMOVAL.md for removal
-  complex:
-    description: Multi-step tasks, large context processing
-    confidence_threshold: 0.3  # LOWERED from 0.5 to trigger more easily
+  # Complex-Large-Context: Processing large codebases requiring chunking
+  # NOTE: Uses RLM subagent - see .opencode/skills/rlm/REMOVAL.md for removal
+  complex-large-context:
+    description: Process large codebases or documents requiring chunking (>2000 tokens)
+    confidence_threshold: 0.3  # LOW threshold to trigger for large tasks
     context_modules:
       - 00-core-contract
     subagent: rlm-optimized
@@ -208,7 +243,27 @@ routes:
     tools:
       - Read
     strategy: rlm
-    notes: Use for large codebases, bulk operations, complex analysis (uses MIT-style adaptive chunking). Set features.rlm_enabled=false to use general subagent instead.
+    notes: Use for large file processing, entire codebase analysis, dataset processing (uses MIT-style adaptive chunking). Set features.rlm_enabled=false to use general subagent instead.
+
+  # Complex-Workflow: Multi-phase development with quality gates
+  complex-workflow:
+    description: Multi-phase development with quality gates, systematic validation
+    confidence_threshold: 0.6
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+      - 12-commenting-rules # COUPLED: Must load with coding-standards
+    skill: workflow-management
+    skill_load_instruction: 'skill({ name: "workflow-management" })'
+    skill_usage: "Load skill, then follow 7-phase development workflow (ANALYZE → DESIGN → IMPLEMENT → VALIDATE → CLEANUP → DEPLOY → REFLECT) using tools directly"
+    invoke_via: skill
+    tools:
+      - Read
+      - Write
+      - Edit
+      - Bash
+    strategy: direct
+    notes: Use for production-grade features, quality-critical implementations, systematic development with phase-by-phase validation
 
   # Unclear: When intent cannot be determined
   unclear:
@@ -332,6 +387,26 @@ routes:
     strategy: direct
     notes: "Use for: complex implementations, security-critical code, high-stakes fixes."
 
+  # Security-Audit: OWASP-based security audit workflow
+  security-audit:
+    description: OWASP-based security audit, vulnerability assessment, threat modeling
+    confidence_threshold: 0.7
+    context_modules:
+      - 00-core-contract
+      - 10-coding-standards
+      - 12-commenting-rules # COUPLED: Must load with coding-standards
+    skill: security-audit
+    skill_load_instruction: 'skill({ name: "security-audit" })'
+    skill_usage: "Load skill, then follow OWASP Top 10 audit workflow using tools directly"
+    invoke_via: skill
+    tools:
+      - Read
+      - Grep
+      - Bash
+    strategy: direct
+    notes: "Use for: security audits, vulnerability assessments, threat modeling, OWASP Top 10 checks, authentication/authorization review"
+    variance: low # Security audits must be deterministic
+
   # Reflect: Explicit self-verification and reflection
   reflect:
     description: Self-critique and adversarial verification for outputs
@@ -416,7 +491,7 @@ workflows:
   # Review with reflection
   deep-review:
     description: "In-depth code review with self-verification"
-    skills: [analysis-agent, reflection-orchestrator]
+    skills: [code-review, reflection-orchestrator]
     mode: sequential
     context_modules:
       - 00-core-contract
@@ -431,6 +506,15 @@ workflows:
     context_modules:
       - 00-core-contract
       - 30-research-methods
+
+  # Git-create-pr: Commit and create PR with description
+  git-create-pr:
+    description: "Commit changes and create pull request"
+    skills: [git-commit, pr, formatter]
+    mode: sequential
+    context_modules:
+      - 00-core-contract
+      - 20-git-workflow
 
 # ============================================
 # SKILLS BULK (All at once - inject all, agent decides)
@@ -596,7 +680,11 @@ module_priority:
 #   context7:                .opencode/skills/context7/SKILL.md
 #   formatter:               .opencode/skills/formatter/SKILL.md
 #   git-commit:              .opencode/skills/git-commit/SKILL.md
+#   pr:                     .opencode/skills/pr/SKILL.md
 #   self-learning:           .opencode/skills/self-learning/SKILL.md
+#   code-review:             .opencode/skills/code-review/SKILL.md
+#   workflow-management:      .opencode/skills/workflow-management/SKILL.md
+#   security-audit:          .opencode/skills/security-audit/SKILL.md
 #
 # WORKFLOWS (Sequential - pass context through each stage):
 #   Skills execute SEQUENTIALLY - each skill sees result of previous
@@ -653,13 +741,23 @@ intent_keywords:
     - "new"
     - "design"
 
-  review:
-    - "review"
-    - "audit"
-    - "check"
-    - "analyze"
-    - "quality"
+  review-general:
+    - "review code"
+    - "analyze code"
+    - "code quality"
     - "assess"
+    - "check this"
+    - "explain code"
+
+  code-review:
+    - "pr review"
+    - "pull request review"
+    - "review code changes"
+    - "code review with priorities"
+    - "review this pr"
+    - "formal review"
+    - "priority-based review"
+    - "triage issues"
 
   refactor:
     - "refactor"
@@ -705,8 +803,17 @@ intent_keywords:
     - "pull"
     - "merge"
     - "branch"
-    - "pr"
     - "history"
+
+  pr:
+    - "pr description"
+    - "pull request description"
+    - "document pr changes"
+    - "pr summary"
+    - "draft pr"
+    - "pr body"
+    - "create pr description"
+    - "generate pr description"
 
   document:
     - "document"
@@ -716,21 +823,30 @@ intent_keywords:
     - "learn"
     - "remember"
 
-  complex:
-    - "complex"
-    - "large"
+  complex-large-context:
+    - "large codebase"
     - "many files"
-    - "redesign"
-    - "architecture"
-    - "migration"
-    - "bulk"
+    - "entire codebase"
+    - "bulk operation"
+    - "process dataset"
+    - "chunk"
+    - "recursive"
+    - "full scan"
     - "all files"
     - "entire directory"
-    - "full scan"
-    - "process dataset"
-    - "analyze file"
-    - "chunk"  # NEW: RLM-related keyword
-    - "recursive"  # NEW: RLM-related keyword
+    - "analyze all files"
+    - "large context"
+
+  complex-workflow:
+    - "production-grade"
+    - "quality gates"
+    - "systematic development"
+    - "follow development workflow"
+    - "validate each phase"
+    - "with quality checks"
+    - "phase-by-phase"
+    - "quality-critical"
+    - "validate implementation"
 
   verify:
     - "verify"
@@ -746,6 +862,19 @@ intent_keywords:
     - "adversarial"
     - "double-check"
     - "challenge"
+
+  security-audit:
+    - "security audit"
+    - "vulnerability scan"
+    - "security review"
+    - "find security issues"
+    - "owasp"
+    - "threat modeling"
+    - "penetration test"
+    - "security assessment"
+    - "check security"
+    - "audit security"
+    - "vulnerability assessment"
 
   skill-compose:
     - "combine skills"

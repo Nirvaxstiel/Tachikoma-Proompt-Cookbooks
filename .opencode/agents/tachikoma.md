@@ -144,11 +144,15 @@ Based on your reflection, you may:
 | debug | code-agent skill | core-contract, coding-standards, commenting-rules |
 | implement | code-agent skill | core-contract, coding-standards, commenting-rules |
 | refactor | code-agent skill | core-contract, coding-standards, commenting-rules |
-| review | analysis-agent skill | core-contract |
+| review-general | analysis-agent skill | core-contract |
+| code-review | code-review skill | core-contract, coding-standards, commenting-rules |
 | research | research-agent skill | core-contract, research-methods |
 | git | git-commit skill | core-contract, git-workflow |
+| pr | pr skill | core-contract, commenting-rules |
 | document | self-learning skill | core-contract |
-| complex | rlm-subcall subagent | (delegated) |
+| complex-large-context | rlm-optimized subagent | core-contract |
+| complex-workflow | workflow-management skill | core-contract, coding-standards, commenting-rules |
+| security-audit | security-audit skill | core-contract, coding-standards, commenting-rules |
 | explore | analysis-agent skill | core-contract |
 
 ---
@@ -161,6 +165,8 @@ Based on your reflection, you may:
 | implement | low | Code must be correct |
 | research | medium | Exploration is beneficial |
 | explore | high | Explicitly creative tasks |
+| complex-workflow | medium | Some flexibility in approach |
+| security-audit | low | Must be thorough and deterministic |
 
 **Never use variance for**: verify, security-audit, production-deploy
 
