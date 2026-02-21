@@ -131,10 +131,105 @@ Follow the skill's instructions. The skill defines:
 - Definition of done
 - Validation requirements
 
-### Phase 5: SESSION SUMMARY (REQUIRED)
+### Phase 5: UNIFY (MANDATORY)
 
-After execution completes, provide a summary to the user:
+After execution completes, you MUST run the UNIFY phase:
 
+```
+## Phase 5: UNIFY - Task: {task-name}
+
+### Step 1: Compare Planned vs. Actual
+Read spec/{slug}/design.md and spec/{slug}/changes.md
+- What was planned? (from design.md)
+- What was actually built? (from changes.md)
+- Any deviations? Document reasons.
+
+### Step 2: Verify Acceptance Criteria
+Read spec/{slug}/SPEC.md for BDD acceptance criteria:
+- For each AC (AC-1, AC-2, AC-3...):
+  - Run verification steps from details.md (if available)
+  - Document Pass/Fail in SUMMARY.md
+- If any AC fails: Do not mark task complete
+
+### Step 3: Create SUMMARY.md
+Use template: .opencode/templates/SUMMARY.md
+Create spec/{slug}/SUMMARY.md with:
+- Performance metrics (duration, timestamps)
+- Acceptance criteria results (Pass/Fail)
+- Accomplishments (what was built)
+- Decisions made (with rationale)
+- Deviations from plan (with reasons)
+- Issues deferred (with revisit triggers)
+- Files created/modified
+
+### Step 4: Update STATE.md
+Run: bash .opencode/tools/state-update.sh complete-task "{slug}" "{duration}"
+This updates:
+- Status: Complete/Partial/Blocked
+- Last Activity: What was completed
+- Performance Metrics: Velocity, trends
+
+Also manually update:
+- Decisions: Add to Accumulated Context
+- Deferred Issues: Add if any found
+- Session Continuity: Set next action
+
+### Step 5: Update todo.md
+Mark all tasks in spec/{slug}/tasks.md as complete
+Add completion timestamp
+
+---
+
+## UNIFY Checklist
+- [ ] Compared planned vs. actual (design.md vs. changes.md)
+- [ ] Verified all acceptance criteria (from SPEC.md)
+- [ ] Created spec/{slug}/SUMMARY.md
+- [ ] Updated .opencode/STATE.md with completion status
+- [ ] Logged decisions in STATE.md Accumulated Context
+- [ ] Logged deferred issues in STATE.md (if any)
+- [ ] Updated spec/{slug}/todo.md with completion
+
+**CRITICAL**: UNIFY is MANDATORY. Every task must complete this phase.
+**CRITICAL**: Do not mark task as complete until UNIFY is finished.
+```
+
+---
+
+### Phase 6: SESSION SUMMARY (REQUIRED)
+
+After UNIFY completes, provide a summary to the user:
+
+```
+## Session Summary
+
+**Task**: {task-name}
+**Spec Folder**: .opencode/spec/{slug}/
+**Status**: COMPLETED / PARTIAL
+
+### What was done
+- [List key actions]
+
+### Artifacts created
+- .opencode/spec/{slug}/SUMMARY.md (from UNIFY)
+- .opencode/spec/{slug}/todo.md (updated)
+- .opencode/spec/{slug}/reports/* (any generated files)
+- .opencode/STATE.md (updated)
+
+### UNIFY Results
+- [ ] Planned vs. actual compared
+- [ ] Acceptance criteria verified (X/Y passed)
+- [ ] SUMMARY.md created
+- [ ] STATE.md updated
+
+### Next steps (if any)
+- [Optional: what should be done next]
+
+---
+To review full details, see: .opencode/spec/{slug}/
+---
+
+**IMPORTANT**: Tell the user to check the spec folder for artifacts!
+**IMPORTANT**: Tell user UNIFY phase completed successfully!
 ```
 ## Session Summary
 

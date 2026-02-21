@@ -1,7 +1,7 @@
 ---
 name: workflow-management
-description: Production-grade 7-phase development workflow with quality gates, confidence-based adaptation, and automated technical debt tracking.
-version: 2.1.0
+description: Production-grade 8-phase development workflow with mandatory UNIFY phase for plan reconciliation, quality gates, confidence-based adaptation, and automated technical debt tracking.
+version: 2.2.0
 author: tachikoma
 type: skill
 category: development
@@ -9,6 +9,7 @@ tags:
   - workflow
   - process
   - quality-gates
+  - mandatory-unify
 ---
 
 # Spec-Driven Workflow Management
@@ -125,6 +126,66 @@ tags:
 - [ ] Document transition or completion
 
 **Critical:** Do not consider complete until all steps finished.
+
+---
+
+### Phase 8: UNIFY (MANDATORY)
+
+**Objective:** Reconcile plan vs. actual, document outcomes, close loop.
+
+**Purpose (from PAUL framework):**
+- Every plan must close with reconciliation (no orphan plans)
+- Capture what was built vs. what was planned
+- Log decisions made during execution
+- Record deviations from plan
+- Update project state (STATE.md)
+
+**Mapping to PAUL Loop:**
+- PLAN = Phase 1 (ANALYZE) + Phase 2 (DESIGN)
+- APPLY = Phase 3 (IMPLEMENT) + Phase 4 (VALIDATE) + Phase 5 (CLEANUP)
+- UNIFY = This Phase 8 (MANDATORY closure)
+
+**Checklist:**
+- [ ] **Compare planned vs. actual** (design.md vs. changes.md)
+  - What was planned vs. what was built?
+  - Any deviations? Document reasons.
+- [ ] **Verify acceptance criteria** (from SPEC.md)
+  - For each AC (AC-1, AC-2, AC-3...):
+    - Run verification steps from details.md
+    - Document Pass/Fail in SUMMARY.md
+  - If any AC fails: Do not mark task complete
+- [ ] **Log decisions made during execution**
+  - What decisions were made?
+  - What was the rationale?
+  - What impact do they have?
+- [ ] **Log deviations from plan**
+  - Planned: What was in design.md?
+  - Actual: What was implemented?
+  - Reason: Why did it differ?
+- [ ] **Log deferred issues** (if any)
+  - What issues were found but not addressed?
+  - Effort estimate (S/M/L)?
+  - When should it be revisited?
+- [ ] **Create spec/{task-slug}/SUMMARY.md**
+  - Use template: `.opencode/templates/SUMMARY.md`
+  - Include performance metrics, AC results, accomplishments, decisions, deviations
+- [ ] **Update .opencode/STATE.md**
+  - Status: Complete/Partial/Blocked
+  - Last Activity: What was completed
+  - Decisions: Add to Accumulated Context
+  - Deferred Issues: Add if any
+  - Performance Metrics: Update velocity
+  - Session Continuity: Set next action
+- [ ] **Update spec/{task-slug}/todo.md**
+  - Mark all tasks as complete
+  - Add completion timestamp
+
+**Deliverables:**
+- `spec/{task-slug}/SUMMARY.md` (from template)
+- Updated `spec/{task-slug}/todo.md`
+- Updated `.opencode/STATE.md`
+
+**Critical:** UNIFY is MANDATORY. Every task must complete this phase.
 
 ---
 
