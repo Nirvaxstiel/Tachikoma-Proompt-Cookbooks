@@ -25,7 +25,7 @@ import yaml
 SCRIPT_DIR = Path(__file__).parent
 OPENCODE_DIR = SCRIPT_DIR.parent.parent
 CONTEXT_DIR = OPENCODE_DIR / ".opencode" / "context-modules"
-CONFIG_DIR = OPENCODE_DIR / ".opencode" / "config"
+CONFIG_DIR = OPENCODE_DIR / ".opencode" / "agents" / "tachikoma" / "config"
 SKILLS_DIR = OPENCODE_DIR / ".opencode" / "skills"
 
 
