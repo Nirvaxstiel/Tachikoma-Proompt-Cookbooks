@@ -36,3 +36,7 @@ temp-docs/
 .opencode/agents/tachikoma/spec/
 .opencode/agents/tachikoma/handoffs/
 .opencode/STATE.md
+
+# Archived legacy files (kept for reference, not tracked)
+.opencode/agents/tachikoma/_archive/
+.opencode/_archive/
