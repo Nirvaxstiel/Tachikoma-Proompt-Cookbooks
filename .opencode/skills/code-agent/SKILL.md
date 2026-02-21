@@ -33,6 +33,112 @@ A task is complete when:
 
 ---
 
+## Boundary Enforcement (MANDATORY)
+
+**Principle**: Protected files/patterns from boundaries.md are hard constraints.
+
+### Before Modifying Any File
+
+1. **Check if boundaries.md exists**:
+   ```bash
+   # Get current task slug from STATE.md
+   TASK_SLUG=$(grep "^\\*\\*Task\\*\\*:" .opencode/STATE.md | sed 's/.*: //' | tr -d ' ')
+   BOUNDARIES_FILE=".opencode/spec/$TASK_SLUG/boundaries.md"
+   
+   if [ -f "$BOUNDARIES_FILE" ]; then
+       echo "Found boundaries for task: $TASK_SLUG"
+   fi
+   ```
+
+2. **Read "DO NOT CHANGE" section**:
+   ```bash
+   # Extract protected files/patterns
+   PROTECTED=$(sed -n '/## DO NOT CHANGE/,/## SAFE TO MODIFY/p' "$BOUNDARIES_FILE" | sed '/## DO NOT CHANGE/d' | grep -v '^$')
+   ```
+
+3. **Check if file to modify is protected**:
+   ```bash
+   # For each protected item
+   for item in $PROTECTED; do
+       if [[ "$FILE_TO_MODIFY" == "$item" ]] || [[ "$FILE_TO_MODIFY" == "$item/"* ]]; then
+           echo "⚠️  FILE IS PROTECTED: $FILE_TO_MODIFY"
+           echo "Protected by: boundaries.md"
+           echo "To modify, you must:"
+           echo "  1. Get explicit confirmation"
+           echo "  2. Update boundaries.md if needed"
+           echo "  3. Document the reason for modification"
+           BLOCK=true
+       fi
+   done
+   
+   if [ "$BLOCK" = true ]; then
+       echo "❌ BOUNDARY VIOLATION DETECTED"
+       echo ""
+       echo "Protected files:"
+       echo "$PROTECTED"
+       echo ""
+       echo "File to modify: $FILE_TO_MODIFY"
+       echo ""
+       echo "STOP: Do not modify protected file"
+       exit 1
+   fi
+   ```
+
+4. **Check PROTECTED PATTERNS**:
+   ```bash
+   # Extract protected patterns
+   PATTERNS=$(sed -n '/## PROTECTED PATTERNS/,/## Notes/p' "$BOUNDARIES_FILE" | sed '/## PROTECTED PATTERNS/d' | grep -v '^$')
+   
+   # Check if file matches any protected pattern
+   for pattern in $PATTERNS; do
+       if [[ "$FILE_TO_MODIFY" == *"$pattern"* ]]; then
+           echo "⚠️  FILE MATCHES PROTECTED PATTERN: $pattern"
+           echo "To modify, you must:"
+           echo "  1. Get explicit confirmation"
+           echo "  2. Update boundaries.md if needed"
+           echo "  3. Document the reason for modification"
+           BLOCK=true
+       fi
+   done
+   
+   if [ "$BLOCK" = true ]; then
+       echo "❌ BOUNDARY PATTERN VIOLATION DETECTED"
+       echo ""
+       echo "Protected patterns:"
+       echo "$PATTERNS"
+       echo ""
+       echo "File to modify: $FILE_TO_MODIFY"
+       echo ""
+       echo "STOP: Do not modify protected pattern"
+       exit 1
+   fi
+   ```
+
+### If Boundary is Violated
+
+**Do NOT proceed without user confirmation**:
+1. Present the boundary violation clearly
+2. Explain what's protected and why
+3. Ask user to confirm:
+   - "This file is protected by boundaries.md. Modify anyway?"
+   - "Update boundaries.md to allow this change?"
+4. Wait for explicit "yes" or "no" response
+5. If "no": Find alternative approach
+6. If "yes": Proceed and document deviation in UNIFY
+
+### If Boundary Must Be Updated
+
+Sometimes boundaries need to change during execution:
+1. **Add new protected item**: Update boundaries.md "DO NOT CHANGE" section
+2. **Remove protection**: Move item from "DO NOT CHANGE" to "SAFE TO MODIFY"
+3. **Document reason**: Explain why in decision log
+
+### Safe Files
+
+**Files in "SAFE TO MODIFY" section can be modified freely without confirmation.**
+
+---
+
 ## Operating Guidelines
 
 ### 1. Externalized Context Mode
