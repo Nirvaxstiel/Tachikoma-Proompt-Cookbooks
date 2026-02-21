@@ -119,7 +119,12 @@ Creates: `todo.md` + `SPEC.md` + `design.md` + `tasks.md` + `boundaries.md`
 ### Phase 1: Intent Classification (REQUIRED)
 
 ```bash
-bash uv run python .opencode/skills/cli-router.py full "{user_query}" --json
+bun run .opencode/cli/router.ts full "{user_query}" --json
+```
+
+If CLI fails or returns confidence < 0.5:
+```
+skill({ name: "intent-classifier" })
 ```
 
 If CLI fails or returns confidence < 0.5:
