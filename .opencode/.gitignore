@@ -209,6 +209,8 @@ paket-files/
 **/.fake/
 **/.cr/personal
 tools/**
+!tools/pause-handoff.sh
+!tools/resume-handoff.sh
 !tools/packages.config
 *.tss
 *.jmconfig
