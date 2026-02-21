@@ -247,6 +247,14 @@ EOF
 cat > "$SESSION_DIR/tasks.md" << EOF
 # Tasks - $TASK_NAME
 
+## Context Estimate
+
+**Target**: Use ~50% of available context
+**Tasks**: 2-3 maximum (split large work into multiple plans)
+**Current bracket**: [FRESH >70% | MODERATE 40-70% | DEEP 20-40% | CRITICAL <20%]
+
+---
+
 ## Task List
 
 ### Task 1.1: [Task Name]
