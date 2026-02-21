@@ -149,7 +149,14 @@ bash router.sh check [target]
 | **Python** | Black, isort, flake8, mypy | Format, organize imports, lint, type check |
 | **Go** | gofmt, golint | Format, lint |
 | **Rust** | rustfmt, clippy, cargo | Format, lint, check |
-| **PHP** | - | Limited support |
+| **Java** | Google Java Format, Checkstyle, SpotBugs | Format, lint |
+| **C#** | dotnet-format, Fantomas | Format |
+| **C/C++** | clang-format, clang-tidy | Format, lint |
+| **Ruby** | RuboCop | Format, lint |
+| **Swift** | SwiftFormat | Format |
+| **Kotlin** | ktlint | Format |
+| **Scala** | Scalafmt | Format |
+| **PHP** | PHP-CS-Fixer | Format, lint |
 | **Generic** | - | Debug code removal only |
 
 ---
@@ -195,7 +202,12 @@ Tachikoma:
 
 ### Debug Code Removal
 - `console.log` statements (JavaScript/TypeScript)
+- `print` / `println` statements (Java, Kotlin, Scala)
+- `System.out.println` (Java)
+- `Console.WriteLine` (C#)
+- `printf` statements (C/C++)
 - `debugger;` statements
+- `puts` statements (Ruby)
 - Commented-out code blocks (selective)
 
 ### Formatting
@@ -203,6 +215,14 @@ Tachikoma:
 - Black (Python)
 - gofmt (Go)
 - rustfmt (Rust)
+- Google Java Format / IntelliJ (Java)
+- dotnet-format (C#)
+- clang-format (C/C++)
+- RuboCop (Ruby)
+- SwiftFormat (Swift)
+- ktlint (Kotlin)
+- Scalafmt (Scala)
+- PHP-CS-Fixer (PHP)
 
 ### Import Optimization
 - Sort imports alphabetically
@@ -214,12 +234,26 @@ Tachikoma:
 - flake8 checks (Python)
 - golint (Go)
 - clippy (Rust)
+- Checkstyle / SpotBugs (Java)
+- SonarLint (C#)
+- clang-tidy (C/C++)
+- RuboCop (Ruby)
+- SwiftLint (Swift)
+- detekt (Kotlin)
+- PHP-CS-Fixer (PHP)
 
 ### Type Checking
 - TypeScript compiler
 - mypy (Python)
 - Go build
 - cargo check (Rust)
+- javac / Error Prone (Java)
+- Roslyn analysis (C#)
+- GCC/Clang static analysis (C/C++)
+- Ruby (dynamic - no static types)
+- Swift compiler (Swift)
+- Kotlin compiler (Kotlin)
+- Scala compiler (Scala)
 
 ---
 
@@ -343,6 +377,29 @@ go install golang.org/x/lint/golint@latest
 
 # Rust (built-in)
 rustup component add clippy rustfmt
+
+# Java
+# Google Java Format: https://github.com/google/google-java-format
+# Download the release JAR and run with Java
+
+# C# (.NET)
+dotnet tool install -g dotnet-format
+
+# C/C++
+brew install clang-format clang-tidy  # macOS
+apt install clang-format clang-tidy   # Linux
+
+# Ruby
+gem install rubocop
+
+# Swift
+brew install swiftformat
+
+# Kotlin
+# ktlint: https://github.com/pinterest/ktlint
+
+# PHP
+composer require --dev friendsofphp/php-cs-fixer
 ```
 
 ### "Permission denied"
