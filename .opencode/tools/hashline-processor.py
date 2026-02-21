@@ -114,10 +114,8 @@ class HashlineProcessor:
         if not os.path.exists(filepath):
             raise FileNotFoundError(f"File not found: {filepath}")
 
-        # Read current hashlines
         current_hashlines = self.read_file_with_hashlines(filepath)
 
-        # Build hash -> line index mapping
         hash_to_index = {}
         for idx, hashline in enumerate(current_hashlines):
             # Extract hash prefix (everything before first '|')
@@ -136,19 +134,15 @@ class HashlineProcessor:
                 f"First 5 hashes: {existing_hashes[:5]}"
             )
 
-        # Get line index
         line_index = hash_to_index[target_hash]
 
-        # Read original file
         with open(filepath, "r", encoding="utf-8") as f:
             lines = f.readlines()
 
-        # Update line (preserve original newline style)
         original_line = lines[line_index]
         original_newline = "\n" if original_line.endswith("\n") else ""
         lines[line_index] = new_content + original_newline
 
-        # Write back
         with open(filepath, "w", encoding="utf-8") as f:
             f.writelines(lines)
 
@@ -285,23 +279,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Hashline Edit Format Processor")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # Read command
     read_parser = subparsers.add_parser("read", help="Read file with hashlines")
     read_parser.add_argument("filepath", help="File path to read")
 
-    # Find command
     find_parser = subparsers.add_parser("find", help="Find line by content")
     find_parser.add_argument("filepath", help="File path to search")
     find_parser.add_argument("search_text", help="Text to search for")
     find_parser.add_argument("--case-sensitive", action="store_true", help="Match case")
 
-    # Edit command
     edit_parser = subparsers.add_parser("edit", help="Edit file using hashline")
     edit_parser.add_argument("filepath", help="File path to edit")
     edit_parser.add_argument("hash", help='Hashline reference (e.g., "22:a3f1")')
     edit_parser.add_argument("content", help="New line content")
 
-    # Verify command
     verify_parser = subparsers.add_parser("verify", help="Verify hashline integrity")
     verify_parser.add_argument("filepath", help="File path to verify")
 

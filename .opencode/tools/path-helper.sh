@@ -225,7 +225,6 @@ download_uv() {
         tar -xzf "$temp_dir/uv.tar.gz" -C "$ASSETS_DIR" 2>/dev/null || \
             tar -xzf "$temp_dir/uv.tar.gz" -C "$temp_dir" 2>/dev/null
         
-        # Find extracted UV
         if [ -x "$temp_dir/uv" ]; then
             UV="$temp_dir/uv"
             echo -e "${_PH_GREEN}[INFO]${_PH_NC} Downloaded UV: $UV"
@@ -258,14 +257,12 @@ download_uv() {
 # Sets: PYTHON and UV variables
 # Returns: 0 if Python found, 1 if not
 detect_runtime() {
-    # Find Python
     if ! PYTHON=$(find_python); then
         echo -e "${_PH_RED}[ERROR]${_PH_NC} Python not found in PATH or bundled locations"
         echo "Please install Python 3.10+ or place bundled Python in assets folder"
         return 1
     fi
     
-    # Find UV (optional)
     if ! UV=$(find_uv); then
         echo -e "${_PH_YELLOW}[WARN]${_PH_NC} UV not found - some features may not work"
         UV=""

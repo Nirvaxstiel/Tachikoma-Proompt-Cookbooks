@@ -14,7 +14,6 @@ REM
 
 setlocal EnableExtensions EnableDelayedExpansion
 
-REM Get script directory and project root
 set "SCRIPT_DIR=%~dp0"
 set "OPENCODE_DIR=%~dp0.."
 set "ASSETS_DIR=%OPENCODE_DIR%\assets"
@@ -25,7 +24,6 @@ REM ===========================================================================
 set "PYTHON="
 set "UV="
 
-REM Try to find Python from PATH first (injected by opencode)
 where python >nul 2>&1
 if %errorlevel% equ 0 (
     for /f "delims=" %%i in ('where python') do (
@@ -40,7 +38,6 @@ if %errorlevel% equ 0 (
             goto :python_found
         )
     ) else (
-        REM Try bundled Python in common locations
         if exist "%ASSETS_DIR%\Python310\python.exe" (
             set "PYTHON=%ASSETS_DIR%\Python310\python.exe"
         ) else if exist "%ASSETS_DIR%\Python\python.exe" (
@@ -65,7 +62,6 @@ REM ===========================================================================
 REM UV Detection: PATH -> Bundled UV -> Download
 REM ===========================================================================
 
-REM Try to find uv from PATH first
 where uv >nul 2>&1
 if %errorlevel% equ 0 (
     for /f "delims=" %%i in ('where uv') do (

@@ -12,7 +12,6 @@ set "ASSETS_DIR=%~dp0..\assets"
 set "DASHBOARD_DIR=%~dp0..\tools\dashboard"
 set "VENV_DIR=%DASHBOARD_DIR%\.venv"
 
-REM Check for --test flag
 set "RUN_TESTS=0"
 set "RUN_UNIT_TESTS=0"
 set "ARGS="
@@ -30,7 +29,6 @@ for %%a in (%*) do (
     )
 )
 
-REM Try to find Python from PATH first (injected by opencode)
 where python >nul 2>&1
 if %errorlevel% equ 0 (
     for /f "delims=" %%i in ('where python') do (

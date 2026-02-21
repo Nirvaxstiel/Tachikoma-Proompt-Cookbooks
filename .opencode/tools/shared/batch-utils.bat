@@ -14,7 +14,6 @@ REM ============================================================================
 REM Print Functions
 REM ============================================================================
 
-REM Print a styled header
 :print_header
 set "title=%~1"
 echo ======================================
@@ -22,31 +21,26 @@ echo %title%
 echo ======================================
 goto :eof
 
-REM Print a success message
 :print_success
 set "message=%~1"
 echo [OK] %message%
 goto :eof
 
-REM Print an error message
 :print_error
 set "message=%~1"
 echo [ERROR] %message%
 goto :eof
 
-REM Print a warning message
 :print_warning
 set "message=%~1"
 echo [WARN] %message%
 goto :eof
 
-REM Print an info message
 :print_info
 set "message=%~1"
 echo [INFO] %message%
 goto :eof
 
-REM Print a divider line
 :print_divider
 set "char=%~1"
 set "width=%~2"
@@ -54,7 +48,6 @@ if "%char%"=="" set "char=="
 if "%width%"=="" set "width=60"
 goto :print_divider_execute
 
-REM Print a horizontal rule
 :print_hr
 echo ============================================================
 goto :eof
@@ -67,19 +60,16 @@ echo %title%
 echo ------------------------------------------------------------
 goto :eof
 
-REM Print a checkmark with message
 :print_check
 set "message=%~1"
 echo [CHECK] %message%
 goto :eof
 
-REM Print an X mark with message
 :print_x
 set "message=%~1"
 echo [X] %message%
 goto :eof
 
-REM Print separator
 :print_separator
 echo.
 echo.
@@ -89,7 +79,6 @@ REM ============================================================================
 REM Utility Functions
 REM ============================================================================
 
-REM Print script start banner
 :print_script_start
 set "script_name=%~1"
 echo.
@@ -99,7 +88,6 @@ echo ======================================
 echo.
 goto :eof
 
-REM Print script end summary
 :print_script_end
 set "exit_code=%~1"
 if "%exit_code%"=="0" (
@@ -111,7 +99,6 @@ if "%exit_code%"=="0" (
 )
 goto :eof
 
-REM Print step header
 :print_step
 set "step_num=%~1"
 set "step_name=%~2"

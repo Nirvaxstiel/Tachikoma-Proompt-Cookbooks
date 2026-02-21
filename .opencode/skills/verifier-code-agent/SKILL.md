@@ -61,7 +61,7 @@ Produce initial solution with explicit context:
 For this task:
 1. First, understand the requirements thoroughly
 2. Generate code that addresses the core problem
-3. Include inline comments for complex logic
+3. Follow minimal commenting rules: only add comments for non-obvious "why" explanations
 4. Output the complete implementation, not fragments
 
 Task: {user_requirement}

@@ -50,7 +50,6 @@ op_discover() {
     echo "Searching for context files..."
     echo ""
 
-    # Find all markdown files in context directory
     local files=$(find "$CONTEXT_DIR" -name "*.md" -type f | sort)
 
     if [ -z "$files" ]; then
@@ -58,12 +57,10 @@ op_discover() {
         exit 0
     fi
 
-    # Count and display
     local count=$(echo "$files" | wc -l)
     echo "Found $count context files:"
     echo ""
 
-    # Display with sizes
     while IFS= read -r file; do
         local size=$(du -h "$file" | cut -f1)
         local basename=$(basename "$file")

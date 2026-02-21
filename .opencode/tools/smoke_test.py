@@ -607,7 +607,6 @@ class SmokeTestFramework:
         """Test Python script"""
         import py_compile
 
-        # Test 1: Syntax check
         test_start = time.time()
         try:
             py_compile.compile(str(script_path), doraise=True)
@@ -633,7 +632,6 @@ class SmokeTestFramework:
             if self.fail_fast:
                 return
 
-        # Test 2: Import check
         test_start = time.time()
         imports_ok, import_msg = self._check_python_imports(script_path)
         status = TestStatus.PASS if imports_ok else TestStatus.WARN
@@ -647,7 +645,6 @@ class SmokeTestFramework:
         )
         self._print(self.ui.status_line(status, "imports", import_msg[:50]))
 
-        # Test 3: Shebang check
         test_start = time.time()
         first_line = script_path.read_text(encoding="utf-8", errors="ignore").split(
             "\n"
@@ -665,7 +662,6 @@ class SmokeTestFramework:
         )
         self._print(self.ui.status_line(status, "shebang", msg))
 
-        # Test 4: CLI interface check (if main block exists)
         test_start = time.time()
         has_cli = self._check_python_cli(script_path)
         status = TestStatus.PASS if has_cli else TestStatus.SKIP
@@ -680,7 +676,6 @@ class SmokeTestFramework:
         )
         self._print(self.ui.status_line(status, "cli", msg))
 
-        # Test 5: Basic execution (if has CLI)
         test_start = time.time()
         if has_cli:
             exec_ok, exec_msg = self._test_python_execution(script_path)
@@ -746,12 +741,10 @@ class SmokeTestFramework:
                 "pytest_cov",
             }
 
-            # Check external imports
             external = imports - stdlib - optional_deps
             if not external:
                 return True, "No external imports"
 
-            # Add script directory to sys.path temporarily to find local packages
             original_path = sys.path.copy()
             script_dir = str(script_path.parent)
             if script_dir not in sys.path:
@@ -764,7 +757,6 @@ class SmokeTestFramework:
                 except ImportError:
                     missing.append(imp)
 
-            # Restore original sys.path
             sys.path[:] = original_path
 
             if missing:
@@ -781,10 +773,8 @@ class SmokeTestFramework:
             content = script_path.read_text(encoding="utf-8")
             tree = ast.parse(content)
 
-            # Check for if __name__ == '__main__' block
             for node in ast.walk(tree):
                 if isinstance(node, ast.If):
-                    # Check if test is __name__ == '__main__'
                     if (
                         isinstance(node.test, ast.Compare)
                         and isinstance(node.test.left, ast.Name)
@@ -803,11 +793,9 @@ class SmokeTestFramework:
         """Test Python script execution with functional arguments"""
         script_name = script_path.name
 
-        # Check if we have known functional test arguments for this script
         if script_name in self.script_test_args:
             test_args_list = self.script_test_args[script_name]
 
-            # Try each set of functional arguments
             for args, description in test_args_list:
                 try:
                     python_cmd = RUNTIME_CONFIG.python or sys.executable
@@ -823,7 +811,6 @@ class SmokeTestFramework:
                     if proc.returncode == 0:
                         return True, f"Functional test: {description}"
                     else:
-                        # This args set didn't work, try next one
                         continue
 
                 except subprocess.TimeoutExpired:

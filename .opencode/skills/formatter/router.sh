@@ -139,7 +139,6 @@ op_cleanup() {
     fi
 }
 
-# Step 1: Remove debug code
 op_remove_debug() {
     local target="${1:-.}"
     local removed=0
@@ -149,7 +148,6 @@ op_remove_debug() {
         return 1
     fi
 
-    # Remove console.log statements (JavaScript/TypeScript)
     find "$target" -type f \( -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" \) -exec grep -l "console\.log" {} \; 2>/dev/null | while read -r file; do
         local count=$(grep -c "console\.log" "$file" 2>/dev/null || echo "0")
         if [ "$count" -gt 0 ]; then
@@ -158,7 +156,6 @@ op_remove_debug() {
         fi
     done
 
-    # Remove debugger statements
     find "$target" -type f \( -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" -o -name "*.java" -o -name "*.cs" -o -name "*.cpp" -o -name "*.c" -o -name "*.h" -o -name "*.swift" -o -name "*.kt" -o -name "*.scala" \) -exec grep -l "debugger;" {} \; 2>/dev/null | while read -r file; do
         local count=$(grep -c "debugger;" "$file" 2>/dev/null || echo "0")
         if [ "$count" -gt 0 ]; then
@@ -353,7 +350,6 @@ op_imports() {
     local target="${1:-.}"
     local optimized=0
 
-    # Try ESLint with import plugin
     if command_exists npx && [ -f ".eslintrc" ] || [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ]; then
         echo "  Running ESLint import fixes..."
         if npx eslint --fix "$target" 2>/dev/null | grep -q "import"; then
@@ -362,7 +358,6 @@ op_imports() {
         fi
     fi
 
-    # Try isort (Python)
     if command_exists isort; then
         echo "  Running isort..."
         if isort "$target" 2>/dev/null; then
@@ -371,7 +366,6 @@ op_imports() {
         fi
     fi
 
-    # Try organize-imports (TypeScript)
     if command_exists npx && [ -f "tsconfig.json" ]; then
         echo "  Running TypeScript import organizer..."
         # This would need a specific tool, skipping for now

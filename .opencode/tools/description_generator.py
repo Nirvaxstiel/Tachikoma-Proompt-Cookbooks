@@ -85,19 +85,14 @@ class ToolDescriptionEvaluator:
         """Evaluate description against criteria."""
         results = {}
 
-        # Check clarity
         results["clarity"] = self._check_clarity(description)
 
-        # Check completeness
         results["completeness"] = self._check_completeness(description, tool_spec)
 
-        # Check accuracy
         results["accuracy"] = self._check_accuracy(description, tool_spec)
 
-        # Check actionability
         results["actionability"] = self._check_actionability(description)
 
-        # Check consistency
         results["consistency"] = self._check_consistency(description, tool_spec)
 
         return results

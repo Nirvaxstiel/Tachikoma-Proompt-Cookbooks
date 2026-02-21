@@ -72,7 +72,6 @@ op_search() {
 
     local response=$(curl -s "${API_BASE}/libs/search?libraryName=${encoded_lib}&query=${encoded_query}")
 
-    # Check if we got results
     local count=$(echo "$response" | grep -o '"results":\[' | wc -l)
 
     if [ "$count" -eq 0 ] || [ -z "$response" ]; then
@@ -85,7 +84,6 @@ op_search() {
         exit 0
     fi
 
-    # Parse and display results
     echo "Top results:"
     echo ""
 
