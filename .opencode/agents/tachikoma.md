@@ -46,17 +46,42 @@ For any task that will produce artifacts (not just quick fixes):
 # Parse task name from user request
 # Example: "Add OAuth login" → slug: "add-oauth-login"
 
-bash .opencode/tools/spec-setup.sh "<task-name>" [--simple]
+bash .opencode/tools/spec-setup.sh "<task-name>"
 
-# Without --simple: Creates todo.md + SPEC.md + design.md + tasks.md
-# With --simple: Creates todo.md only (for quick tasks)
+# Creates: todo.md + SPEC.md + design.md + tasks.md + boundaries.md
 ```
 
 **Task Slug Format**: Lowercase, alphanumeric, max 5 words, hyphens between:
 - "fix auth bug" → `fix-auth-bug`
-- "Add OAuth login to the app" → `add-oauth-login-to`
+- "Add OAuth login to app" → `add-oauth-login-to`
 
 **Artifacts Location**: All reports/docs go to `.opencode/spec/{slug}/reports/`
+
+**Note**: spec-setup.sh automatically initializes `.opencode/STATE.md` if it doesn't exist
+
+---
+
+### Phase 0.5: STATE.md Update (REQUIRED)
+
+Before starting any task:
+
+1. **Check if `.opencode/STATE.md` exists**
+   - Read to understand current position
+   - Check for active blockers or boundaries
+2. **Update STATE.md**:
+   - Update Current Position with new task
+   - Update Last Activity timestamp
+   - Set Status to "Planning"
+
+After completing any task:
+
+1. **Update STATE.md**:
+   - Update Status (Complete/Partial/Blocked)
+   - Update Last Activity with what was done
+   - Log decisions in Accumulated Context
+   - Log blockers if any
+   - Update Session Continuity section
+   - Update Performance Metrics (velocity)
 
 ---
 
@@ -122,6 +147,19 @@ After execution completes, provide a summary to the user:
 
 ### Artifacts created
 - .opencode/spec/{slug}/todo.md (updated)
+- .opencode/spec/{slug}/reports/* (any generated files)
+- .opencode/STATE.md (updated)
+
+### Next steps (if any)
+- [Optional: what should be done next]
+
+---
+To review full details, see: .opencode/spec/{slug}/
+---
+
+**IMPORTANT**: Tell the user to check the spec folder for artifacts!
+**IMPORTANT**: Update .opencode/STATE.md with task completion status!
+```
 - .opencode/spec/{slug}/reports/* (any generated files)
 
 ### Next steps (if any)

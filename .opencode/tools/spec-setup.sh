@@ -18,15 +18,14 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 usage() {
-    echo "Usage: spec-setup.sh <task-name> [--simple]"
+    echo "Usage: spec-setup.sh <task-name>"
     echo ""
     echo "Arguments:"
     echo "  task-name    The task/feature name (will be slugified)"
-    echo "  --simple     Create simple todo only (no full spec)"
     echo ""
     echo "Examples:"
     echo "  spec-setup.sh \"fix auth bug\""
-    echo "  spec-setup.sh \"add oauth login\" --simple"
+    echo "  spec-setup.sh \"add oauth login\""
     exit 1
 }
 
@@ -36,11 +35,6 @@ if [ $# -eq 0 ]; then
 fi
 
 TASK_NAME="$1"
-SIMPLE=false
-
-if [ "$2" = "--simple" ]; then
-    SIMPLE=true
-fi
 
 # Slugify: lowercase, alphanumeric only, max 5 words
 slugify() {
@@ -53,6 +47,133 @@ REPORTS_DIR="$SESSION_DIR/reports"
 
 # Create directory structure
 mkdir -p "$REPORTS_DIR"
+
+# Initialize STATE.md if it doesn't exist
+STATE_FILE="$OPENCODE_DIR/STATE.md"
+if [ ! -f "$STATE_FILE" ]; then
+    cat > "$STATE_FILE" << EOF
+# Project State
+
+## Project Reference
+
+**Current focus**: [Current task/milestone from projects/tasks]
+
+---
+
+## Current Position
+
+**Task**: [task-slug] | **Phase**: [current phase] | **Status**: [Planning | Executing | Validating | Cleanup | Complete | Blocked]
+**Last activity**: [YYYY-MM-DD HH:MM] — [What happened]
+
+### Progress
+- Task completion: [░░░░░░░░░░] 0%
+- Current phase: [░░░░░░░░░░] 0%
+
+---
+
+## Loop Position
+
+Current loop state:
+\`\`\`
+ANALYZE ──▶ DESIGN ──▶ IMPLEMENT ──▶ VALIDATE ──▶ CLEANUP
+  ✓        ✓         ◉               ○                ○    [Implementing]
+\`\`\`
+
+---
+
+## Performance Metrics
+
+### Velocity
+- **Total tasks completed**: 0
+- **Average duration**: 0 min
+- **Total execution time**: 0.0 hours
+
+### By Task Type
+
+| Type | Tasks | Total Time | Avg/Task |
+|------|-------|------------|----------|
+| implement | 0/0 | - | - |
+| refactor | 0/0 | - | - |
+| debug | 0/0 | - | - |
+| research | 0/0 | - | - |
+
+### Recent Trend
+- Last 5 tasks: -
+- Trend: Stable
+
+*Updated after each task completion*
+
+---
+
+## Accumulated Context
+
+### Decisions
+
+Decisions logged during task execution. Recent decisions affecting current work:
+
+| Decision | Task | Impact |
+|----------|------|--------|
+| *No decisions yet* | - | - |
+
+*Full logs in spec/{task-slug}/SUMMARY.md*
+
+---
+
+### Deferred Issues
+
+Issues logged but not yet addressed:
+
+| Issue | Origin | Effort | Revisit |
+|-------|--------|--------|---------|
+| *No deferred issues* | - | - | - |
+
+---
+
+### Blockers/Concerns
+
+Active blockers affecting progress:
+
+| Blocker | Impact | Resolution Path |
+|---------|--------|-----------------|
+| *No active blockers* | - | - |
+
+---
+
+## Boundaries (Active)
+
+Protected elements for current task (from spec/{task-slug}/boundaries.md):
+
+*No active boundaries*
+
+---
+
+## Session Continuity
+
+**Last session**: $(date '+%Y-%m-%d %H:%M')
+**Stopped at**: Task "$TASK_NAME" created
+**Next action**: Fill in SPEC.md requirements and approach
+**Resume context**: New task "$SLUG" initialized, ready for planning
+
+---
+
+## RLM State (if applicable)
+
+**Active**: No
+**Last context path**: -
+**Last chunk processed**: -
+**Pending results**: -
+
+---
+
+---
+
+*STATE.md — Updated after every significant action*
+*Size target: <100 lines (digest, not archive)*
+EOF
+    echo -e "${BLUE}STATE.md initialized${NC}"
+else
+    echo -e "${BLUE}STATE.md already exists, will update${NC}"
+fi
 
 # Create todo.md
 cat > "$SESSION_DIR/todo.md" << EOF
@@ -74,9 +195,8 @@ $TASK_NAME
 *Artifacts should be saved to: .opencode/spec/$SLUG/reports/*
 EOF
 
-# Create SPEC.md only if not simple mode
-if [ "$SIMPLE" = false ]; then
-    cat > "$SESSION_DIR/SPEC.md" << EOF
+# Create SPEC.md (always)
+cat > "$SESSION_DIR/SPEC.md" << EOF
 # SPEC - $TASK_NAME
 
 ## Overview
@@ -89,13 +209,25 @@ if [ "$SIMPLE" = false ]; then
 ## Approach
 [Fill in: How will we implement this?]
 
-## Acceptance Criteria
-- [ ] Criterion 1
-- [ ] Criterion 2
+## Acceptance Criteria (BDD Format)
+
+## AC-1: [Criterion Name]
+\`\`\`gherkin
+Given [precondition]
+When [action]
+Then [outcome]
+\`\`\`
+
+## AC-2: [Criterion Name]
+\`\`\`gherkin
+Given [precondition]
+When [action]
+Then [outcome]
+\`\`\`
 EOF
 
-    # Create design.md
-    cat > "$SESSION_DIR/design.md" << EOF
+# Create design.md
+cat > "$SESSION_DIR/design.md" << EOF
 # Design - $TASK_NAME
 
 ## Architecture
@@ -111,8 +243,8 @@ EOF
 [Fill in: How errors are handled]
 EOF
 
-    # Create tasks.md
-    cat > "$SESSION_DIR/tasks.md" << EOF
+# Create tasks.md
+cat > "$SESSION_DIR/tasks.md" << EOF
 # Tasks - $TASK_NAME
 
 ## Task List
@@ -124,7 +256,22 @@ EOF
 - Task 1 → Task 2
 - Task 2 → Task 3
 EOF
-fi
+
+# Create boundaries.md
+cat > "$SESSION_DIR/boundaries.md" << EOF
+# Boundaries - $TASK_NAME
+
+## DO NOT CHANGE
+- [Protected file/pattern]
+- [Another protected element]
+
+## SAFE TO MODIFY
+- [Allowed file/pattern]
+- [Another allowed element]
+
+## PROTECTED PATTERNS
+- [Pattern to avoid]
+EOF
 
 # Output for user
 echo -e "${BLUE}========================================${NC}"
@@ -137,13 +284,11 @@ echo -e "Folder: ${GREEN}$SESSION_DIR${NC}"
 echo ""
 echo -e "Files created:"
 echo -e "  ${GREEN}├── todo.md${NC}"
-if [ "$SIMPLE" = false ]; then
-    echo -e "  ${GREEN}├── SPEC.md${NC}"
-    echo -e "  ${GREEN}├── design.md${NC}"
-    echo -e "  ${GREEN}└── tasks.md${NC}"
-else
-    echo -e "  ${GREEN}(simple mode - no spec files)${NC}"
-fi
+echo -e "  ${GREEN}├── SPEC.md${NC} (with BDD acceptance criteria)"
+echo -e "  ${GREEN}├── design.md${NC}"
+echo -e "  ${GREEN}├── tasks.md${NC}"
+echo -e "  ${GREEN}└── boundaries.md${NC} (protected files/patterns)"
 echo ""
 echo -e "${YELLOW}Remember: Save artifacts to .opencode/spec/$SLUG/reports/${NC}"
+echo -e "${YELLOW}Update .opencode/STATE.md when task starts/completes${NC}"
 echo ""
