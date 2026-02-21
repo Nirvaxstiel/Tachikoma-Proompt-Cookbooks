@@ -30,8 +30,9 @@ temp-docs/
 # Bundled assets (binaries - download separately)
 .opencode/agents/tachikoma/assets/
 
-# Per-repo (user-specific)
+# Per-repo (user-specific) - DO NOT TRACK
 .opencode/agents/tachikoma/cache/
 .opencode/agents/tachikoma/rlm_state/
 .opencode/agents/tachikoma/spec/
 .opencode/agents/tachikoma/handoffs/
+.opencode/STATE.md

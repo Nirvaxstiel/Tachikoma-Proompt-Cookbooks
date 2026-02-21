@@ -12,6 +12,7 @@
  */
 
 import { parseArgs } from 'node:util';
+import { join } from 'node:path';
 import yaml from 'js-yaml';
 import { colors, printHeader, printSuccess, printError, printWarning, printStep } from './lib/colors';
 import type { RoutesConfig, ClassificationResult, IntentRoute } from './lib/types';
@@ -21,7 +22,8 @@ import type { RoutesConfig, ClassificationResult, IntentRoute } from './lib/type
 // =============================================================================
 
 // Get the .opencode directory (parent of cli/)
-const OPENCODE_DIR = import.meta.dir.replace(/[\\\/]cli$/, '');
+const CLI_DIR = import.meta.dir;
+const OPENCODE_DIR = join(CLI_DIR, '..');
 const CONTEXT_DIR = `${OPENCODE_DIR}/context-modules`;
 const CONFIG_DIR = `${OPENCODE_DIR}/agents/tachikoma/config`;
 
