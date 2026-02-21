@@ -270,6 +270,63 @@ cat > "$SESSION_DIR/tasks.md" << EOF
 - [ ] AC-1: [criterion this satisfies]
 - [ ] AC-2: [criterion this satisfies]
 
+### Checkpoint (Optional)
+[If this task requires a checkpoint, complete this section. If not, remove it.]
+
+**Checkpoint Type**: [human-verify | decision | human-action]
+
+#### If human-verify:
+```markdown
+### What was built
+[Brief description of what Claude automated]
+
+#### How to verify
+1. [First verification step]
+2. [Second verification step]
+3. [Third verification step]
+
+#### Expected behavior
+[What success looks like]
+
+#### Resume signal
+Type "approved" or describe issues when verification complete
+```
+
+#### If decision:
+```markdown
+### What's being decided
+[Description of the choice being made]
+
+### Context
+[Why this matters - how it affects implementation]
+
+### Options
+
+| Option | Pros | Cons |
+|---------|------|------|
+| [Option 1 name] | [Benefits] | [Tradeoffs] |
+| [Option 2 name] | [Benefits] | [Tradeoffs] |
+
+#### Resume signal
+Select: [option-a] or [option-b]
+```
+
+#### If human-action:
+```markdown
+### What's being done
+[Unavoidable manual step - no API/CLI available]
+
+### Instructions
+[What Claude already automated]
+[The ONE thing requiring human action]
+
+### Verification
+[What Claude checks afterward]
+
+#### Resume signal
+Type "done" when complete
+```
+
 ### Implementation Details
 - [Files to modify]: [List]
 - [New files to create]: [List]
