@@ -89,7 +89,7 @@ When confidence is low, ask for clarification.
 For tasks that will produce artifacts:
 
 ```bash
-bash .opencode/agents/tachikoma/tools/spec-setup.sh "<task-name>"
+bun run .opencode/cli/spec-setup.ts "<task-name>"
 ```
 
 Creates: `todo.md` + `SPEC.md` + `design.md` + `tasks.md` + `boundaries.md`
@@ -189,13 +189,12 @@ After execution completes, you MUST run the UNIFY phase:
 
 3. **Create SUMMARY.md**
    ```bash
-   # Use template
-   .opencode/agents/tachikoma/templates/SUMMARY.md
+   bun run .opencode/cli/unify.ts <slug> <duration>
    ```
 
 4. **Update STATE.md**
    ```bash
-   bash .opencode/agents/tachikoma/tools/state-update.sh complete-task "{slug}" "{duration}"
+   bun run .opencode/cli/state-update.ts complete-task "{slug}" "{duration}"
    ```
 
 5. **Update todo.md**
@@ -284,11 +283,19 @@ To review: .opencode/agents/tachikoma/spec/{slug}/
 ```
 .opencode/
 ├── STATE.md                    # Project state (single source of truth)
+├── cli/                        # TypeScript CLI tools
+│   ├── router.ts               # Intent classification
+│   ├── spec-setup.ts           # Create spec folders
+│   ├── state-update.ts         # Update STATE.md
+│   ├── unify.ts                # UNIFY phase
+│   ├── handoff.ts              # Pause/resume
+│   ├── progress.ts             # Show progress
+│   └── lib/                    # Shared utilities
 ├── agents/
 │   ├── tachikoma.md            # This file - main orchestrator
 │   ├── subagents/              # Subagent definitions
 │   └── tachikoma/              # Internal Tachikoma stuff
-│       ├── tools/              # Shell scripts
+│       ├── tools/              # Thin shell wrappers
 │       ├── templates/          # Templates
 │       ├── spec/               # Task specs
 │       └── handoffs/           # Session handoffs
