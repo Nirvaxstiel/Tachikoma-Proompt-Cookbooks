@@ -60,16 +60,85 @@ tags:
 
 ### Phase 3: IMPLEMENT
 
-**Objective:** Write production-quality code.
+**Objective:** Write production-quality code with verifiable acceptance criteria.
 
 **Checklist:**
+- [ ] **Reference acceptance criteria** from SPEC.md (AC-1, AC-2, AC-3...)
 - [ ] Code in small, testable increments
 - [ ] Implement from dependencies upward
 - [ ] Follow conventions, document deviations
 - [ ] Add meaningful comments (focus on "why")
+- [ ] Define verification for each task
+- [ ] Link done criteria to AC satisfaction
 - [ ] Update task status in real time
 
-**Critical:** Do not merge until all steps documented and tested.
+**Critical:** Every task must have verification steps and AC references. Do not proceed until defined.
+
+---
+
+## Acceptance Criteria Enforcement
+
+### Core Principles
+
+1. **AC is First-Class** - Acceptance criteria must be defined BEFORE tasks
+2. **Tasks Reference AC** - Every task links to AC-1, AC-2, AC-3...
+3. **Verification Required** - Every task needs a verify step
+4. **BDD Format** - Given/When/Then for testability
+5. **Done = AC Satisfied** - Task done only when all referenced AC pass
+
+### Task Template Requirements
+
+Every task in tasks.md MUST include:
+
+**Required Sections:**
+- **Objective** - What this task accomplishes
+- **Acceptance Criteria** - Which AC this task satisfies (e.g., AC-1, AC-2)
+- **Verification** - Test command/steps to verify implementation
+- **Done Criteria** - All referenced AC must be satisfied
+
+**Example Task Structure:**
+```markdown
+### Task 1.1: Create login endpoint
+
+### Objective
+Enable users to authenticate with username/password
+
+### Acceptance Criteria
+- [ ] AC-1: User can login with valid credentials
+- [ ] AC-2: Invalid credentials return error
+
+### Verification
+- [ ] Test command: `curl -X POST /api/auth/login -d '{"user":"test","pass":"test"}'`
+- [ ] Expected output: 200 OK with token
+
+### Done Criteria
+- [ ] Code implemented
+- [ ] Verification passes (curl returns 200)
+- [ ] AC-1 satisfied (valid credentials work)
+- [ ] AC-2 satisfied (invalid credentials return error)
+```
+
+### Verification Best Practices
+
+**DO:**
+- Define executable verification steps (commands, test cases, manual checks)
+- Specify expected output (success condition)
+- Link verification to AC satisfaction
+- Test edge cases explicitly
+
+**DON'T:**
+- Use vague descriptions ("verify it works")
+- Skip verification steps
+- Define done criteria without AC references
+- Assume verification is obvious
+
+### UNIFY Verification
+
+During UNIFY phase (Phase 8):
+1. **Read tasks.md** - Get verification steps for each task
+2. **Run verification** - Execute test commands/manual checks
+3. **Document results** - Pass/Fail for each AC in SUMMARY.md
+4. **Block completion** - If any AC fails, task cannot be complete
 
 ---
 
@@ -151,7 +220,8 @@ tags:
   - Any deviations? Document reasons.
 - [ ] **Verify acceptance criteria** (from SPEC.md)
   - For each AC (AC-1, AC-2, AC-3...):
-    - Run verification steps from details.md
+    - Read verification steps from tasks.md
+    - Run verification (commands, tests, manual checks)
     - Document Pass/Fail in SUMMARY.md
   - If any AC fails: Do not mark task complete
 - [ ] **Log decisions made during execution**

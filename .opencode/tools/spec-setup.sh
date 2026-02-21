@@ -248,13 +248,70 @@ cat > "$SESSION_DIR/tasks.md" << EOF
 # Tasks - $TASK_NAME
 
 ## Task List
-- [ ] Task 1: Description
-- [ ] Task 2: Description
-- [ ] Task 3: Description
+
+### Task 1.1: [Task Name]
+
+### Objective
+[What this task accomplishes]
+
+### Requirements
+- [Requirement 1]: [Details]
+- [Requirement 2]: [Details]
+
+### Acceptance Criteria
+- [ ] AC-1: [criterion this satisfies]
+- [ ] AC-2: [criterion this satisfies]
+
+### Implementation Details
+- [Files to modify]: [List]
+- [New files to create]: [List]
+- [Dependencies]: [Other tasks or components]
+- [Complexity estimate]: [Low/Medium/High]
+
+### Verification
+- [ ] Test command: [how to verify]
+- [ ] Expected output: [what success looks like]
+
+### Done Criteria
+- [ ] Code implemented
+- [ ] Verification passes
+- [ ] AC-1 satisfied
+- [ ] AC-2 satisfied
+
+---
+
+### Task 1.2: [Task Name]
+
+### Objective
+[What this task accomplishes]
+
+### Requirements
+- [Requirement 1]: [Details]
+
+### Acceptance Criteria
+- [ ] AC-3: [criterion this satisfies]
+
+### Implementation Details
+- [Files to modify]: [List]
+- [New files to create]: [List]
+
+### Verification
+- [ ] Test command: [how to verify]
+- [ ] Expected output: [what success looks like]
+
+### Done Criteria
+- [ ] Code implemented
+- [ ] Verification passes
+- [ ] AC-3 satisfied
+
+---
 
 ## Dependencies
-- Task 1 → Task 2
-- Task 2 → Task 3
+- Task 1.1 → Task 1.2
+- Task 1.2 → [next task]
+
+## Notes
+[Additional notes, blockers, or considerations]
 EOF
 
 # Create boundaries.md
