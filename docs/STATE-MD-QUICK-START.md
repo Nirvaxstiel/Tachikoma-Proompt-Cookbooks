@@ -2,14 +2,15 @@
 
 ## What is STATE.md?
 
-`.opencode/STATE.md` is the **single source of truth** for project state. It provides:
-
+`.opencode/STATE.md` is **single source of truth** for project state. It provides:
 1. **Instant session resumption** - Know where you are, what's next
 2. **Project-level decision tracking** - See what was decided and why
 3. **Accumulated context** - Deferred issues, blockers, boundaries
 4. **Performance metrics** - Velocity, trends, execution time
 
 **Size target**: Under 100 lines (digest, not archive)
+
+**See also**: [AC-ENFORCEMENT-GUIDE.md](docs/AC-ENFORCEMENT-GUIDE.md) - How to use verifiable acceptance criteria with BDD format and verification steps
 
 ---
 
