@@ -25,17 +25,17 @@ class TerminalColors:
 
     # Primary palette (Ghost in the Shell theme)
     NEON_GREEN = "\033[38;5;48m"  # #00ff9f
-    CYAN = "\033[38;5;51m"       # #26c6da
-    TEAL = "\033[38;5;43m"       # #00d4aa
+    CYAN = "\033[38;5;51m"  # #26c6da
+    TEAL = "\033[38;5;43m"  # #00d4aa
     CRIMSON = "\033[38;5;197m"  # #ff0066
-    AMBER = "\033[38;5;214m"    # #ffa726
+    AMBER = "\033[38;5;214m"  # #ffa726
     ICE_BLUE = "\033[38;5;153m"  # #b3e5fc
 
     # Muted tones
-    STEEL = "\033[38;5;240m"   # #4a5f6d
-    SLATE = "\033[38;5;66m"    # #6b8e9e
-    MIDNIGHT = "\033[38;5;235m" # #0a0e14
-    DEEP_BLUE = "\033[38;5;234m" # #0d1117
+    STEEL = "\033[38;5;240m"  # #4a5f6d
+    SLATE = "\033[38;5;66m"  # #6b8e9e
+    MIDNIGHT = "\033[38;5;235m"  # #0a0e14
+    DEEP_BLUE = "\033[38;5;234m"  # #0d1117
 
     # Basic colors (fallback for compatibility)
     RED = "\033[0;31m"
@@ -66,9 +66,7 @@ class TerminalColors:
     INFO = ">"
 
     @classmethod
-    def status_color(
-        cls, status: str
-    ) -> str:
+    def status_color(cls, status: str) -> str:
         """
         Get color for status strings.
 
@@ -259,9 +257,7 @@ class TerminalUI:
         return f"{c}+{'=' * 58}+{t.NC}"
 
     @staticmethod
-    def box_line(
-        content: str = "", color: str = None, align: str = "left"
-    ) -> str:
+    def box_line(content: str = "", color: str = None, align: str = "left") -> str:
         """
         Create box content line.
 
@@ -280,9 +276,7 @@ class TerminalUI:
 
         if align == "center":
             padding = (inner_width - visible_len) // 2
-            text = " " * padding + content + " * (
-                inner_width - padding - visible_len
-            )
+            text = " " * padding + content + " " * (inner_width - padding - visible_len)
         elif align == "right":
             text = " " * (inner_width - visible_len) + content
         else:  # left

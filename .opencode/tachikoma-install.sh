@@ -17,130 +17,48 @@ USE_PACKAGED=false
 REPO_OWNER="Nirvaxstiel"
 REPO_NAME="Tachikoma-Proompt-Cookbooks"
 
-# Theme colors
-CYAN='\033[0;36m'
-GREEN='\033[0;32m'
-MAGENTA='\033[38;5;197m'
-ORANGE='\033[0;33m'
-RED='\033[0;31m'
-WHITE='\033[1;37m'
-DIM='\033[2m'
-NO_COLOR='\033[0m'
-
-# Printf with automatic flush - use p() for stdout, p_err() for stderr
-p() {
-    printf "$@" >&2
-    sync
-}
-p_err() {
-    printf "$@" >&2
-    sync
-}
-
-log_info() {
-    p "${CYAN}[TACHIKOMA]${NO_COLOR} %s\n" "$1"
-}
-
-log_success() {
-    p "${GREEN}[OK]${NO_COLOR} %s\n" "$1"
-}
-
-log_highlight() {
-    p_err "${MAGENTA}%s${NO_COLOR}\n" "$1"
-}
-
-log_warn() {
-    p_err "${ORANGE}[WARN]${NO_COLOR} %s\n" "$1"
-}
-
-log_error() {
-    p_err "${RED}[ERROR]${NO_COLOR} %s\n" "$1"
-}
-
-log_info() {
-    printf "${CYAN}[TACHIKOMA]${NO_COLOR} %s\n" "$1"
-    sync
-}
-
-log_success() {
-    printf "${GREEN}[OK]${NO_COLOR} %s\n" "$1"
-    sync
-}
-
-log_highlight() {
-    printf "${MAGENTA}%s${NO_COLOR}\n" "$1" >&2
-    sync
-}
-
-log_warn() {
-    printf "${ORANGE}[WARN]${NO_COLOR} %s\n" "$1" >&2
-    sync
-}
-
-log_error() {
-    printf "${RED}[ERROR]${NO_COLOR} %s\n" "$1" >&2
-    sync
-}
-
-# Styled log functions for update status (Ghost in the Shell theme)
-log_modified() {
-    printf "${ORANGE}[MODIFIED]${NO_COLOR} %s\n" "$1" >&2
-    sync
-}
-
-log_added() {
-    printf "${GREEN}[ADDED]${NO_COLOR} %s\n" "$1" >&2
-    sync
-}
-
-log_deleted() {
-    printf "${RED}[DELETED]${NO_COLOR} %s\n" "$1" >&2
-    sync
-}
-
-log_unchanged() {
-    printf "${DIM}[UNCHANGED]${NO_COLOR} %s\n" "$1" >&2
-    sync
-}
-
-# Detect system Python - returns 0 (found) or 1 (not found) for shell compatibility
-# Sets PYTHON_CMD and HAS_PYTHON (true/false)
-check_python() {
-    command -v python3 &> /dev/null && PYTHON_CMD="python3" && HAS_PYTHON=true && return 0
-    command -v python  &> /dev/null && PYTHON_CMD="python"  && HAS_PYTHON=true && return 0
-    PYTHON_CMD=""
-    HAS_PYTHON=false
-    return 1
-}
+# Source shared shell utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/tools/shared/shell-utils.sh"
 
 # Check if we're running interactively (stdin is a terminal)
 is_interactive() {
     [ -t 0 ]
 }
 
+# Detect system Python - returns 0 (found) or 1 (not found) for shell compatibility
+# Sets PYTHON_CMD and HAS_PYTHON (true/false)
+check_python() {
+    command -v python3 &> /dev/null && PYTHON_CMD="python3" && HAS_PYTHON=true && return 0
+    command -v python &> /dev/null && PYTHON_CMD="python" && HAS_PYTHON=true && return 0
+    PYTHON_CMD=""
+    HAS_PYTHON=false
+    return 1
+}
+
 # Ask user if they want to use packaged Python
-# Returns: "true" or "false" (empty = no answer/default)
+# Returns: "true" or "false" (empty = no answer/default = true)
 ask_use_packaged_python() {
-    # Non-interactive mode: don't use packaged Python unless --include-prepackaged-python was passed
+    # Non-interactive mode: don't use packaged Python unless --include-packaged-python was passed
     ! is_interactive && {
         p ""
         return
     }
 
     p "\n"
-    log_highlight "━━━ PYTHON DETECTION ━━━"
+    sh_print_highlight "━━━ PYTHON DETECTION ━━━"
     p "\n"
-    log_warn "No Python installation detected on your system."
+    sh_print_warning "No Python installation detected on your system."
     p "\n"
-    p "A pre-packaged Python 3.10 is included in ${MAGENTA}.opencode/assets/Python310/${NO_COLOR}\n"
+    p "A pre-packaged Python 3.10 is included in ${MAGENTA}.opencode/assets/Python310/${SH_NC}\n"
     p "\n"
     p "This allows Tachikoma to work out of the box without requiring\n"
     p "you to install Python separately.\n"
     p "\n"
-    p "${WHITE}Would you like to use the pre-packaged Python?${NO_COLOR}\n"
+    p "${WHITE}Would you like to use the pre-packaged Python?${SH_NC}\n"
     p "\n"
-    p "  ${GREEN}Yes${NO_COLOR}/${GREEN}y${NO_COLOR}  - Yes, use pre-packaged Python (recommended)\n"
-    p "  ${RED}No${NO_COLOR}/${RED}n${NO_COLOR}  - No, I'll handle Python myself\n"
+    p "  ${GREEN}Yes${SH_NC}/${GREEN}y${SH_NC}  - Yes, use pre-packaged Python (recommended)\n"
+    p "  ${RED}No${SH_NC}/${RED}n${SH_NC}  - No, I'll handle Python myself\n"
     p "\n"
     p "  Choice:"
     # Prompt for choice
@@ -176,7 +94,7 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         *)
-            log_error "Unknown option: $1"
+            sh_print_error "Unknown option: $1"
             print_usage
             exit 1
             ;;
@@ -186,7 +104,7 @@ done
 # Handle target directory argument
 if [ -n "$TARGET_DIR" ]; then
     if [ ! -d "$TARGET_DIR" ]; then
-        log_error "Directory does not exist: $TARGET_DIR"
+        sh_print_error "Directory does not exist: $TARGET_DIR"
         exit 1
     fi
     cd "$TARGET_DIR"
@@ -196,10 +114,10 @@ CURRENT_DIR="$(pwd)"
 CURRENT_DIR_NAME="$(basename "$CURRENT_DIR")"
 
 if [ "$CURRENT_DIR_NAME" = ".opencode" ]; then
-    log_info "Detected execution from within .opencode/, moving to parent directory"
+    sh_print_info "Detected execution from within .opencode/, moving to parent directory"
     cd ..
 elif [[ "$CURRENT_DIR" == */.opencode/* ]] || [[ "$CURRENT_DIR" == */.opencode ]]; then
-    log_info "Detected execution from within .opencode structure, moving to project root"
+    sh_print_info "Detected execution from within .opencode structure, moving to project root"
     while [ "$CURRENT_DIR_NAME" != ".opencode" ] && [ "$CURRENT_DIR" != "/" ]; do
         cd ..
         CURRENT_DIR="$(pwd)"
@@ -218,14 +136,14 @@ if [ "$SCRIPT_PATH" != "bash" ] && [ -f "$SCRIPT_PATH" ]; then
     if [ "$SCRIPT_DIR_NAME" = ".opencode" ]; then
         SCRIPT_PARENT="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
         if [ -d "$SCRIPT_PARENT" ]; then
-            log_info "Detected script located in .opencode/, using parent as install target"
+            sh_print_info "Detected script located in .opencode/, using parent as install target"
             cd "$SCRIPT_PARENT"
         fi
     fi
 fi
 
 if [ -d ".opencode/.opencode" ]; then
-    log_warn "Detected nested .opencode/.opencode - cleaning up"
+            sh_print_warning "Detected nested .opencode/.opencode - cleaning up"
     rm -rf ".opencode/.opencode"
 fi
 
@@ -240,13 +158,11 @@ fi
 INSTALL_DIR="$(pwd)"
 
 # Check for system Python (before download)
-check_python [ "$HAS_PYTHON" = true ] && log_info "Found Python: ${GREEN}$PYTHON_CMD${NO_COLOR}"
+check_python [ "$HAS_PYTHON" = true ] && sh_print_info "Found Python: ${SH_GREEN}$PYTHON_CMD${SH_NC}"
 
-log_info "Installing from ${SOURCE_NAME} (${BRANCH})"
-log_info "Target: ${INSTALL_DIR}"
-
-if [ ! -d ".git" ]; then
-    log_warn "Not in a git repo"
+sh_print_info "Installing from ${SOURCE_NAME} (${BRANCH})"
+sh_print_info "Target: ${INSTALL_DIR}"
+sh_print_warn "Not in a git repo"
 fi
 
 TEMP_DIR=$(mktemp -d)
@@ -254,26 +170,18 @@ TEMP_DIR=$(mktemp -d)
 
 cd "$TEMP_DIR"
 
-log_info "Acquiring data..."
-
-if ! curl -sSL "$ARCHIVE_URL" -o "repo.tar.gz"; then
-    log_error "Failed to acquire data. Branch '${BRANCH}' may not exist."
+    sh_print_info "Acquiring data..."
+    sh_print_error "Failed to acquire data. Branch '${BRANCH}' may not exist."
     exit 1
 fi
 
 if ! tar -tzf "repo.tar.gz" > /dev/null 2>&1; then
-    log_error "Failed to extract. Branch '${BRANCH}' may not exist."
+    sh_print_error "Failed to extract. Branch '${BRANCH}' may not exist."
     exit 1
 fi
 
-log_info "Extracting..."
-
-tar -xzf "repo.tar.gz"
-
-EXTRACTED_DIR=$(ls -d */ 2>/dev/null | head -1)
-
-if [ -z "$EXTRACTED_DIR" ]; then
-    log_error "Failed to extract"
+    sh_print_info "Extracting..."
+    sh_print_error "Failed to extract. Branch '${BRANCH}' may not exist."
     exit 1
 fi
 
@@ -285,7 +193,7 @@ cd "$EXTRACTED_DIR"
 
 # Check flag first - must exist AND file exists
 [ "$USE_PACKAGED" = true ] && [ -f ".opencode/assets/Python310/python.exe" ] && {
-    log_info "Pre-packaged Python enabled"
+    sh_print_info "Pre-packaged Python enabled"
 }
 
 # No system Python? Ask user (only runs if USE_PACKAGED is still false)
@@ -294,20 +202,20 @@ cd "$EXTRACTED_DIR"
 }
 
 p "\n"
-log_highlight "━━━ TACHIKOMA ━━━"
+sh_print_highlight "━━━ TACHIKOMA ━━━"
 
 if [ -f "AGENTS.md" ]; then
     cp "AGENTS.md" "${INSTALL_DIR}/AGENTS.md"
-    log_success "AGENTS.md"
+    sh_print_success "AGENTS.md"
 else
-    log_warn "AGENTS.md not found"
+    sh_print_warning "AGENTS.md not found"
 fi
 
 if [ -f "opencode.json" ]; then
     cp "opencode.json" "${INSTALL_DIR}/opencode.json"
-    log_success "opencode.json"
+    sh_print_success "opencode.json"
 else
-    log_warn "opencode.json not found"
+    sh_print_warning "opencode.json not found"
 fi
 
 if [ -d ".opencode" ]; then
@@ -317,7 +225,7 @@ if [ -d ".opencode" ]; then
 
     # Check if this is an update (existing .opencode directory)
     if [ -d "$CURRENT_OPENCODE" ]; then
-        log_info "Existing installation detected - generating backup..."
+        sh_print_info "Existing installation detected - generating backup..."
 
         # Create backup directory with timestamp
         mkdir -p "$BACKUP_DIR"
@@ -361,7 +269,7 @@ EOF
                 line="${line%/}"
                 [[ -n "$line" ]] && IGNORE_PATTERNS+=("$line")
             done < <(tr -d '\r' < "$GITIGNORE_SOURCE")
-            log_info "Loaded ${#IGNORE_PATTERNS[@]} ignore patterns from .gitignore"
+            sh_print_info "Loaded ${#IGNORE_PATTERNS[@]} ignore patterns from .gitignore"
         fi
 
         # Helper to check if path matches any ignore pattern
@@ -472,12 +380,12 @@ EOF
         [ "$ADDED_COUNT" -gt 0 ] && log_added "$ADDED_COUNT new files in this version"
         [ "$DELETED_COUNT" -gt 0 ] && log_deleted "$DELETED_COUNT files removed"
         [ "$MODIFIED_COUNT" -eq 0 ] && [ "$ADDED_COUNT" -eq 0 ] && [ "$DELETED_COUNT" -eq 0 ] && log_unchanged "No changes detected"
-        log_success "Backup created: .opencode-backup/"
+        sh_print_success "Backup created: .opencode-backup/"
 
         # Show backup location
         if [ "$MODIFIED_COUNT" -gt 0 ] || [ "$DELETED_COUNT" -gt 0 ]; then
-            log_info "Previous versions saved to: .opencode-backup/"
-            log_info "Diff report: .opencode-backup/diff.md"
+            sh_print_info "Previous versions saved to: .opencode-backup/"
+            sh_print_info "Diff report: .opencode-backup/diff.md"
         fi
     fi
 
@@ -497,19 +405,19 @@ EOF
             "${INSTALL_DIR}/.opencode/assets"
             "${INSTALL_DIR}/.opencode/plugins"
         )
-        log_info "Skipped assets/ and plugins/ (not using packaged Python)"
+        sh_print_info "Skipped assets/ and plugins/ (not using packaged Python)"
     } || {
-        log_success ".opencode/assets/"
-        log_success ".opencode/plugins/"
+        sh_print_success ".opencode/assets/"
+        sh_print_success ".opencode/plugins/"
     }
 
     for path in "${CLEANUP_PATHS[@]}"; do
         rm -rf "$path" 2>/dev/null || true
     done
 
-    log_success ".opencode/"
+    sh_print_success ".opencode/"
 else
-    log_warn ".opencode not found"
+    sh_print_warning ".opencode not found"
 fi
 
 # Create .gitignore if missing
@@ -554,7 +462,7 @@ rlm_state/
 # Update backups (generated by tachikoma-install.sh)
 .opencode-backup/
 EOF
-    log_success ".opencode/.gitignore"
+    sh_print_success ".opencode/.gitignore"
 fi
 
 if [ "$USE_GITLAB" = true ]; then
@@ -568,8 +476,8 @@ fi
 # Ensure we don't install into .opencode directory itself
 INSTALL_DIR_NAME="$(basename "$INSTALL_DIR")"
 if [ "$INSTALL_DIR_NAME" = ".opencode" ]; then
-    log_error "Cannot install into .opencode directory itself"
-    log_error "Please run this script from the project root, not from within .opencode/"
+    sh_print_error "Cannot install into .opencode directory itself"
+    sh_print_error "Please run this script from the project root, not from within .opencode/"
     exit 1
 fi
 
@@ -577,64 +485,64 @@ fi
 if curl -sSL --fail --connect-timeout 10 "$SOURCE_URL" -o "${INSTALL_DIR}/.opencode/tachikoma-install.sh.new" 2>/dev/null; then
     mv "${INSTALL_DIR}/.opencode/tachikoma-install.sh.new" "${INSTALL_DIR}/.opencode/tachikoma-install.sh"
     chmod +x "${INSTALL_DIR}/.opencode/tachikoma-install.sh"
-    log_success ".opencode/tachikoma-install.sh"
+    sh_print_success ".opencode/tachikoma-install.sh"
 elif [ -f "${INSTALL_DIR}/.opencode/tachikoma-install.sh" ]; then
-    log_info "Update script present (using local)"
+    sh_print_info "Update script present (using local)"
 elif [ -f "$0" ] && [ "$0" != "bash" ]; then
     cp "$0" "${INSTALL_DIR}/.opencode/tachikoma-install.sh"
     chmod +x "${INSTALL_DIR}/.opencode/tachikoma-install.sh"
-    log_success ".opencode/tachikoma-install.sh"
+    sh_print_success ".opencode/tachikoma-install.sh"
 else
-    log_warn "Could not secure update mechanism"
+    sh_print_warning "Could not secure update mechanism"
 fi
 
 p "\n"
-p "${MAGENTA}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓${NO_COLOR}\n"
-p "${MAGENTA}┃${NO_COLOR}   ${WHITE}Installation complete${NO_COLOR}          ${MAGENTA}┃${NO_COLOR}\n"
-p "${MAGENTA}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${NO_COLOR}\n"
+p "${MAGENTA}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓${SH_NC}\n"
+p "${MAGENTA}┃${SH_NC}   ${WHITE}Installation complete${SH_NC}          ${MAGENTA}┃${SH_NC}\n"
+p "${MAGENTA}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${SH_NC}\n"
 p "\n"
 
 [ "$USE_PACKAGED" = false ] && [ "$HAS_PYTHON" = false ] && {
-    p "${ORANGE}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓${NO_COLOR}\n"
-    p "${ORANGE}┃${NO_COLOR}  ${WHITE}⚠  PYTHON SETUP REQUIRED  ⚠${NO_COLOR}     ${ORANGE}┃${NO_COLOR}\n"
-    p "${ORANGE}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${NO_COLOR}\n"
+    p "${ORANGE}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓${SH_NC}\n"
+    p "${ORANGE}┃${SH_NC}  ${WHITE}⚠  PYTHON SETUP REQUIRED  ⚠${SH_NC}     ${ORANGE}┃${SH_NC}\n"
+    p "${ORANGE}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${SH_NC}\n"
     p "\n"
-    p "${WHITE}You chose not to use the pre-packaged Python.${NO_COLOR}\n"
+    p "${WHITE}You chose not to use the pre-packaged Python.${SH_NC}\n"
     p "\n"
-    p "${RED}Please install Python and add it to your PATH before running Tachikoma.${NO_COLOR}\n"
+    p "${RED}Please install Python and add it to your PATH before running Tachikoma.${SH_NC}\n"
     p "\n"
-    p "${DIM}Verify installation:${NO_COLOR} ${CYAN}python --version${NO_COLOR}\n"
-    p "${DIM}Download Python:${NO_COLOR} ${CYAN}https://python.org/downloads${NO_COLOR}\n"
+    p "${DIM}Verify installation:${SH_NC} ${CYAN}python --version${SH_NC}\n"
+    p "${DIM}Download Python:${SH_NC} ${CYAN}https://python.org/downloads${SH_NC}\n"
     p "\n"
 }
 
 # Cleanup temp directory (backup is preserved in .opencode-backup/)
 rm -rf "$TEMP_DIR" 2>/dev/null || true
 
-p "Run ${MAGENTA}opencode${NO_COLOR} to start\n"
+p "Run ${MAGENTA}opencode${SH_NC} to start\n"
 p "\n"
 
 # Show backup info if this was an update
 if [ -d "${INSTALL_DIR}/.opencode-backup" ]; then
-    p "${WHITE}Backup available:${NO_COLOR}\n"
-    p "  ${DIM}Previous versions:${NO_COLOR} ${CYAN}.opencode-backup/${NO_COLOR}\n"
-    p "  ${DIM}Diff report:${NO_COLOR} ${CYAN}.opencode-backup/diff.md${NO_COLOR}\n"
+    p "${WHITE}Backup available:${SH_NC}\n"
+    p "  ${DIM}Previous versions:${SH_NC} ${CYAN}.opencode-backup/${SH_NC}\n"
+    p "  ${DIM}Diff report:${SH_NC} ${CYAN}.opencode-backup/diff.md${SH_NC}\n"
     p "\n"
 fi
 
-p "${WHITE}To update:${NO_COLOR}\n"
+p "${WHITE}To update:${SH_NC}\n"
 p "\n"
-p "${DIM}  # Option 1: Run the script directly${NO_COLOR}\n"
-p "  ${CYAN}./${MAGENTA}.opencode/tachikoma-install.sh${NO_COLOR} -b ${BRANCH}\n"
+p "${DIM}  # Option 1: Run the script directly${SH_NC}\n"
+p "  ${CYAN}./${MAGENTA}.opencode/tachikoma-install.sh${SH_NC} -b ${BRANCH}\n"
 p "\n"
-p "${DIM}  # Option 2: Quick curl${NO_COLOR}\n"
-p "  ${CYAN}curl${NO_COLOR} -sS ${SOURCE_URL} | bash -s -- -b ${BRANCH}\n"
+p "${DIM}  # Option 2: Quick curl${SH_NC}\n"
+p "  ${CYAN}curl${SH_NC} -sS ${SOURCE_URL} | bash -s -- -b ${BRANCH}\n"
 p "\n"
-p "${WHITE}Flags:${NO_COLOR}\n"
-p "  ${CYAN}-b, --branch${NO_COLOR} <name>              Branch (default: ${BRANCH})\n"
-p "  ${CYAN}--gitlab${NO_COLOR}                         Use GitLab\n"
-p "  ${CYAN}--include-prepackaged-python${NO_COLOR}     Include pre-packaged Python\n"
+p "${WHITE}Flags:${SH_NC}\n"
+p "  ${CYAN}-b, --branch${SH_NC} <name>              Branch (default: ${BRANCH})\n"
+p "  ${CYAN}--gitlab${SH_NC}                         Use GitLab\n"
+p "  ${CYAN}--include-prepackaged-python${SH_NC}     Include pre-packaged Python\n"
 p "\n"
-p "${DIM}Check available branches:${NO_COLOR}\n"
-p "  ${CYAN}git${NO_COLOR} ls-remote --heads https://github.com/${REPO_OWNER}/${REPO_NAME}.git\n"
+p "${DIM}Check available branches:${SH_NC}\n"
+p "  ${CYAN}git${SH_NC} ls-remote --heads https://github.com/${REPO_OWNER}/${REPO_NAME}.git\n"
 p "\n"

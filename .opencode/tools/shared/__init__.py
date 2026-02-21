@@ -67,3 +67,8 @@ __all__ = [
     "ConfigManager",
     "Metrics",
 ]
+
+# Shell utilities are sourced directly, not imported:
+# - shell-utils.sh (Bash)
+# - batch-utils.bat (Batch)
+# See SHELL_REFACTORING_GUIDE.md for usage
