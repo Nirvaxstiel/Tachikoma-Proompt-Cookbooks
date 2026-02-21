@@ -418,7 +418,7 @@ FodyWeavers.xsd
 *.msp
 
 # Temporary docs
-/temp-docs
+temp-docs/
 
 # Bun (docs folder)
 bun.lockb
