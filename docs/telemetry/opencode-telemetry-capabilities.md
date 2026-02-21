@@ -90,7 +90,7 @@ ORDER BY invocation_count DESC;
 Our Tachikoma dashboard already queries OpenCode's database:
 
 ```python
-# .opencode/tools/dashboard/tachikoma_dashboard/db.py
+# dashboard/tachikoma_dashboard/db.py
 def get_session_skills(session_id: str) -> list[Skill]:
     """Get skills loaded in a session by parsing tool calls from messages."""
     # Queries part table for skill invocations
@@ -207,7 +207,7 @@ OpenCode's telemetry lacks skill-specific metrics that would be useful for optim
 ### ✅ Implemented (Current)
 
 1. **Dashboard skill tracking**
-   - File: `.opencode/tools/dashboard/tachikoma_dashboard/db.py`
+   - File: `dashboard/tachikoma_dashboard/db.py`
    - Function: `get_session_skills(session_id)`
    - Parses tool invocations from `part` table
 
@@ -216,7 +216,7 @@ OpenCode's telemetry lacks skill-specific metrics that would be useful for optim
    - Provides: tool usage, model usage, session stats
 
 3. **Tool invocation queries**
-   - File: `.opencode/tools/dashboard/tachikoma_dashboard/query.py`
+   - File: `dashboard/tachikoma_dashboard/query.py`
    - Type-safe query builder for SQLite
    - Supports JSON extraction from `data` columns
 
@@ -284,6 +284,6 @@ For **advanced skill metrics** (iterations, edit formats, RLM, intent), we need 
 ## References
 
 - OpenCode Database Schema: `temp-docs/opencode/packages/opencode/migration/`
-- Dashboard Implementation: `.opencode/tools/dashboard/tachikoma_dashboard/`
+- Dashboard Implementation: `dashboard/tachikoma_dashboard/`
 - OpenCode Stats Command: `temp-docs/opencode/packages/opencode/src/cli/cmd/stats.ts`
 - Telemetry Logger (Future): `.opencode/core/telemetry-logger.py`

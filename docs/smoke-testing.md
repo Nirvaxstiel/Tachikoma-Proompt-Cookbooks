@@ -59,10 +59,11 @@ uv run .opencode/tools/smoke_test.py --fail-fast
 
 ```bash
 # Smoke tests (quick validation)
-uv run .opencode/tools/dashboard/test_smoke_no_rich.py
+cd dashboard
+uv run python test_smoke_no_rich.py
 
 # Unit tests (comprehensive)
-cd .opencode/tools/dashboard
+cd dashboard
 uv run pytest tests/ -v
 ```
 

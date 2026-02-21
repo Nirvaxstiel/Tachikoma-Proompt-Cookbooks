@@ -230,17 +230,6 @@ You may:
 
 ---
 
-## Telemetry
-
-Skill usage is tracked via OpenCode's SQLite database.
-
-**View analytics:**
-```bash
-python .opencode/tools/dashboard/skill_analytics.py --stats
-```
-
----
-
 ## Connection to Functional Thinking
 
 This skill operationalizes the principles from `11-functional-thinking.md`:

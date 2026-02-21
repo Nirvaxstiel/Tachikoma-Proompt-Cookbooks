@@ -5,7 +5,7 @@ Smoke test for Tachikoma Dashboard (rich-independent version).
 Validates dashboard functionality without requiring rich module.
 
 Usage:
-    python .opencode/tools/dashboard/test_smoke_no_rich.py
+    python test_smoke_no_rich.py
 """
 
 import sys
@@ -327,11 +327,11 @@ def test_enhanced_widgets() -> bool:
 
 
 def test_styles_module() -> bool:
-    """Test styles module."""
-    print("Testing styles module...")
+    """Test theme module (CSS styles)."""
+    print("Testing theme module...")
 
     try:
-        from tachikoma_dashboard.styles import (
+        from tachikoma_dashboard.theme import (
             DASHBOARD_CSS,
         )
 

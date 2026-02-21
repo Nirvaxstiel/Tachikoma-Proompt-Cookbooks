@@ -206,8 +206,8 @@ call "%~dp0shared\batch-utils.bat"
 ### Phase 6: Update Other Batch Files
 
 **Files:**
-- `.opencode/tools/tachikoma-dashboard.bat`
-- `.opencode/tools/dashboard/dashboard-smoke-test.bat`
+- `dashboard/tachikoma-dashboard.bat`
+- `dashboard/dashboard-smoke-test.bat`
 
 **Lines to Remove:** Manual echo formatting (~15 lines each)
 **Lines to Add:** Source batch-utils.bat at top
