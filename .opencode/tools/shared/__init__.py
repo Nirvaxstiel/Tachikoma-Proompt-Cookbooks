@@ -36,10 +36,34 @@ from .hash_utils import (
     generate_ref_id,
 )
 
+# Import terminal utilities
+from .terminal import (
+    TerminalColors,
+    TerminalUI,
+    GITSTheme,  # Backward compatibility
+    Colors,  # Backward compatibility
+)
+
+# Import file I/O utilities
+from .file_io import FileIO
+
+# Import configuration manager
+from .config_manager import ConfigManager
+
+# Import metrics calculator
+from .metrics import Metrics
+
 __all__ = [
     "truncate_text",
     "generate_hash",
     "generate_hashline",
     "generate_node_id",
     "generate_ref_id",
+    "TerminalColors",
+    "TerminalUI",
+    "GITSTheme",
+    "Colors",
+    "FileIO",
+    "ConfigManager",
+    "Metrics",
 ]
