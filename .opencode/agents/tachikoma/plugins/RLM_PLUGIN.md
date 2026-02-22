@@ -1,7 +1,7 @@
 # RLM Plugin Technical Reference
 
 > **Purpose**: Provides `rlm_repl` tool to opencode for native RLM integration.
-> **File**: `.opencode/plugins/rlm.ts`
+> **File**: `.opencode/agents/tachikoma/plugins/rlm.ts`
 > **Status**: ✅ Working - Auto-loaded by opencode
 
 ---
@@ -20,8 +20,6 @@ Provides a native opencode tool that the LLM can call directly:
 }
 ```
 
-**Alternative**: Subprocess fallback via `sub_llm()` in Python REPL.
-
 ---
 
 ## Tool Definition
@@ -33,8 +31,9 @@ Provides a native opencode tool that the LLM can call directly:
 | Command | Description | Example |
 |---------|-------------|----------|
 | `init` | Initialize REPL with context file | `init logs/app.log` |
-| `exec` | Execute Python code | `exec -c "print(peek(0, 1000))"` |
+| `exec` | Execute TypeScript code | `exec -c "console.log(peek(0, 1000))"` |
 | `status` | Show REPL state | `status` |
+| `reset` | Delete REPL state | `reset` |
 
 ### Parameters
 
@@ -42,7 +41,8 @@ Provides a native opencode tool that the LLM can call directly:
 |-----------|--------|-----------|-------------|
 | `command` | string | ✅ | Command to execute |
 | `context_path` | string | ⚠️ | Path to context file (for `init`) |
-| `code` | string | ⚠️ | Python code to execute (for `exec`) |
+| `code` | string | ⚠️ | TypeScript code to execute (for `exec`) |
+| `state` | string | ❌ | Path to state file (optional) |
 
 ---
 
@@ -78,7 +78,7 @@ tool({
   name: "rlm_repl",
   description: "Persistent TypeScript REPL for RLM workflows",
   parameters: z.object({
-    command: z.enum(["init", "exec", "status"]),
+    command: z.enum(["init", "exec", "status", "reset"]),
     context_path: z.string().optional(),
     code: z.string().optional(),
   }),
@@ -108,7 +108,7 @@ tool({
   "tool": "rlm_repl",
   "args": {
     "command": "exec",
-    "code": "print(peek(0, 3000))"
+    "code": "console.log(peek(0, 3000))"
   }
 }
 ```
@@ -120,34 +120,32 @@ tool({
   "tool": "rlm_repl",
   "args": {
     "command": "exec",
-    "code": "chunks = chunk_indices(size=50000); print(f'Created {len(chunks)} chunks')"
+    "code": "const chunks = chunkIndices(50000); console.log(`Created ${chunks.length} chunks`)"
   }
 }
 ```
 
 ---
 
-## Comparison: Plugin vs Subprocess
+## Performance
 
-| Aspect | Plugin | Subprocess |
-|---------|---------|------------|
-| **Type Safety** | ✅ TypeScript | ❌ String-based |
-| **Overhead** | ✅ ~50ms | ❌ ~500ms |
-| **Error Handling** | ✅ Structured | ❌ Parse stdout/stderr |
-| **Integration** | ✅ Native APIs | ❌ Requires CLI path |
-| **Tool Discovery** | ✅ Auto-discovered | ❌ Manual docs |
+| Metric | Value |
+|--------|-------|
+| Startup time | ~50ms |
+| State format | JSON (human-readable) |
+| Runtime | Bun (single dependency) |
 
 ---
 
 ## Installation
 
-The plugin is **automatically loaded** if file exists: `.opencode/plugins/rlm.ts`
+The plugin is **automatically loaded** if file exists: `.opencode/agents/tachikoma/plugins/rlm.ts`
 
 Optional config (not required):
 ```yaml
 # .opencode/config/config.yaml
 plugin:
-  - file://.opencode/plugins/rlm.ts
+  - file://.opencode/agents/tachikoma/plugins/rlm.ts
 ```
 
 ---
@@ -156,9 +154,9 @@ plugin:
 
 | Error | Cause | Fix |
 |--------|--------|-----|
-| `Module not found: .adaptive_chunker` | File naming issue | Files renamed to use underscores (fixed) |
 | `No state found` | REPL not initialized | Run `init` command first |
-| `Python execution error` | Invalid code in `exec` | Check syntax, use valid Python |
+| `Module not found` | Import path issue | Check relative paths |
+| `Syntax error` | Invalid TypeScript | Check code syntax |
 
 ---
 
@@ -166,7 +164,7 @@ plugin:
 
 1. Check plugin loaded: Look for `rlm_repl` in tool list
 2. Check REPL state: Run `rlm_repl status`
-3. Check Python output: Review tool execution results
+3. Check output: Review tool execution results
 4. Check errors: Review stderr from tool execution
 
 ---
@@ -174,10 +172,10 @@ plugin:
 ## Future Enhancements
 
 1. **Direct subagent calling** - Use opencode session APIs instead of subprocess
-2. **State integration** - Store RLM state in opencode database instead of pickle
+2. **State integration** - Store RLM state in opencode database
 3. **Tool composition** - Create composite tools for common RLM patterns
 
 ---
 
 **Status**: ✅ Production ready
-**Version**: 1.0.0
+**Version**: 2.0.0 (TypeScript)
