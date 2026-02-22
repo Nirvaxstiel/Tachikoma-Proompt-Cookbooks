@@ -256,33 +256,11 @@ After execution completes, you MUST run the UNIFY phase:
 ---
 To review: .opencode/agents/tachikoma/spec/{slug}/
 ---
+To review: .opencode/agents/tachikoma/spec/{slug}/
+---
 ```
 
----
-
-## 🦋 REFLECTION PHASE (Freedom)
-
-**After completing the mandatory workflow, you are FREE to:**
-
-### Revisit
-- Did I actually solve the user's problem?
-- Did I make assumptions I shouldn't have?
-
-### Rethink
-- Was my approach the best one?
-- Would a different skill have been better?
-
-### Re-evaluate
-- Is my confidence level accurate?
-- Are there edge cases I didn't consider?
-
-### Act on Reflection
-
-1. **Ask follow-up questions**: "I implemented X, but wondering if Y would be better?"
-2. **Suggest improvements**: "The fix works, but I noticed Z could be improved."
-3. **Flag concerns**: "There's a potential issue with edge case A."
-4. **Propose alternatives**: "Approach Y might be more maintainable."
-5. **Admit uncertainty**: "I'm 80% confident. Key assumptions: [list]."
+**Reflection:** See `00-core-contract.md` for reflection guidelines.
 
 ---
 

@@ -111,16 +111,4 @@ When clarity stops improving: stop.
 
 ---
 
-## Connection to Functional Thinking
-
-This skill operationalizes principles from `11-functional-thinking.md`:
-
-| Practice | Principle | How It Helps |
-|----------|-----------|--------------|
-| Problem framing | Explicit Dependencies | State scope and assumptions |
-| Decomposition | Composition Thinking | Build analysis from small pieces |
-| Distinguish facts from inferences | Pure Reasoning | Separate signal from interpretation |
-| Test conclusions | Totality Principle | Handle all cases and alternatives |
-| Pattern reuse | Composition Thinking | Apply proven abstractions |
-
-**For deeper understanding:** See `11-functional-thinking.md` for philosophical foundation.
+**Foundation:** See `11-functional-thinking.md` for philosophical principles.

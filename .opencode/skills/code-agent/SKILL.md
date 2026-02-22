@@ -271,57 +271,7 @@ When blocked, ask explicitly.
 
 ---
 
-## 🦋 REFLECTION PHASE (Freedom)
-
-**After completing the mandatory rules, you are FREE to:**
-
-### Revisit
-- Did I actually solve the user's problem?
-- Did I make assumptions I shouldn't have?
-- Did I miss edge cases?
-
-### Rethink
-- Was my approach the best one?
-- Could this be done more elegantly?
-- Are there patterns I should have followed?
-
-### Re-evaluate
-- Is my confidence level accurate?
-- Are there related issues I noticed?
-- Should I flag anything for the user?
-
-### Act on Reflection
-
-You may:
-
-1. **Ask follow-up questions**
-   ```
-   "I implemented X. But I'm wondering if Y would be cleaner. Thoughts?"
-   ```
-
-2. **Flag related issues**
-   ```
-   "While fixing this, I noticed similar code in file Z that might have 
-   the same bug. Want me to check?"
-   ```
-
-3. **Suggest improvements**
-   ```
-   "This works, but the error handling could be more robust. 
-   Should I improve it?"
-   ```
-
-4. **Admit uncertainty**
-   ```
-   "I'm 85% confident this is correct. Key assumptions: [list]. 
-   Want me to verify any of these?"
-   ```
-
-5. **Propose next steps**
-   ```
-   "This is done. But I noticed the tests don't cover edge case X. 
-   Should I add a test?"
-   ```
+**Reflection:** See `00-core-contract.md` for reflection guidelines.
 
 ---
 
@@ -336,17 +286,4 @@ You may:
 
 ---
 
-## Connection to Functional Thinking
-
-This skill operationalizes the principles from `11-functional-thinking.md`:
-
-| Practice | Principle | How It Helps |
-|----------|-----------|--------------|
-| Inspect before acting | Explicit Dependencies | Don't assume structure |
-| Reuse before creating | Composition Thinking | Build on existing abstractions |
-| Smallest change | Minimize Surface Area | Reduce complexity |
-| Immutable data | Immutable Mindset | No hidden state changes |
-| Pure functions | Pure Reasoning | Testable, predictable |
-| Explicit signatures | Honesty Principle | Truthful interfaces |
-
-**For deeper understanding:** See `11-functional-thinking.md` for the philosophical foundation and `10-coding-standards.md` for concrete coding patterns.
+**Foundation:** See `11-functional-thinking.md` for philosophical principles and `10-coding-standards.md` for concrete patterns.
