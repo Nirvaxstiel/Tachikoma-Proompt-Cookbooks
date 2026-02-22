@@ -256,8 +256,6 @@ After execution completes, you MUST run the UNIFY phase:
 ---
 To review: .opencode/agents/tachikoma/spec/{slug}/
 ---
-To review: .opencode/agents/tachikoma/spec/{slug}/
----
 ```
 
 **Reflection:** See `00-core-contract.md` for reflection guidelines.

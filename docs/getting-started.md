@@ -85,10 +85,13 @@ your-project/
     ├── agents/            # Primary agent + subagents
     ├── skills/            # 20 specialized skills
     ├── context-modules/   # 7 context modules
+    ├── cli/               # TypeScript CLI tools
     ├── assets/            # Bundled Python + UV (optional)
     └── config/
         └── intent-routes.yaml
 ```
+
+**Token Optimized:** Skills reference context modules instead of duplicating content, reducing token consumption by ~15%.
 
 ---
 

@@ -37,6 +37,7 @@ Phases 1-4 are mandatory. Phase 5 is free — the agent can question its approac
 | **Context Modules** | Project-specific rules load based on task type |
 | **Skills** | Specialized capabilities for specific tasks |
 | **Subagents** | Workers for large-context or parallel tasks |
+| **Checkpoints** | Human interaction points (verify, decision, action) |
 
 ---
 

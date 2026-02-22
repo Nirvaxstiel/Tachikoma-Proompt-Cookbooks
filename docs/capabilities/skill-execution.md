@@ -34,9 +34,14 @@ Specialized capabilities for specific tasks.
 
 | Skill | What | Description |
 |-------|------|-------------|
-| `workflow-management` | 7-phase | Development workflow |
+| `workflow-management` | 8-phase | Development workflow with checkpoints |
 | `task-tracking` | Tasks | Progressive tracking |
 | `self-learning` | Improvement | Pattern recognition |
+
+**Checkpoint Types** (workflow-management):
+- `checkpoint:human-verify` — Agent completed, human confirms (90%)
+- `checkpoint:decision` — Human chooses architecture (9%)
+- `checkpoint:human-action` — Truly unavoidable manual step (1%)
 
 ### Advanced
 

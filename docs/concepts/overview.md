@@ -54,6 +54,18 @@ Project-specific rules loaded automatically:
 | **Skill** | Routine tasks, normal context |
 | **Subagent** | Large context, multi-step reasoning |
 
+## Checkpoint Types
+
+When human interaction is needed during execution:
+
+| Type | Frequency | Use Case |
+|------|-----------|----------|
+| `checkpoint:human-verify` | 90% | Agent completed work, human confirms |
+| `checkpoint:decision` | 9% | Human makes architectural/tech choice |
+| `checkpoint:human-action` | 1% | Truly unavoidable manual step |
+
+**Golden Rule:** If the agent CAN automate it, the agent MUST automate it.
+
 ## Architecture
 
 ```
@@ -73,18 +85,6 @@ Return Results
 ```
 
 **Structure at the start, freedom at the end.**
-User Request
-    ↓
-Intent Classification
-    ↓
-Route → Skill or Subagent
-    ↓
-Load Context Modules
-    ↓
-Execute
-    ↓
-Return Results
-```
 
 ## Research Basis
 
