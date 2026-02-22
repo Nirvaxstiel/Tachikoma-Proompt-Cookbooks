@@ -1,0 +1,32 @@
+{
+  "name": "tachikoma-framework",
+  "version": "2.0.0",
+  "description": "Structure at the start, freedom at the end - A disciplined AI agent framework for opencode",
+  "scripts": {
+    "tachikoma": "node bin/tachikoma.js"
+  },
+  "keywords": [
+    "opencode",
+    "claude",
+    "ai",
+    "agent",
+    "tachikoma",
+    "ghost-in-shell",
+    "framework",
+    "structured-development"
+  ],
+  "author": "Nirvaxstiel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/issues"
+  },
+  "homepage": "https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {}
+}

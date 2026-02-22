@@ -43,31 +43,46 @@ Phases 1-4 are mandatory. Phase 5 is free — the agent can question its approac
 ## Quick Install
 
 ```bash
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
+# 1. Clone the repo
+git clone https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks.git
+cd Tachikoma-Proompt-Cookbooks
+
+# 2. Install Bun (one-time if not already installed)
+# Linux/macOS:
+curl -fsSL https://bun.sh/install | bash
+
+# Windows:
+winget install Oven.Shell.Bun
+
+# 3. Install tachikoma command to your system
+bash install
 ```
 
-Or copy `AGENTS.md` and `.opencode/` to your repo root.
-
-> UV and Python are bundled. No system Python required.
+> **Requirements**: Bun (~150MB) - https://bun.sh
 
 Full guide: [docs/getting-started.md](docs/getting-started.md)
 
 ---
 
-## Windows Users
+## Use Tachikoma in Your Project
 
-```powershell
-# Option 1: Scoop (clean uninstall: scoop uninstall uv python)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-scoop install uv python
+```bash
+# 1. cd to your project repository
+cd /path/to/your/project
 
-# Option 2: Standalone UV (uninstall: delete uv.exe + uv cache clean)
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+# 2. Run tachikoma to install the agent
+tachikoma
 
-# Option 3: Bundled (use --include-prepackaged-python flag)
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
+# Choose:
+# 1) Global - available in all projects
+# 2) Local  - this project only
 ```
+
+**Global Installation Paths:**
+- All platforms: `~/.config/opencode`
+  - Windows: `C:\Users\username\.config\opencode`
+  - macOS: `/Users/username/.config/opencode`
+  - Linux: `/home/username/.config/opencode`
 
 ---
 

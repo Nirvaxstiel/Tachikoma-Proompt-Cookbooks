@@ -9,12 +9,13 @@ __pycache__/
 # Site-packages (anywhere in project)
 **/site-packages/
 
-# Build outputs
+# Build outputs (Python)
 dist/
 build/
 *.egg-info/
-[Bb]in/
-[Oo]bj/
+*.egg/
+[Bb]uild/
+# Note: bin/ is now used for Node.js installer - not ignored
 
 # IDE
 .idea/
