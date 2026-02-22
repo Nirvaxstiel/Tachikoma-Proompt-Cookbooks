@@ -242,31 +242,31 @@ This skill can be invoked by other skills:
 
 The edit format selector is now available for intelligent format selection:
 
-```python
-from .opencode.core.edit-format-selector import EditFormatSelector, get_edit_selector
+```bash
+# CLI: Get recommendation for auto-detected model
+bun run .opencode/cli/edit-format-selector.ts recommend
 
-# Get selector instance (with optional telemetry callback)
-selector = get_edit_selector()
+# CLI: Get recommendation for specific model
+bun run .opencode/cli/edit-format-selector.ts recommend --model glm-4.7
 
-# Auto-detect model
-model = selector.detect_model()
-# Returns: 'glm-4.7', 'claude-opus-4', etc.
+# CLI: Add custom model mapping
+bun run .opencode/cli/edit-format-selector.ts add gpt-5 apply_patch
+```
 
-# Select optimal format
-format_type, confidence, reason = selector.select_format(model)
-# Returns: (EditFormat.HASHLINE, 0.85, "Model 'glm-4.7' contains 'glm' -> hashline")
+**Programmatic Usage (TypeScript)**:
+```typescript
+import { selectFormat, getFallbackChain, EditFormat } from './edit-format-selector';
 
-# Get full recommendation
-recommendation = selector.get_model_recommendation(model)
-# Returns dictionary with format, confidence, reason, fallback_chain, notes
+// Auto-detect model from environment
+const model = detectModel();
 
-# Execute edit with automatic retry
-result = selector.execute_with_retry(
-    filepath='file.py',
-    edit_op={'hash': '22:f1', 'content': 'new line content'},
-    max_attempts=3
-)
-# Returns: {'success': True, 'format_used': 'hashline', 'attempts': 1, ...}
+// Select optimal format
+const { format, confidence, reason } = selectFormat(model);
+// Returns: { format: "hashline", confidence: 0.85, reason: "..." }
+
+// Get fallback chain
+const fallbacks = getFallbackChain(format);
+// Returns: ["str_replace", "apply_patch"]
 ```
 
 **Model Recommendations** (auto-detected):
