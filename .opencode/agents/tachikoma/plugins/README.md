@@ -35,11 +35,11 @@ LLM can call RLM directly:
 
 ### 2. Subprocess Fallback
 
-**File**: `.opencode/skills/rlm/scripts/rlm_repl.py`
+**File**: `.opencode/skills/rlm/rlm-repl.ts`
 
-`sub_llm()` function calls opencode CLI:
-```python
-result = sub_llm("Find errors", chunk=chunk_text)
+`subLlm()` function calls opencode CLI:
+```typescript
+const result = await subLlm("Find errors", chunkText);
 ```
 
 **Environment variables**:
@@ -56,16 +56,15 @@ result = sub_llm("Find errors", chunk=chunk_text)
 ├── skills/rlm/
 │   ├── SKILL.md              # Skill workflow (what LLM does)
 │   ├── REMOVAL.md            # Removal checklist
-│   ├── adaptive_chunker.py    # Semantic chunking
-│   ├── parallel_processor.py   # Parallel processing
-│   └── scripts/
-│       └── rlm_repl.py      # Python REPL with sub_llm()
+│   ├── adaptive-chunker.ts   # Semantic chunking
+│   ├── parallel-processor.ts # Parallel processing
+│   └── rlm-repl.ts           # TypeScript REPL with subLlm()
 ├── agents/subagents/core/
 │   ├── rlm-optimized.md      # Orchestration subagent
 │   └── rlm-subcall.md        # Chunk processing subagent
 ├── plugins/
 │   ├── rlm.ts                # TypeScript plugin
-│   └── RLM_PLUGIN.md        # Plugin technical docs
+│   └── RLM_PLUGIN.md         # Plugin technical docs
 └── config/
     └── intent-routes.yaml    # Routing configuration
 ```
@@ -97,14 +96,14 @@ routes:
 
 ```bash
 # Initialize
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py init context.txt
+bun run .opencode/skills/rlm/rlm-repl.ts init context.txt
 
 # Execute code
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec -c "peek(0, 1000)"
+bun run .opencode/skills/rlm/rlm-repl.ts exec -c "console.log(peek(0, 1000))"
 
 # Status/Reset
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py status
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py reset
+bun run .opencode/skills/rlm/rlm-repl.ts status
+bun run .opencode/skills/rlm/rlm-repl.ts reset
 ```
 
 ---
@@ -115,9 +114,9 @@ uv run python .opencode/skills/rlm/scripts/rlm_repl.py reset
 |----------|-------------|
 | `peek(start, end)` | View context slice |
 | `grep(pattern)` | Search with regex |
-| `chunk_indices(size, overlap)` | Get chunk boundaries |
-| `write_chunks(dir, size, overlap)` | Write chunks to files |
-| `sub_llm(prompt, chunk)` | Call subagent |
+| `chunkIndices(size, overlap)` | Get chunk boundaries |
+| `writeChunks(dir, size, overlap)` | Write chunks to files |
+| `subLlm(prompt, chunk)` | Call subagent (async) |
 
 ---
 

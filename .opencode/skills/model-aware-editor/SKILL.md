@@ -337,72 +337,38 @@ Success: After retry with hashline
 
 ---
 
-## Telemetry Integration ⭐ PHASE 1
+## Telemetry Integration
 
-The model-aware-editor skill now logs metrics for intelligent format selection:
+Edit operations are automatically tracked via OpenCode's built-in telemetry. No manual logging required.
 
-```python
-from .opencode.core.telemetry-logger import get_telemetry
-from .opencode.core.edit-format-selector import get_edit_selector
+### What's Tracked Automatically
 
-# Get instances
-telemetry = get_telemetry()
-selector = get_edit_selector(telemetry_callback=telemetry.get_edit_success_rate)
+| Metric | Source | Description |
+|--------|--------|-------------|
+| Edit invocations | OpenCode `part` table | Every edit tool call |
+| Duration | `time.end - time.start` | Time per edit |
+| Status | `state.status` | Success/failure |
+| Model | `message.model` | Which model made the edit |
 
-# Auto-detect model
-model = selector.detect_model()
+### View Telemetry
 
-# Execute edit with auto-selection and retry
-result = selector.execute_with_retry(
-    filepath='file.py',
-    edit_op={'hash': '22:f1', 'content': 'new content'},
-    max_attempts=3,
-    model=model
-)
-
-# Log results
-telemetry.log_edit_attempt(
-    model=model,
-    format_type=result['format_used'],
-    success=result['success'],
-    attempts=result['attempts'],
-    tokens_used=token_count,
-    duration_ms=duration
-)
-```
-
-**Auto-Selection Flow**:
-1. **Detect model** from environment (LLM_MODEL, MODEL_NAME, etc.)
-2. **Check telemetry** for historical success rates
-3. **Select format**:
-   - Telemetry-based (if available)
-   - Heuristic-based (model-specific recommendations)
-4. **Execute with retry**:
-   - Try primary format
-   - Fall back through chain (hashline → str_replace → apply_patch)
-5. **Log results** for learning
-
-**Benefits**:
-- Automatic optimization: Learns which formats work best for each model
-- Reduced failures: Fallback chain prevents single-format failures
-- Data-driven decisions: Telemetry informs format selection
-- Performance tracking: Monitor edit success rates over time
-
-**Telemetry Dashboard**:
 ```bash
-# View edit format performance
-python .opencode/core/telemetry-logger.py stats --model glm-4.7
+# Built-in OpenCode stats
+opencode stats
 
-# View overall summary
-python .opencode/core/telemetry-logger.py stats --summary
+# View in Tachikoma Dashboard
+cd dashboard && ./tachikoma-dashboard
 ```
 
-**Research Validation**:
-Your telemetry should confirm research findings:
+### Research-Backed Format Selection
+
+The edit-format-selector uses research-validated heuristics:
 - **GLM-4.7**: Hashline ~89% success (vs 72% str_replace)
 - **Grok**: Hashline ~68% success (vs 25% str_replace) - 10x improvement
 - **Claude**: str_replace ~95% success (hashline minor improvement)
 - **GPT**: apply_patch ~94% success
+
+See `docs/telemetry/opencode-telemetry-capabilities.md` for full telemetry documentation.
 
 ---
 

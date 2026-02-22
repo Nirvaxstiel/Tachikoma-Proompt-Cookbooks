@@ -281,58 +281,27 @@ When completing a task:
 
 ---
 
-## Telemetry Integration ⭐ PHASE 1
+## Telemetry Integration
 
-The verifier-code-agent skill now logs metrics for data-driven optimization:
+GVR loop operations are automatically tracked via OpenCode's built-in telemetry. No manual logging required.
 
-```python
-from .opencode.core.telemetry-logger import get_telemetry
+### What's Tracked Automatically
 
-# Get telemetry instance
-telemetry = get_telemetry()
+| Metric | Source | Description |
+|--------|--------|-------------|
+| Skill invocations | OpenCode `part` table | Every skill call |
+| Duration | `time.end - time.start` | Time per GVR iteration |
+| Status | `state.status` | Success/failure per phase |
+| Iterations | Tool call count | Generate/Verify/Revise cycles |
 
-# Log GVR loop iterations
-telemetry.log_skill_invocation(
-    skill_name='verifier-code-agent',
-    tokens=total_tokens_used,
-    duration_ms=total_duration,
-    success=final_result['overall_pass'],
-    iterations=num_iterations,
-    additional_data={
-        'verification_criteria': list(verification_results.keys()),
-        'failed_criteria': [k for k, v in verification_results.items() if not v['pass']],
-        'max_iterations_reached': num_iterations >= 3
-    }
-)
+### View Telemetry
 
-# Log edit attempts with format tracking
-telemetry.log_edit_attempt(
-    model=model_name,
-    format_type=edit_format_used,
-    success=edit_succeeded,
-    attempts=num_edit_attempts,
-    tokens_used=edit_tokens,
-    duration_ms=edit_duration
-)
-```
-
-**When to log**:
-- After each GENERATE phase
-- After each VERIFY phase
-- After each REVISE phase
-- After final output (pass or escalate)
-
-**Benefits**:
-- GVR loop optimization: Learn best iteration strategies
-- Verification analytics: Track which checks fail most
-- Format performance: Compare edit formats for revisions
-- Success rate tracking: Monitor 90% target from research
-
-**Telemetry Dashboard**:
 ```bash
-# View verification statistics
-python .opencode/core/telemetry-logger.py stats --skill verifier-code-agent
+# Built-in OpenCode stats
+opencode stats
 
-# View format success rates for your model
-python .opencode/core/telemetry-logger.py stats --model glm-4.7
+# View in Tachikoma Dashboard
+cd dashboard && ./tachikoma-dashboard
 ```
+
+See `docs/telemetry/opencode-telemetry-capabilities.md` for full telemetry documentation.

@@ -309,23 +309,23 @@ These are reasoning tools, not rigid rules.
 
 ---
 
-## Python Execution
+## Script Execution
 
-Use `uv run python` for consistent dependency management. Fall back to bare `python` if UV fails:
+Tachikoma CLI tools are TypeScript modules running on Bun:
 
 ```bash
-# Primary approach (recommended)
-uv run python <script.py> [args]
+# CLI tools
+bun run .opencode/cli/<script>.ts [args]
 
-# Fallback if uv fails (e.g., no pyproject.toml, missing deps)
-python <script.py> [args]
+# Examples
+bun run .opencode/cli/router.ts classify "fix the bug"
+bun run .opencode/cli/help.ts
 ```
 
-**When to use each:**
-- `uv run python` - Preferred, ensures consistent dependencies from pyproject.toml
-- `python` - Fallback when UV environment isn't set up or for quick one-liners
-
-**Note:** The project has a root `pyproject.toml` that declares `pyyaml>=6.0` as a dependency.
+**Why Bun:**
+- Single runtime (no Python dependency)
+- Fast startup (~2x faster than Python)
+- Native TypeScript support
 
 ---
 

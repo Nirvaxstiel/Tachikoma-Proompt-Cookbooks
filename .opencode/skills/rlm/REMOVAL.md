@@ -7,12 +7,10 @@
 ### Core Skill Files
 
 - [ ] `.opencode/skills/rlm/SKILL.md`
-- [ ] `.opencode/skills/rlm/adaptive_chunker.py`
-- [ ] `.opencode/skills/rlm/parallel_processor.py`
-- [ ] `.opencode/skills/rlm/scripts/rlm_repl.py`
-- [ ] `.opencode/skills/rlm/scripts/__init__.py` (if exists)
-- [ ] `.opencode/skills/rlm/__pycache__/` (directory)
-- [ ] `.opencode/skills/rlm/scripts/__pycache__/` (directory)
+- [ ] `.opencode/skills/rlm/adaptive-chunker.ts`
+- [ ] `.opencode/skills/rlm/parallel-processor.ts`
+- [ ] `.opencode/skills/rlm/rlm-repl.ts`
+- [ ] `.opencode/skills/rlm/_archive/` (archived Python files)
 - [ ] `.opencode/skills/rlm/` (entire directory)
 
 ### Subagent Definitions

@@ -39,31 +39,28 @@ Handle large contexts efficiently using semantic chunking, parallel processing, 
 
 ```bash
 # Initialize the REPL state
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py init <context_path>
+bun run .opencode/skills/rlm/rlm-repl.ts init <context_path>
 
 # Check status
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py status
+bun run .opencode/skills/rlm/rlm-repl.ts status
 
 # Scout context
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec -c "print(peek(0, 3000))"
+bun run .opencode/skills/rlm/rlm-repl.ts exec -c "console.log(peek(0, 3000))"
 
 # Create chunks
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec <<'PY'
-paths = write_chunks('.opencode/rlm_state/chunks', size=200000, overlap=0)
-print(len(paths))
-PY
+bun run .opencode/skills/rlm/rlm-repl.ts exec -c "const paths = writeChunks('.opencode/rlm_state/chunks', 200000, 0); console.log(paths.length)"
 
-# Use sub_llm for true RLM recursion
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec <<'PY'
-chunks = chunk_indices(size=50000)
-results = []
-for start, end in chunks[:5]:
-    chunk_text = peek(start, end)
-    result = sub_llm("Analyze this chunk", chunk=chunk_text)
-    if result["success"]:
-        results.append(result["result"])
-print(f"Processed {len(results)} chunks")
-PY
+# Use subLlm for true RLM recursion
+bun run .opencode/skills/rlm/rlm-repl.ts exec -c "
+const chunks = chunkIndices(50000);
+const results = [];
+for (const [start, end] of chunks.slice(0, 5)) {
+    const chunkText = peek(start, end);
+    const result = await subLlm('Analyze this chunk', chunkText);
+    if (result.success) results.push(result.result);
+}
+console.log('Processed', results.length, 'chunks');
+"
 ```
 
 ## Key Features

@@ -75,12 +75,12 @@ Return JSON only with this schema:
 
 ## Integration
 
-This subagent is called by `sub_llm()` in the RLM REPL:
+This subagent is called by `subLlm()` in the RLM REPL:
 
-```python
-# In rlm_repl.py
-result = sub_llm("Find all API endpoints", chunk=chunk_text)
-# Returns: {"success": True, "result": {...}, "chunk_id": "inline"}
+```typescript
+// In rlm-repl.ts
+const result = await subLlm("Find all API endpoints", chunkText);
+// Returns: {success: true, result: {...}, chunk_id: "inline"}
 ```
 
 ---

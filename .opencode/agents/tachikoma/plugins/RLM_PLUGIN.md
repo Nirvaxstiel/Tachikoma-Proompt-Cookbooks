@@ -57,10 +57,10 @@ opencode LLM
 Plugin Hook (rlm_repl tool)
     │
     ▼
-UV Python (executes rlm_repl.py)
+Bun Runtime (executes rlm-repl.ts)
     │
     ▼
-Python REPL (stateful)
+TypeScript REPL (stateful, JSON)
 ```
 
 ### Hooks Used
@@ -76,7 +76,7 @@ Python REPL (stateful)
 ```typescript
 tool({
   name: "rlm_repl",
-  description: "Persistent Python REPL for RLM workflows",
+  description: "Persistent TypeScript REPL for RLM workflows",
   parameters: z.object({
     command: z.enum(["init", "exec", "status"]),
     context_path: z.string().optional(),
