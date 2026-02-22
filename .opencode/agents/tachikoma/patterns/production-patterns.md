@@ -10,7 +10,7 @@ Consolidated collection of production-ready patterns extracted from skill refere
 
 **Implementation:**
 
-```python
+```pseudocode
 SECTIONS = {
     "intent": "",
     "files_modified": [],
@@ -34,15 +34,15 @@ merge_sections(new_info)
 
 **Implementation:**
 
-```python
-def get_contextual_info(reference):
+```pseudocode
+function get_contextual_info(reference):
     summary_path = reference.get("summary_path")
     detail_path = reference.get("detail_path")
-    need_detail = reference.get("need_detail", False)
+    need_detail = reference.get("need_detail", false)
 
     if need_detail and detail_path:
         return load_detail(detail_path)
-    elif summary_path:
+    else if summary_path:
         return load_summary(summary_path)
 ```
 
@@ -95,15 +95,15 @@ def get_contextual_info(reference):
 
 **Example:**
 
-```python
-# BAD: Three separate tools
-def list_users(): ...
-def list_events(): ...
-def create_event(): ...
+```pseudocode
+// BAD: Three separate tools
+function list_users(): ...
+function list_events(): ...
+function create_event(): ...
 
-# GOOD: One comprehensive tool
-def schedule_event(availability_check=True, **event_details):
-    """Schedule event after checking availability."""
+// GOOD: One comprehensive tool
+function schedule_event(availability_check=true, **event_details):
+    // Schedule event after checking availability
 ```
 
 ---

@@ -38,7 +38,7 @@ This is non-negotiable. Comments are expensive to maintain and often lie. Use th
 ## Prohibited Patterns (NEVER DO THESE)
 
 ### ❌ Loop Explanations
-```python
+```pseudocode
 # BAD: Explains what the loop does (obvious from code)
 # Loop through users
 for user in users:
@@ -50,7 +50,7 @@ for user in users:
 ```
 
 ### ❌ Type/Function Explanations
-```python
+```pseudocode
 # BAD: Repeats what the code shows
 # Parse the timestamp
 parse(unix_timestamp)
@@ -67,7 +67,7 @@ def get_user(user_id):
 ```
 
 ### ❌ Function Summaries That Repeat the Name
-```python
+```pseudocode
 # BAD: Summary repeats function name
 # Validates the user input
 def validate_user_input(input):
@@ -80,7 +80,7 @@ def validate_user_input(input):
 ```
 
 ### ❌ TODO Comments in Committed Code
-```python
+```pseudocode
 # BAD: TODO in production code
 # TODO: Fix this later
 # FIXME: Handle edge case
@@ -90,7 +90,7 @@ def validate_user_input(input):
 ```
 
 ### ❌ Commented-Out Code
-```python
+```pseudocode
 # BAD: Dead code in comments
 # def old_function():
 #     pass
@@ -101,7 +101,7 @@ def validate_user_input(input):
 ```
 
 ### ❌ Redundant Explanations
-```python
+```pseudocode
 # BAD: States the obvious
 # Increment counter
 counter += 1
@@ -126,7 +126,7 @@ If required by project policy or legal requirements.
 
 ### ✅ Public API Documentation
 Document public interfaces for consumers:
-```python
+```pseudocode
 def calculate_interest(principal, rate, time):
     """
     Calculate compound interest.
@@ -149,14 +149,14 @@ def calculate_interest(principal, rate, time):
 
 ### ✅ Business Rule Explanations
 When code implements non-obvious business logic:
-```python
+```pseudocode
 # Discount capped at 50% per EU regulation 2019/1234
 discount = min(calculated_discount, 0.50)
 ```
 
 ### ✅ Non-Obvious Algorithm Explanations
 When the implementation has subtleties:
-```python
+```pseudocode
 # Fisher-Yates shuffle ensures uniform distribution
 # DO NOT use naive random swap - it's biased
 for i in range(len(items) - 1, 0, -1):
@@ -166,7 +166,7 @@ for i in range(len(items) - 1, 0, -1):
 
 ### ✅ References to Specs/Tickets
 Link to external context:
-```python
+```pseudocode
 # Per RFC 3986, reserved characters must be percent-encoded
 # See: https://tools.ietf.org/html/rfc3986#section-2.2
 encoded = urllib.parse.quote(url)
@@ -221,7 +221,7 @@ encoded = urllib.parse.quote(url)
 
 ### Example 1: Processing Loop
 
-```python
+```pseudocode
 # BAD: Excessive commenting
 # Loop through users
 for user in users:
@@ -243,7 +243,7 @@ for user in users:
 
 ### Example 2: API Client
 
-```python
+```pseudocode
 # BAD: Comments state the obvious
 class ApiClient:
     def __init__(self, base_url):

@@ -77,7 +77,7 @@ If NO test suite:
 
 ### Throwaway Test Prevention
 
-```python
+```pseudocode
 # ❌ BAD: One-time test script
 write_file('test_auth.py', 'def test_auth(): pass')
 

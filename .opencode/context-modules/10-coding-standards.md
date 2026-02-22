@@ -150,7 +150,7 @@ src/
 
 **Prefer early returns over nested conditionals:**
 
-```python
+```pseudocode
 # Good: Early returns
 def process(user):
     if not user:
@@ -276,7 +276,7 @@ function find_user(id):  # Could return None, User, or raise?
 
 **Comments explain WHY, never WHAT.**
 
-```python
+```pseudocode
 # Good: Explains why
 # Using exponential backoff to avoid thundering herd
 def retry_with_backoff(fn, max_retries=3):
@@ -292,7 +292,7 @@ def retry_with_backoff(fn, max_retries=3):
 
 **If you need a comment, consider refactoring:**
 
-```python
+```pseudocode
 # Bad: Comment explains confusing code
 # Check if user is admin or moderator
 if user.role in [1, 2, 3]:
@@ -339,7 +339,7 @@ TODOs must include:
 
 ### Style: AAA (Arrange-Act-Assert)
 
-```python
+```pseudocode
 def test_user_creation():
     # Arrange
     user_data = {"name": "Alice"}
@@ -355,7 +355,7 @@ def test_user_creation():
 
 **Prefer black-box functional tests:**
 
-```python
+```pseudocode
 # Good: Tests behavior, multiple paths
 @pytest.mark.parametrize("input,expected", [
     ({"name": "Alice"}, User(name="Alice")),
@@ -419,7 +419,7 @@ When found:
 
 Place code near what directly uses it.
 
-```python
+```pseudocode
 # Good
 def process(user):
     validator = Validator()  # Created where used
@@ -436,7 +436,7 @@ def process(user, validator):  # Why pass through?
 
 Remove unused connections.
 
-```python
+```pseudocode
 # Bad: High surface area
 class Manager:
     def __init__(self, db, cache, logger, metrics, config):

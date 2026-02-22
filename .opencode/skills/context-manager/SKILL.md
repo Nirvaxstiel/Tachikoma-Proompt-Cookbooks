@@ -278,7 +278,7 @@ User Request
 **Integration Point:** Use structured summarization when harvesting or organizing context to prevent silent information drift.
 
 **Template:**
-```python
+```markdown
 ## Session Intent
 {intent}
 
