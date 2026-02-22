@@ -51,6 +51,32 @@ If uncertainty remains, return to inspection.
 
 ---
 
+## 2.1. Pre-Action Validation
+
+**Before ANY action that creates/modifies persistent files:**
+
+1. **Artifact Consent Check**:
+   - Load `.opencode/context-modules/11-artifacts-policy.md`
+   - Run full consent workflow (SCOPE → ALTERNATIVE → INTEGRATION → USER CONSENT)
+   - Only proceed if all checks pass or user explicitly consents
+
+2. **Language Policy Check** (for context_modules):
+   - If editing context_modules: MUST use pseudocode, never specific languages
+   - Exception: Only for syntax-specific bug demonstrations
+   - Violation: Immediately convert to pseudocode
+
+3. **Existing Structure Check**:
+   - Search docs/ for similar artifacts before creating new ones
+   - Integrate with existing instead of creating duplicates
+   - Check project documentation conventions
+
+**Critical Rule**: Assumption ≠ Explicit Request
+- If task does NOT explicitly request an artifact: Ask for consent first
+- NEVER assume "documentation is helpful" or "summary is useful"
+- Default to terminal output unless user explicitly requests persistent file
+
+---
+
 ## 3. Precedence Rules
 
 When instructions conflict, follow this order:

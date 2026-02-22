@@ -193,6 +193,26 @@ routes:
     strategy: direct
     notes: Use for commits, branches, and git operations
 
+  # Git-Diff-Analysis: Composite intent for analyzing large git diffs
+  # Combines: git (generate diff) + complex-large-context (analyze with RLM)
+  git-diff-analysis:
+    description: Generate git diff and analyze large context with RLM (changelog, audit, migration analysis)
+    confidence_threshold: 0.4 # Lower threshold - matches multiple patterns
+    context_modules:
+      - 00-core-contract
+      - 20-git-workflow
+    subagent: rlm-subcall # Delegate large diff analysis to RLM
+    subagent_invoke_instruction: "task(subagent_type='rlm-subcall', description='Analyze git diff for changelog/audit', prompt='...')"
+    subagent_usage: "Generate git diff with bash, delegate analysis to RLM subagent, update files with results"
+    invoke_via: subagent
+    tools:
+      - Bash
+      - Read
+      - Edit
+      - Write
+    strategy: hybrid # Use tools for git, delegate analysis to subagent
+    notes: Use for changelog updates, commit analysis, git diff parsing, branch comparison analysis
+
   # PR: Pull request descriptions
   pr:
     description: Write pull request descriptions documenting changes for future maintainers
@@ -578,6 +598,26 @@ composite:
         - debug
       description: Refactor code with verification
 
+    - name: git-diff-analysis
+      components:
+        - git
+        - complex-large-context
+      description: Generate git diff and analyze large context with RLM (changelog, audit, migration analysis)
+      keywords:
+        - "scan commits"
+        - "scan all commits"
+        - "analyze commits"
+        - "parse git diff"
+        - "git diff to"
+        - "branch to branch"
+        - "diff between"
+        - "all changes from"
+        - "commit history"
+        - "all line diffs"
+        - "efficiently parse"
+        - "update changelog"
+        - "changelog from commits"
+
 # ============================================
 # FALLBACK RULES
 # ============================================
@@ -822,6 +862,11 @@ intent_keywords:
     - "explain"
     - "learn"
     - "remember"
+    - "changelog"
+    - "update changelog"
+    - "changelog from"
+    - "release notes"
+    - "change history"
 
   complex-large-context:
     - "large codebase"
@@ -836,6 +881,18 @@ intent_keywords:
     - "entire directory"
     - "analyze all files"
     - "large context"
+    # Git/diff analysis patterns
+    - "scan commits"
+    - "scan all commits"
+    - "analyze commits"
+    - "parse git diff"
+    - "git diff to"
+    - "branch to branch"
+    - "diff between"
+    - "all changes from"
+    - "commit history"
+    - "all line diffs"
+    - "efficiently parse"
 
   complex-workflow:
     - "production-grade"
@@ -931,6 +988,22 @@ intent_keywords:
     - "multi-step research"
     - "research in parallel"
     - "investigate thoroughly"
+
+  # Composite: git + large-context analysis (changelog, audit, migration)
+  # Note: Uses single-word keywords due to word-boundary matching in router
+  git-diff-analysis:
+    - "scan"
+    - "analyze"
+    - "parse"
+    - "efficiently"
+    - "commits"
+    - "diff"
+    - "changelog"
+    - "update"  # Combined with changelog/commits
+    - "from"  # Combined with branch/commits
+    - "branch"  # Combined with commits/diff
+    - "history"  # Combined with git/commits
+    # The combination of these keywords with git/diff patterns signals this intent
 
 # ============================================
 # STRATEGIC VARIANCE

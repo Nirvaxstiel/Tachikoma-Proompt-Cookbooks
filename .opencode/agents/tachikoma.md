@@ -144,22 +144,45 @@ skill({ name: "intent-classifier" })
 
 ---
 
-### Phase 3: Skill Loading (REQUIRED)
+### Phase 3: Skill/Subagent Loading (REQUIRED)
 
-| Intent | Skill |
-|--------|-------|
-| debug | `code-agent` |
-| implement | `code-agent` |
-| refactor | `code-agent` |
-| review | `analysis-agent` |
-| research | `research-agent` |
-| git | `git-commit` |
-| document | `self-learning` |
-| complex | `rlm-subcall` subagent |
+| Intent | Skill/Subagent | Loading Method |
+|--------|---------------|----------------|
+| debug | `code-agent` | `skill({ name: "code-agent" })` |
+| implement | `code-agent` | `skill({ name: "code-agent" })` |
+| refactor | `code-agent` | `skill({ name: "code-agent" })` |
+| review | `analysis-agent` | `skill({ name: "analysis-agent" })` |
+| research | `research-agent` | `skill({ name: "research-agent" })` |
+| git | `git-commit` | `skill({ name: "git-commit" })` |
+| document | `self-learning` | `skill({ name: "self-learning" })` |
+| complex | `rlm-subcall` subagent | Delegate via `task(subagent_type='rlm-subcall', ...)` |
+| git-diff-analysis | `rlm-subcall` (hybrid) | **Hybrid: Use tools, then delegate** |
 
-```
-skill({ name: "{skill_name}" })
-```
+**Subagent vs Skill**:
+
+- **Skill**: Load and follow instructions yourself
+  ```
+  skill({ name: "code-agent" })
+  # Then execute: Read, Edit, Bash directly
+  ```
+
+- **Subagent**: Delegate and wait for result
+  ```
+  task(subagent_type='rlm-subcall',
+       description='Analyze large diff',
+       prompt='Extract changelog entries from /tmp/diff.txt')
+  # Wait for subagent to return result
+  ```
+
+- **Hybrid**: Use tools to prepare data, delegate analysis, apply results
+  ```bash
+  # Step 1: Generate data with tools
+  git diff master...dev > /tmp/diff.txt
+  # Step 2: Delegate analysis
+  task(subagent_type='rlm-subcall', prompt='Analyze /tmp/diff.txt')
+  # Step 3: Apply results
+  Edit CHANGELOG.draft.md with extracted entries
+  ```
 
 ---
 
@@ -265,16 +288,52 @@ To review: .opencode/agents/tachikoma/spec/{slug}/
 
 ## Routing Table
 
-| Intent | Skill | Context Modules |
-|--------|-------|-----------------|
-| debug | code-agent | core-contract, coding-standards, commenting-rules |
-| implement | code-agent | core-contract, coding-standards, commenting-rules |
-| refactor | code-agent | core-contract, coding-standards, commenting-rules |
-| review | analysis-agent | core-contract |
-| research | research-agent | core-contract, research-methods |
-| git | git-commit | core-contract, git-workflow |
-| document | self-learning | core-contract |
-| complex | rlm-subcall | core-contract |
+| Intent | Skill/Subagent | Context Modules | Execution |
+|--------|---------------|-----------------|-----------|
+| debug | code-agent | core-contract, coding-standards, commenting-rules | Load skill, execute with tools |
+| implement | code-agent | core-contract, coding-standards, commenting-rules | Load skill, execute with tools |
+| refactor | code-agent | core-contract, coding-standards, commenting-rules | Load skill, execute with tools |
+| review | analysis-agent | core-contract | Load skill, execute with tools |
+| research | research-agent | core-contract, research-methods | Load skill, execute with tools |
+| git | git-commit | core-contract, git-workflow | Load skill, execute with tools |
+| document | self-learning | core-contract | Load skill, execute with tools |
+| complex | rlm-subcall | core-contract | Delegate to subagent |
+| git-diff-analysis | rlm-subcall (hybrid) | core-contract, git-workflow | **Hybrid: Tools first, then subagent** |
+
+---
+
+## Hybrid Execution Model
+
+Some intents require **hybrid execution** - combining direct tool usage with subagent delegation.
+
+### git-diff-analysis Pattern
+
+**Use when**: Analyzing git diffs, changelogs, commit history, branch comparisons
+
+**Execution Flow**:
+
+1. **Generate Data** (Use tools directly):
+   ```bash
+   git diff master...dev > /tmp/diff.txt
+   ```
+
+2. **Delegate Analysis** (Use subagent):
+   ```
+   task(subagent_type='rlm-subcall',
+        description='Analyze git diff for changelog',
+        prompt='Analyze /tmp/diff.txt and extract changelog entries...')
+   ```
+
+3. **Apply Results** (Use tools directly):
+   ```
+   Edit CHANGELOG.draft.md with extracted entries
+   ```
+
+**Key Principle**: The orchestrator bridges the gap between tools and subagents. You know when to use which.
+
+**Other Hybrid Patterns**:
+- `security-audit` with `complex-large-context`: Use Bash to scan files, delegate findings to RLM
+- `optimize` with `deep-research`: Use Bash to gather metrics, delegate analysis to subagent
 
 ---
 
