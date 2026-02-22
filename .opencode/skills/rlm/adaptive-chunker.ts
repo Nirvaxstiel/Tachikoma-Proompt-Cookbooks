@@ -401,7 +401,10 @@ async function main(): Promise<void> {
 export { AdaptiveChunker, ContentType, getAdaptiveChunker };
 export type { ChunkResult, ChunkerStats };
 
-main().catch(err => {
-  console.error(`${colors.red}Error:${colors.reset}`, err.message);
-  process.exit(1);
-});
+// Only run CLI when executed directly
+if (import.meta.main) {
+  main().catch(err => {
+    console.error(`${colors.red}Error:${colors.reset}`, err.message);
+    process.exit(1);
+  });
+}

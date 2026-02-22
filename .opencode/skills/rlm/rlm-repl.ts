@@ -17,7 +17,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { colors, printHeader } from '../../cli/lib/colors';
-import { $ } from 'bun';
+
+// Re-export from other modules (for library usage)
+export { getAdaptiveChunker } from './adaptive-chunker';
+export { getParallelProcessor } from './parallel-processor';
 
 const DEFAULT_STATE_PATH = '.opencode/rlm_state/state.json';
 const DEFAULT_MAX_OUTPUT_CHARS = 8000;
@@ -580,12 +583,9 @@ export {
   loadState,
   saveState,
   makeHelpers,
-  getAdaptiveChunker,
-  getParallelProcessor,
 };
 
-// Re-export from other modules
-import { getAdaptiveChunker } from './adaptive-chunker';
-import { getParallelProcessor } from './parallel-processor';
-
-main();
+// Only run CLI when executed directly
+if (import.meta.main) {
+  main();
+}
