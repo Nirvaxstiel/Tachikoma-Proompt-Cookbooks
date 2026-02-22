@@ -37,9 +37,24 @@ export async function loadRoutesConfig(path: string): Promise<RoutesConfig> {
 }
 
 /**
- * Get default config path
+ * Get default config paths (modular)
+ */
+export function getConfigPaths(): {
+  intents: string;
+  skills: string;
+  contexts: string;
+} {
+  const baseDir = import.meta.dir.replace('/cli/lib', '/agents/tachikoma/config/routing');
+  return {
+    intents: `${baseDir}/intents.yaml`,
+    skills: `${baseDir}/skills.yaml`,
+    contexts: `${baseDir}/contexts.yaml`,
+  };
+}
+
+/**
+ * Get default config path (legacy - points to intents.yaml)
  */
 export function getDefaultConfigPath(): string {
-  // Relative to this file's location
-  return import.meta.dir.replace('/cli/lib', '/agents/tachikoma/config/intent-routes.yaml');
+  return getConfigPaths().intents;
 }

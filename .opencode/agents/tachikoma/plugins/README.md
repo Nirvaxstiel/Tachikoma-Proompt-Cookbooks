@@ -65,8 +65,10 @@ const result = await subLlm("Find errors", chunkText);
 ├── plugins/
 │   ├── rlm.ts                # TypeScript plugin
 │   └── RLM_PLUGIN.md         # Plugin technical docs
-└── config/
-    └── intent-routes.yaml    # Routing configuration
+└── agents/
+    └── tachikoma/
+        └── config/
+            └── routing/      # Modular routing configuration
 ```
 
 ---
@@ -75,7 +77,7 @@ const result = await subLlm("Find errors", chunkText);
 
 ### Intent Routing
 
-**File**: `.opencode/config/intent-routes.yaml`
+**File**: `.opencode/agents/tachikoma/config/routing/features.yaml`
 
 ```yaml
 features:
@@ -150,7 +152,7 @@ When opencode adds native RLM:
 1. `rm .opencode/plugins/rlm.ts`
 2. `rm -rf .opencode/skills/rlm/`
 3. `rm .opencode/agents/subagents/core/rlm-*.md`
-4. Update `.opencode/config/intent-routes.yaml`
+4. Update `.opencode/agents/tachikoma/config/routing/`
 
 See `REMOVAL.md` for complete checklist.
 

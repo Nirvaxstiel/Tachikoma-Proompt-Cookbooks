@@ -1,0 +1,45 @@
+# Composite Intent Configuration
+# Defines intents that combine multiple base intents
+
+composite:
+  enabled: true
+  resolution_strategy: union
+
+  definitions:
+    - name: implement-and-test
+      components:
+        - implement
+        - debug
+      description: Write code and verify it works
+
+    - name: research-and-implement
+      components:
+        - research
+        - implement
+      description: Investigate then implement solution
+
+    - name: refactor-and-test
+      components:
+        - implement
+        - debug
+      description: Refactor code with verification
+
+    - name: git-diff-analysis
+      components:
+        - git
+        - complex-large-context
+      description: Generate git diff and analyze large context with RLM (changelog, audit, migration analysis)
+      keywords:
+        - "scan commits"
+        - "scan all commits"
+        - "analyze commits"
+        - "parse git diff"
+        - "git diff to"
+        - "branch to branch"
+        - "diff between"
+        - "all changes from"
+        - "commit history"
+        - "all line diffs"
+        - "efficiently parse"
+        - "update changelog"
+        - "changelog from commits"

@@ -213,7 +213,7 @@ See `.opencode/plugins/RLM_PLUGIN.md` for plugin technical details.
 | **Capability Overview** | Tachikoma implementation | `docs/capabilities/rlm.md` |
 | **Plugin Details** | Plugin dev | `.opencode/plugins/RLM_PLUGIN.md` |
 | **Removal Checklist** | DevOps | `.opencode/skills/rlm/REMOVAL.md` |
-| **Intent Routing** | `.opencode/config/intent-routes.yaml` |
+| **Intent Routing** | `.opencode/agents/tachikoma/config/routing/features.yaml` |
 | **Quick Start** | `.opencode/plugins/README.md` |
 
 ---

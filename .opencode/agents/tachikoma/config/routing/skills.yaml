@@ -1,0 +1,140 @@
+# Skill Definitions
+
+# Declarative skill definitions for Tachikoma framework
+# Router uses this to determine loading instructions
+
+---
+
+## Skills
+
+code-agent:
+  name: code-agent
+  description: Disciplined code-editing with correctness focus
+  load_instruction: 'skill({ name: "code-agent" })'
+  usage: Load skill, then follow its workflow (inspect→extract→validate→implement→verify→stop) using tools directly
+  base_directory: .opencode/skills/code-agent
+  context_modules:
+    - 00-core-contract.md
+    - 10-coding-standards.md
+    - 12-commenting-rules.md
+  notes: Use for all coding tasks (debug, implement, refactor)
+
+analysis-agent:
+  name: analysis-agent
+  description: Problem decomposition and code analysis
+  load_instruction: 'skill({ name: "analysis-agent" })'
+  usage: Load skill, then follow its analysis workflow using tools directly
+  base_directory: .opencode/skills/analysis-agent
+  context_modules:
+    - 00-core-contract.md
+    - 30-research-methods.md
+  notes: Use for general code analysis, architectural review
+
+research-agent:
+  name: research-agent
+  description: Evidence-driven research and investigation
+  load_instruction: 'skill({ name: "research-agent" })'
+  usage: Load skill, then follow its research methodology using tools directly
+  base_directory: .opencode/skills/research-agent
+  context_modules:
+    - 00-core-contract.md
+    - 30-research-methods.md
+  notes: Use for investigation, learning APIs, understanding code
+
+git-commit:
+  name: git-commit
+  description: Version control operations and commit writing
+  load_instruction: 'skill({ name: "git-commit" })'
+  usage: Load skill, then follow its git workflow using tools directly
+  base_directory: .opencode/skills/git-commit
+  context_modules:
+    - 00-core-contract.md
+    - 20-git-workflow.md
+  notes: Use for commits, branches, and git operations
+
+pr:
+  name: pr
+  description: Pull request descriptions
+  load_instruction: 'skill({ name: "pr" })'
+  usage: Load skill, then follow its PR description writing workflow using tools directly
+  base_directory: .opencode/skills/pr
+  context_modules:
+    - 00-core-contract.md
+    - 12-commenting-rules.md
+  notes: Use for writing PR descriptions, documenting changes
+
+self-learning:
+  name: self-learning
+  description: Documentation and self-improvement
+  load_instruction: 'skill({ name: "self-learning" })'
+  usage: Load skill, then follow its documentation workflow using tools directly
+  base_directory: .opencode/skills/self-learning
+  context_modules:
+    - 00-core-contract.md
+    - 12-commenting-rules.md
+  notes: Use for README updates, docs, and code comments
+
+---
+
+## Subagent Definitions
+
+rlm-subcall:
+  name: rlm-subcall
+  description: Recursive Language Model for large context processing
+  subagent_invoke_instruction: "task(subagent_type='rlm-subcall', description='...', prompt='...')"
+  usage: Delegate task to RLM subagent and wait for completion
+  base_directory: .opencode/skills/rlm
+  notes: Use for large context (>2000 tokens), chunking, parallel processing
+
+rlm-optimized:
+  name: rlm-optimized
+  description: Large context coordinator with optimized processing
+  subagent_invoke_instruction: "task(subagent_type='rlm-optimized', description='...', prompt='...')"
+  usage: Delegate task to optimized RLM for efficient large context processing
+  base_directory: .opencode/skills/rlm
+  notes: When features.rlm_enabled is false, use this instead of rlm-subcall
+
+general:
+  name: general
+  description: General-purpose multi-step task worker
+  subagent_invoke_instruction: "task(subagent_type='general', description='...', prompt='...')"
+  usage: Delegate multi-step parallel tasks to general subagent
+  base_directory: .opencode
+  notes: For tasks not matching specialized subagents
+
+explore:
+  name: explore
+  description: Fast codebase exploration (read-only)
+  subagent_invoke_instruction: "task(subagent_type='explore', description='...', prompt='...')"
+  usage: Delegate fast read-only exploration to explore subagent
+  base_directory: .opencode
+  notes: For finding files, searching code keywords, answering codebase questions
+
+---
+
+## Context Module Definitions
+
+coding:
+  description: Coding standards, patterns, and commenting rules
+  modules:
+    - 00-core-contract.md
+    - 10-coding-standards.md
+    - 12-commenting-rules.md
+
+research:
+  description: Research methodologies and evidence gathering
+  modules:
+    - 00-core-contract.md
+    - 30-research-methods.md
+
+git:
+  description: Git workflow conventions and operations
+  modules:
+    - 00-core-contract.md
+    - 20-git-workflow.md
+
+documentation:
+  description: Documentation patterns (includes code comments)
+  modules:
+    - 00-core-contract.md
+    - 12-commenting-rules.md

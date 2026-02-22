@@ -26,36 +26,91 @@ const CLI_DIR = import.meta.dir;
 const OPENCODE_DIR = join(CLI_DIR, '..');
 const CONTEXT_DIR = `${OPENCODE_DIR}/context-modules`;
 const CONFIG_DIR = `${OPENCODE_DIR}/agents/tachikoma/config`;
+const ROUTING_DIR = `${CONFIG_DIR}/routing`;
 
 // =============================================================================
 // YAML LOADING (cached)
 // =============================================================================
 
-let _routesCache: RoutesConfig | null = null;
+let _intentsCache: any = null;
+let _skillsCache: any = null;
 
-function loadRoutes(): RoutesConfig {
-  if (_routesCache) return _routesCache;
+function loadIntentsConfig(): any {
+  if (_intentsCache) return _intentsCache;
   
-  const routesFile = `${CONFIG_DIR}/intent-routes.yaml`;
+  const intentsFile = `${ROUTING_DIR}/intents.yaml`;
   
   try {
-    const file = Bun.file(routesFile);
-    // Bun.file operations are sync when accessed via .text() in sync context
-    // We use the sync approach with Bun.read
-    const content = require('fs').readFileSync(routesFile, 'utf-8');
-    const config = yaml.load(content) as RoutesConfig;
-    _routesCache = config;
-    return config;
+    const content = require('fs').readFileSync(intentsFile, 'utf-8');
+    // Handle multi-document YAML (documents separated by ---)
+    const docs = yaml.loadAll(content);
+    // Merge all documents into one object
+    const merged: any = {};
+    for (const doc of docs) {
+      if (doc && typeof doc === 'object') {
+        Object.assign(merged, doc);
+      }
+    }
+    _intentsCache = merged;
+    return _intentsCache;
   } catch (e) {
     const error = e as Error;
-    printError(`Error loading routes: ${error.message}`);
-    return { routes: {}, keywords: {} };
+    printError(`Error loading intents config: ${error.message}`);
+    return { intents: {} };
   }
 }
 
+function loadSkillsConfig(): any {
+  if (_skillsCache) return _skillsCache;
+  
+  const skillsFile = `${ROUTING_DIR}/skills.yaml`;
+  
+  try {
+    const content = require('fs').readFileSync(skillsFile, 'utf-8');
+    const config = yaml.load(content);
+    _skillsCache = config;
+    return config;
+  } catch (e) {
+    const error = e as Error;
+    printError(`Error loading skills config: ${error.message}`);
+    return {};
+  }
+}
+
+function loadRoutes(): RoutesConfig {
+  const intentsConfig = loadIntentsConfig();
+  
+  // Convert new format to legacy format for compatibility
+  const routes: Record<string, any> = {};
+  const keywords: Record<string, string[]> = {};
+  
+  if (intentsConfig.intents) {
+    for (const [name, intent] of Object.entries(intentsConfig.intents)) {
+      const i = intent as any;
+      routes[name] = {
+        description: i.description || '',
+        confidence_threshold: i.confidence_threshold || 0.5,
+        context_modules: i.context_modules || [],
+        skill: i.skill || 'code-agent',
+      };
+      keywords[name] = i.keywords || [];
+    }
+  }
+  
+  return { routes, keywords };
+}
+
 function loadIntentKeywords(): Record<string, string[]> {
-  const routes = loadRoutes();
-  return (routes as any).intent_keywords || routes.keywords || {};
+  const intentsConfig = loadIntentsConfig();
+  const keywords: Record<string, string[]> = {};
+  
+  if (intentsConfig.intents) {
+    for (const [name, intent] of Object.entries(intentsConfig.intents)) {
+      keywords[name] = (intent as any).keywords || [];
+    }
+  }
+  
+  return keywords;
 }
 
 // =============================================================================
@@ -408,10 +463,10 @@ function cmdFull(query: string, json: boolean): number {
     
     if (wfConfig?.skills?.length > 0) {
       intent = workflowName;
-      route = getRoute('complex-workflow');
-      printSuccess(`Detected workflow: ${workflowName} -> using workflow-management`);
+      route = getRoute(workflowName);
+      printSuccess(`Detected workflow: ${workflowName}`);
     } else {
-      route = getRoute('complex-workflow');
+      route = getRoute(intent);
     }
   } else {
     route = getRoute(intent);

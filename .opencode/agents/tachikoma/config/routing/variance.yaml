@@ -1,0 +1,57 @@
+# Strategic Variance Configuration
+# Introduces controlled randomness for more interesting/creative outputs
+#
+# Variance Levels:
+#   - low: Standard deterministic behavior (default)
+#   - medium: 20% chance of creative deviation
+#   - high: 40% chance of creative deviation, higher temperature
+#
+# Use Cases:
+#   - Brainstorming sessions
+#   - Exploratory coding
+#   - "Surprise me" requests
+#   - Learning/demonstration scenarios
+#
+# IMPORTANT: Strategic variance should NOT be used for:
+#   - Security-critical code
+#   - Production deployments
+#   - Data migrations
+#   - Any task requiring deterministic output
+
+strategic_variance:
+  enabled: true
+
+  levels:
+    low:
+      probability: 0.0
+      temperature: 0.0
+      description: "Fully deterministic, no variance"
+
+    medium:
+      probability: 0.2
+      temperature: 0.5
+      description: "Occasional creative deviation"
+
+    high:
+      probability: 0.4
+      temperature: 0.7
+      description: "Frequent creative deviation, more interesting outputs"
+
+  # Default variance by intent
+  default_variance:
+    debug: low
+    implement: low
+    review: low
+    research: medium
+    git: low
+    document: medium
+    complex: medium
+    explore: low
+    creative: high
+    deep-research: medium
+
+  # Intents that MUST NEVER have variance (safety)
+  variance_forbidden:
+    - verify
+    - security-audit
+    - production-deploy
