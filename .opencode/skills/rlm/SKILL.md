@@ -1,6 +1,6 @@
 ---
 name: rlm
-description: Run a Recursive Language Model-style loop for long-context tasks. Uses a persistent local Python REPL and an rlm-subcall subagent as the sub-LLM (llm_query).
+description: Run a Recursive Language Model-style loop for long-context tasks. Uses a persistent local TypeScript REPL and an rlm-subcall subagent as the sub-LLM (llm_query).
 allowed-tools:
   - Read
   - Write
@@ -51,13 +51,13 @@ removal_doc: REMOVAL.md
          │
          ▼
 ┌─────────────────┐
-│  Python REPL    │  ← External environment with large context
-│  (rlm_repl)    │
+│ TypeScript REPL │  ← External environment with large context
+│   (rlm-repl)   │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│  sub_llm()     │  ← Calls subagent (true RLM recursion)
+│  subLlm()      │  ← Calls subagent (true RLM recursion)
 └────────┬────────┘
          │
          ▼
@@ -67,7 +67,7 @@ removal_doc: REMOVAL.md
 └─────────────────┘
 ```
 
-**Key concept**: LLM writes Python code that calls `sub_llm()` in loops (MIT paper pattern).
+**Key concept**: LLM writes TypeScript code that calls `subLlm()` in loops (MIT paper pattern).
 
 ---
 
@@ -76,63 +76,63 @@ removal_doc: REMOVAL.md
 ### 1. Initialize REPL
 
 ```bash
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py init <context_path>
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py status
+bun run .opencode/skills/rlm/rlm-repl.ts init <context_path>
+bun run .opencode/skills/rlm/rlm-repl.ts status
 ```
 
 ### 2. Scout Context
 
 ```bash
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec -c "print(peek(0, 3000))"
-uv run python .opencode/skills/rlm/scripts/rlm_repl.py exec -c "print(peek(len(content)-3000, len(content)))"
+bun run .opencode/skills/rlm/rlm-repl.ts exec -c "console.log(peek(0, 3000))"
+bun run .opencode/skills/rlm/rlm-repl.ts exec -c "console.log(peek(content.length-3000, content.length))"
 ```
 
 ### 3. Choose Chunking Strategy
 
 **Option A: Adaptive (Recommended)** ⭐
 
-```python
-from .adaptive_chunker import get_adaptive_chunker
+```typescript
+import { getAdaptiveChunker } from './adaptive-chunker';
 
-chunker = get_adaptive_chunker()
-chunk_tuples = chunker.create_adaptive_chunks(content, max_chunks=10)
-chunks = [chunk for chunk, _ in chunk_tuples]
+const chunker = getAdaptiveChunker();
+const chunks = chunker.createAdaptiveChunks(content, 10);
 ```
 
 **Benefits**: Semantic boundaries (JSON objects, Markdown headings, code functions), 28.3% improvement over base model.
 
 **Option B: Fixed-size (Fallback)**
 
-```python
-paths = write_chunks('.opencode/rlm_state/chunks', size=200000, overlap=0)
+```typescript
+const paths = writeChunks('.opencode/rlm_state/chunks', 200000, 0);
 ```
 
 ### 4. Process Chunks (True RLM Pattern)
 
-```python
-chunks = chunk_indices(size=50000)
-results = []
-for start, end in chunks[:10]:
-    chunk_text = peek(start, end)
-    result = sub_llm("Analyze for errors", chunk=chunk_text)
-    if result["success"]:
-        results.append(result["result"])
-        print(f"Chunk {start}-{end}: {len(result['result'].get('relevant', []))} findings")
+```typescript
+const chunks = chunkIndices(50000);
+const results = [];
+for (const [start, end] of chunks.slice(0, 10)) {
+    const chunkText = peek(start, end);
+    const result = await subLlm("Analyze for errors", chunkText);
+    if (result.success) {
+        results.push(result.result);
+        console.log(`Chunk ${start}-${end}: ${result.result?.relevant?.length || 0} findings`);
+    }
+}
 ```
 
-**sub_llm() Parameters**:
+**subLlm() Parameters**:
 - `prompt`: Query for subagent (required)
 - `chunk`: Raw text chunk (optional)
-- `chunk_file`: Path to chunk file (optional, takes precedence)
-- `agent`: Subagent type (default: "rlm-subcall")
+- `chunkFile`: Path to chunk file (optional, takes precedence)
 
-**sub_llm() Returns**:
-```python
+**subLlm() Returns**:
+```typescript
 {
-    "success": True/False,
-    "result": {...},  # Subagent's output
-    "error": "...",   # If failed
-    "chunk_id": "...",
+    success: boolean,
+    result?: unknown,  // Subagent's output
+    error?: string,    // If failed
+    chunk_id?: string,
 }
 ```
 
@@ -146,24 +146,24 @@ for start, end in chunks[:10]:
 
 For large contexts (>200K tokens):
 
-```python
-from .parallel_processor import get_parallel_processor
+```typescript
+import { getParallelProcessor } from './parallel-processor';
 
-processor = get_parallel_processor(max_concurrent=5)
-results = processor.process_all_chunks(
-    all_chunk_paths=chunks,
-    query=query,
-    subagent_callback=invoke_subagent
-)
+const processor = getParallelProcessor(5);
+const results = await processor.processAll(
+    chunkPaths,
+    query,
+    async (data) => invokeSubagent(data)
+);
 ```
 
 **Impact**: 3-4x speedup for large contexts.
 
 ### 6. Synthesize Results
 
-```python
-# Synthesize in REPL
-synthesized = synthesize_results(results)
+```typescript
+// Synthesize in REPL
+const synthesized = synthesizeResults(results);
 ```
 
 Or ask subagent to merge collected buffers.
@@ -176,10 +176,10 @@ Or ask subagent to merge collected buffers.
 |----------|-------------|
 | `peek(start, end)` | View slice of context |
 | `grep(pattern)` | Search context with regex |
-| `chunk_indices(size, overlap)` | Get chunk boundaries |
-| `write_chunks(dir, size, overlap)` | Write chunks to files |
-| `add_buffer(text)` | Store intermediate results |
-| `sub_llm(prompt, chunk, agent)` | Call subagent |
+| `chunkIndices(size, overlap)` | Get chunk boundaries |
+| `writeChunks(dir, size, overlap)` | Write chunks to files |
+| `addBuffer(text)` | Store intermediate results |
+| `subLlm(prompt, chunk)` | Call subagent (async) |
 
 ---
 
