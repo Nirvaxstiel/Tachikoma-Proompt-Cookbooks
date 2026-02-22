@@ -71,28 +71,60 @@ Task: {user_requirement}
 
 Use the verification engine for systematic checks (Phase 2.3 implementation):
 
-```python
-from verification_engine import VerificationEngine
+```typescript
+import { getVerificationEngine, shouldUseGVR, calculateVerificationConfidence } from './verification-engine';
 
-# Initialize verification engine
-engine = VerificationEngine()
+// Initialize verification engine
+const engine = getVerificationEngine();
 
-# Run comprehensive verification
-results = engine.verify(generated_code, requirements)
+// Run comprehensive verification
+const results = engine.verify(generatedCode, requirements);
 
-if results['overall_pass']:
-    # Verification passed, output result
-    return generated_code
-else:
-    # Verification failed, revise based on failed criteria
-    print(f"Verification failed with {results['confidence']:.0%} confidence")
-    print("Failed criteria:")
-    for criterion, result in results['criteria'].items():
-        if not result['pass']:
-            print(f"  - {criterion}: {result['message']}")
+if (results.overall_pass) {
+    // Verification passed, output result
+    return generatedCode;
+} else {
+    // Verification failed, revise based on failed criteria
+    console.log(`Verification failed with ${(results.confidence * 100).toFixed(0)}% confidence`);
+    console.log("Failed criteria:");
+    for (const result of results.results) {
+        if (!result.passed) {
+            console.log(`  - ${result.criterion}: ${result.message}`);
+        }
+    }
 
-    # Revise code based on failed criteria
-    revise_code(generated_code, results['criteria'])
+    // Revise code based on failed criteria
+    reviseCode(generatedCode, results.results);
+}
+```
+
+**CLI Usage**:
+```bash
+# Verify code string
+bun run .opencode/skills/verifier-code-agent/verification-engine.ts verify "def hello(): pass"
+
+# Verify file
+bun run .opencode/skills/verifier-code-agent/verification-engine.ts file path/to/code.ts
+
+# With requirements
+bun run .opencode/skills/verifier-code-agent/verification-engine.ts verify "code" --requirements "must handle null"
+
+# JSON output
+bun run .opencode/skills/verifier-code-agent/verification-engine.ts verify "code" --json
+```
+
+**Confidence Router Integration**:
+```typescript
+import { shouldUseGVR, calculateVerificationConfidence } from './verification-engine';
+
+// Decide if GVR pattern is needed based on router confidence
+const useGVR = shouldUseGVR(routerResult, codeComplexity);
+
+if (useGVR) {
+    // Use Generator-Verifier-Reviser pattern
+    const verification = engine.verify(code, requirements);
+    const finalConfidence = calculateVerificationConfidence(verification, routerResult.confidence);
+}
 ```
 
 **Verification Criteria** (Phase 2.3):
@@ -132,18 +164,18 @@ else:
 If verification engine import fails, fall back to manual checks:
 
 1. **Syntax Verification**
-   - Run: `python -m py_compile {file}` or equivalent
-   - Check for syntax errors
+    - Run: `bun build {file}` or equivalent
+    - Check for syntax errors
 
 2. **Logic Verification** (self-check questions)
-   - "Does this actually solve the stated problem?"
-   - "What edge cases might break this?"
-   - "Are there any unhandled error conditions?"
+    - "Does this actually solve the stated problem?"
+    - "What edge cases might break this?"
+    - "Are there any unhandled error conditions?"
 
 3. **Integration Verification**
-   - "Will this integrate with existing code?"
-   - "Are imports correct?"
-   - "Are there dependency conflicts?"
+    - "Will this integrate with existing code?"
+    - "Are imports correct?"
+    - "Are there dependency conflicts?"
 
 ### Phase 3: REVISE
 
