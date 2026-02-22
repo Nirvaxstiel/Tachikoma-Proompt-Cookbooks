@@ -7,6 +7,7 @@ subtask: true
 Create a comprehensive handoff document for session breaks.
 
 Use when:
+
 - Context limits approaching
 - Switching to another project
 - Ending work session
@@ -20,6 +21,7 @@ The handoff enables zero-context resumption.
 ## Step 1: Read Current State
 
 Read:
+
 - `.opencode/STATE.md` - Current position
 - `.opencode/agents/tachikoma/spec/{slug}/SPEC.md` - Current task requirements (if task active)
 - `.opencode/agents/tachikoma/spec/{slug}/tasks.md` - Task progress (if task active)
@@ -46,6 +48,7 @@ Create `.opencode/agents/tachikoma/handoffs/HANDOFF-{date}.md` with:
 
 **Started**: {timestamp}
 **What was accomplished**:
+
 - {accomplishment 1}
 - {accomplishment 2}
 
@@ -82,6 +85,7 @@ Be specific: "Continue with Task 1.2 in tasks.md - implement the auth middleware
 ## Resume Context
 
 Key information needed to continue:
+
 - {context 1}
 - {context 2}
 
@@ -94,8 +98,8 @@ Key information needed to continue:
 
 ---
 
-*Handoff created: {timestamp}*
-*Resume with: /tachikoma:resume*
+_Handoff created: {timestamp}_
+_Resume with: /tachikoma:resume_
 ```
 
 ---
@@ -103,6 +107,7 @@ Key information needed to continue:
 ## Step 3: Update STATE.md
 
 Update Session Continuity section:
+
 ```markdown
 ## Session Continuity
 

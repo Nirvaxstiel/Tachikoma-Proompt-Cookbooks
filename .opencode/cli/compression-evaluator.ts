@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 /**
  * Context Compression Evaluation
- * 
+ *
  * This module provides utilities for evaluating context compression quality
  * using probe-based assessment.
- * 
+ *
  * PRODUCTION NOTES:
  * - The LLM judge calls are stubbed for demonstration. Production systems
  *   should implement actual API calls to GPT-5.2 or equivalent.
@@ -12,11 +12,11 @@
  *   use model-specific tokenizers.
  * - Ground truth extraction uses pattern matching. Production systems may
  *   benefit from more sophisticated fact extraction.
- * 
+ *
  * Converted from: .opencode/agents/tachikoma/scripts/context/compression_evaluator.py
  */
 
-import { colors, printHeader } from './lib/colors';
+import { colors, printHeader } from "./lib/colors";
 
 // =============================================================================
 // TYPES
@@ -26,7 +26,7 @@ enum ProbeType {
   RECALL = "recall",
   ARTIFACT = "artifact",
   CONTINUATION = "continuation",
-  DECISION = "decision"
+  DECISION = "decision",
 }
 
 interface Probe {
@@ -111,7 +111,8 @@ const RUBRIC_CRITERIA: Record<string, CriterionConfig[]> = {
     },
     {
       id: "context_artifact_state",
-      question: "Does the response reflect which files/artifacts were accessed?",
+      question:
+        "Does the response reflect which files/artifacts were accessed?",
       weight: 0.5,
     },
   ],
@@ -128,7 +129,8 @@ const RUBRIC_CRITERIA: Record<string, CriterionConfig[]> = {
     },
     {
       id: "artifact_key_details",
-      question: "Does the agent remember function names, variable names, error messages?",
+      question:
+        "Does the agent remember function names, variable names, error messages?",
       weight: 0.3,
     },
   ],
@@ -199,7 +201,8 @@ class ProbeGenerator {
     if (Object.keys(this.extractedFacts).length > 0) {
       probes.push({
         probe_type: ProbeType.RECALL,
-        question: "What was the original error or issue that started this session?",
+        question:
+          "What was the original error or issue that started this session?",
         ground_truth: this.extractedFacts["original_error"],
         context_reference: "session_start",
       });
@@ -209,7 +212,8 @@ class ProbeGenerator {
     if (this.extractedFiles.length > 0) {
       probes.push({
         probe_type: ProbeType.ARTIFACT,
-        question: "Which files have we modified? Describe what changed in each.",
+        question:
+          "Which files have we modified? Describe what changed in each.",
         ground_truth: JSON.stringify(this.extractedFiles),
         context_reference: "file_operations",
       });
@@ -277,7 +281,10 @@ class ProbeGenerator {
 
     // Common file patterns
     const filePatterns = [
-      { regex: /(?:modified|changed|updated|edited)\s+([^\s]+\.[a-z]+)/gi, op: "modified" },
+      {
+        regex: /(?:modified|changed|updated|edited)\s+([^\s]+\.[a-z]+)/gi,
+        op: "modified",
+      },
       { regex: /(?:created|added)\s+([^\s]+\.[a-z]+)/gi, op: "created" },
       { regex: /(?:read|examined|opened)\s+([^\s]+\.[a-z]+)/gi, op: "read" },
     ];
@@ -286,7 +293,7 @@ class ProbeGenerator {
       let match;
       while ((match = regex.exec(this.history)) !== null) {
         const path = match[1];
-        if (!files.some(f => f.path === path)) {
+        if (!files.some((f) => f.path === path)) {
           files.push({ path, operation: op });
         }
       }
@@ -332,14 +339,23 @@ class CompressionEvaluator {
     this.results = [];
   }
 
-  evaluate(probe: Probe, response: string, compressedContext: string): EvaluationResult {
+  evaluate(
+    probe: Probe,
+    response: string,
+    compressedContext: string,
+  ): EvaluationResult {
     // Get relevant criteria based on probe type
     const criteria = this.getCriteriaForProbe(probe.probe_type);
 
     // Evaluate each criterion
     const criterionResults: CriterionResult[] = [];
     for (const criterion of criteria) {
-      const result = this.evaluateCriterion(criterion, probe, response, compressedContext);
+      const result = this.evaluateCriterion(
+        criterion,
+        probe,
+        response,
+        compressedContext,
+      );
       criterionResults.push(result);
     }
 
@@ -347,8 +363,9 @@ class CompressionEvaluator {
     const dimensionScores = this.calculateDimensionScores(criterionResults);
 
     // Calculate aggregate score
-    const aggregateScore = Object.values(dimensionScores).reduce((a, b) => a + b, 0) / 
-                          Object.values(dimensionScores).length;
+    const aggregateScore =
+      Object.values(dimensionScores).reduce((a, b) => a + b, 0) /
+      Object.values(dimensionScores).length;
 
     const result: EvaluationResult = {
       probe,
@@ -393,11 +410,11 @@ class CompressionEvaluator {
     criterion: CriterionConfig,
     probe: Probe,
     response: string,
-    _context: string
+    _context: string,
   ): CriterionResult {
     /**
      * Evaluate a single criterion using LLM judge.
-     * 
+     *
      * PRODUCTION NOTE: This is a stub implementation.
      * Production systems should call the actual LLM API.
      */
@@ -414,7 +431,7 @@ class CompressionEvaluator {
   private heuristicScore(
     criterion: CriterionConfig,
     response: string,
-    groundTruth?: string
+    groundTruth?: string,
   ): number {
     /**
      * Heuristic scoring for demonstration.
@@ -430,7 +447,7 @@ class CompressionEvaluator {
     }
 
     // Check for technical content
-    if ([".ts", ".py", ".js", ".md"].some(ext => response.includes(ext))) {
+    if ([".ts", ".py", ".js", ".md"].some((ext) => response.includes(ext))) {
       score += 0.5; // Contains file references
     }
 
@@ -441,12 +458,16 @@ class CompressionEvaluator {
     return Math.min(5.0, Math.max(0.0, score));
   }
 
-  private calculateDimensionScores(criterionResults: CriterionResult[]): Record<string, number> {
+  private calculateDimensionScores(
+    criterionResults: CriterionResult[],
+  ): Record<string, number> {
     const dimensionScores: Record<string, number> = {};
 
     for (const [dimension, criteria] of Object.entries(RUBRIC_CRITERIA)) {
-      const criterionIds = criteria.map(c => c.id);
-      const relevantResults = criterionResults.filter(r => criterionIds.includes(r.criterion_id));
+      const criterionIds = criteria.map((c) => c.id);
+      const relevantResults = criterionResults.filter((r) =>
+        criterionIds.includes(r.criterion_id),
+      );
 
       if (relevantResults.length > 0) {
         // Weighted average
@@ -454,14 +475,17 @@ class CompressionEvaluator {
         let weightedSum = 0;
 
         for (const result of relevantResults) {
-          const criterionConfig = criteria.find(c => c.id === result.criterion_id);
+          const criterionConfig = criteria.find(
+            (c) => c.id === result.criterion_id,
+          );
           if (criterionConfig) {
             totalWeight += criterionConfig.weight;
             weightedSum += result.score * criterionConfig.weight;
           }
         }
 
-        dimensionScores[dimension] = totalWeight > 0 ? weightedSum / totalWeight : 0.0;
+        dimensionScores[dimension] =
+          totalWeight > 0 ? weightedSum / totalWeight : 0.0;
       }
     }
 
@@ -473,7 +497,9 @@ class CompressionEvaluator {
       return { error: "No evaluations performed" } as EvaluationSummary;
     }
 
-    const avgScore = this.results.reduce((sum, r) => sum + r.aggregate_score, 0) / this.results.length;
+    const avgScore =
+      this.results.reduce((sum, r) => sum + r.aggregate_score, 0) /
+      this.results.length;
 
     // Average dimension scores
     const dimensionTotals: Record<string, number> = {};
@@ -492,8 +518,8 @@ class CompressionEvaluator {
     }
 
     const entries = Object.entries(avgDimensions);
-    const weakest = entries.reduce((a, b) => a[1] < b[1] ? a : b)[0];
-    const strongest = entries.reduce((a, b) => a[1] > b[1] ? a : b)[0];
+    const weakest = entries.reduce((a, b) => (a[1] < b[1] ? a : b))[0];
+    const strongest = entries.reduce((a, b) => (a[1] > b[1] ? a : b))[0];
 
     return {
       total_evaluations: this.results.length,
@@ -541,7 +567,7 @@ class StructuredSummarizer {
   updateFromSpan(newContent: string): string {
     /**
      * Update summary from newly truncated content span.
-     * 
+     *
      * This implements anchored iterative summarization:
      * - Extract information from new span
      * - Merge with existing sections
@@ -563,7 +589,8 @@ class StructuredSummarizer {
     };
 
     // Extract file modifications
-    const modPattern = /(?:modified|changed|updated|fixed)\s+([^\s]+\.[a-z]+)[:\s]*(.+?)(?:\n|$)/gi;
+    const modPattern =
+      /(?:modified|changed|updated|fixed)\s+([^\s]+\.[a-z]+)[:\s]*(.+?)(?:\n|$)/gi;
     let match;
     while ((match = modPattern.exec(content)) !== null) {
       extracted.files_modified.push({
@@ -577,13 +604,14 @@ class StructuredSummarizer {
     const readPattern = /(?:read|examined|opened|checked)\s+([^\s]+\.[a-z]+)/gi;
     while ((match = readPattern.exec(content)) !== null) {
       const filePath = match[1];
-      if (!extracted.files_modified.some(f => f.path === filePath)) {
+      if (!extracted.files_modified.some((f) => f.path === filePath)) {
         extracted.files_read.push(filePath);
       }
     }
 
     // Extract decisions
-    const decisionPattern = /(?:decided|chose|going with|will use)\s+(.+?)(?:\n|$)/gi;
+    const decisionPattern =
+      /(?:decided|chose|going with|will use)\s+(.+?)(?:\n|$)/gi;
     while ((match = decisionPattern.exec(content)) !== null) {
       extracted.decisions.push(match[1].trim().slice(0, 150));
     }
@@ -598,7 +626,7 @@ class StructuredSummarizer {
     }
 
     // Merge file lists (deduplicate by path)
-    const existingModPaths = this.sections.files_modified.map(f => f.path);
+    const existingModPaths = this.sections.files_modified.map((f) => f.path);
     for (const fileInfo of newInfo.files_modified) {
       if (!existingModPaths.includes(fileInfo.path)) {
         this.sections.files_modified.push(fileInfo);
@@ -625,29 +653,43 @@ class StructuredSummarizer {
   }
 
   private formatSummary(): string {
-    const filesModifiedStr = this.sections.files_modified.length > 0
-      ? this.sections.files_modified.map(f => `- ${f.path}: ${f.change || ''}`).join('\n')
-      : 'None';
+    const filesModifiedStr =
+      this.sections.files_modified.length > 0
+        ? this.sections.files_modified
+            .map((f) => `- ${f.path}: ${f.change || ""}`)
+            .join("\n")
+        : "None";
 
-    const filesReadStr = this.sections.files_read.length > 0
-      ? this.sections.files_read.map(f => `- ${f}`).join('\n')
-      : 'None';
+    const filesReadStr =
+      this.sections.files_read.length > 0
+        ? this.sections.files_read.map((f) => `- ${f}`).join("\n")
+        : "None";
 
-    const decisionsStr = this.sections.decisions.length > 0
-      ? this.sections.decisions.slice(-5).map(d => `- ${d}`).join('\n')
-      : 'None';
+    const decisionsStr =
+      this.sections.decisions.length > 0
+        ? this.sections.decisions
+            .slice(-5)
+            .map((d) => `- ${d}`)
+            .join("\n")
+        : "None";
 
-    const nextStepsStr = this.sections.next_steps.length > 0
-      ? this.sections.next_steps.slice(-5).map((s, i) => `${i + 1}. ${s}`).join('\n')
-      : 'None';
+    const nextStepsStr =
+      this.sections.next_steps.length > 0
+        ? this.sections.next_steps
+            .slice(-5)
+            .map((s, i) => `${i + 1}. ${s}`)
+            .join("\n")
+        : "None";
 
-    return StructuredSummarizer.TEMPLATE
-      .replace('{intent}', this.sections.intent || 'Not specified')
-      .replace('{files_modified}', filesModifiedStr)
-      .replace('{files_read}', filesReadStr)
-      .replace('{decisions}', decisionsStr)
-      .replace('{current_state}', this.sections.current_state || 'In progress')
-      .replace('{next_steps}', nextStepsStr);
+    return StructuredSummarizer.TEMPLATE.replace(
+      "{intent}",
+      this.sections.intent || "Not specified",
+    )
+      .replace("{files_modified}", filesModifiedStr)
+      .replace("{files_read}", filesReadStr)
+      .replace("{decisions}", decisionsStr)
+      .replace("{current_state}", this.sections.current_state || "In progress")
+      .replace("{next_steps}", nextStepsStr);
   }
 }
 
@@ -656,28 +698,38 @@ class StructuredSummarizer {
 // =============================================================================
 
 function printUsage(): void {
-  printHeader('Compression Evaluator');
+  printHeader("Compression Evaluator");
   console.log();
   console.log(`${colors.yellow}Usage:${colors.reset}`);
   console.log(`  bun run compression-evaluator.ts <command> [args]`);
   console.log();
   console.log(`${colors.yellow}Commands:${colors.reset}`);
-  console.log(`  ${colors.green}probes <file>${colors.reset}         Generate probes from conversation file`);
-  console.log(`  ${colors.green}rubric${colors.reset}                Show evaluation rubric`);
-  console.log(`  ${colors.green}demo${colors.reset}                  Run demo evaluation`);
+  console.log(
+    `  ${colors.green}probes <file>${colors.reset}         Generate probes from conversation file`,
+  );
+  console.log(
+    `  ${colors.green}rubric${colors.reset}                Show evaluation rubric`,
+  );
+  console.log(
+    `  ${colors.green}demo${colors.reset}                  Run demo evaluation`,
+  );
   console.log();
   console.log(`${colors.yellow}Library Usage:${colors.reset}`);
-  console.log(`  import { ProbeGenerator, CompressionEvaluator } from './compression-evaluator';`);
+  console.log(
+    `  import { ProbeGenerator, CompressionEvaluator } from './compression-evaluator';`,
+  );
 }
 
 function showRubric(): void {
-  printHeader('Evaluation Rubric');
+  printHeader("Evaluation Rubric");
   console.log();
 
   for (const [dimension, criteria] of Object.entries(RUBRIC_CRITERIA)) {
     console.log(`${colors.cyan}${dimension.toUpperCase()}${colors.reset}`);
     for (const c of criteria) {
-      console.log(`  ${colors.yellow}${c.id}${colors.reset} (weight: ${c.weight})`);
+      console.log(
+        `  ${colors.yellow}${c.id}${colors.reset} (weight: ${c.weight})`,
+      );
       console.log(`    ${c.question}`);
     }
     console.log();
@@ -685,7 +737,7 @@ function showRubric(): void {
 }
 
 function runDemo(): void {
-  printHeader('Demo: Compression Evaluation');
+  printHeader("Demo: Compression Evaluation");
   console.log();
 
   const sampleHistory = `
@@ -707,7 +759,9 @@ Agent: Next: test the fix and update the unit tests.
 
   console.log(`${colors.cyan}Generated Probes:${colors.reset}`);
   for (const probe of probes) {
-    console.log(`  ${colors.yellow}[${probe.probe_type}]${colors.reset} ${probe.question}`);
+    console.log(
+      `  ${colors.yellow}[${probe.probe_type}]${colors.reset} ${probe.question}`,
+    );
     if (probe.ground_truth) {
       console.log(`    Ground truth: ${probe.ground_truth.slice(0, 50)}...`);
     }
@@ -716,7 +770,8 @@ Agent: Next: test the fix and update the unit tests.
 
   // Evaluate
   const evaluator = new CompressionEvaluator();
-  const sampleResponse = "The original issue was with the auth token validation. We modified auth.ts to fix the secret handling. Next we should test the fix.";
+  const sampleResponse =
+    "The original issue was with the auth token validation. We modified auth.ts to fix the secret handling. Next we should test the fix.";
 
   console.log(`${colors.cyan}Evaluating Sample Response:${colors.reset}`);
   console.log(`  "${sampleResponse}"`);
@@ -737,7 +792,7 @@ Agent: Next: test the fix and update the unit tests.
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     printUsage();
     process.exit(0);
   }
@@ -745,17 +800,19 @@ async function main(): Promise<void> {
   const command = args[0];
 
   switch (command) {
-    case 'rubric':
+    case "rubric":
       showRubric();
       break;
 
-    case 'demo':
+    case "demo":
       runDemo();
       break;
 
-    case 'probes':
+    case "probes":
       if (args.length < 2) {
-        console.error(`${colors.red}Error: probes requires <file>${colors.reset}`);
+        console.error(
+          `${colors.red}Error: probes requires <file>${colors.reset}`,
+        );
         process.exit(1);
       }
       const filePath = args[1];
@@ -789,15 +846,10 @@ export {
   RUBRIC_CRITERIA,
 };
 
-export type {
-  Probe,
-  CriterionResult,
-  EvaluationResult,
-  EvaluationSummary,
-};
+export type { Probe, CriterionResult, EvaluationResult, EvaluationSummary };
 
 // Run CLI if executed directly
-main().catch(err => {
+main().catch((err) => {
   console.error(`${colors.red}Error:${colors.reset}`, err.message);
   process.exit(1);
 });

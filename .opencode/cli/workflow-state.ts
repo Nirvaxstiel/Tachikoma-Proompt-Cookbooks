@@ -6,11 +6,17 @@
 // TYPES
 // =============================================================================
 
-export type WorkflowState = 'INIT' | 'CLASSIFY' | 'PLAN' | 'EXECUTE' | 'PAUSED' | 'DONE';
+export type WorkflowState =
+  | "INIT"
+  | "CLASSIFY"
+  | "PLAN"
+  | "EXECUTE"
+  | "PAUSED"
+  | "DONE";
 
 export interface Checkpoint {
   id: string;
-  type: 'initial' | 'milestone' | 'context-switch' | 'final';
+  type: "initial" | "milestone" | "context-switch" | "final";
   timestamp: Date;
   intent: string;
   confidence: number;
@@ -63,7 +69,7 @@ export class WorkflowStateMachine {
     this.workflow = {
       id: this.generateId(),
       query,
-      state: 'INIT',
+      state: "INIT",
       intent: initialIntent,
       confidence,
       checkpoints: [],
@@ -71,18 +77,18 @@ export class WorkflowStateMachine {
       children: [],
       priority: 0.5,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.constraints = {
-      hard: ['intent_classification', 'core_contract_load', 'state_tracking'],
-      soft: ['spec_folder', 'unify_phase', 'full_design'],
-      optional: ['research_phase', 'validation_phase', 'documentation'],
+      hard: ["intent_classification", "core_contract_load", "state_tracking"],
+      soft: ["spec_folder", "unify_phase", "full_design"],
+      optional: ["research_phase", "validation_phase", "documentation"],
       applied: {
         hard: [],
         soft: [],
-        optional: []
-      }
+        optional: [],
+      },
     };
   }
 
@@ -106,17 +112,19 @@ export class WorkflowStateMachine {
   // Transition to new state
   transition(newState: WorkflowState): void {
     const validTransitions: Record<WorkflowState, WorkflowState[]> = {
-      'INIT': ['CLASSIFY'],
-      'CLASSIFY': ['PLAN'],
-      'PLAN': ['EXECUTE', 'PAUSED'],
-      'EXECUTE': ['DONE', 'PAUSED', 'PLAN'],
-      'PAUSED': ['CLASSIFY', 'PLAN', 'EXECUTE'],
-      'DONE': ['INIT']
+      INIT: ["CLASSIFY"],
+      CLASSIFY: ["PLAN"],
+      PLAN: ["EXECUTE", "PAUSED"],
+      EXECUTE: ["DONE", "PAUSED", "PLAN"],
+      PAUSED: ["CLASSIFY", "PLAN", "EXECUTE"],
+      DONE: ["INIT"],
     };
 
     const allowed = validTransitions[this.workflow.state];
     if (!allowed.includes(newState)) {
-      throw new Error(`Invalid transition from ${this.workflow.state} to ${newState}`);
+      throw new Error(
+        `Invalid transition from ${this.workflow.state} to ${newState}`,
+      );
     }
 
     this.workflow.state = newState;
@@ -125,10 +133,10 @@ export class WorkflowStateMachine {
 
   // Create checkpoint
   createCheckpoint(
-    type: Checkpoint['type'],
+    type: Checkpoint["type"],
     intent: string,
     confidence: number,
-    decision: string
+    decision: string,
   ): string {
     const checkpoint: Checkpoint = {
       id: this.generateCheckpointId(),
@@ -136,7 +144,7 @@ export class WorkflowStateMachine {
       timestamp: new Date(),
       intent,
       confidence,
-      decision
+      decision,
     };
 
     this.workflow.checkpoints.push(checkpoint);
@@ -153,17 +161,22 @@ export class WorkflowStateMachine {
   // Generate checkpoint ID
   private generateCheckpointId(): string {
     const count = this.workflow.checkpoints.length + 1;
-    return `CP${count.toString().padStart(3, '0')}`;
+    return `CP${count.toString().padStart(3, "0")}`;
   }
 
   // Add intent history entry
-  addIntentHistory(intent: string, confidence: number, trigger: string, decision: string): void {
+  addIntentHistory(
+    intent: string,
+    confidence: number,
+    trigger: string,
+    decision: string,
+  ): void {
     const entry: IntentEntry = {
       timestamp: new Date(),
       intent,
       confidence,
       trigger,
-      decision
+      decision,
     };
 
     this.workflow.intentHistory.push(entry);
@@ -223,13 +236,13 @@ export class WorkflowStateMachine {
 
   // Pause workflow
   pause(): void {
-    this.transition('PAUSED');
+    this.transition("PAUSED");
   }
 
   // Resume workflow
   resume(): void {
-    if (this.workflow.state === 'PAUSED') {
-      this.transition('EXECUTE');
+    if (this.workflow.state === "PAUSED") {
+      this.transition("EXECUTE");
     } else {
       throw new Error(`Cannot resume from ${this.workflow.state}`);
     }
@@ -237,21 +250,29 @@ export class WorkflowStateMachine {
 
   // Complete workflow
   complete(): void {
-    this.transition('DONE');
+    this.transition("DONE");
   }
 
   // Serialize to JSON
   toJSON(): string {
-    return JSON.stringify({
-      workflow: this.workflow,
-      constraints: this.constraints
-    }, null, 2);
+    return JSON.stringify(
+      {
+        workflow: this.workflow,
+        constraints: this.constraints,
+      },
+      null,
+      2,
+    );
   }
 
   // Deserialize from JSON
   static fromJSON(json: string): WorkflowStateMachine {
     const data = JSON.parse(json);
-    const machine = new WorkflowStateMachine(data.workflow.query, data.workflow.intent, data.workflow.confidence);
+    const machine = new WorkflowStateMachine(
+      data.workflow.query,
+      data.workflow.intent,
+      data.workflow.confidence,
+    );
     machine.workflow = data.workflow;
     machine.constraints = data.constraints;
     return machine;
@@ -271,8 +292,13 @@ export class CheckpointSystem {
 
   // Create initial checkpoint
   createInitial(intent: string, confidence: number): string {
-    this.machine.transition('CLASSIFY');
-    return this.machine.createCheckpoint('initial', intent, confidence, 'Start workflow');
+    this.machine.transition("CLASSIFY");
+    return this.machine.createCheckpoint(
+      "initial",
+      intent,
+      confidence,
+      "Start workflow",
+    );
   }
 
   // Create milestone checkpoint
@@ -282,26 +308,46 @@ export class CheckpointSystem {
 
     // Check if intent changed
     if (this.machine.shouldReclassify(newIntent, newConfidence)) {
-      return this.machine.createCheckpoint('milestone', newIntent, newConfidence, 'Intent changed, re-classify');
+      return this.machine.createCheckpoint(
+        "milestone",
+        newIntent,
+        newConfidence,
+        "Intent changed, re-classify",
+      );
     }
 
-    return this.machine.createCheckpoint('milestone', newIntent, newConfidence, 'Continue');
+    return this.machine.createCheckpoint(
+      "milestone",
+      newIntent,
+      newConfidence,
+      "Continue",
+    );
   }
 
   // Create context switch checkpoint
   createContextSwitch(newIntent: string, newConfidence: number): string {
     this.machine.pause();
     const decision = this.shouldPivot(newIntent, newConfidence)
-      ? 'Pivot to new intent'
-      : 'Save and branch';
-    return this.machine.createCheckpoint('context-switch', newIntent, newConfidence, decision);
+      ? "Pivot to new intent"
+      : "Save and branch";
+    return this.machine.createCheckpoint(
+      "context-switch",
+      newIntent,
+      newConfidence,
+      decision,
+    );
   }
 
   // Create final checkpoint
   createFinal(): string {
-    this.machine.transition('DONE');
+    this.machine.transition("DONE");
     const state = this.machine.getState();
-    return this.machine.createCheckpoint('final', state.intent, state.confidence, 'Complete workflow');
+    return this.machine.createCheckpoint(
+      "final",
+      state.intent,
+      state.confidence,
+      "Complete workflow",
+    );
   }
 
   // Check if should pivot
@@ -323,13 +369,13 @@ export const CONTEXT_SWITCH_PATTERNS = [
   /different.*approach/i,
   /forget.*that/i,
   /change.*mind/i,
-  /instead.*of/i
+  /instead.*of/i,
 ];
 
 export class ContextSwitchDetector {
   // Detect if user message indicates context switch
   static detect(message: string): boolean {
-    return CONTEXT_SWITCH_PATTERNS.some(pattern => pattern.test(message));
+    return CONTEXT_SWITCH_PATTERNS.some((pattern) => pattern.test(message));
   }
 
   // Extract new intent from message
@@ -339,7 +385,7 @@ export class ContextSwitchDetector {
       /actually.*want to (.*)/i,
       /wait.*clarify.*(.*)/i,
       /instead.*of.* (.*)/i,
-      /change.*mind.* (.*)/i
+      /change.*mind.* (.*)/i,
     ];
 
     for (const pattern of patterns) {
@@ -391,14 +437,17 @@ export class WorkflowManager {
   }
 
   // Handle context switch
-  handleContextSwitch(message: string): { action: string; workflowId?: string } {
+  handleContextSwitch(message: string): {
+    action: string;
+    workflowId?: string;
+  } {
     if (!ContextSwitchDetector.detect(message)) {
-      return { action: 'none' };
+      return { action: "none" };
     }
 
     const current = this.getCurrentWorkflow();
     if (!current) {
-      return { action: 'none' };
+      return { action: "none" };
     }
 
     const newIntent = ContextSwitchDetector.extractIntent(message);
@@ -410,31 +459,40 @@ export class WorkflowManager {
     const newConfidence = 0.8; // Placeholder
 
     // Create context switch checkpoint
-    const checkpointId = checkpoint.createContextSwitch(newIntent, newConfidence);
+    const checkpointId = checkpoint.createContextSwitch(
+      newIntent,
+      newConfidence,
+    );
 
     // Decide action
     if (checkpoint.shouldPivot(newIntent, newConfidence)) {
       current.resume();
-      return { action: 'pivot', workflowId: current.getState().id };
+      return { action: "pivot", workflowId: current.getState().id };
     } else {
       // Create new workflow branch
-      const newWorkflowId = this.createWorkflow(message, newIntent, newConfidence);
+      const newWorkflowId = this.createWorkflow(
+        message,
+        newIntent,
+        newConfidence,
+      );
       current.addChild(newWorkflowId);
       this.activeWorkflows.get(newWorkflowId)!.setParent(current.getState().id);
       this.switchWorkflow(newWorkflowId);
 
-      return { action: 'branch', workflowId: newWorkflowId };
+      return { action: "branch", workflowId: newWorkflowId };
     }
   }
 
   // Save all workflows to STATE.md
   async saveToState(): Promise<void> {
     // This would integrate with state-update.ts
-    const workflows = Array.from(this.activeWorkflows.values()).map(m => m.getState());
+    const workflows = Array.from(this.activeWorkflows.values()).map((m) =>
+      m.getState(),
+    );
     const json = JSON.stringify(workflows, null, 2);
 
     // Write to STATE.md (simplified)
-    console.log('Workflows:', json);
+    console.log("Workflows:", json);
   }
 }
 
@@ -447,34 +505,34 @@ async function exampleUsage() {
 
   // Create initial workflow
   const workflowId = manager.createWorkflow(
-    'Research authentication in my app',
-    'research',
-    0.85
+    "Research authentication in my app",
+    "research",
+    0.85,
   );
 
-  console.log('Created workflow:', workflowId);
+  console.log("Created workflow:", workflowId);
 
   // Get current workflow
   const workflow = manager.getCurrentWorkflow()!;
   const checkpoint = new CheckpointSystem(workflow);
 
   // Create initial checkpoint
-  const cp1 = checkpoint.createInitial('research', 0.85);
-  console.log('Initial checkpoint:', cp1);
+  const cp1 = checkpoint.createInitial("research", 0.85);
+  console.log("Initial checkpoint:", cp1);
 
   // Move to PLAN state
-  workflow.transition('PLAN');
-  console.log('Current state:', workflow.getCurrentState());
+  workflow.transition("PLAN");
+  console.log("Current state:", workflow.getCurrentState());
 
   // Create milestone checkpoint
-  const cp2 = checkpoint.createMilestone('research', 0.82);
-  console.log('Milestone checkpoint:', cp2);
+  const cp2 = checkpoint.createMilestone("research", 0.82);
+  console.log("Milestone checkpoint:", cp2);
 
   // User signals context switch
   const contextSwitchResult = manager.handleContextSwitch(
-    'Actually, I want to implement OAuth instead'
+    "Actually, I want to implement OAuth instead",
   );
-  console.log('Context switch result:', contextSwitchResult);
+  console.log("Context switch result:", contextSwitchResult);
 
   // Save to STATE.md
   await manager.saveToState();
@@ -486,12 +544,5 @@ if (import.meta.main) {
 }
 
 // =============================================================================
-// EXPORTS
+// EXPORTS - Already exported inline with class definitions above
 // =============================================================================
-
-export {
-  WorkflowStateMachine,
-  CheckpointSystem,
-  ContextSwitchDetector,
-  WorkflowManager
-};

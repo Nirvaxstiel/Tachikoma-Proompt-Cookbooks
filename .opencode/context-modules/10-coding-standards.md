@@ -29,20 +29,20 @@ exports:
 
 This module translates the philosophical principles from `11-functional-thinking.md` into concrete coding patterns:
 
-| Principle | Section | Application |
-|-----------|---------|-------------|
-| Immutable Mindset | State Management | Return new data instead of mutating |
-| Pure Reasoning | Testing Standards | Testable, isolated functions |
-| Composition Thinking | Code Organization | Small, composable pieces |
-| Pipeline Mental Model | Async Patterns | Transformations, not steps |
-| Explicit Dependencies | Design Primitives | Pass state explicitly |
-| Totality Principle | Result Types | Handle all cases, especially errors |
-| Declarative Intent | Patterns | Express "what", not "how" |
-| Honesty Principle | Null/Optional Handling | Truthful type signatures |
-| Expressions Over Statements | Code Style | Prefer expressions that return values |
-| Avoid Shared State | State Management | Local state, explicit passing |
-| Higher-Order Thinking | Code Style | Use `map`, `filter`, `reduce` |
-| Minimize Surface Area | Design Primitives | Minimal public APIs |
+| Principle                   | Section                | Application                           |
+| --------------------------- | ---------------------- | ------------------------------------- |
+| Immutable Mindset           | State Management       | Return new data instead of mutating   |
+| Pure Reasoning              | Testing Standards      | Testable, isolated functions          |
+| Composition Thinking        | Code Organization      | Small, composable pieces              |
+| Pipeline Mental Model       | Async Patterns         | Transformations, not steps            |
+| Explicit Dependencies       | Design Primitives      | Pass state explicitly                 |
+| Totality Principle          | Result Types           | Handle all cases, especially errors   |
+| Declarative Intent          | Patterns               | Express "what", not "how"             |
+| Honesty Principle           | Null/Optional Handling | Truthful type signatures              |
+| Expressions Over Statements | Code Style             | Prefer expressions that return values |
+| Avoid Shared State          | State Management       | Local state, explicit passing         |
+| Higher-Order Thinking       | Code Style             | Use `map`, `filter`, `reduce`         |
+| Minimize Surface Area       | Design Primitives      | Minimal public APIs                   |
 
 ---
 
@@ -189,11 +189,13 @@ function connect_db(config):
 ```
 
 **When to use Result types:**
+
 - Expected failures (file not found, invalid input, network timeout)
 - Business logic errors (user not found, insufficient permissions)
 - When you want to force the caller to handle errors
 
 **When to throw exceptions:**
+
 - Programmer errors (null where not expected, invalid state)
 - Critical failures (out of memory, corrupted data)
 - When you want to bubble up and handle at a higher level
@@ -234,6 +236,7 @@ function add_item(cart, item):
 ```
 
 **Why immutable?**
+
 - No side effects - caller's data isn't changed
 - Easier to reason about - no hidden state changes
 - Safer in concurrent environments
@@ -263,6 +266,7 @@ function find_user(id):  # Could return None, User, or raise?
 ```
 
 **Strategies:**
+
 - **Option/Maybe types:** Encode absence in the type system
 - **Union types:** Use `User | NotFound` instead of `User | null`
 - **Default values:** Return sensible defaults instead of null
@@ -493,16 +497,16 @@ If blocked: Ask explicitly.
 
 This module implements the principles from `11-functional-thinking.md`:
 
-| Practice | Principle | Benefit |
-|----------|-----------|---------|
-| Immutable state | Immutable Mindset | No hidden side effects |
-| Early returns | Composition Thinking | Clearer control flow |
-| Result types | Totality Principle | Forced error handling |
-| Pure functions | Pure Reasoning | Predictable, testable |
-| Pipeline transforms | Pipeline Mental Model | Declarative data flow |
+| Practice             | Principle             | Benefit                  |
+| -------------------- | --------------------- | ------------------------ |
+| Immutable state      | Immutable Mindset     | No hidden side effects   |
+| Early returns        | Composition Thinking  | Clearer control flow     |
+| Result types         | Totality Principle    | Forced error handling    |
+| Pure functions       | Pure Reasoning        | Predictable, testable    |
+| Pipeline transforms  | Pipeline Mental Model | Declarative data flow    |
 | Dependency injection | Explicit Dependencies | Transparent requirements |
-| Null-free types | Honesty Principle | Truthful interfaces |
-| Small functions | Composition Thinking | Reusable, focused |
+| Null-free types      | Honesty Principle     | Truthful interfaces      |
+| Small functions      | Composition Thinking  | Reusable, focused        |
 
 **For deeper understanding:** See `11-functional-thinking.md` for the philosophical foundation behind these patterns.
 

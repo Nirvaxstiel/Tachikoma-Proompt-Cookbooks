@@ -39,20 +39,21 @@ Every unit of work follows this cycle:
 
 ## Commands Overview
 
-| Command | Purpose |
-|---------|---------|
-| `/tachikoma-help` | Show command reference |
+| Command               | Purpose                         |
+| --------------------- | ------------------------------- |
+| `/tachikoma-help`     | Show command reference          |
 | `/tachikoma-progress` | Current state + ONE next action |
-| `/tachikoma-status` | Quick STATE.md view |
-| `/tachikoma-unify` | Mandatory loop closure |
-| `/tachikoma-pause` | Create handoff for break |
-| `/tachikoma-resume` | Continue from handoff |
+| `/tachikoma-status`   | Quick STATE.md view             |
+| `/tachikoma-unify`    | Mandatory loop closure          |
+| `/tachikoma-pause`    | Create handoff for break        |
+| `/tachikoma-resume`   | Continue from handoff           |
 
 ---
 
 ## Core Commands
 
 ### `/tachikoma-help`
+
 Show this command reference.
 
 Usage: `/tachikoma-help`
@@ -60,6 +61,7 @@ Usage: `/tachikoma-help`
 ---
 
 ### `/tachikoma-progress`
+
 Smart status with routing - suggests ONE next action.
 
 - Reads STATE.md for current position
@@ -73,6 +75,7 @@ Usage: `/tachikoma-progress "I only have 30 minutes"`
 ---
 
 ### `/tachikoma-status`
+
 Quick view of STATE.md - shows current position without suggestions.
 
 Usage: `/tachikoma-status`
@@ -80,6 +83,7 @@ Usage: `/tachikoma-status`
 ---
 
 ### `/tachikoma-unify <task-slug> <duration>`
+
 Reconcile plan vs actual and close the loop.
 
 - Compares planned (design.md) vs actual (changes)
@@ -93,6 +97,7 @@ Usage: `/tachikoma-unify add-auth 45`
 ---
 
 ### `/tachikoma-pause [reason]`
+
 Create handoff file and prepare for session break.
 
 - Creates HANDOFF-{date}.md with complete context
@@ -105,6 +110,7 @@ Usage: `/tachikoma-pause "switching to other project"`
 ---
 
 ### `/tachikoma-resume [handoff-path]`
+
 Restore context from handoff and continue work.
 
 - Reads STATE.md and any HANDOFF files
@@ -119,15 +125,15 @@ Usage: `/tachikoma-resume`
 
 These are TypeScript CLI tools for programmatic use:
 
-| Command | Purpose |
-|---------|---------|
-| `bun run .opencode/cli/spec-setup.ts <task-name>` | Create task spec folder |
-| `bun run .opencode/cli/state-update.ts <command>` | Manage STATE.md |
-| `bun run .opencode/cli/unify.ts <slug> <duration>` | Run UNIFY phase |
-| `bun run .opencode/cli/handoff.ts pause` | Create handoff |
-| `bun run .opencode/cli/handoff.ts resume` | Resume from handoff |
-| `bun run .opencode/cli/progress.ts` | Show progress |
-| `bun run .opencode/cli/help.ts` | Show CLI help |
+| Command                                            | Purpose                 |
+| -------------------------------------------------- | ----------------------- |
+| `bun run .opencode/cli/spec-setup.ts <task-name>`  | Create task spec folder |
+| `bun run .opencode/cli/state-update.ts <command>`  | Manage STATE.md         |
+| `bun run .opencode/cli/unify.ts <slug> <duration>` | Run UNIFY phase         |
+| `bun run .opencode/cli/handoff.ts pause`           | Create handoff          |
+| `bun run .opencode/cli/handoff.ts resume`          | Resume from handoff     |
+| `bun run .opencode/cli/progress.ts`                | Show progress           |
+| `bun run .opencode/cli/help.ts`                    | Show CLI help           |
 
 ---
 
@@ -158,6 +164,7 @@ These are TypeScript CLI tools for programmatic use:
 ## Common Workflows
 
 **Starting a task:**
+
 ```
 bun run .opencode/cli/spec-setup.ts "add feature"
 # Fill in SPEC.md with requirements
@@ -166,16 +173,19 @@ bun run .opencode/cli/spec-setup.ts "add feature"
 ```
 
 **Checking where you are:**
+
 ```
 /tachikoma-progress
 ```
 
 **Resuming work (new session):**
+
 ```
 /tachikoma-resume
 ```
 
 **Pausing work (before break):**
+
 ```
 /tachikoma-pause "need to context switch"
 ```
@@ -195,11 +205,13 @@ bun run .opencode/cli/spec-setup.ts "add feature"
 ## Philosophy
 
 Tachikoma is an **opinionated agent** built on paradigms from:
+
 - **PAUL** (Plan-Apply-Unify Loop) - State management, loop enforcement
 - **OpenCode** - Intent routing, skill modularity
 - **RLM** (Recursive Language Model) - Large context processing
 
 It integrates and reshapes these concepts into a cohesive workflow that prioritizes:
+
 - Single source of truth (STATE.md)
 - Mandatory closure (UNIFY)
 - Verifiable quality (BDD acceptance criteria)
@@ -207,5 +219,5 @@ It integrates and reshapes these concepts into a cohesive workflow that prioriti
 
 ---
 
-*Tachikoma Framework v3.5+ | 6 commands | Built on PAUL + OpenCode*
+_Tachikoma Framework v3.5+ | 6 commands | Built on PAUL + OpenCode_
 </reference>

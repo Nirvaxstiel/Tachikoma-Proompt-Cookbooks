@@ -14,6 +14,7 @@ Restores context and suggests exactly ONE next action.
 ## Step 1: Find Handoff
 
 Check for handoff documents:
+
 ```bash
 ls -t .opencode/agents/tachikoma/handoffs/HANDOFF-*.md 2>/dev/null | head -1
 ```
@@ -25,6 +26,7 @@ If no handoff, read STATE.md directly.
 ## Step 2: Display Handoff Context
 
 Show the handoff document contents:
+
 - Current state
 - What was accomplished
 - In progress items
@@ -37,6 +39,7 @@ Show the handoff document contents:
 ## Step 3: Cross-Reference with STATE.md
 
 Read `.opencode/STATE.md` to check:
+
 - Is the state still accurate?
 - Any new blockers?
 - Any completed items?
@@ -48,6 +51,7 @@ Read `.opencode/STATE.md` to check:
 From handoff's "Next Action" section, or from STATE.md Session Continuity.
 
 Verify the action is still valid:
+
 - Has the task been completed by someone else?
 - Are there new blockers?
 - Is the file/location still relevant?
@@ -67,7 +71,7 @@ From Handoff: .opencode/agents/tachikoma/handoffs/HANDOFF-{date}.md
 Last Session:
   Task: {slug}
   Status: {status}
-  
+
 What Was Accomplished:
   - {item 1}
   - {item 2}
@@ -100,6 +104,7 @@ Ready to continue. Your context is restored.
 ## Step 6: Archive Handoff (Optional)
 
 If handoff was used and work is continuing, move it to archive:
+
 ```bash
 mkdir -p .opencode/agents/tachikoma/handoffs/archive
 mv .opencode/agents/tachikoma/handoffs/HANDOFF-{date}.md .opencode/agents/tachikoma/handoffs/archive/

@@ -28,21 +28,21 @@ Provides a native opencode tool that the LLM can call directly:
 
 ### Commands
 
-| Command | Description | Example |
-|---------|-------------|----------|
-| `init` | Initialize REPL with context file | `init logs/app.log` |
-| `exec` | Execute TypeScript code | `exec -c "console.log(peek(0, 1000))"` |
-| `status` | Show REPL state | `status` |
-| `reset` | Delete REPL state | `reset` |
+| Command  | Description                       | Example                                |
+| -------- | --------------------------------- | -------------------------------------- |
+| `init`   | Initialize REPL with context file | `init logs/app.log`                    |
+| `exec`   | Execute TypeScript code           | `exec -c "console.log(peek(0, 1000))"` |
+| `status` | Show REPL state                   | `status`                               |
+| `reset`  | Delete REPL state                 | `reset`                                |
 
 ### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|--------|-----------|-------------|
-| `command` | string | ✅ | Command to execute |
-| `context_path` | string | ⚠️ | Path to context file (for `init`) |
-| `code` | string | ⚠️ | TypeScript code to execute (for `exec`) |
-| `state` | string | ❌ | Path to state file (optional) |
+| Parameter      | Type   | Required | Description                             |
+| -------------- | ------ | -------- | --------------------------------------- |
+| `command`      | string | ✅       | Command to execute                      |
+| `context_path` | string | ⚠️       | Path to context file (for `init`)       |
+| `code`         | string | ⚠️       | TypeScript code to execute (for `exec`) |
+| `state`        | string | ❌       | Path to state file (optional)           |
 
 ---
 
@@ -65,11 +65,11 @@ TypeScript REPL (stateful, JSON)
 
 ### Hooks Used
 
-| Hook | Purpose |
-|-------|---------|
-| `tool` | Register `rlm_repl` tool |
-| `tool.execute.after` | Track operations for telemetry |
-| `tool.definition` | Customize tool descriptions (optional) |
+| Hook                 | Purpose                                |
+| -------------------- | -------------------------------------- |
+| `tool`               | Register `rlm_repl` tool               |
+| `tool.execute.after` | Track operations for telemetry         |
+| `tool.definition`    | Customize tool descriptions (optional) |
 
 ### Tool Registration
 
@@ -129,11 +129,11 @@ tool({
 
 ## Performance
 
-| Metric | Value |
-|--------|-------|
-| Startup time | ~50ms |
-| State format | JSON (human-readable) |
-| Runtime | Bun (single dependency) |
+| Metric       | Value                   |
+| ------------ | ----------------------- |
+| Startup time | ~50ms                   |
+| State format | JSON (human-readable)   |
+| Runtime      | Bun (single dependency) |
 
 ---
 
@@ -142,6 +142,7 @@ tool({
 The plugin is **automatically loaded** if file exists: `.opencode/agents/tachikoma/plugins/rlm.ts`
 
 Optional config (not required):
+
 ```yaml
 # .opencode/config/config.yaml
 plugin:
@@ -152,11 +153,11 @@ plugin:
 
 ## Error Handling
 
-| Error | Cause | Fix |
-|--------|--------|-----|
-| `No state found` | REPL not initialized | Run `init` command first |
-| `Module not found` | Import path issue | Check relative paths |
-| `Syntax error` | Invalid TypeScript | Check code syntax |
+| Error              | Cause                | Fix                      |
+| ------------------ | -------------------- | ------------------------ |
+| `No state found`   | REPL not initialized | Run `init` command first |
+| `Module not found` | Import path issue    | Check relative paths     |
+| `Syntax error`     | Invalid TypeScript   | Check code syntax        |
 
 ---
 

@@ -19,6 +19,7 @@ RLM (Recursive Language Model) enables processing **10M+ token contexts** throug
 **File**: `.opencode/plugins/rlm.ts`
 
 LLM can call RLM directly:
+
 ```json
 {
   "tool": "rlm_repl",
@@ -38,11 +39,13 @@ LLM can call RLM directly:
 **File**: `.opencode/skills/rlm/rlm-repl.ts`
 
 `subLlm()` function calls opencode CLI:
+
 ```typescript
 const result = await subLlm("Find errors", chunkText);
 ```
 
 **Environment variables**:
+
 - `OPENCODE_RLM_DISABLED=1` - Disable for testing
 - `OPENCODE_RLM_CLI_PATH` - Custom CLI path
 - `OPENCODE_RLM_AGENT` - Default subagent
@@ -81,7 +84,7 @@ const result = await subLlm("Find errors", chunkText);
 
 ```yaml
 features:
-  rlm_enabled: true  # Disable to use fallback
+  rlm_enabled: true # Disable to use fallback
 
 routes:
   complex:
@@ -112,23 +115,25 @@ bun run .opencode/skills/rlm/rlm-repl.ts reset
 
 ### REPL Functions
 
-| Function | Description |
-|----------|-------------|
-| `peek(start, end)` | View context slice |
-| `grep(pattern)` | Search with regex |
-| `chunkIndices(size, overlap)` | Get chunk boundaries |
+| Function                          | Description           |
+| --------------------------------- | --------------------- |
+| `peek(start, end)`                | View context slice    |
+| `grep(pattern)`                   | Search with regex     |
+| `chunkIndices(size, overlap)`     | Get chunk boundaries  |
 | `writeChunks(dir, size, overlap)` | Write chunks to files |
-| `subLlm(prompt, chunk)` | Call subagent (async) |
+| `subLlm(prompt, chunk)`           | Call subagent (async) |
 
 ---
 
 ## When to Use RLM
 
 ✅ **Use**:
+
 - Large external files (>2K tokens): logs, datasets, docs
 - Tasks requiring chunking and parallel processing
 
 ❌ **Don't Use**:
+
 - Codebase navigation (use Read/Grep/Glob tools)
 - Single file operations
 - Quick analysis
@@ -137,11 +142,11 @@ bun run .opencode/skills/rlm/rlm-repl.ts reset
 
 ## Performance
 
-| Feature | Improvement |
-|----------|-------------|
-| **Adaptive chunking** | 28.3% over base model |
-| **Parallel processing** | 3-4x speedup (large contexts) |
-| **Plugin vs subprocess** | 10x faster first call |
+| Feature                  | Improvement                   |
+| ------------------------ | ----------------------------- |
+| **Adaptive chunking**    | 28.3% over base model         |
+| **Parallel processing**  | 3-4x speedup (large contexts) |
+| **Plugin vs subprocess** | 10x faster first call         |
 
 ---
 
@@ -160,13 +165,13 @@ See `REMOVAL.md` for complete checklist.
 
 ## Documentation
 
-| Doc | For | Location |
-|------|------|----------|
-| **Complete Guide** | End users | `docs/research/rlm.md` |
-| **Capability Overview** | Tachikoma implementation | `docs/capabilities/rlm.md` |
-| **Skill Workflow** | LLM execution | `.opencode/skills/rlm/SKILL.md` |
-| **Plugin Details** | Plugin dev | `.opencode/plugins/RLM_PLUGIN.md` |
-| **Removal** | Cleanup | `.opencode/skills/rlm/REMOVAL.md` |
+| Doc                     | For                      | Location                          |
+| ----------------------- | ------------------------ | --------------------------------- |
+| **Complete Guide**      | End users                | `docs/research/rlm.md`            |
+| **Capability Overview** | Tachikoma implementation | `docs/capabilities/rlm.md`        |
+| **Skill Workflow**      | LLM execution            | `.opencode/skills/rlm/SKILL.md`   |
+| **Plugin Details**      | Plugin dev               | `.opencode/plugins/RLM_PLUGIN.md` |
+| **Removal**             | Cleanup                  | `.opencode/skills/rlm/REMOVAL.md` |
 
 ---
 

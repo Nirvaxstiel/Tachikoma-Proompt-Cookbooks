@@ -4,7 +4,6 @@
 # Router uses this to determine which context modules to load for each skill/intent
 
 ---
-
 contexts:
   coding:
     description: Coding standards, patterns, and commenting rules

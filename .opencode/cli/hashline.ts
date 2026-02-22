@@ -1,21 +1,21 @@
 #!/usr/bin/env bun
 /**
  * Hashline Edit Format Processor
- * 
+ *
  * Based on: Can Bölük's "The Harness Problem" research
  * Reference: https://blog.can.ac/2026/02/12/the-harness-problem
- * 
+ *
  * Impact: +8-61% edit success rate, especially for weak models
  * - Grok: 6.7% → 68.3% (10x improvement)
  * - GLM: 46-50% → 54-64% (+8-14%)
  * - Claude/GPT: Already high, minor improvements
  * - Output tokens: -20-61% reduction
- * 
+ *
  * Converted from hashline-processor.py
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 
 // =============================================================================
 // TYPES
@@ -59,21 +59,26 @@ export class HashlineProcessor {
    * Generate hash for a single line
    */
   private hashLine(line: string): string {
-    return createHash('sha256').update(line).digest('hex').slice(0, this.hashLength);
+    return createHash("sha256")
+      .update(line)
+      .digest("hex")
+      .slice(0, this.hashLength);
   }
 
   /**
    * Generate hashline reference for a specific line
-   * 
+   *
    * @param content - Full file content
    * @param lineNumber - 1-based line number
    * @returns Hashline reference string (e.g., "22:a3f1|")
    */
   generateHashline(content: string, lineNumber: number): string {
-    const lines = content.split('\n');
-    
+    const lines = content.split("\n");
+
     if (lineNumber < 1 || lineNumber > lines.length) {
-      throw new Error(`Line ${lineNumber} out of range (file has ${lines.length} lines)`);
+      throw new Error(
+        `Line ${lineNumber} out of range (file has ${lines.length} lines)`,
+      );
     }
 
     const line = lines[lineNumber - 1];
@@ -83,16 +88,16 @@ export class HashlineProcessor {
 
   /**
    * Read file and return lines with hashline prefixes
-   * 
+   *
    * @param filepath - Path to file
    * @returns Array of lines with hashline prefixes
-   * 
+   *
    * @example
    * Input file:
    *   function hello() {
    *     return "world";
    *   }
-   * 
+   *
    * Output:
    *   [
    *     "1:a3f1|function hello() {",
@@ -105,8 +110,8 @@ export class HashlineProcessor {
       throw new Error(`File not found: ${filepath}`);
     }
 
-    const content = readFileSync(filepath, 'utf-8');
-    const lines = content.split('\n');
+    const content = readFileSync(filepath, "utf-8");
+    const lines = content.split("\n");
 
     return lines.map((line, index) => {
       const lineHash = this.hashLine(line);
@@ -116,7 +121,7 @@ export class HashlineProcessor {
 
   /**
    * Apply edit using hashline reference
-   * 
+   *
    * @param filepath - Path to file to edit
    * @param targetHash - Hashline reference (e.g., "22:a3f1")
    * @param newContent - New line content
@@ -125,7 +130,7 @@ export class HashlineProcessor {
   applyHashlineEdit(
     filepath: string,
     targetHash: string,
-    newContent: string
+    newContent: string,
   ): boolean {
     if (!existsSync(filepath)) {
       throw new Error(`File not found: ${filepath}`);
@@ -136,39 +141,41 @@ export class HashlineProcessor {
     // Build hash -> index map
     const hashToIndex = new Map<string, number>();
     for (const [idx, hashline] of currentHashlines.entries()) {
-      const hashPrefix = hashline.split('|')[0];
+      const hashPrefix = hashline.split("|")[0];
       hashToIndex.set(hashPrefix, idx);
     }
 
     if (!hashToIndex.has(targetHash)) {
       const existingHashes = Array.from(hashToIndex.keys());
-      const lineNumber = targetHash.includes(':') ? targetHash.split(':')[0] : '?';
+      const lineNumber = targetHash.includes(":")
+        ? targetHash.split(":")[0]
+        : "?";
 
       throw new Error(
         `Hash '${targetHash}' not found in file.\n` +
-        `Line number: ${lineNumber}\n` +
-        `File may have changed. Current hashes in file: ${existingHashes.length}\n` +
-        `First 5 hashes: ${existingHashes.slice(0, 5).join(', ')}`
+          `Line number: ${lineNumber}\n` +
+          `File may have changed. Current hashes in file: ${existingHashes.length}\n` +
+          `First 5 hashes: ${existingHashes.slice(0, 5).join(", ")}`,
       );
     }
 
     const lineIndex = hashToIndex.get(targetHash)!;
 
-    const content = readFileSync(filepath, 'utf-8');
-    const lines = content.split('\n');
+    const content = readFileSync(filepath, "utf-8");
+    const lines = content.split("\n");
 
     // Preserve original newline style
     const originalLine = lines[lineIndex];
     lines[lineIndex] = newContent;
 
-    writeFileSync(filepath, lines.join('\n'), 'utf-8');
+    writeFileSync(filepath, lines.join("\n"), "utf-8");
 
     return true;
   }
 
   /**
    * Find a line by content and return its hashline reference
-   * 
+   *
    * @param filepath - Path to file
    * @param searchText - Text to search for
    * @param caseSensitive - Whether to match case
@@ -177,7 +184,7 @@ export class HashlineProcessor {
   findHashLine(
     filepath: string,
     searchText: string,
-    caseSensitive: boolean = false
+    caseSensitive: boolean = false,
   ): string | null {
     if (!existsSync(filepath)) {
       throw new Error(`File not found: ${filepath}`);
@@ -187,13 +194,13 @@ export class HashlineProcessor {
     const search = caseSensitive ? searchText : searchText.toLowerCase();
 
     for (const hashline of hashlines) {
-      const pipeIndex = hashline.indexOf('|');
+      const pipeIndex = hashline.indexOf("|");
       const content = hashline.slice(pipeIndex + 1);
       const matchContent = caseSensitive ? content : content.toLowerCase();
 
       if (matchContent.includes(search)) {
-        const hashPrefix = hashline.split('|')[0];
-        return hashPrefix + '|';
+        const hashPrefix = hashline.split("|")[0];
+        return hashPrefix + "|";
       }
     }
 
@@ -206,10 +213,10 @@ export class HashlineProcessor {
   batchFindHashLines(
     filepath: string,
     searchTexts: string[],
-    caseSensitive: boolean = false
+    caseSensitive: boolean = false,
   ): Map<string, string | null> {
     const results = new Map<string, string | null>();
-    
+
     for (const searchText of searchTexts) {
       const hashRef = this.findHashLine(filepath, searchText, caseSensitive);
       results.set(searchText, hashRef);
@@ -233,11 +240,15 @@ export class HashlineProcessor {
       totalChars: hashlines.reduce((sum, h) => sum + h.length, 0),
       hashLength: this.hashLength,
       hashSpaceSize: Math.pow(16, this.hashLength),
-      avgLineLength: hashlines.length > 0
-        ? hashlines.reduce((sum, h) => sum + h.length, 0) / hashlines.length
-        : 0,
-      firstHash: hashlines.length > 0 ? hashlines[0].split('|')[0] : null,
-      lastHash: hashlines.length > 0 ? hashlines[hashlines.length - 1].split('|')[0] : null,
+      avgLineLength:
+        hashlines.length > 0
+          ? hashlines.reduce((sum, h) => sum + h.length, 0) / hashlines.length
+          : 0,
+      firstHash: hashlines.length > 0 ? hashlines[0].split("|")[0] : null,
+      lastHash:
+        hashlines.length > 0
+          ? hashlines[hashlines.length - 1].split("|")[0]
+          : null,
     };
   }
 
@@ -304,7 +315,7 @@ Examples:
 async function main(): Promise<number> {
   const args = process.argv.slice(2);
 
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     printUsage();
     return 0;
   }
@@ -314,10 +325,10 @@ async function main(): Promise<number> {
 
   try {
     switch (command) {
-      case 'read': {
+      case "read": {
         const filepath = args[1];
         if (!filepath) {
-          console.error('Error: filepath required');
+          console.error("Error: filepath required");
           return 1;
         }
         const hashlines = processor.readFileWithHashlines(filepath);
@@ -327,11 +338,11 @@ async function main(): Promise<number> {
         break;
       }
 
-      case 'find': {
+      case "find": {
         const filepath = args[1];
         const searchText = args[2];
         if (!filepath || !searchText) {
-          console.error('Error: filepath and search text required');
+          console.error("Error: filepath and search text required");
           return 1;
         }
         const hashRef = processor.findHashLine(filepath, searchText);
@@ -344,28 +355,28 @@ async function main(): Promise<number> {
         break;
       }
 
-      case 'edit': {
+      case "edit": {
         const filepath = args[1];
         const hash = args[2];
         const content = args[3];
         if (!filepath || !hash || content === undefined) {
-          console.error('Error: filepath, hash, and content required');
+          console.error("Error: filepath, hash, and content required");
           return 1;
         }
         const success = processor.applyHashlineEdit(filepath, hash, content);
         if (success) {
           console.log(`✓ Edit successful: ${hash} -> '${content}'`);
         } else {
-          console.log('✗ Edit failed');
+          console.log("✗ Edit failed");
           return 1;
         }
         break;
       }
 
-      case 'verify': {
+      case "verify": {
         const filepath = args[1];
         if (!filepath) {
-          console.error('Error: filepath required');
+          console.error("Error: filepath required");
           return 1;
         }
         const result = processor.verifyIntegrity(filepath);
@@ -378,10 +389,10 @@ async function main(): Promise<number> {
         break;
       }
 
-      case 'stats': {
+      case "stats": {
         const filepath = args[1];
         if (!filepath) {
-          console.error('Error: filepath required');
+          console.error("Error: filepath required");
           return 1;
         }
         const stats = processor.getFileStats(filepath);

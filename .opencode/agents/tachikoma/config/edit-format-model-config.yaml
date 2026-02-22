@@ -27,11 +27,11 @@ model_formats:
   grok: hashline
   glm: hashline
   minimax: hashline
-  
+
   # Additional open-source models
   llama: str_replace_fuzzy
   codellama: str_replace_fuzzy
-  qwen: str_replace_fuzzy  # or hashline for larger models
+  qwen: str_replace_fuzzy # or hashline for larger models
   deepseek: hashline
   mistral: str_replace
   phi: str_replace_fuzzy

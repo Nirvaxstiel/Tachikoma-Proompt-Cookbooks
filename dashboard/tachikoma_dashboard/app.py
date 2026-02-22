@@ -23,7 +23,14 @@ from textual.scrollbar import ScrollBarRender
 from textual.widgets import Header, RichLog, Static
 
 from . import db
-from .models import ModelUsage, Session, SessionStats, SessionStatus, SessionTree, build_session_tree
+from .models import (
+    ModelUsage,
+    Session,
+    SessionStats,
+    SessionStatus,
+    SessionTree,
+    build_session_tree,
+)
 from .session_tree import SessionTreeWidget
 from .theme import DASHBOARD_CSS, THEME
 from .widgets import (
@@ -153,15 +160,16 @@ class DashboardApp(App):
         # Register GITS theme with Textual before calling super()
         # This must happen before App.__init__ processes theme attribute
         super().__init__()
-        
+
         # Register custom GITS themes
         from .theme import TEXTUAL_THEME, TEXTUAL_THEME_LIGHT
+
         self.register_theme(TEXTUAL_THEME)
         self.register_theme(TEXTUAL_THEME_LIGHT)
-        
+
         # Activate the dark theme by default
         self.theme = "gits-dark"
-        
+
         # Initialize app state
         self.interval = interval
         self.cwd_filter = cwd
@@ -314,9 +322,7 @@ class DashboardApp(App):
             bucket_time = now - (i * 60)
             # Count sessions updated in this specific 1-minute window
             count = sum(
-                1
-                for s in self.sessions
-                if bucket_time - 60 < s.updated_seconds <= bucket_time
+                1 for s in self.sessions if bucket_time - 60 < s.updated_seconds <= bucket_time
             )
             activity.append(float(count))
 
@@ -326,8 +332,7 @@ class DashboardApp(App):
         # Calculate status breakdown for current minute (last bucket)
         bucket_time = now
         sessions_now = [
-            s for s in self.sessions
-            if bucket_time - 60 < s.updated_seconds <= bucket_time
+            s for s in self.sessions if bucket_time - 60 < s.updated_seconds <= bucket_time
         ]
         working = sum(1 for s in sessions_now if s.status == SessionStatus.WORKING)
         active = sum(1 for s in sessions_now if s.status == SessionStatus.ACTIVE)
@@ -342,9 +347,9 @@ class DashboardApp(App):
             status_parts.append(f"{active} active")
         if idle:
             status_parts.append(f"{idle} idle")
-        
+
         status_str = ", ".join(status_parts) if status_parts else "all idle"
-        
+
         try:
             label = self.query_one("#activity-label", Static)
             label.update(f"Activity (last 20 min) — {total_now} now ({status_str})")

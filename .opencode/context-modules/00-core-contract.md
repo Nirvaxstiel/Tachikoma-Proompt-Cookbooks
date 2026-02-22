@@ -71,6 +71,7 @@ If uncertainty remains, return to inspection.
    - Check project documentation conventions
 
 **Critical Rule**: Assumption ≠ Explicit Request
+
 - If task does NOT explicitly request an artifact: Ask for consent first
 - NEVER assume "documentation is helpful" or "summary is useful"
 - Default to terminal output unless user explicitly requests persistent file
@@ -106,6 +107,7 @@ Before creating anything new:
 Make the **smallest sufficient change** to satisfy the task.
 
 Do not:
+
 - Refactor for cleanliness alone
 - Add speculative extensibility
 - Improve unrelated areas
@@ -125,6 +127,7 @@ Before generating outputs or making changes:
 ## 7. Stop Conditions
 
 Stop when:
+
 - The task's definition of done is met
 - Further effort yields diminishing returns
 - You're blocked by missing information
@@ -141,23 +144,25 @@ Stop when:
 
 Adapt behavior based on remaining context capacity:
 
-| Bracket | Remaining | Mode | Behavior |
-|---------|-----------|------|----------|
-| **FRESH** | >70% | **LEAN** | Minimal injection, trust recent context |
-| **MODERATE** | 40-70% | **STANDARD** | Reinforce key context, consider plan splits |
-| **DEEP** | 20-40% | **CONSERVATIVE** | Summarize before new reads, plan handoffs |
-| **CRITICAL** | <20% | **PRESERVATION** | Finish current task, prepare handoff |
+| Bracket      | Remaining | Mode             | Behavior                                    |
+| ------------ | --------- | ---------------- | ------------------------------------------- |
+| **FRESH**    | >70%      | **LEAN**         | Minimal injection, trust recent context     |
+| **MODERATE** | 40-70%    | **STANDARD**     | Reinforce key context, consider plan splits |
+| **DEEP**     | 20-40%    | **CONSERVATIVE** | Summarize before new reads, plan handoffs   |
+| **CRITICAL** | <20%      | **PRESERVATION** | Finish current task, prepare handoff        |
 
 ### Plan Sizing
 
 **Target: ~50% context per plan**
 
 A plan should use roughly half the available context:
+
 - Leaves room for execution output
 - Allows error recovery
 - Supports verification steps
 
 **Single Concern Per Plan:**
+
 ```
 GOOD: "Create User model and API endpoints"
 BAD: "Create User model, Product model, Order model, and all API endpoints"
@@ -169,6 +174,7 @@ More tasks = more context per plan. Split large phases into multiple plans.
 ### Lean Injection Principles
 
 **Load What You Need:**
+
 ```markdown
 <!-- GOOD: Targeted loading -->
 <context>
@@ -191,11 +197,14 @@ More tasks = more context per plan. Split large phases into multiple plans.
 
 **Summary Before Full:**
 When referencing prior work:
+
 ```markdown
 <!-- GOOD: Reference summary -->
+
 @.opencode/agents/tachikoma/spec/phase-name/plan-name/SUMMARY.md
 
 <!-- AVOID: Full plan + summary -->
+
 @.opencode/agents/tachikoma/spec/phase-name/plan-name/PLAN.md
 @.opencode/agents/tachikoma/spec/phase-name/plan-name/SUMMARY.md
 ```
@@ -204,6 +213,7 @@ Summaries capture what was built. Plans capture what was intended. After complet
 
 **Progressive Detail:**
 Start with high-level, drill down only when needed:
+
 1. Read STATE.md (current position)
 2. Read relevant SUMMARY.md (what was built)
 3. Read specific source files (implementation details)
@@ -213,6 +223,7 @@ Don't load implementation details until you need them.
 ### Avoiding Reflexive Chaining
 
 **Anti-pattern: Reflexive chain**
+
 ```yaml
 # Plan 01-01
 depends_on: []
@@ -227,6 +238,7 @@ depends_on: ["01-02"]  # Does 03 actually need 02's output?
 This creates false sequential execution and unnecessary context loading.
 
 **Pattern: Genuine dependencies only**
+
 ```yaml
 # Plan 01-01: Create User model
 depends_on: []
@@ -240,36 +252,42 @@ depends_on: ["01-01", "01-02"]  # Genuine: imports types from both
 
 ### Context Budget Heuristics
 
-| Activity | Typical Cost |
-|----------|--------------|
-| PLAN.md template | ~3-5k tokens |
-| Read source file | ~1-3k tokens |
-| Task execution | ~5-15k tokens |
-| Verification output | ~2-5k tokens |
-| SUMMARY.md write | ~2-3k tokens |
+| Activity            | Typical Cost  |
+| ------------------- | ------------- |
+| PLAN.md template    | ~3-5k tokens  |
+| Read source file    | ~1-3k tokens  |
+| Task execution      | ~5-15k tokens |
+| Verification output | ~2-5k tokens  |
+| SUMMARY.md write    | ~2-3k tokens  |
 
 Plan your work with these estimates in mind.
 
 ### Anti-Patterns
 
 **Loading Everything "Just in Case":**
+
 ```markdown
 <context>
 @everything/that/might/be/relevant.md
 </context>
 ```
+
 ❌ Why bad: Wastes context on unused content.
 
 **Ignoring Bracket Transitions:**
+
 ```
 At 35% context: "Let me start this new complex task"
 ```
+
 ❌ Why bad: May not have room to complete. Start fresh.
 
 **No Handoff Preparation:**
+
 ```
 At 15% context: Continue working without noting state
 ```
+
 ❌ Why bad: Next session loses context. Always prepare resume.
 
 ---
@@ -279,7 +297,7 @@ At 15% context: Continue working without noting state
 Skills are **execution modes**, not personalities.
 
 - `research-agent` → establish facts and sources
-- `analysis-agent` → reason, evaluate, decide  
+- `analysis-agent` → reason, evaluate, decide
 - `code-agent` → implement minimal, correct changes
 
 Stay within skill scope during execution.
@@ -291,16 +309,19 @@ Stay within skill scope during execution.
 **After completing the mandatory rules, you are FREE to:**
 
 ### Revisit
+
 - Did I actually solve the problem?
 - Did I make assumptions I shouldn't have?
 - Did I miss something important?
 
 ### Rethink
+
 - Was my approach the best one?
 - Would a different approach have been better?
 - Should I have asked more questions?
 
 ### Re-evaluate
+
 - Is my confidence level accurate?
 - Are there edge cases I didn't consider?
 - Should I flag anything for the user?
@@ -308,6 +329,7 @@ Stay within skill scope during execution.
 ### Act on Reflection
 
 You may:
+
 - Ask follow-up questions
 - Suggest improvements (with user consent)
 - Flag concerns or edge cases
@@ -323,12 +345,15 @@ You may:
 When organizing code or configuration:
 
 ### 1. Locality of concern
+
 Place things near the direct operator, not the indirect beneficiary.
 
 ### 2. Surface area as signal
+
 Unused connections increase complexity without adding capability.
 
 ### 3. Minimize transitive knowledge
+
 Components shouldn't know about things they don't directly use.
 
 These are reasoning tools, not rigid rules.
@@ -349,6 +374,7 @@ bun run .opencode/cli/help.ts
 ```
 
 **Why Bun:**
+
 - Single runtime (no Python dependency)
 - Fast startup (~2x faster than Python)
 - Native TypeScript support
@@ -358,6 +384,7 @@ bun run .opencode/cli/help.ts
 ## Artifact Consent
 
 Before creating persistent artifacts:
+
 - Verify task explicitly requests artifact
 - Check for existing artifacts to integrate with
 - Ask user for consent unless clearly in scope
@@ -366,9 +393,9 @@ Before creating persistent artifacts:
 
 ## Summary
 
-| Phase | Mode | What |
-|-------|------|------|
-| Execution | ⚠️ MANDATORY | Follow rules, stay in scope |
-| Reflection | 🦋 FREE | Revisit, rethink, re-evaluate |
+| Phase      | Mode         | What                          |
+| ---------- | ------------ | ----------------------------- |
+| Execution  | ⚠️ MANDATORY | Follow rules, stay in scope   |
+| Reflection | 🦋 FREE      | Revisit, rethink, re-evaluate |
 
 **Structure at the start, freedom at the end.**

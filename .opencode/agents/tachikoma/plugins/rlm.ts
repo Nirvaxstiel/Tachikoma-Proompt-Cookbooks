@@ -12,8 +12,13 @@ function createLogger(service: string) {
     error: (message: string, error?: Error | Record<string, unknown>) => {
       const timestamp = new Date().toISOString();
       const extra = error instanceof Error ? ` ${error.message}` : "";
-      const metaStr = typeof error === "object" && error !== null ? ` ${JSON.stringify(error)}` : "";
-      console.error(`[${timestamp}] [ERROR] [${service}] ${message}${extra}${metaStr}`);
+      const metaStr =
+        typeof error === "object" && error !== null
+          ? ` ${JSON.stringify(error)}`
+          : "";
+      console.error(
+        `[${timestamp}] [ERROR] [${service}] ${message}${extra}${metaStr}`,
+      );
     },
     debug: (message: string, meta?: Record<string, unknown>) => {
       if (process.env.RLM_DEBUG !== "1") return;
@@ -31,7 +36,9 @@ const RLM_SCRIPT = ".opencode/skills/rlm/rlm-repl.ts";
 const DEFAULT_STATE_PATH = ".opencode/rlm_state/state.json";
 
 // Helper to run TypeScript RLM REPL
-async function runRlmRepl(args: string[]): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+async function runRlmRepl(
+  args: string[],
+): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   const cmdArgs = ["run", RLM_SCRIPT, ...args];
 
   try {
@@ -45,7 +52,11 @@ async function runRlmRepl(args: string[]): Promise<{ stdout: string; stderr: str
     const stderr = await new Response(process.stderr).text();
     const exitCode = await process.exited;
 
-    return { stdout: stdout.trim(), stderr: stderr.trim(), exitCode: exitCode ?? -1 };
+    return {
+      stdout: stdout.trim(),
+      stderr: stderr.trim(),
+      exitCode: exitCode ?? -1,
+    };
   } catch (error) {
     log.error("Failed to run RLM TypeScript script", { error });
     return {
@@ -65,7 +76,10 @@ interface PluginInput {
 // Hooks type (simplified)
 interface Hooks {
   tool?: Record<string, unknown>;
-  "tool.execute.after"?: (input: { tool: string; args?: Record<string, unknown> }) => Promise<void>;
+  "tool.execute.after"?: (input: {
+    tool: string;
+    args?: Record<string, unknown>;
+  }) => Promise<void>;
   [key: string]: unknown;
 }
 
@@ -193,7 +207,9 @@ State is persisted in: ${DEFAULT_STATE_PATH}`,
     "tool.definition": async (input) => {
       if ((input as { toolID?: string }).toolID !== "rlm_repl") return;
 
-      log.debug("RLM tool definition requested", { toolID: (input as { toolID?: string }).toolID });
+      log.debug("RLM tool definition requested", {
+        toolID: (input as { toolID?: string }).toolID,
+      });
     },
   };
 }

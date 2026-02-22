@@ -10,23 +10,23 @@
 
 ## Performance
 
-| Metric | Value |
-|--------|-------|
-| Duration | [time] |
-| Started | [ISO timestamp] |
-| Completed | [ISO timestamp] |
-| Tasks | [N] completed |
-| Files modified | [N] |
+| Metric         | Value           |
+| -------------- | --------------- |
+| Duration       | [time]          |
+| Started        | [ISO timestamp] |
+| Completed      | [ISO timestamp] |
+| Tasks          | [N] completed   |
+| Files modified | [N]             |
 
 ---
 
 ## Acceptance Criteria Results
 
-| Criterion | Status | Notes |
-|-----------|--------|-------|
+| Criterion    | Status      | Notes               |
+| ------------ | ----------- | ------------------- |
 | AC-1: [Name] | Pass / Fail | [Details if needed] |
-| AC-2: [Name] | Pass / Fail | [Details] |
-| AC-3: [Name] | Pass / Fail | [Details] |
+| AC-2: [Name] | Pass / Fail | [Details]           |
+| AC-3: [Name] | Pass / Fail | [Details]           |
 
 ---
 
@@ -42,24 +42,24 @@
 
 [Key decisions made during execution with brief rationale]
 
-| Decision | Rationale | Impact |
-|----------|-----------|--------|
+| Decision           | Rationale             | Impact              |
+| ------------------ | --------------------- | ------------------- |
 | [Decision summary] | [Why this was chosen] | [What this affects] |
 
 ---
 
 ## Deviations from Plan
 
-| Planned | Actual | Reason |
-|---------|--------|--------|
-| [What was planned] | [What happened] | [Why] |
+| Planned            | Actual          | Reason |
+| ------------------ | --------------- | ------ |
+| [What was planned] | [What happened] | [Why]  |
 
 ---
 
 ## Issues Deferred
 
-| Issue | Effort | Revisit Trigger |
-|-------|--------|-----------------|
+| Issue         | Effort  | Revisit Trigger      |
+| ------------- | ------- | -------------------- |
 | [Description] | [S/M/L] | [When to reconsider] |
 | [Description] | [S/M/L] | [When to reconsider] |
 
@@ -67,9 +67,9 @@
 
 ## Files Created/Modified
 
-| File | Change | Purpose |
-|------|--------|---------|
-| [path/to/file.ext] | Created | [What it does] |
+| File               | Change   | Purpose        |
+| ------------------ | -------- | -------------- |
+| [path/to/file.ext] | Created  | [What it does] |
 | [path/to/file.ext] | Modified | [What changed] |
 
 ---
@@ -87,5 +87,5 @@
 
 ---
 
-*SUMMARY.md — Created during UNIFY phase*
-*Updates STATE.md with task completion results*
+_SUMMARY.md — Created during UNIFY phase_
+_Updates STATE.md with task completion results_

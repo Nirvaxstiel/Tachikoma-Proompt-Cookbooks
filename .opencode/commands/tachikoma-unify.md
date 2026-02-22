@@ -7,18 +7,20 @@ subtask: true
 Execute the UNIFY phase to close a task loop.
 
 UNIFY is MANDATORY for every task. It:
+
 1. Compares planned vs actual
 2. Verifies acceptance criteria
 3. Creates SUMMARY.md
 4. Updates STATE.md
 5. Closes the loop
-</objective>
+   </objective>
 
 <workflow>
 
 ## Input Required
 
 The user must provide:
+
 - `task-slug`: The task identifier (from spec-setup)
 - `duration`: How long the task took (in minutes)
 
@@ -29,11 +31,13 @@ Usage: `/tachikoma:unify add-auth 45`
 ## Step 1: Compare Planned vs. Actual
 
 Read:
+
 - `.opencode/agents/tachikoma/spec/{slug}/design.md` - What was planned
 - `.opencode/agents/tachikoma/spec/{slug}/tasks.md` - Task breakdown
 - Check git status for actual changes
 
 Document:
+
 - What was planned
 - What was actually built
 - Any deviations and reasons
@@ -45,6 +49,7 @@ Document:
 Read `.opencode/agents/tachikoma/spec/{slug}/SPEC.md` for BDD acceptance criteria.
 
 For each AC (AC-1, AC-2, AC-3...):
+
 1. Run verification steps if available
 2. Document Pass/Fail
 3. If any AC fails: Do NOT mark task complete
@@ -56,6 +61,7 @@ For each AC (AC-1, AC-2, AC-3...):
 Use template: `.opencode/agents/tachikoma/templates/SUMMARY.md`
 
 Create `.opencode/agents/tachikoma/spec/{slug}/SUMMARY.md` with:
+
 - Performance metrics (duration, timestamps)
 - Acceptance criteria results (Pass/Fail)
 - Accomplishments (what was built)
@@ -69,11 +75,13 @@ Create `.opencode/agents/tachikoma/spec/{slug}/SUMMARY.md` with:
 ## Step 4: Update STATE.md
 
 Run the state update:
+
 ```bash
 bun run .opencode/cli/state-update.ts complete-task "{slug}" "{duration}"
 ```
 
 Also manually add:
+
 - Decisions to Accumulated Context
 - Deferred issues if any
 - Update Session Continuity

@@ -21,20 +21,20 @@ def get_app():
 
 # Expose theme for external use
 from .theme import (
-    THEME,
-    ColorPalette,
+    DASHBOARD_CSS,
+    PANEL_BORDERS,
+    PRIORITY_COLORS,
+    STATUS_COLORS,
     TEXTUAL_THEME,
     TEXTUAL_THEME_LIGHT,
-    DASHBOARD_CSS,
-    STATUS_COLORS,
-    PRIORITY_COLORS,
-    PANEL_BORDERS,
-    register_themes,
+    THEME,
+    ColorPalette,
+    blend,
+    darken,
+    hex_with_alpha,
     # Utility functions
     lighten,
-    darken,
-    blend,
-    hex_with_alpha,
+    register_themes,
 )
 
 # Alias for backward compatibility

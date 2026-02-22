@@ -7,6 +7,7 @@ subtask: true
 Show current project state and suggest exactly ONE next action.
 
 Read STATE.md and provide:
+
 1. Current position (task, phase, status)
 2. Active blockers or boundaries (if any)
 3. Performance metrics summary
@@ -20,6 +21,7 @@ Following PAUL's philosophy: Reduce decision fatigue by suggesting ONE next acti
 ## Step 1: Read STATE.md
 
 Read `.opencode/STATE.md` to understand:
+
 - Current Position (task, phase, status)
 - Loop Position (where in workflow)
 - Active Boundaries
@@ -29,6 +31,7 @@ Read `.opencode/STATE.md` to understand:
 ## Step 2: Check for Active Task
 
 If a task slug is set, check `.opencode/agents/tachikoma/spec/{slug}/` for:
+
 - todo.md progress
 - Any blockers noted
 
@@ -36,13 +39,13 @@ If a task slug is set, check `.opencode/agents/tachikoma/spec/{slug}/` for:
 
 Based on status:
 
-| Status | Suggested Action |
-|--------|------------------|
-| Planning | Continue with SPEC.md or design.md |
-| Executing | Continue tasks in tasks.md |
-| Validating | Run verification steps |
-| Blocked | Address blocker from Blockers section |
-| Complete | Start new task or review SUMMARY.md |
+| Status     | Suggested Action                      |
+| ---------- | ------------------------------------- |
+| Planning   | Continue with SPEC.md or design.md    |
+| Executing  | Continue tasks in tasks.md            |
+| Validating | Run verification steps                |
+| Blocked    | Address blocker from Blockers section |
+| Complete   | Start new task or review SUMMARY.md   |
 
 ## Step 4: Output Format
 

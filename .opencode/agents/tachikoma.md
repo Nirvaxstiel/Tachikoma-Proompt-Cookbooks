@@ -73,21 +73,32 @@ User Query → [Classify] → [Load Context] → [Load Skill] → [Execute] → 
 The router determines routing based on config in `.opencode/agents/tachikoma/config/routing/`:
 
 **Config Files**:
+
 - `routing/intents.yaml` - Intent definitions and keywords
 - `routing/skills.yaml` - Skill definitions and loading instructions
-- `routing/contexts.yaml` - Context module mappings
+- `routing/contexts.yaml` - Context module mappings + priorities
+- `routing/features.yaml` - Feature flags
+- `routing/workflows.yaml` - Sequential skill chains
+- `routing/skills-bulk.yaml` - All-at-once skill loading groups
+- `routing/composite.yaml` - Composite intent definitions
+- `routing/fallback.yaml` - Fallback rules
+- `routing/behavior.yaml` - Routing behavior + module coupling
+- `routing/variance.yaml` - Strategic variance configuration
 
 **Skills Directory**:
+
 - `.opencode/skills/*/SKILL.md` - Each skill is a self-contained module
 
 **How it works**:
+
 1. Classify intent: `bun run .opencode/cli/router.ts full "{query}" --json`
 2. Router returns route (intent, skill, context_modules, loading_method)
 3. Agent loads skill using router's `load_instruction`
 4. Skill provides workflow and instructions
 5. Agent executes using tools
 
-**For debugging**: 
+**For debugging**:
+
 - Check router output: `bun run .opencode/cli/router.ts full "{query}" --json`
 - Inspect config: `cat .opencode/agents/tachikoma/config/routing/intents.yaml`
 
@@ -182,20 +193,27 @@ Let the router determine what to load:
 4. Load skill using router's `load_instruction`
 
 **Example**:
+
 ```json
 {
   "intent": "implement",
-  "context_modules": ["00-core-contract.md", "10-coding-standards.md", "12-commenting-rules.md"],
+  "context_modules": [
+    "00-core-contract.md",
+    "10-coding-standards.md",
+    "12-commenting-rules.md"
+  ],
   "skill": "code-agent"
 }
 ```
 
 **Router Config**:
+
 - Intent definitions: `.opencode/agents/tachikoma/config/routing/intents.yaml`
 - Skill definitions: `.opencode/agents/tachikoma/config/routing/skills.yaml`
 - Context mappings: `.opencode/agents/tachikoma/config/routing/contexts.yaml`
 
-**For debugging**: 
+**For debugging**:
+
 - Check router output: `bun run .opencode/cli/router.ts full "{query}" --json`
 - Inspect config: `cat .opencode/agents/tachikoma/config/routing/intents.yaml`
 
@@ -212,6 +230,7 @@ skill({ name: "<skill_name>" })
 ```
 
 **Router Config**:
+
 - Skill definitions: `.opencode/agents/tachikoma/config/routing/skills.yaml`
 - Context mappings: `.opencode/agents/tachikoma/config/routing/contexts.yaml`
 
@@ -327,32 +346,33 @@ To review: .opencode/agents/tachikoma/spec/{slug}/
 
 ---
 
-## Routing Table
+## Intent Routing
 
-| Intent            | Skill/Subagent       | Context Modules                                   | Execution                              |
-| ----------------- | -------------------- | ------------------------------------------------- | -------------------------------------- |
-| debug             | code-agent           | core-contract, coding-standards, commenting-rules | Load skill, execute with tools         |
-| implement         | code-agent           | core-contract, coding-standards, commenting-rules | Load skill, execute with tools         |
-| refactor          | code-agent           | core-contract, coding-standards, commenting-rules | Load skill, execute with tools         |
-| review            | analysis-agent       | core-contract                                     | Load skill, execute with tools         |
-| research          | research-agent       | core-contract, research-methods                   | Load skill, execute with tools         |
-| git               | git-commit           | core-contract, git-workflow                       | Load skill, execute with tools         |
-| document          | self-learning        | core-contract                                     | Load skill, execute with tools         |
-| complex           | rlm-subcall          | core-contract                                     | Delegate to subagent                   |
-| git-diff-analysis | rlm-subcall (hybrid) | core-contract, git-workflow                       | **Hybrid: Tools first, then subagent** |
+The router uses config from `.opencode/agents/tachikoma/config/routing/`:
+
+- **intents.yaml** - Intent definitions, keywords, context modules, skills
+- **skills.yaml** - Skill loading instructions
+- **contexts.yaml** - Context module mappings
+- **variance.yaml** - Strategic variance by intent
+
+To inspect:
+
+```bash
+cat .opencode/agents/tachikoma/config/routing/intents.yaml
+```
+
 ---
 
-## ⚠️ CONTEXT RE-LOADING (MANDATORY - RESEARCH-GUIDED)
+## Context Re-loading
 
-**Critical Rule**: Context MUST ALWAYS match current intent. When intent changes, context MUST re-load.
-
-**Research Backed**: Neural network research shows that stale context causes 10-20% performance degradation. Context MUST match current intent for correct behavior.
+When intent changes, re-load context and skills based on routing config.
 
 ---
 
 ### When to Re-load
 
 Re-load context when:
+
 1. **Checkpoint reached**: After major phase (research, design, planning, implementation)
 2. **User explicitly signals change**: "Actually implement this", "Looks good, proceed", "Implement the research"
 3. **Intent classification detects change**: New intent differs from old intent
@@ -364,10 +384,13 @@ Re-load context when:
 When intent changes from OLD → NEW:
 
 #### Step 1: Re-classify Intent
+
 ```bash
 bun run .opencode/cli/router.ts full "{user_message}" --json
 ```
+
 Example output:
+
 ```json
 {
   "intent": "implement",
@@ -378,18 +401,7 @@ Example output:
 
 #### Step 2: Identify Context for NEW Intent
 
-Use routing table to identify required context modules:
-
-| Intent            | Context Modules                                      | Skills           |
-| ----------------- | --------------------------------------------------- | ---------------- |
-| debug             | 00-core-contract.md, 10-coding-standards.md, 12-commenting-rules.md | code-agent       |
-| implement         | 00-core-contract.md, 10-coding-standards.md, 12-commenting-rules.md | code-agent       |
-| refactor          | 00-core-contract.md, 10-coding-standards.md, 12-commenting-rules.md | code-agent       |
-| review            | 00-core-contract.md                               | analysis-agent   |
-| research          | 00-core-contract.md, 30-research-methods.md           | research-agent   |
-| git               | 00-core-contract.md, 20-git-workflow.md            | git-commit       |
-| document          | 00-core-contract.md                               | self-learning    |
-| complex           | 00-core-contract.md                               | rlm-subcall      |
+See `.opencode/agents/tachikoma/config/routing/intents.yaml` for context modules per intent.
 
 #### Step 3: RE-LOAD Context Modules
 
@@ -412,12 +424,14 @@ Use routing table to identify required context modules:
 ### Example: Research → Implement
 
 **Old intent**: `research`
+
 - Loaded: 00-core-contract.md, 30-research-methods.md
 - Skill: research-agent
 
 **User says**: "Looks good, implement it"
 
 **Agent actions**:
+
 1. Re-classify: `implement` (confidence: 0.85)
 2. Re-load context:
    - ✅ Keep: 00-core-contract.md
@@ -434,6 +448,7 @@ Use routing table to identify required context modules:
 **THIS IS MANDATORY**: You MUST re-load context when intent changes.
 
 **Violations**:
+
 - ❌ Continuing with old context after intent change
 - ❌ Using old skill after intent change
 - ❌ Loading wrong context modules for intent
@@ -444,33 +459,31 @@ Use routing table to identify required context modules:
 
 ### Context Re-loading Rules
 
-| Rule | Description |
-|-------|-------------|
-| **MUST** | Re-classify intent at checkpoints |
-| **MUST** | Re-load context modules when intent changes |
-| **MUST** | Re-load skills when intent changes |
+| Rule         | Description                                   |
+| ------------ | --------------------------------------------- |
+| **MUST**     | Re-classify intent at checkpoints             |
+| **MUST**     | Re-load context modules when intent changes   |
+| **MUST**     | Re-load skills when intent changes            |
 | **MUST NOT** | Continue with old context after intent change |
-| **MUST NOT** | Use old skill after intent change |
-| **SHOULD** | Document context changes in intent history |
+| **MUST NOT** | Use old skill after intent change             |
+| **SHOULD**   | Document context changes in intent history    |
 
 ---
 
-## ⚠️ CHECKPOINTS (PAUL + RESEARCH-GUIDED)
+## Checkpoints
 
-**Purpose**: Natural decision points to re-evaluate intent and re-load context when needed.
-
-**Backed by**: PAUL's loop integrity + Research's checkpoint concept for handling intent changes.
+Purpose: Natural decision points to re-evaluate intent and re-load context when needed.
 
 ---
 
 ### Checkpoint Types
 
-| Type | When | Re-classify? | Actions |
-|------|------|--------------|---------|
-| **Initial** | Before any work | ✅ Yes | Set initial intent, load context |
-| **Milestone** | After major phase | ✅ Yes | Evaluate progress, re-classify intent, re-load if needed |
-| **Context Switch** | User signals change | ✅ Yes | Detect signal, re-classify, re-load context |
-| **Final** | Before completion | ❌ No | Verify, create summary, update STATE |
+| Type               | When                | Re-classify? | Actions                                                  |
+| ------------------ | ------------------- | ------------ | -------------------------------------------------------- |
+| **Initial**        | Before any work     | ✅ Yes       | Set initial intent, load context                         |
+| **Milestone**      | After major phase   | ✅ Yes       | Evaluate progress, re-classify intent, re-load if needed |
+| **Context Switch** | User signals change | ✅ Yes       | Detect signal, re-classify, re-load context              |
+| **Final**          | Before completion   | ❌ No        | Verify, create summary, update STATE                     |
 
 ---
 
@@ -503,9 +516,68 @@ Use routing table to identify required context modules:
 
 ---
 
+### Workflow State Tracking
+
+Use `.opencode/cli/workflow-state.ts` to track workflow state and transitions:
+
+```bash
+# Import in your workflow
+import { WorkflowManager, CheckpointSystem, ContextSwitchDetector } from './cli/workflow-state';
+```
+
+**Key Classes:**
+
+| Class                   | Purpose                                                           |
+| ----------------------- | ----------------------------------------------------------------- |
+| `WorkflowManager`       | Create and manage workflows                                       |
+| `WorkflowStateMachine`  | Track state transitions (INIT → CLASSIFY → PLAN → EXECUTE → DONE) |
+| `CheckpointSystem`      | Create checkpoints at key points                                  |
+| `ContextSwitchDetector` | Detect intent change signals                                      |
+
+**Usage:**
+
+```typescript
+// Create workflow manager
+const manager = new WorkflowManager();
+
+// Create initial workflow
+const workflowId = manager.createWorkflow(query, intent, confidence);
+
+// Get current workflow
+const workflow = manager.getCurrentWorkflow();
+const checkpoint = new CheckpointSystem(workflow);
+
+// Create initial checkpoint
+checkpoint.createInitial(intent, confidence);
+
+// Detect context switch
+if (ContextSwitchDetector.detect(userMessage)) {
+  // Handle context switch
+  const result = manager.handleContextSwitch(userMessage);
+  // Returns: { action: 'pivot' | 'branch' | 'none', workflowId? }
+}
+
+// Create milestone checkpoint
+checkpoint.createMilestone(newIntent, newConfidence);
+
+// Create final checkpoint
+checkpoint.createFinal();
+```
+
+**State Transitions:**
+
+```
+INIT → CLASSIFY → PLAN → EXECUTE → DONE
+                  ↓
+                PAUSED
+```
+
+---
+
 ### Context Switch Signals
 
 **Patterns** (agent should detect):
+
 - "Actually, I want to..."
 - "Wait, let me clarify..."
 - "Hold that thought..."
@@ -523,7 +595,7 @@ Use routing table to identify required context modules:
 
 ```
 User: "Research authentication in my app"
-Agent: 
+Agent:
   1. Initial checkpoint: intent = research
   2. Load: 00-core-contract.md, 30-research-methods.md
   3. Execute research
@@ -574,14 +646,17 @@ Agent:
 ### Enforcement
 
 **MANDATORY Checkpoints**:
+
 - **Initial**: Must create before any work
 - **Milestone**: Must create after major phases
 - **Final**: Must create before completion
 
 **OPTIONAL Checkpoints**:
+
 - **Context Switch**: Create when user signals change
 
 **Violations**:
+
 - ❌ Skipping mandatory checkpoints
 - ❌ Not re-classifying intent at checkpoints
 - ❌ Not re-loading context when intent changes
@@ -607,6 +682,7 @@ if (intentChanged) {
 ```
 
 **Thresholds**:
+
 - Exact string match: Intent changed
 - Different intent family (e.g., research → implement): Intent changed
 - Same intent family but different focus (e.g., implement → refactor): May not need re-load
@@ -620,7 +696,7 @@ if (intentChanged) {
 ```
 Phase 1: Intent Classification
   - This IS a checkpoint mechanism!
-  
+
 Phase 2: Context Loading
   - Use routing table for context mapping
   - Re-load when intent changes
@@ -650,8 +726,6 @@ Phase 5: UNIFY
 - ✅ No new CLI tools needed
 
 ---
-
-
 
 ## Hybrid Execution Model
 
@@ -721,15 +795,7 @@ Some intents require **hybrid execution** - combining direct tool usage with sub
 
 ## Strategic Variance
 
-| Intent         | Variance | Reason                    |
-| -------------- | -------- | ------------------------- |
-| debug          | low      | Must be deterministic     |
-| implement      | low      | Code must be correct      |
-| research       | medium   | Exploration is beneficial |
-| explore        | high     | Creative tasks            |
-| security-audit | low      | Must be thorough          |
-
-**Never use variance for**: verify, security-audit, production-deploy
+See `.opencode/agents/tachikoma/config/routing/variance.yaml` for variance settings by intent.
 
 ---
 

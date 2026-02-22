@@ -18,6 +18,7 @@ Read `.opencode/STATE.md` completely.
 ## Step 2: Output Key Sections
 
 Display:
+
 1. Current Position (task, phase, status, last activity)
 2. Loop Position (visual workflow state)
 3. Any Active Boundaries

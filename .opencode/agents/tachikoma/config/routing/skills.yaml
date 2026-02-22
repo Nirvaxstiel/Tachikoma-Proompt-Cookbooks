@@ -4,7 +4,6 @@
 # Router uses this to determine loading instructions
 
 ---
-
 ## Skills
 
 code-agent:
@@ -75,7 +74,6 @@ self-learning:
   notes: Use for README updates, docs, and code comments
 
 ---
-
 ## Subagent Definitions
 
 rlm-subcall:
@@ -111,7 +109,6 @@ explore:
   notes: For finding files, searching code keywords, answering codebase questions
 
 ---
-
 ## Context Module Definitions
 
 coding:
