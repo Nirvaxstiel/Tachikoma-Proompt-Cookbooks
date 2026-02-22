@@ -19,7 +19,7 @@ UNIFY is MANDATORY for every task. It:
 ## Input Required
 
 The user must provide:
-- `task-slug`: The task identifier (from spec-setup.sh)
+- `task-slug`: The task identifier (from spec-setup)
 - `duration`: How long the task took (in minutes)
 
 Usage: `/tachikoma:unify add-auth 45`
@@ -70,7 +70,7 @@ Create `.opencode/agents/tachikoma/spec/{slug}/SUMMARY.md` with:
 
 Run the state update:
 ```bash
-bash .opencode/agents/tachikoma/tools/state-update.sh complete-task "{slug}" "{duration}"
+bun run .opencode/cli/state-update.ts complete-task "{slug}" "{duration}"
 ```
 
 Also manually add:

@@ -115,19 +115,19 @@ Usage: `/tachikoma-resume`
 
 ---
 
-## Shell Tools
+## CLI Tools (TypeScript)
 
-These are shell scripts for programmatic use:
+These are TypeScript CLI tools for programmatic use:
 
-| Script | Purpose |
-|--------|---------|
-| `spec-setup.sh <task-name>` | Create task spec folder |
-| `state-update.sh <command>` | Manage STATE.md |
-| `unify-phase.sh <slug> <duration>` | Run UNIFY phase |
-| `pause-handoff.sh` | Create handoff |
-| `resume-handoff.sh` | Resume from handoff |
-| `tachi-progress.sh` | Progress (shell version) |
-| `tachi-help.sh` | Help (shell version) |
+| Command | Purpose |
+|---------|---------|
+| `bun run .opencode/cli/spec-setup.ts <task-name>` | Create task spec folder |
+| `bun run .opencode/cli/state-update.ts <command>` | Manage STATE.md |
+| `bun run .opencode/cli/unify.ts <slug> <duration>` | Run UNIFY phase |
+| `bun run .opencode/cli/handoff.ts pause` | Create handoff |
+| `bun run .opencode/cli/handoff.ts resume` | Resume from handoff |
+| `bun run .opencode/cli/progress.ts` | Show progress |
+| `bun run .opencode/cli/help.ts` | Show CLI help |
 
 ---
 
@@ -159,7 +159,7 @@ These are shell scripts for programmatic use:
 
 **Starting a task:**
 ```
-bash .opencode/agents/tachikoma/tools/spec-setup.sh "add feature"
+bun run .opencode/cli/spec-setup.ts "add feature"
 # Fill in SPEC.md with requirements
 # Work on task...
 /tachikoma-unify add-feature 60
