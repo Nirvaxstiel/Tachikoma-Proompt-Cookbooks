@@ -395,6 +395,11 @@ async function main() {
   // Show banner
   print(BANNER);
 
+  // Show current directory
+  section('CURRENT DIRECTORY');
+  const cwd = process.cwd();
+  info(`Installing from: ${colors.cyan}${cwd}${colors.reset}`);
+
   // Show help
   if (hasHelp) {
     println(`${colors.yellow}Usage:${colors.reset}`);
@@ -433,10 +438,13 @@ async function main() {
 
   // Install
   try {
-    if (hasGlobal) {
+    if (configDir) {
+      // Custom config dir - no prompt needed
       await install(true, configDir);
+    } else if (hasGlobal) {
+      await install(true, null);
     } else if (hasLocal) {
-      await install(false);
+      await install(false, null);
     } else {
       // Interactive prompt
       const openCodeDir = getOpenCodeConfigDir();
@@ -447,9 +455,9 @@ async function main() {
       println();
 
       const answer = await prompt(`  Choice ${colors.dim}[1]${colors.reset}: `);
-      
+
       const isGlobal = answer !== '2';
-      await install(isGlobal, configDir);
+      await install(isGlobal, null);
     }
   } catch (err) {
     error(`Installation failed: ${err.message}`);
