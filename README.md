@@ -73,9 +73,10 @@ cd /path/to/your/project
 # 2. Run tachikoma to install the agent
 tachikoma
 
-# Choose:
-# 1) Global - available in all projects
-# 2) Local  - this project only
+# Options:
+# tachikoma --global       # Install globally
+# tachikoma --local        # Install to current project
+# tachikoma -c /custom/path # Install to custom directory
 ```
 
 **Global Installation Paths:**
