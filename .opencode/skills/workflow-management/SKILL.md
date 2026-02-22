@@ -142,6 +142,63 @@ During UNIFY phase (Phase 8):
 
 ---
 
+## Checkpoint Types
+
+When human interaction is needed during implementation, use these checkpoint types:
+
+| Type | Frequency | Use Case |
+|------|-----------|----------|
+| `checkpoint:human-verify` | 90% | Agent completed work, human confirms |
+| `checkpoint:decision` | 9% | Human makes architectural/tech choice |
+| `checkpoint:human-action` | 1% | Truly unavoidable manual step (no CLI/API exists) |
+
+### Golden Rule
+
+> **If the agent CAN automate it, the agent MUST automate it.**
+
+Before using `checkpoint:human-action`, verify:
+1. No CLI command exists for the action
+2. No API endpoint exists for the action
+3. No script can be written to perform the action
+
+### Checkpoint Format in tasks.md
+
+```markdown
+### Task 1.1: [Task Name]
+
+**checkpoint:human-verify**
+
+**What was built:**
+- Responsive dashboard with sidebar navigation
+
+**How to verify:**
+1. Run: `npm run dev`
+2. Visit: http://localhost:3000/dashboard
+3. Check: Sidebar visible on desktop, hamburger menu on mobile
+
+**Resume signal:**
+Type "approved" or describe issues found
+```
+
+### Checkpoint Type Selection
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Does a CLI/API exist for this action?                       │
+│     ↓ YES → Automate it (no checkpoint needed)              │
+│     ↓ NO                                                    │
+│ Is this a verification of completed work?                   │
+│     ↓ YES → checkpoint:human-verify                         │
+│     ↓ NO                                                    │
+│ Is this a technical/architectural decision?                 │
+│     ↓ YES → checkpoint:decision                             │
+│     ↓ NO                                                    │
+│ → checkpoint:human-action (truly unavoidable)               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ### Phase 4: VALIDATE
 
 **Objective:** Verify implementation meets requirements.

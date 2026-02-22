@@ -108,6 +108,21 @@ export const TASKS_TEMPLATE = `# Tasks - {taskName}
 - [ ] AC-1 satisfied
 - [ ] AC-2 satisfied
 
+### Checkpoint (Optional)
+Use when human interaction is needed:
+
+**checkpoint:human-verify** | **checkpoint:decision** | **checkpoint:human-action**
+
+**What was built:**
+- [Description of completed work]
+
+**How to verify:**
+1. [Step 1]
+2. [Step 2]
+
+**Resume signal:**
+Type "approved" or describe issues found
+
 ---
 
 ### Task 1.2: [Task Name]
