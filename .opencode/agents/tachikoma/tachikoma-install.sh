@@ -236,18 +236,24 @@ cd "$EXTRACTED_DIR"
 p "\n"
 sh_print_highlight "━━━ TACHIKOMA ━━━"
 
-if [ -f "AGENTS.md" ]; then
+# AGENTS.md - Only copy if user doesn't have one (don't overwrite existing)
+if [ -f "${INSTALL_DIR}/AGENTS.md" ]; then
+    sh_print_info "AGENTS.md already exists in project - preserving"
+elif [ -f "AGENTS.md" ]; then
     cp "AGENTS.md" "${INSTALL_DIR}/AGENTS.md"
     sh_print_success "AGENTS.md"
 else
-    sh_print_warning "AGENTS.md not found"
+    sh_print_warning "AGENTS.md not found in source"
 fi
 
-if [ -f "opencode.json" ]; then
+# opencode.json - Only copy if user doesn't have one
+if [ -f "${INSTALL_DIR}/opencode.json" ]; then
+    sh_print_info "opencode.json already exists - preserving"
+elif [ -f "opencode.json" ]; then
     cp "opencode.json" "${INSTALL_DIR}/opencode.json"
     sh_print_success "opencode.json"
 else
-    sh_print_warning "opencode.json not found"
+    sh_print_warning "opencode.json not found in source"
 fi
 
 if [ -d ".opencode" ]; then

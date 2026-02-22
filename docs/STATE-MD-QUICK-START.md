@@ -10,7 +10,7 @@
 
 **Size target**: Under 100 lines (digest, not archive)
 
-**See also**: [AC-ENFORCEMENT-GUIDE.md](docs/AC-ENFORCEMENT-GUIDE.md) - How to use verifiable acceptance criteria with BDD format and verification steps
+**See also**: [AC-ENFORCEMENT-GUIDE.md](./AC-ENFORCEMENT-GUIDE.md) - How to use verifiable acceptance criteria with BDD format and verification steps
 
 ---
 
