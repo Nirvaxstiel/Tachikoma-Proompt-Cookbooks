@@ -349,12 +349,12 @@ Some intents require **hybrid execution** - combining direct tool usage with sub
 │   ├── unify.ts                # UNIFY phase
 │   ├── handoff.ts              # Pause/resume
 │   ├── progress.ts             # Show progress
+│   ├── help.ts                 # CLI help
 │   └── lib/                    # Shared utilities
 ├── agents/
 │   ├── tachikoma.md            # This file - main orchestrator
 │   ├── subagents/              # Subagent definitions
 │   └── tachikoma/              # Internal Tachikoma stuff
-│       ├── tools/              # Thin shell wrappers
 │       ├── templates/          # Templates
 │       ├── spec/               # Task specs
 │       └── handoffs/           # Session handoffs

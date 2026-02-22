@@ -34,6 +34,7 @@
 - Update config file references for edit-format-selector.ts
 - Update all references from Python to TypeScript
 - Update tachikoma.md with hybrid execution model and git-diff-analysis routing
+- Update tachikoma.md File Structure section to remove "Thin shell wrappers" reference
 - Update artifact policy v1.2.0 → v1.3.0 with approved workflows clarification and pre-action validation
 
 ### Fixed
@@ -54,9 +55,17 @@
 - Remove redundant comment blocks
 - Remove old skill files (archived to _archive)
 - Remove Python CLI router (replaced by TypeScript)
-- Remove thin shell wrappers
+- Remove thin shell wrappers (7 archived wrappers: unify-phase.sh, tachi-progress.sh, tachi-help.sh, state-update.sh, spec-setup.sh, resume-handoff.sh, pause-handoff.sh)
 - Remove Python dependency from RLM plugin
-- Remove unused Python/shell scripts
+- Remove ~35 archived Python/shell files replaced by TypeScript:
+  - python-core/ (1 file: confidence-router.py)
+  - python-scripts/ (8 files: compaction.py, context_manager.py, coordination.py, degradation_detector.py, evaluator.py, memory_store.py, position-aware-loader.py, production_monitor.py)
+  - python-tools/ (7 files: __init__.py, config_manager.py, description_generator.py, file_io.py, hash_utils.py, metrics.py, path_helper.py)
+  - batch-files/ (2 files: batch-utils.bat, run-smoke-tests.bat)
+  - skills/rlm/_archive/ (3 files: adaptive_chunker.py, parallel_processor.py, rlm_repl.py)
+  - skills/verifier-code-agent/_archive/ (1 file: verification-engine.py)
+  - _archive/old-skills-py/ (6 files: cli-router.py, context_pruner.py, deterministic_verifier.py, edit_format_optimizer.py, hashline_generator.py, structured_summarization.py)
+  - Individual archived files: changelog.sh, run-smoke-tests.sh, test-shell-utils.sh, path-helper.sh, compression_evaluator.py, edit-format-selector.py, hashline-processor.py
 - Remove binary Python runtime files from tracking
 
 ### Refactored

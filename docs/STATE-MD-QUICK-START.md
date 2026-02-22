@@ -20,36 +20,36 @@
 
 ```bash
 # 1. Check current state
-bash .opencode/tools/state-update.sh show
+bun run .opencode/cli/state-update.ts show
 
-# 2. Update with new task (spec-setup.sh does this automatically)
-bash .opencode/tools/spec-setup.sh "task name"
+# 2. Update with new task (spec-setup.ts does this automatically)
+bun run .opencode/cli/spec-setup.ts "task name"
 
 # 3. Or manually update status
-bash .opencode/tools/state-update.sh update-status "Planning"
+bun run .opencode/cli/state-update.ts update-status "Planning"
 ```
 
 ### During Task Execution
 
 ```bash
 # Log a decision
-bash .opencode/tools/state-update.sh add-decision "task-slug" "Use JWT for auth" "Affects all auth endpoints"
+bun run .opencode/cli/state-update.ts add-decision "task-slug" "Use JWT for auth" "Affects all auth endpoints"
 
 # Add a blocker
-bash .opencode/tools/state-update.sh add-blocker "Missing API documentation" "Auth endpoint implementation" "Contact API team"
+bun run .opencode/cli/state-update.ts add-blocker "Missing API documentation" "Auth endpoint implementation" "Contact API team"
 
 # Update status
-bash .opencode/tools/state-update.sh update-status "Executing"
+bun run .opencode/cli/state-update.ts update-status "Executing"
 ```
 
 ### After Completing Task
 
 ```bash
 # Mark as complete
-bash .opencode/tools/state-update.sh complete-task "task-slug" "45"
+bun run .opencode/cli/state-update.ts complete-task "task-slug" "45"
 
 # If issues found
-bash .opencode/tools/state-update.sh add-deferred "Add rate limiting" "task-slug" "M" "After load testing"
+bun run .opencode/cli/state-update.ts add-deferred "Add rate limiting" "task-slug" "M" "After load testing"
 ```
 
 ---
@@ -60,7 +60,7 @@ bash .opencode/tools/state-update.sh add-deferred "Add rate limiting" "task-slug
 Initialize a new task in STATE.md.
 
 ```bash
-bash .opencode/tools/state-update.sh start-task "Add OAuth" "add-oauth"
+bun run .opencode/cli/state-update.ts start-task "Add OAuth" "add-oauth"
 ```
 
 Updates:
@@ -74,7 +74,7 @@ Updates:
 Mark task as complete.
 
 ```bash
-bash .opencode/tools/state-update.sh complete-task "add-oauth" "45"
+bun run .opencode/cli/state-update.ts complete-task "add-oauth" "45"
 ```
 
 Updates:
@@ -88,7 +88,7 @@ Updates:
 Log a decision made during execution.
 
 ```bash
-bash .opencode/tools/state-update.sh add-decision "task-slug" "Use Zustand for state" "Simpler than Redux"
+bun run .opencode/cli/state-update.ts add-decision "task-slug" "Use Zustand for state" "Simpler than Redux"
 ```
 
 Updates:
@@ -100,7 +100,7 @@ Updates:
 Add a blocker affecting progress.
 
 ```bash
-bash .opencode/tools/state-update.sh add-blocker "Missing API key" "Payment integration" "Request from ops team"
+bun run .opencode/cli/state-update.ts add-blocker "Missing API key" "Payment integration" "Request from ops team"
 ```
 
 Updates:
@@ -112,7 +112,7 @@ Updates:
 Log an issue to address later.
 
 ```bash
-bash .opencode/tools/state-update.sh add-deferred "Add unit tests" "task-slug" "L" "After feature stable"
+bun run .opencode/cli/state-update.ts add-deferred "Add unit tests" "task-slug" "L" "After feature stable"
 ```
 
 Updates:
@@ -124,7 +124,7 @@ Updates:
 Update current phase status.
 
 ```bash
-bash .opencode/tools/state-update.sh update-status "Validating"
+bun run .opencode/cli/state-update.ts update-status "Validating"
 ```
 
 Valid statuses:
@@ -141,7 +141,7 @@ Valid statuses:
 Add a protected boundary.
 
 ```bash
-bash .opencode/tools/state-update.sh set-boundary "src/lib/auth.ts"
+bun run .opencode/cli/state-update.ts set-boundary "src/lib/auth.ts"
 ```
 
 Updates:
@@ -153,7 +153,7 @@ Updates:
 Display current STATE.md.
 
 ```bash
-bash .opencode/tools/state-update.sh show
+bun run .opencode/cli/state-update.ts show
 ```
 
 ---
@@ -164,7 +164,7 @@ bash .opencode/tools/state-update.sh show
 
 ```bash
 # 1. Check current state
-bash .opencode/tools/state-update.sh show
+bun run .opencode/cli/state-update.ts show
 
 # 2. Create spec (automatically updates STATE.md)
 bash .opencode/tools/spec-setup.sh "Add user authentication"
@@ -173,17 +173,17 @@ bash .opencode/tools/spec-setup.sh "Add user authentication"
 # 4. Fill in boundaries.md with protected files
 
 # 5. Update status when ready to implement
-bash .opencode/tools/state-update.sh update-status "Executing"
+bun run .opencode/cli/state-update.ts update-status "Executing"
 ```
 
 ### During Implementation
 
 ```bash
 # Make a decision
-bash .opencode/tools/state-update.sh add-decision "add-auth" "Use bcrypt for password hashing" "Industry standard"
+bun run .opencode/cli/state-update.ts add-decision "add-auth" "Use bcrypt for password hashing" "Industry standard"
 
 # Hit a blocker
-bash .opencode/tools/state-update.sh add-blocker "Database schema needs migration" "User model creation" "Create migration script"
+bun run .opencode/cli/state-update.ts add-blocker "Database schema needs migration" "User model creation" "Create migration script"
 
 # Unblocked
 # (Remove blocker manually from STATE.md or document resolution)
@@ -193,10 +193,10 @@ bash .opencode/tools/state-update.sh add-blocker "Database schema needs migratio
 
 ```bash
 # Mark complete
-bash .opencode/tools/state-update.sh complete-task "add-auth" "90"
+bun run .opencode/cli/state-update.ts complete-task "add-auth" "90"
 
 # Deferred issues found
-bash .opencode/tools/state-update.sh add-deferred "Add password reset flow" "add-auth" "M" "After core auth stable"
+bun run .opencode/cli/state-update.ts add-deferred "Add password reset flow" "add-auth" "M" "After core auth stable"
 ```
 
 ---
@@ -220,7 +220,7 @@ When resuming:
 
 ```bash
 # Read current state
-bash .opencode/tools/state-update.sh show
+bun run .opencode/cli/state-update.ts show
 
 # Jump to next action
 # (Based on Session Continuity section)
