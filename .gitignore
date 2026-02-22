@@ -4,6 +4,10 @@ node_modules/
 venv/
 __pycache__/
 *.py[cod]
+*.pyo
+
+# Site-packages (anywhere in project)
+**/site-packages/
 
 # Build outputs
 dist/
@@ -34,8 +38,30 @@ docs/.vitepress/dist/
 
 # Environment
 *.env
-/.opencode/agents/tachikoma/cache/uv
-/.opencode/agents/tachikoma/assets/Python310/Lib/site-packages
-/.opencode/agents/tachikoma/cache
-/.opencode/agents/tachikoma/rlm_state
-/.opencode/agents/tachikoma/spec
+
+# Python caches (global)
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# UV/pip caches
+**/cache/uv/
+**/.uv/
+
+# Tachikoma generated/runtime
+.opencode/STATE.md
+.opencode/agents/tachikoma/cache/
+.opencode/agents/tachikoma/rlm_state/
+.opencode/agents/tachikoma/spec/
+.opencode/rlm_state/
+
+# Archive binary assets (keep archive folder structure, ignore binaries)
+**/_archive/**/*.dll
+**/_archive/**/*.exe
+**/_archive/**/*.so
+**/_archive/**/*.dylib
+**/_archive/**/*.zip
+**/_archive/**/Lib/
+**/_archive/**/Scripts/
