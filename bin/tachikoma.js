@@ -4,8 +4,8 @@
  *
  * "Structure at the start, freedom at the end."
  *
- * Assumes tachikoma was installed via the local install script.
- * Copies files from the Tachikoma repo to your project.
+ * Installs the Tachikoma framework to your project or globally.
+ * Smart backup: only backs up changed files, respects .gitignore.
  *
  * Usage:
  *   tachikoma
@@ -68,37 +68,34 @@ const FILES_TO_INSTALL = [
   ".opencode/agents",
   // Context modules
   ".opencode/context-modules",
-  // Tachikoma internals
-  ".opencode/agents/tachikoma/templates",
-  ".opencode/agents/tachikoma/patterns",
-  ".opencode/agents/tachikoma/plugins",
   // Gitignore
   ".opencode/.gitignore",
 ];
 
-const IGNORE_PATTERNS = [
-  "_archive",
-  "__pycache__",
+// Default ignore patterns (always skip these during comparison)
+const DEFAULT_IGNORE_PATTERNS = [
   "node_modules",
+  "__pycache__",
   ".venv",
+  "venv",
   "cache",
+  "rlm_state",
+  "spec",
+  "handoffs",
+  "_archive",
   "*.pyc",
   "*.pyo",
-  "*.exe",
-  "*.dll",
+  "*.egg-info",
+  ".DS_Store",
+  "Thumbs.db",
+  ".opencode-backup",
+  "STATE.md",
   "bun.lock",
   "package-lock.json",
 ];
 
 // Get OpenCode config directory per OS
-// Based on https://opencode.ai/docs/config/ and user testing
-// Global config directory contains: opencode.json + agents/, commands/, plugins/, skills/, tools/, themes/
-// Uses ~/.config/opencode on all platforms for consistency
 function getOpenCodeConfigDir() {
-  // All platforms use ~/.config/opencode
-  // Windows: C:\Users\username\.config\opencode
-  // macOS:   /Users/username/.config/opencode
-  // Linux:   /home/username/.config/opencode
   return path.join(os.homedir(), ".config", "opencode");
 }
 
@@ -167,29 +164,325 @@ function expandTilde(filePath) {
   return filePath;
 }
 
-function shouldIgnore(itemPath) {
-  const basename = path.basename(itemPath);
-  return IGNORE_PATTERNS.some((pattern) => {
-    if (pattern.startsWith("*")) {
-      return basename.endsWith(pattern.slice(1));
+// =============================================================================
+// GITIGNORE PARSING
+// =============================================================================
+
+function parseGitignore(gitignorePath) {
+  const patterns = [];
+
+  if (!fs.existsSync(gitignorePath)) {
+    return patterns;
+  }
+
+  const content = fs.readFileSync(gitignorePath, "utf-8");
+  const lines = content.split(/\r?\n/);
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Skip empty lines and comments
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue;
     }
-    return (
-      basename === pattern ||
-      itemPath.includes(`/${pattern}/`) ||
-      itemPath.includes(`\\${pattern}\\`)
-    );
-  });
+    patterns.push(trimmed);
+  }
+
+  return patterns;
+}
+
+// Check if a relative path matches any ignore pattern
+function shouldIgnore(relPath, patterns) {
+  const basename = path.basename(relPath);
+  const parts = relPath.split(/[/\\]/);
+
+  for (const pattern of patterns) {
+    // Handle negation (we don't use it, but skip it)
+    if (pattern.startsWith("!")) continue;
+
+    // Handle directory patterns (ending with /)
+    const dirPattern = pattern.endsWith("/") ? pattern.slice(0, -1) : pattern;
+
+    // Handle glob patterns like *.pyc
+    if (pattern.startsWith("*")) {
+      const ext = pattern.slice(1);
+      if (basename.endsWith(ext)) return true;
+      continue;
+    }
+
+    // Exact match with basename
+    if (basename === dirPattern) return true;
+
+    // Path starts with pattern
+    if (relPath.startsWith(dirPattern + "/") || relPath.startsWith(dirPattern + "\\")) {
+      return true;
+    }
+
+    // Path contains pattern as directory component
+    if (parts.includes(dirPattern)) return true;
+
+    // Exact path match
+    if (relPath === dirPattern) return true;
+  }
+
+  return false;
+}
+
+// =============================================================================
+// FILE OPERATIONS
+// =============================================================================
+
+// Get all files in a directory recursively
+function getAllFiles(dir, baseDir, ignorePatterns, files = []) {
+  if (!fs.existsSync(dir)) return files;
+
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    const relPath = path.relative(baseDir, fullPath);
+
+    // Check ignore patterns
+    if (shouldIgnore(relPath, ignorePatterns)) {
+      continue;
+    }
+
+    if (entry.isDirectory()) {
+      getAllFiles(fullPath, baseDir, ignorePatterns, files);
+    } else {
+      files.push({ fullPath, relPath });
+    }
+  }
+
+  return files;
+}
+
+// Compare two files for differences
+function filesDiffer(file1, file2) {
+  if (!fs.existsSync(file1) || !fs.existsSync(file2)) {
+    return true;
+  }
+
+  try {
+    const stat1 = fs.statSync(file1);
+    const stat2 = fs.statSync(file2);
+
+    // Quick size check
+    if (stat1.size !== stat2.size) {
+      return true;
+    }
+
+    // Content comparison
+    const content1 = fs.readFileSync(file1);
+    const content2 = fs.readFileSync(file2);
+
+    return !content1.equals(content2);
+  } catch {
+    return true;
+  }
+}
+
+// Copy directory recursively
+function copyDirectory(src, dest, ignorePatterns = []) {
+  fs.mkdirSync(dest, { recursive: true });
+
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+
+    if (shouldIgnore(entry.name, ignorePatterns)) {
+      continue;
+    }
+
+    if (entry.isDirectory()) {
+      copyDirectory(srcPath, destPath, ignorePatterns);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+// =============================================================================
+// SMART BACKUP
+// =============================================================================
+
+function createSmartBackup(targetDir, sourceDir, filesToInstall) {
+  const backupDir = path.join(path.dirname(targetDir), ".opencode-backup");
+  const diffReport = {
+    modified: [],
+    added: [],
+    deleted: [],
+    unchanged: [],
+  };
+
+  // Load gitignore patterns from target (existing installation)
+  const gitignorePath = path.join(targetDir, ".gitignore");
+  const gitignorePatterns = parseGitignore(gitignorePath);
+  const allIgnorePatterns = [...DEFAULT_IGNORE_PATTERNS, ...gitignorePatterns];
+
+  // Get all existing files in target
+  const existingFiles = getAllFiles(targetDir, targetDir, allIgnorePatterns);
+  const existingMap = new Map(existingFiles.map((f) => [f.relPath, f.fullPath]));
+
+  // Track what we're installing
+  const installingFiles = new Set();
+
+  // Process each source directory/file
+  for (const relPath of filesToInstall) {
+    const sourcePath = path.join(sourceDir, relPath);
+    if (!fs.existsSync(sourcePath)) continue;
+
+    if (fs.statSync(sourcePath).isDirectory()) {
+      const newFiles = getAllFiles(sourcePath, sourceDir, allIgnorePatterns);
+      for (const file of newFiles) {
+        const fullRelPath = path.join(relPath, file.relPath);
+        installingFiles.add(fullRelPath.replace(/\\/g, "/"));
+      }
+    } else {
+      installingFiles.add(relPath.replace(/\\/g, "/"));
+    }
+  }
+
+  // Compare existing files with new files
+  for (const { fullPath, relPath } of existingFiles) {
+    const normalizedRelPath = relPath.replace(/\\/g, "/");
+    const sourceFilePath = path.join(sourceDir, normalizedRelPath);
+
+    // Check if this file is being installed
+    let isBeingInstalled = false;
+    for (const installPath of installingFiles) {
+      if (normalizedRelPath === installPath || normalizedRelPath.startsWith(installPath + "/")) {
+        isBeingInstalled = true;
+        break;
+      }
+    }
+
+    if (!isBeingInstalled) {
+      // File exists in target but not in source - will be deleted
+      const backupPath = path.join(backupDir, relPath);
+      fs.mkdirSync(path.dirname(backupPath), { recursive: true });
+      fs.copyFileSync(fullPath, backupPath);
+      diffReport.deleted.push(relPath);
+      continue;
+    }
+
+    // Check if file exists in source
+    if (fs.existsSync(sourceFilePath)) {
+      if (filesDiffer(fullPath, sourceFilePath)) {
+        // File differs - backup old version
+        const backupPath = path.join(backupDir, relPath);
+        fs.mkdirSync(path.dirname(backupPath), { recursive: true });
+        fs.copyFileSync(fullPath, backupPath);
+        diffReport.modified.push(relPath);
+      } else {
+        diffReport.unchanged.push(relPath);
+      }
+    }
+  }
+
+  // Find new files (in source but not in target)
+  for (const relPath of installingFiles) {
+    const targetFilePath = path.join(targetDir, relPath);
+    if (!fs.existsSync(targetFilePath)) {
+      diffReport.added.push(relPath);
+    }
+  }
+
+  // Write diff report
+  const diffReportPath = path.join(backupDir, "diff.md");
+  const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19);
+
+  let report = `# Tachikoma Update Report
+
+Generated: ${timestamp}
+
+## Summary
+
+- **Modified**: ${diffReport.modified.length} files
+- **Added**: ${diffReport.added.length} files
+- **Deleted**: ${diffReport.deleted.length} files
+- **Unchanged**: ${diffReport.unchanged.length} files
+
+`;
+
+  if (diffReport.modified.length > 0) {
+    report += `## Modified Files\n\nPrevious versions backed up:\n\n`;
+    for (const f of diffReport.modified) {
+      report += `- \`${f}\`\n`;
+    }
+    report += "\n";
+  }
+
+  if (diffReport.added.length > 0) {
+    report += `## Added Files\n\nNew in this version:\n\n`;
+    for (const f of diffReport.added) {
+      report += `- \`${f}\`\n`;
+    }
+    report += "\n";
+  }
+
+  if (diffReport.deleted.length > 0) {
+    report += `## Deleted Files\n\nRemoved in this version (backed up):\n\n`;
+    for (const f of diffReport.deleted) {
+      report += `- \`${f}\`\n`;
+    }
+    report += "\n";
+  }
+
+  fs.mkdirSync(backupDir, { recursive: true });
+  fs.writeFileSync(diffReportPath, report);
+
+  return diffReport;
+}
+
+// =============================================================================
+// INSTALLATION
+// =============================================================================
+
+function copyFiles(sourceDir, targetDir, filesToCopy) {
+  section("INSTALL");
+
+  let copied = 0;
+  let skipped = 0;
+
+  // Load ignore patterns
+  const gitignorePath = path.join(sourceDir, ".opencode", ".gitignore");
+  const gitignorePatterns = parseGitignore(gitignorePath);
+  const allIgnorePatterns = [...DEFAULT_IGNORE_PATTERNS, ...gitignorePatterns];
+
+  for (const relPath of filesToCopy) {
+    const sourcePath = path.join(sourceDir, relPath);
+    const targetPath = path.join(targetDir, relPath);
+
+    if (!fs.existsSync(sourcePath)) {
+      skipped++;
+      continue;
+    }
+
+    // Create parent directories
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+
+    // Copy
+    if (fs.statSync(sourcePath).isDirectory()) {
+      copyDirectory(sourcePath, targetPath, allIgnorePatterns);
+    } else {
+      fs.copyFileSync(sourcePath, targetPath);
+    }
+
+    success(relPath);
+    copied++;
+  }
+
+  println();
+  highlight(`Installed ${copied} items (${skipped} skipped)`);
 }
 
 // Find the Tachikoma source directory
 function findTachikomaSource() {
-  // Try to find the source directory relative to this script
-  // The script should be in <tachikoma-repo>/bin/tachikoma.js
-
   const scriptDir = path.dirname(__filename);
   const potentialRoot = path.join(scriptDir, "..");
 
-  // Check if this looks like the Tachikoma repo
   const markers = ["package.json", ".opencode"];
   const hasMarkers = markers.every((marker) =>
     fs.existsSync(path.join(potentialRoot, marker)),
@@ -199,16 +492,13 @@ function findTachikomaSource() {
     return potentialRoot;
   }
 
-  // If we're installed via npm/pkg, __dirname might be in a different location
-  // Try to find the package location
   try {
     const packagePath = require.resolve("tachikoma-framework/package.json");
     return path.dirname(packagePath);
   } catch {
-    // Not installed via npm, try alternative methods
+    // Not installed via npm
   }
 
-  // Last resort: try to find via git if we're in the repo
   try {
     const gitRoot = execSync("git rev-parse --show-toplevel", {
       encoding: "utf-8",
@@ -220,74 +510,10 @@ function findTachikomaSource() {
       return gitRoot;
     }
   } catch {
-    // Not in a git repo or git not available
+    // Not in a git repo
   }
 
   throw new Error("Could not find Tachikoma source directory");
-}
-
-// =============================================================================
-// INSTALLATION
-// =============================================================================
-
-function copyDirectory(src, dest) {
-  fs.mkdirSync(dest, { recursive: true });
-
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
-
-    if (shouldIgnore(srcPath)) {
-      continue;
-    }
-
-    if (entry.isDirectory()) {
-      copyDirectory(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  }
-}
-
-function copyFiles(sourceDir, targetDir, filesToCopy) {
-  section("INSTALL");
-
-  let copied = 0;
-  let skipped = 0;
-
-  for (const relPath of filesToCopy) {
-    const sourcePath = path.join(sourceDir, relPath);
-    const targetPath = path.join(targetDir, relPath);
-
-    if (!fs.existsSync(sourcePath)) {
-      skipped++;
-      continue;
-    }
-
-    // Check if should ignore
-    if (shouldIgnore(sourcePath)) {
-      skipped++;
-      continue;
-    }
-
-    // Create parent directories
-    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-
-    // Copy
-    if (fs.statSync(sourcePath).isDirectory()) {
-      copyDirectory(sourcePath, targetPath);
-    } else {
-      fs.copyFileSync(sourcePath, targetPath);
-    }
-
-    success(relPath);
-    copied++;
-  }
-
-  println();
-  highlight(`Installed ${copied} items (${skipped} skipped)`);
 }
 
 async function install(isGlobal, configDir = null) {
@@ -306,7 +532,6 @@ async function install(isGlobal, configDir = null) {
   println();
   info(`Installing to: ${colors.cyan}${locationLabel}${colors.reset}`);
 
-  // Show OpenCode path info
   if (isGlobal) {
     println();
     info(
@@ -336,16 +561,48 @@ async function install(isGlobal, configDir = null) {
     process.exit(1);
   }
 
-  // Check if target exists
+  // Check if target exists - do smart backup
   if (fs.existsSync(targetDir)) {
     warn(`Existing installation found at ${targetDir}`);
-    const answer = await prompt(`  Overwrite? [y/N]: `);
-    if (answer !== "y" && answer !== "Y") {
+    println();
+
+    // Create smart backup
+    section("BACKUP");
+    info("Analyzing differences...");
+
+    const diffReport = createSmartBackup(targetDir, sourceDir, FILES_TO_INSTALL);
+
+    const totalChanges = diffReport.modified.length + diffReport.added.length + diffReport.deleted.length;
+
+    if (totalChanges > 0) {
+      println();
+      info(`Changes detected:`);
+      if (diffReport.modified.length > 0) {
+        println(`  ${colors.yellow}Modified:${colors.reset} ${diffReport.modified.length} files`);
+      }
+      if (diffReport.added.length > 0) {
+        println(`  ${colors.green}Added:${colors.reset} ${diffReport.added.length} files`);
+      }
+      if (diffReport.deleted.length > 0) {
+        println(`  ${colors.red}Deleted:${colors.reset} ${diffReport.deleted.length} files`);
+      }
+      println();
+      success(`Backup created: .opencode-backup/`);
+      success(`Diff report: .opencode-backup/diff.md`);
+    } else {
+      println();
+      success("No changes detected - installation is up to date");
+    }
+
+    println();
+    const answer = await prompt(`  Continue with installation? [Y/n]: `);
+    if (answer === "n" || answer === "N") {
       info("Installation cancelled");
       process.exit(0);
     }
 
-    info(`Removing existing installation...`);
+    // Remove old installation (backup already created)
+    info(`Removing old installation...`);
     fs.rmSync(targetDir, { recursive: true, force: true });
   }
 
@@ -470,7 +727,6 @@ async function main() {
   // Install
   try {
     if (configDir) {
-      // Custom config dir - no prompt needed
       await install(true, configDir);
     } else if (hasGlobal) {
       await install(true, null);

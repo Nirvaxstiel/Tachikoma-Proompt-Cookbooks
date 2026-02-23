@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 #
-# Tachikoma Framework - Local Installer
+# Tachikoma Framework - PATH Installer
 #
-# Assumes you've git cloned the repo.
-# Installs the tachikoma command to your system PATH.
+# Installs the 'tachikoma' command to your system PATH.
+# Run this after cloning the repo.
 #
 # Usage:
-#   bash install
+#   bash install [--local | --global | --help]
+#
+# After installation, run 'tachikoma' in any project to install the framework.
+#
 
 set -e
 
@@ -19,28 +22,22 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-# ASCII Art
+# Print functions
+p() { printf "$@"; }
+pl() { printf "$@\n"; }
+success() { pl "  ${GREEN}✓${RESET} $@"; }
+warn() { pl "  ${YELLOW}⚠${RESET} $@"; }
+error() { pl "  ${RED}✗${RESET} $@"; }
+info() { pl "  ${CYAN}ℹ${RESET} $@"; }
+
+# Banner
 BANNER="
-${CYAN}                    ╭──────────────────────╮
-${CYAN}                    │ ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ │
-${CYAN}                    │ ▓  ${MAGENTA}TACHIKOMA${CYAN}      ▓ │
-${CYAN}                    │ ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ │
-${CYAN}                    │                      │
-${CYAN}            ╭───────┴──────────────────────┴───────╮
-${CYAN}            │  ${DIM}◆ ◆${CYAN}                        ${DIM}◆ ◆${CYAN}  │
-${CYAN}            │     ${MAGENTA}╲ ${CYAN}                    ${MAGENTA}╱${CYAN}     │
-${CYAN}            │       ${MAGENTA}╲ ${CYAN}                ${MAGENTA}╱${CYAN}       │
-${CYAN}    ╭───────┴─────────────────────────────────────────┴───────╮
-${CYAN}    │                                                       │
-${CYAN}    │   ${DIM}╭──╮${CYAN}                                     ${DIM}╭──╮${CYAN}   │
-${CYAN}    │   ${DIM}│▓▓│${CYAN}    ╔═════════════════════════╗    ${DIM}│▓▓│${CYAN}   │
-${CYAN}    │   ${DIM}╰──╯${CYAN}    ║  ${MAGENTA}THINK TANK${CYAN}           ║    ${DIM}│▓▓│${CYAN}   │
-${CYAN}    │           ║  ${DIM}TYPE-II${CYAN}              ║           │
-${CYAN}    │           ╚═════════════════════════════════════╝           │
-${CYAN}    │                                                       │
-${CYAN}    ╰───────────────────────────────────────────────────────╯
-${CYAN}            │  ${MAGENTA}││${CYAN}    ${MAGENTA}││${CYAN}    ${MAGENTA}││${CYAN}    ${MAGENTA}││${CYAN}    │
-${CYAN}            ╰──${MAGENTA}││${CYAN}────${MAGENTA}││${CYAN}────${MAGENTA}││${CYAN}────${MAGENTA}││${CYAN}──╯
+${CYAN}████████╗ █████╗  ██████╗██╗  ██╗██╗██╗  ██╗ ██████╗ ███╗   ███╗ █████╗
+${CYAN}╚══██╔══╝██╔══██╗██╔════╝██║  ██║██║██║ ██╔╝██╔═══██╗████╗ ████║██╔══██╗
+${CYAN}   ██║   ███████║██║     ███████║██║█████╔╝ ██║   ██║██╔████╔██║███████║
+${CYAN}   ██║   ██╔══██║██║     ██╔══██║██║██╔═██╗ ██║   ██║██║╚██╔╝██║██╔══██║
+${CYAN}   ██║   ██║  ██║╚██████╗██║  ██║██║██║  ██╗╚██████╔╝██║ ╚═╝ ██║██║  ██║
+${CYAN}   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝
 ${RESET}
 
 ${BOLD}${MAGENTA}  TACHIKOMA FRAMEWORK${RESET} ${DIM}v2.0.0${RESET}
@@ -49,15 +46,33 @@ ${DIM}
   ═══════════════════════════════════════════════════════${RESET}
 "
 
-# Print functions
-p() { printf "$@"; }
-pl() { printf "$@\n"; }
-success() { pl "  ${GREEN}✓${RESET} $@"; }
-warn() { pl "  ${YELLOW}⚠${RESET} $@"; }
-error() { pl "  ${RED}✗${RESET} $@"; }
-info() { pl "  ${CYAN}ℹ${RESET} $@"; }
-highlight() { pl "  ${MAGENTA}▶${RESET} $@"; }
-section() { pl ""; pl "${BOLD}${CYAN}  ══ $@ ══${RESET}"; pl ""; }
+# Parse args
+INSTALL_MODE=""
+for arg in "$@"; do
+    case "$arg" in
+        -l|--local)
+            INSTALL_MODE="local"
+            ;;
+        -g|--global)
+            INSTALL_MODE="global"
+            ;;
+        -h|--help)
+            p "$BANNER"
+            pl "${YELLOW}Usage:${RESET}"
+            pl "  bash install [options]"
+            pl ""
+            pl "${YELLOW}Options:${RESET}"
+            pl "  ${CYAN}-g, --global${RESET}    Install to /usr/local/bin (requires sudo)"
+            pl "  ${CYAN}-l, --local${RESET}     Install to ~/.local/bin"
+            pl "  ${CYAN}-h, --help${RESET}      Show this help"
+            pl ""
+            pl "${YELLOW}After installation:${RESET}"
+            pl "  Run ${MAGENTA}tachikoma${RESET} in any project to install the framework"
+            pl ""
+            exit 0
+            ;;
+    esac
+done
 
 # Show banner
 p "$BANNER"
@@ -74,7 +89,8 @@ if [ ! -f "package.json" ] || [ ! -d ".opencode" ]; then
 fi
 
 # Check for bun
-section "DETECT RUNTIME"
+pl "${BOLD}${CYAN}  ══ DETECT RUNTIME ══${RESET}"
+pl ""
 
 if command -v bun &> /dev/null; then
     success "Found bun $(bun --version)"
@@ -82,47 +98,42 @@ else
     error "Bun is required but not installed"
     pl ""
 
-    # Detect OS
     OS="$(uname -s)"
     case "$OS" in
         Linux*)
-            pl "${BOLD}${CYAN}  Linux detected${RESET}"
-            pl ""
             pl "  ${CYAN}curl -fsSL https://bun.sh/install | bash${RESET}"
             ;;
         Darwin*)
-            pl "${BOLD}${CYAN}  macOS detected${RESET}"
-            pl ""
             pl "  ${CYAN}brew install oven-sh/bun/bun${RESET}"
             ;;
         MINGW*|MSYS*|CYGWIN*|Windows_NT*)
-            pl "${BOLD}${CYAN}  Windows detected${RESET}"
-            pl ""
             pl "  ${CYAN}winget install Oven.Shell.Bun${RESET}"
             ;;
         *)
-            error "Unknown OS: $OS"
-            pl ""
-            pl "  Visit ${CYAN}https://bun.sh/docs/installation${RESET} for instructions"
+            pl "  Visit ${CYAN}https://bun.sh/docs/installation${RESET}"
             ;;
     esac
-
-    pl ""
-    pl "  ${DIM}Bun is lightweight (~150MB) and fast!${RESET}"
-    pl ""
     exit 1
 fi
 
-# Determine install location
-section "INSTALL TACHIKOMA COMMAND"
+pl ""
 
-pl "${YELLOW}Install tachikoma command to:${RESET}"
+# Determine install location
+pl "${BOLD}${CYAN}  ══ INSTALL COMMAND ══${RESET}"
 pl ""
-pl "  ${CYAN}1)${RESET} Local bin ${DIM}(~/.local/bin)${RESET} - requires PATH update"
-pl "  ${CYAN}2)${RESET} System bin  ${DIM}(/usr/local/bin)${RESET} - requires sudo"
-pl "  ${CYAN}3)${RESET} Skip        ${DIM}-- Use 'bun run bin/tachikoma.js' instead${RESET}"
-pl ""
-read -p "  Choice [1]: " choice
+
+if [ -z "$INSTALL_MODE" ]; then
+    pl "${YELLOW}Install tachikoma command to:${RESET}"
+    pl ""
+    pl "  ${CYAN}1)${RESET} Local bin ${DIM}(~/.local/bin)${RESET} - recommended"
+    pl "  ${CYAN}2)${RESET} System bin  ${DIM}(/usr/local/bin)${RESET} - requires sudo"
+    pl "  ${CYAN}3)${RESET} Skip        ${DIM}(use 'bun run bin/tachikoma.js' instead)${RESET}"
+    pl ""
+    read -p "  Choice [1]: " choice
+else
+    choice="1"
+    [ "$INSTALL_MODE" = "global" ] && choice="2"
+fi
 
 case "$choice" in
     2)
@@ -167,9 +178,11 @@ else
 fi
 
 success "Command installed to ${CMD_DST}"
+pl ""
 
 # Check PATH
-section "PATH CHECK"
+pl "${BOLD}${CYAN}  ══ PATH CHECK ══${RESET}"
+pl ""
 
 if echo "$PATH" | grep -q "$INSTALL_DIR"; then
     success "${INSTALL_DIR} is already in PATH"
@@ -181,20 +194,18 @@ else
     pl ""
     pl "  ${YELLOW}Add to PATH:${RESET}"
 
-    # Detect shell
     SHELL_RC=""
     if [ -n "$ZSH_VERSION" ]; then
         SHELL_RC="$HOME/.zshrc"
-        pl "  echo 'export PATH=\"\$PATH:${INSTALL_DIR}\"' >> ${SHELL_RC}"
     elif [ -n "$BASH_VERSION" ]; then
         SHELL_RC="$HOME/.bashrc"
-        pl "  echo 'export PATH=\"\$PATH:${INSTALL_DIR}\"' >> ${SHELL_RC}"
     else
         SHELL_RC="$HOME/.profile"
-        pl "  echo 'export PATH=\"\$PATH:${INSTALL_DIR}\"' >> ${SHELL_RC}"
     fi
 
-    if [ -n "$SHELL_RC" ]; then
+    pl "  echo 'export PATH=\"\$PATH:${INSTALL_DIR}\"' >> ${SHELL_RC}"
+
+    if [ -z "$INSTALL_MODE" ]; then
         read -p "  ${CYAN}Add to ${SHELL_RC} now? [y/N]:${RESET} " add_path
         if [ "$add_path" = "y" ] || [ "$add_path" = "Y" ]; then
             echo "export PATH=\"\$PATH:${INSTALL_DIR}\"" >> "$SHELL_RC"
@@ -219,130 +230,14 @@ pl ""
 pl "  ${CYAN}Next steps:${RESET}"
 pl ""
 pl "  1. ${YELLOW}cd${RESET} to your project repository"
-pl "  2. Run ${MAGENTA}tachikoma${RESET} to install the agent"
+pl "  2. Run ${MAGENTA}tachikoma${RESET} to install the agent framework"
 pl "  3. Choose ${MAGENTA}global${RESET} or ${MAGENTA}local${RESET} installation"
 pl ""
+
 if [ "$PATH_OK" = false ]; then
-    warn "NOTE: You may need to restart your shell for PATH changes"
+    warn "NOTE: Restart your shell for PATH changes to take effect"
+    pl ""
 fi
-pl ""
+
 pl "  ${DIM}Documentation: https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks${RESET}"
-pl ""
-  pl "${YELLOW}Options:${RESET}"
-  pl "  ${CYAN}-g, --global${RESET}    Install globally (~/.opencode)"
-  pl "  ${CYAN}-l, --local${RESET}     Install locally (./.opencode)"
-  pl "  ${CYAN}-h, --help${RESET}      Show this help"
-  pl ""
-  pl "${DIM}Requires: Bun (${CYAN}https://bun.sh${RESET}) - lightweight (~150MB)${RESET}"
-  exit 0
-            ;;
-        *)
-            error "Unknown option: $1"
-            exit 1
-            ;;
-    esac
-done
-
-# Show banner
-p "$BANNER"
-
-# Check for bun
-section "DETECT RUNTIME"
-
-if command -v bun &> /dev/null; then
-    success "Found bun $(bun --version)"
-else
-    error "Bun is required but not installed"
-    pl ""
-
-    # Detect OS
-    OS="$(uname -s)"
-    case "$OS" in
-        Linux*)
-            pl "${BOLD}${CYAN}  Linux detected${RESET}"
-            pl ""
-            pl "  ${YELLOW}Choose your package manager:${RESET}"
-            pl ""
-            pl "  ${CYAN}Debian/Ubuntu:${RESET}"
-            pl "    curl -fsSL https://bun.sh/install | bash"
-            pl ""
-            pl "  ${CYAN}Arch:${RESET}"
-            pl "    pacman -S bun"
-            pl ""
-            pl "  ${CYAN}Nix:${RESET}"
-            pl "    nix-shell -p bun"
-            pl ""
-            pl "  ${CYAN}Homebrew:${RESET}"
-            pl "    brew install oven-sh/bun/bun"
-            ;;
-        Darwin*)
-            pl "${BOLD}${CYAN}  macOS detected${RESET}"
-            pl ""
-            pl "  ${CYAN}Homebrew (recommended):${RESET}"
-            pl "    brew install oven-sh/bun/bun"
-            pl ""
-            pl "  ${CYAN}Curl installer:${RESET}"
-            pl "    curl -fsSL https://bun.sh/install | bash"
-            ;;
-        MINGW*|MSYS*|CYGWIN*|Windows_NT*)
-            pl "${BOLD}${CYAN}  Windows detected${RESET}"
-            pl ""
-            pl "  ${CYAN}Winget (recommended):${RESET}"
-            pl "    winget install Oven.Shell.Bun"
-            pl ""
-            pl "  ${CYAN}Scoop:${RESET}"
-            pl "    scoop install bun"
-            pl ""
-            pl "  ${CYAN}Chocolatey:${RESET}"
-            pl "    choco install bun"
-            pl ""
-            pl "  ${CYAN}PowerShell (manual):${RESET}"
-            pl "    irm bun.sh/install.ps1 | iex"
-            ;;
-        *)
-            error "Unknown OS: $OS"
-            pl ""
-            pl "  Visit ${CYAN}https://bun.sh/docs/installation${RESET} for instructions"
-            ;;
-    esac
-
-    pl ""
-    pl "  ${DIM}Bun is lightweight (~150MB) and fast!${RESET}"
-    pl ""
-    exit 1
-fi
-
-# Build command
-INSTALL_CMD="bunx tachikoma-framework"
-
-if [ "$GLOBAL" = true ]; then
-    INSTALL_CMD="$INSTALL_CMD --global"
-elif [ "$LOCAL" = true ]; then
-    INSTALL_CMD="$INSTALL_CMD --local"
-fi
-
-# Run installer
-section "INSTALL"
-info "Running: ${CYAN}$INSTALL_CMD${RESET}"
-pl ""
-
-eval "$INSTALL_CMD"
-
-# Done
-pl ""
-pl "${BOLD}${GREEN}  ╔══════════════════════════════════════════════════════╗${RESET}"
-pl "${BOLD}${GREEN}  ║                                                      ║${RESET}"
-pl "${BOLD}${GREEN}  ║  ${RESET}${BOLD}TACHIKOMA INSTALLED SUCCESSFULLY!${BOLD}${GREEN}             ║${RESET}"
-pl "${BOLD}${GREEN}  ║                                                      ║${RESET}"
-pl "${BOLD}${GREEN}  ╚══════════════════════════════════════════════════════╝${RESET}"
-pl ""
-pl "  ${CYAN}Runtime:${RESET} ${MAGENTA}bun $(bun --version)${RESET}"
-pl ""
-pl "  ${CYAN}Next steps:${RESET}"
-pl ""
-pl "  1. Launch opencode in your project"
-pl "  2. Run ${MAGENTA}/tachikoma-help${RESET} to see available commands"
-pl "  3. Start a task with ${MAGENTA}/tachikoma-init${RESET}"
-pl ""
-pl "  ${DIM}Documentation: https://github.com/${REPO_OWNER}/${REPO_NAME}${RESET}"
 pl ""
