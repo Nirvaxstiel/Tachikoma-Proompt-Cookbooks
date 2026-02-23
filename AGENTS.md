@@ -49,6 +49,7 @@ Skills reference context modules instead of duplicating:
 
 ## Install Script
 
+# OLD - DEPRECATED
 `.opencode/agents/tachikoma/tachikoma-install.sh` - Preserves user's existing `AGENTS.md` and `opencode.json`
 
 ---

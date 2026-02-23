@@ -2,8 +2,15 @@
   "name": "tachikoma-framework",
   "version": "2.0.0",
   "description": "Structure at the start, freedom at the end - A disciplined AI agent framework for opencode",
+  "type": "module",
+  "bin": {
+    "tachikoma-install": "./.opencode/cli/install.ts"
+  },
   "scripts": {
-    "tachikoma": "node bin/tachikoma.js"
+    "tachikoma": "node bin/tachikoma.js",
+    "install:tachikoma": "bun run .opencode/cli/install.ts",
+    "install:global": "bun run .opencode/cli/install.ts --global --backup",
+    "install:current": "bun run .opencode/cli/install.ts --current"
   },
   "keywords": [
     "opencode",
@@ -13,7 +20,9 @@
     "tachikoma",
     "ghost-in-shell",
     "framework",
-    "structured-development"
+    "structured-development",
+    "cli",
+    "installer"
   ],
   "author": "Nirvaxstiel",
   "license": "MIT",
