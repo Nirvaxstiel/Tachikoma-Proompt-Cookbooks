@@ -1,6 +1,0 @@
-# Feature Flags
-# Toggle features on/off for easy migration
-
-features:
-  rlm_enabled: true
-  rlm_skill_path: ".opencode/skills/rlm"
