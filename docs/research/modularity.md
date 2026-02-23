@@ -84,6 +84,6 @@ context-modules/
 
 ## See Also
 
-- [Skill Chains](/capabilities/skill-chains)
-- [Add Skill](/capabilities/customization/add-skill)
+- [Skill Chains](../capabilities/skill-chains)
+- [Skill Execution](../capabilities/skill-execution)
 - [Research Overview](./overview)

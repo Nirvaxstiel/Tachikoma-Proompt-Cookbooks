@@ -1,0 +1,335 @@
+# Intent Routes Configuration
+# Maps request patterns to execution strategies
+
+routes:
+  # =============================================================================
+  # DEVELOPMENT WORKFLOWS
+  # =============================================================================
+
+  # Debug and troubleshooting
+  debug:
+    patterns:
+      - debug
+      - fix bug
+      - troubleshoot
+      - error
+      - crash
+      - broken
+      - not working
+      - fails to
+      - exception
+    confidence_threshold: 0.7
+    skill: code
+    strategy: single_skill
+
+  # Verification-focused tasks
+  verify:
+    patterns:
+      - verify
+      - validate
+      - check
+      - ensure
+      - confirm
+      - audit
+      - test that
+    confidence_threshold: 0.6
+    skill_chain:
+      - code
+      - verification
+    strategy: skill_chain
+
+  # Testing tasks
+  test:
+    patterns:
+      - test
+      - testing
+      - spec
+      - assert
+      - write tests
+      - add tests
+      - create tests
+      - unit test
+      - integration test
+    confidence_threshold: 0.6
+    skill: verification
+    strategy: single_skill
+
+  # Refactoring tasks
+  refactor:
+    patterns:
+      - refactor
+      - improve
+      - clean up
+      - restructure
+      - simplify
+      - optimize code
+      - better way
+    confidence_threshold: 0.6
+    skill: refactor
+    strategy: single_skill
+
+  # Research tasks
+  research:
+    patterns:
+      - research
+      - explore
+      - find
+      - investigate
+      - analyze
+      - understand
+      - how does
+      - how do i
+      - what is the best
+      - compare
+    confidence_threshold: 0.7
+    skill: research
+    strategy: single_skill
+
+  # Implementation tasks
+  implement:
+    patterns:
+      - implement
+      - create
+      - build
+      - add feature
+      - new
+      - develop
+      - make
+      - add
+    confidence_threshold: 0.7
+    skill_chain:
+      - code
+      - verification
+    strategy: skill_chain
+
+  # =============================================================================
+  # GIT & VERSION CONTROL
+  # =============================================================================
+
+  git:
+    patterns:
+      - commit
+      - git commit
+      - save changes
+      - git push
+      - git add
+      - stage
+      - git message
+    confidence_threshold: 0.8
+    skill: git-commit
+    strategy: single_skill
+
+  git_branch:
+    patterns:
+      - branch
+      - create branch
+      - switch branch
+      - git checkout
+      - git merge
+    confidence_threshold: 0.7
+    skill: git-commit
+    strategy: single_skill
+
+  # =============================================================================
+  # PLANNING & DESIGN
+  # =============================================================================
+
+  plan:
+    patterns:
+      - plan
+      - roadmap
+      - design
+      - architecture
+      - approach
+      - strategy
+      - proposal
+    confidence_threshold: 0.7
+    skill: planning
+    strategy: single_skill
+
+  review:
+    patterns:
+      - review
+      - code review
+      - peer review
+      - critique
+      - assess
+    confidence_threshold: 0.6
+    skill: research
+    strategy: single_skill
+
+  # =============================================================================
+  # DATA & CONFIGURATION
+  # =============================================================================
+
+  database:
+    patterns:
+      - database
+      - db
+      - sql
+      - migration
+      - schema
+      - table
+      - query
+      - postgres
+      - mysql
+      - mongodb
+    confidence_threshold: 0.6
+    skill: code
+    strategy: single_skill
+
+  config:
+    patterns:
+      - config
+      - configuration
+      - settings
+      - env
+      - environment
+      - dotenv
+    confidence_threshold: 0.7
+    skill: code
+    strategy: single_skill
+
+  # =============================================================================
+  # API & SERVICES
+  # =============================================================================
+
+  api:
+    patterns:
+      - api
+      - endpoint
+      - route
+      - rest
+      - graphql
+      - http
+      - request
+      - response
+    confidence_threshold: 0.6
+    skill: code
+    strategy: single_skill
+
+  auth:
+    patterns:
+      - auth
+      - authentication
+      - authorization
+      - login
+      - password
+      - jwt
+      - oauth
+      - token
+      - session
+      - security
+    confidence_threshold: 0.6
+    skill_chain:
+      - code
+      - verification
+    strategy: skill_chain
+
+  # =============================================================================
+  # INFRASTRUCTURE & DEPLOYMENT
+  # =============================================================================
+
+  docker:
+    patterns:
+      - docker
+      - container
+      - dockerfile
+      - image
+      - compose
+    confidence_threshold: 0.7
+    skill: code
+    strategy: single_skill
+
+  ci_cd:
+    patterns:
+      - ci cd
+      - github actions
+      - workflow
+      - pipeline
+      - deploy
+      - deployment
+      - cicd
+    confidence_threshold: 0.6
+    skill: code
+    strategy: single_skill
+
+  # =============================================================================
+  # DOCUMENTATION
+  # =============================================================================
+
+  docs:
+    patterns:
+      - docs
+      - documentation
+      - readme
+      - comment
+      - explain
+      - write docs
+      - document
+    confidence_threshold: 0.7
+    skill: code
+    strategy: single_skill
+
+  # =============================================================================
+  # COMPLEX / LARGE SCALE
+  # =============================================================================
+
+  # Complex multi-step tasks
+  complex:
+    patterns:
+      - refactor entire
+      - migrate
+      - optimize system
+      - design architecture
+      - rebuild
+      - rewrite
+      - restructure
+    confidence_threshold: 0.5
+    strategy: rlm
+
+  # Simple queries (no tools needed)
+  query:
+    patterns:
+      - what is
+      - how do i
+      - explain
+      - describe
+      - show me
+      - tell me
+      - what does
+      - what are
+      - what is the
+    confidence_threshold: 0.9
+    strategy: direct
+
+  # =============================================================================
+  # EMERGENCY / HIGH PRIORITY
+  # =============================================================================
+
+  security:
+    patterns:
+      - security
+      - vulnerability
+      - exploit
+      - secure
+      - hack
+      - penetration
+      - vulnerability
+    confidence_threshold: 0.5
+    skill_chain:
+      - code
+      - verification
+    strategy: skill_chain
+
+  hotfix:
+    patterns:
+      - hotfix
+      - urgent
+      - critical
+      - immediately
+      - asap
+      - emergency
+    confidence_threshold: 0.4
+    skill: code
+    strategy: single_skill

@@ -2,13 +2,13 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'Tachikoma',
-  description: 'Agent orchestration system for AI-assisted development',
+  description: 'Agent orchestration system for AI-assisted development with PAUL methodology',
   base: '/Tachikoma-Proompt-Cookbooks/',
 
   themeConfig: {
     logo: '/favicon.ico',
 
-    // Simplified top navigation
+    // Top navigation
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/getting-started' },
@@ -18,19 +18,17 @@ export default defineConfig({
       { text: 'Research', link: '/research/overview' },
     ],
 
-    // Enhanced sidebar with all navigation
+    // Sidebar navigation
     sidebar: {
       '/': [
         {
           text: 'Getting Started',
           items: [
-            { text: 'Introduction', link: '/getting-started' },
-            { text: 'Troubleshooting', link: '/troubleshooting' },
+            { text: 'Installation', link: '/getting-started' },
           ]
         },
         {
           text: 'Concepts',
-          collapsed: false,
           items: [
             { text: 'Overview', link: '/concepts/overview' },
             { text: 'Architecture', link: '/concepts/architecture' },
@@ -45,14 +43,10 @@ export default defineConfig({
             { text: 'Context Management', link: '/capabilities/context-management' },
             { text: 'Skill Execution', link: '/capabilities/skill-execution' },
             { text: 'Skill Chains', link: '/capabilities/skill-chains' },
-            { text: 'Composite Intents', link: '/capabilities/composite-intents' },
+            { text: 'PAUL Methodology', link: '/capabilities/paul-methodology' },
+            { text: 'CARL Quality Gates', link: '/capabilities/carl-quality-gates' },
+            { text: 'Model-Aware Editing', link: '/capabilities/model-aware-editing' },
             { text: 'Subagents', link: '/capabilities/subagents' },
-            { text: 'Tools', link: '/capabilities/tools' },
-            { text: 'Epistemic Mode', link: '/capabilities/epistemic-mode' },
-            { text: 'Position-Aware Loading', link: '/capabilities/position-aware-loading' },
-            { text: 'Communication Protocol', link: '/capabilities/communication-protocol' },
-            { text: 'Skills Specification', link: '/capabilities/skills-specification' },
-            { text: 'Skill Templates', link: '/capabilities/skill-templates' },
           ]
         },
         {
@@ -67,40 +61,7 @@ export default defineConfig({
             { text: 'Agents System', link: '/internals/opencode-agents' },
             { text: 'Configuration', link: '/internals/opencode-config' },
             { text: 'Agent Skills Format', link: '/internals/agent-skills-format' },
-            { text: 'Scripts', link: '/scripts' },
-            { text: 'Production Patterns', link: '/patterns/production-patterns' },
-          ]
-        },
-        {
-          text: 'Research',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/internals/' },
-            { text: 'Architecture', link: '/internals/opencode-architecture' },
-            { text: 'Database Schema', link: '/internals/opencode-database' },
-            { text: 'Tools System', link: '/internals/opencode-tools' },
-            { text: 'Skills System', link: '/internals/opencode-skills' },
-            { text: 'Agents System', link: '/internals/opencode-agents' },
-            { text: 'Configuration', link: '/internals/opencode-config' },
-            { text: 'Agent Skills Format', link: '/internals/agent-skills-format' },
-            { text: 'Scripts', link: '/scripts' },
-            { text: 'Production Patterns', link: '/patterns/production-patterns' },
-          ]
-        },
-        {
-          text: 'Research',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/internals/' },
-            { text: 'Architecture', link: '/internals/opencode-architecture' },
-            { text: 'Database Schema', link: '/internals/opencode-database' },
-            { text: 'Tools System', link: '/internals/opencode-tools' },
-            { text: 'Skills System', link: '/internals/opencode-skills' },
-            { text: 'Agents System', link: '/internals/opencode-agents' },
-            { text: 'Configuration', link: '/internals/opencode-config' },
-            { text: 'Agent Skills Format', link: '/internals/agent-skills-format' },
-            { text: 'Scripts', link: '/scripts' },
-            { text: 'Production Patterns', link: '/patterns/production-patterns' },
+            { text: 'CLI Integration', link: '/internals/cli-integration' },
           ]
         },
         {
@@ -115,232 +76,22 @@ export default defineConfig({
             { text: 'Cost-Aware Routing', link: '/research/cost-aware-routing' },
             { text: 'Modularity', link: '/research/modularity' },
           ]
-        }
-      ],
-      '/concepts/': [
-        {
-          text: 'Concepts',
-          items: [
-            { text: 'Overview', link: '/concepts/overview' },
-            { text: 'Architecture', link: '/concepts/architecture' },
-          ]
         },
-        {
-          text: 'Capabilities',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/capabilities/index' },
-            { text: 'Intent Routing', link: '/capabilities/intent-routing' },
-            { text: 'Context Management', link: '/capabilities/context-management' },
-            { text: 'Skill Execution', link: '/capabilities/skill-execution' },
-            { text: 'Skill Chains', link: '/capabilities/skill-chains' },
-            { text: 'Composite Intents', link: '/capabilities/composite-intents' },
-            { text: 'Subagents', link: '/capabilities/subagents' },
-            { text: 'Tools', link: '/capabilities/tools' },
-          ]
-        },
-        {
-          text: 'Internals',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/internals/' },
-            { text: 'Architecture', link: '/internals/opencode-architecture' },
-            { text: 'Database Schema', link: '/internals/opencode-database' },
-            { text: 'Tools System', link: '/internals/opencode-tools' },
-            { text: 'Skills System', link: '/internals/opencode-skills' },
-            { text: 'Agents System', link: '/internals/opencode-agents' },
-            { text: 'Configuration', link: '/internals/opencode-config' },
-            { text: 'Agent Skills Format', link: '/internals/agent-skills-format' },
-          ]
-        },
-        {
-          text: 'Research',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/research/overview' },
-            { text: 'Position Bias', link: '/research/position-bias' },
-            { text: 'Verification Loops', link: '/research/verification-loops' },
-            { text: 'Model Harness', link: '/research/model-harness' },
-            { text: 'RLM', link: '/research/rlm' },
-            { text: 'Cost-Aware Routing', link: '/research/cost-aware-routing' },
-            { text: 'Modularity', link: '/research/modularity' },
-          ]
-        }
-      ],
-      '/capabilities/': [
-        {
-          text: 'Core Capabilities',
-          items: [
-            { text: 'Overview', link: '/capabilities/index' },
-            { text: 'Intent Routing', link: '/capabilities/intent-routing' },
-            { text: 'Context Management', link: '/capabilities/context-management' },
-            { text: 'Skill Execution', link: '/capabilities/skill-execution' },
-            { text: 'Skill Chains', link: '/capabilities/skill-chains' },
-            { text: 'Composite Intents', link: '/capabilities/composite-intents' },
-          ]
-        },
-        {
-          text: 'Advanced Capabilities',
-          items: [
-            { text: 'Subagents', link: '/capabilities/subagents' },
-            { text: 'Tools', link: '/capabilities/tools' },
-          ]
-        },
-        {
-          text: 'Tribal Capabilities',
-          items: [
-            { text: 'Epistemic Mode', link: '/capabilities/epistemic-mode' },
-            { text: 'Position-Aware Loading', link: '/capabilities/position-aware-loading' },
-            { text: 'Communication Protocol', link: '/capabilities/communication-protocol' },
-          ]
-        },
-        {
-          text: 'Reference',
-          items: [
-            { text: 'Skills Specification', link: '/capabilities/skills-specification' },
-            { text: 'Skill Templates', link: '/capabilities/skill-templates' },
-          ]
-        },
-        {
-          text: 'Customization',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/capabilities/customization/overview' },
-            { text: 'Add Skill', link: '/capabilities/customization/add-skill' },
-            { text: 'Add Agent', link: '/capabilities/customization/add-agent' },
-            { text: 'Add Intent', link: '/capabilities/customization/add-intent' },
-            { text: 'Context Modules', link: '/capabilities/customization/context-modules' },
-          ]
-        },
-        {
-          text: 'Internals',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/internals/' },
-            { text: 'Architecture', link: '/internals/opencode-architecture' },
-            { text: 'Database Schema', link: '/internals/opencode-database' },
-            { text: 'Tools System', link: '/internals/opencode-tools' },
-            { text: 'Skills System', link: '/internals/opencode-skills' },
-            { text: 'Agents System', link: '/internals/opencode-agents' },
-            { text: 'Configuration', link: '/internals/opencode-config' },
-            { text: 'Agent Skills Format', link: '/internals/agent-skills-format' },
-          ]
-        },
-        {
-          text: 'Research',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/research/overview' },
-            { text: 'Position Bias', link: '/research/position-bias' },
-            { text: 'Verification Loops', link: '/research/verification-loops' },
-            { text: 'Model Harness', link: '/research/model-harness' },
-            { text: 'RLM', link: '/research/rlm' },
-            { text: 'Cost-Aware Routing', link: '/research/cost-aware-routing' },
-            { text: 'Modularity', link: '/research/modularity' },
-          ]
-        }
-      ],
-      '/research/': [
-        {
-          text: 'Research',
-          items: [
-            { text: 'Overview', link: '/research/overview' },
-          ]
-        },
-        {
-          text: 'Core Research',
-          items: [
-            { text: 'Position Bias in LLMs', link: '/research/position-bias' },
-            { text: 'Verification Loops', link: '/research/verification-loops' },
-            { text: 'Model Harness', link: '/research/model-harness' },
-          ]
-        },
-        {
-          text: 'Advanced Research',
-          items: [
-            { text: 'Recursive Language Models', link: '/research/rlm' },
-            { text: 'Cost-Aware Routing', link: '/research/cost-aware-routing' },
-            { text: 'Modularity', link: '/research/modularity' },
-          ]
-        },
-        {
-          text: 'Capabilities',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/capabilities/index' },
-            { text: 'Intent Routing', link: '/capabilities/intent-routing' },
-            { text: 'Context Management', link: '/capabilities/context-management' },
-            { text: 'Skill Execution', link: '/capabilities/skill-execution' },
-          ]
-        }
-      ],
-      '/internals/': [
-        {
-          text: 'Internals',
-          items: [
-            { text: 'Overview', link: '/internals/' },
-            { text: 'Architecture', link: '/internals/opencode-architecture' },
-            { text: 'Database Schema', link: '/internals/opencode-database' },
-            { text: 'Tools System', link: '/internals/opencode-tools' },
-            { text: 'Skills System', link: '/internals/opencode-skills' },
-            { text: 'Agents System', link: '/internals/opencode-agents' },
-            { text: 'Configuration', link: '/internals/opencode-config' },
-            { text: 'Agent Skills Format', link: '/internals/agent-skills-format' },
-            { text: 'Scripts', link: '/scripts' },
-            { text: 'Production Patterns', link: '/patterns/production-patterns' },
-          ]
-        },
-        {
-          text: 'Capabilities',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/capabilities/index' },
-            { text: 'Intent Routing', link: '/capabilities/intent-routing' },
-            { text: 'Context Management', link: '/capabilities/context-management' },
-            { text: 'Skill Execution', link: '/capabilities/skill-execution' },
-          ]
-        },
-        {
-          text: 'Research',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/research/overview' },
-            { text: 'Position Bias', link: '/research/position-bias' },
-            { text: 'Verification Loops', link: '/research/verification-loops' },
-            { text: 'Model Harness', link: '/research/model-harness' },
-            { text: 'RLM', link: '/research/rlm' },
-            { text: 'Cost-Aware Routing', link: '/research/cost-aware-routing' },
-            { text: 'Modularity', link: '/research/modularity' },
-          ]
-        }
-      ],
-      '/dashboard/': [
         {
           text: 'Dashboard',
+          collapsed: true,
           items: [
             { text: 'Overview', link: '/dashboard/' },
           ]
         },
         {
-          text: 'Capabilities',
+          text: 'Telemetry',
           collapsed: true,
           items: [
-            { text: 'Overview', link: '/capabilities/index' },
-            { text: 'Intent Routing', link: '/capabilities/intent-routing' },
-            { text: 'Context Management', link: '/capabilities/context-management' },
-            { text: 'Skill Execution', link: '/capabilities/skill-execution' },
+            { text: 'Capabilities', link: '/telemetry/opencode-telemetry-capabilities' },
+            { text: 'Skill Tracking', link: '/telemetry/skill-tracking-implementation' },
           ]
         },
-        {
-          text: 'Internals',
-          collapsed: true,
-          items: [
-            { text: 'Overview', link: '/internals/' },
-            { text: 'Database Schema', link: '/internals/opencode-database' },
-            { text: 'Scripts', link: '/scripts' },
-            { text: 'Production Patterns', link: '/patterns/production-patterns' },
-          ]
-        }
       ],
     },
 

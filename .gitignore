@@ -66,3 +66,8 @@ htmlcov/
 **/_archive/**/*.zip
 **/_archive/**/Lib/
 **/_archive/**/Scripts/
+
+# Agent artefacts that don't need to be tracked
+.paul/
+.tachikoma/
+.opencode/

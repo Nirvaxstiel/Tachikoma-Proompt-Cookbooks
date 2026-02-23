@@ -1,0 +1,607 @@
+/**
+ * Cost-Aware Intent Router
+ *
+ * Based on research: "When Do Tools and Planning Help LLMs Think?" (arXiv:2601.02663)
+ *
+ * Key insight: Tools improve accuracy +20% but add 40x latency
+ * Solution: Match strategy to task complexity
+ */
+
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
+import { CONFIG } from "../../constants/config";
+import { logger } from "../../utils/logger";
+import { resolveToConfig } from "../../utils/path";
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+export type ComplexityLevel = "low" | "medium" | "high" | "very_high";
+export type ExecutionStrategy = "direct" | "single_skill" | "skill_chain" | "rlm";
+export type IntentType =
+  | "code"
+  | "debug"
+  | "research"
+  | "refactor"
+  | "test"
+  | "verify"
+  | "explain"
+  | "plan"
+  | "query"
+  | "unknown";
+
+export interface IntentClassification {
+  type: IntentType;
+  confidence: number;
+  complexity: ComplexityLevel;
+  keywords: string[];
+  requiresTools: boolean;
+}
+
+export interface RouteMatch {
+  route: string;
+  pattern: string;
+  confidence: number;
+  skill?: string;
+  skillChain?: string[];
+  strategy: ExecutionStrategy;
+}
+
+export interface RoutingDecision {
+  strategy: ExecutionStrategy;
+  intent: IntentClassification;
+  skill?: string;
+  skillChain?: string[];
+  needsClarification: boolean;
+  clarificationPrompt?: string;
+}
+
+export interface RouteConfig {
+  patterns: string[];
+  confidenceThreshold: number;
+  skill?: string;
+  skillChain?: string[];
+  strategy: ExecutionStrategy;
+}
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+// Intent keywords for semantic classification
+const INTENT_KEYWORDS: Record<IntentType, string[]> = {
+  code: ["create", "implement", "build", "write", "add", "make", "develop", "new feature"],
+  debug: ["debug", "fix", "bug", "error", "issue", "problem", "crash", "broken"],
+  research: ["research", "explore", "find", "investigate", "analyze", "understand", "how does"],
+  refactor: ["refactor", "improve", "clean", "restructure", "optimize", "simplify"],
+  test: ["test", "testing", "spec", "assert", "verify"],
+  verify: ["verify", "validate", "check", "ensure", "confirm", "audit"],
+  explain: ["explain", "what is", "how do", "describe", "tell me", "show me"],
+  plan: ["plan", "roadmap", "design", "architecture", "approach", "strategy"],
+  query: ["query", "get", "fetch", "list", "show", "display"],
+  unknown: [],
+};
+
+// Strategy complexity mapping
+const STRATEGY_CONFIG: Record<
+  ComplexityLevel,
+  {
+    strategy: ExecutionStrategy;
+    confidenceThreshold: number;
+    latencyTarget: string;
+    requiresTools: boolean;
+  }
+> = {
+  low: {
+    strategy: "direct",
+    confidenceThreshold: 0.9,
+    latencyTarget: "1-2s",
+    requiresTools: false,
+  },
+  medium: {
+    strategy: "single_skill",
+    confidenceThreshold: 0.7,
+    latencyTarget: "5-15s",
+    requiresTools: true,
+  },
+  high: {
+    strategy: "skill_chain",
+    confidenceThreshold: 0.5,
+    latencyTarget: "15-45s",
+    requiresTools: true,
+  },
+  very_high: {
+    strategy: "rlm",
+    confidenceThreshold: 0.3,
+    latencyTarget: "45-120s",
+    requiresTools: true,
+  },
+};
+
+// ============================================================================
+// ROUTER CLASS
+// ============================================================================
+
+export class CostAwareRouter {
+  private routes: Map<string, RouteConfig>;
+  private configPath: string;
+
+  constructor(configPath?: string) {
+    this.configPath = configPath || resolveToConfig("config/intent-routes.yaml");
+    this.routes = new Map();
+    this.loadRoutes();
+  }
+
+  /**
+   * Main entry point - classify intent and select strategy
+   */
+  async classifyAndRoute(request: string, contextSize = 0): Promise<RoutingDecision> {
+    // Step 1: Classify intent
+    const intent = this.classifyIntent(request);
+
+    // Step 2: Check context size FIRST (RLM for large contexts takes precedence)
+    if (contextSize > CONFIG.CONTEXT.SIZE_THRESHOLD) {
+      return {
+        strategy: "rlm",
+        intent,
+        needsClarification: false,
+      };
+    }
+
+    // Step 3: Check confidence threshold - if low, suggest clarification
+    if (intent.confidence < 0.5) {
+      return {
+        strategy: "direct",
+        intent,
+        needsClarification: true,
+        clarificationPrompt: this.generateClarificationPrompt(request),
+      };
+    }
+
+    // Step 4: Match against configured routes
+    const routeMatch = this.matchPattern(request);
+
+    // Step 5: Select strategy based on complexity
+    const strategy = this.selectStrategy(intent.complexity, contextSize, routeMatch);
+
+    return {
+      strategy,
+      intent,
+      skill: routeMatch?.skill,
+      skillChain: routeMatch?.skillChain,
+      needsClarification: false,
+    };
+  }
+
+  /**
+   * Classify intent from request text (semantic, not just word count)
+   */
+  classifyIntent(request: string): IntentClassification {
+    const lowerRequest = request.toLowerCase();
+    const words = lowerRequest.split(/\s+/);
+
+    // Score each intent type
+    const scores: Record<IntentType, number> = {
+      code: 0,
+      debug: 0,
+      research: 0,
+      refactor: 0,
+      test: 0,
+      verify: 0,
+      explain: 0,
+      plan: 0,
+      query: 0,
+      unknown: 0,
+    };
+
+    // Score based on keyword matching with priority weighting
+    for (const [intentType, keywords] of Object.entries(INTENT_KEYWORDS)) {
+      for (const keyword of keywords) {
+        if (lowerRequest.includes(keyword)) {
+          // Higher weight for specific/intent keywords vs general
+          const isSpecificIntent = [
+            "test",
+            "verify",
+            "debug",
+            "refactor",
+            "research",
+            "explain",
+          ].includes(intentType);
+          const weight = isSpecificIntent ? 2 : 1;
+          scores[intentType as IntentType] += weight;
+        }
+      }
+    }
+
+    // Priority order: specific intents override general ones
+    // If "test" appears, it should override "code"
+    const priorityOrder: IntentType[] = [
+      "test",
+      "verify",
+      "debug",
+      "refactor",
+      "research",
+      "code",
+      "plan",
+      "explain",
+      "query",
+      "unknown",
+    ];
+
+    let bestIntent: IntentType = "unknown";
+    let bestScore = 0;
+
+    // Use priority order to break ties
+    for (const intentType of priorityOrder) {
+      const score = scores[intentType];
+      if (score > bestScore) {
+        bestScore = score;
+        bestIntent = intentType;
+      }
+    }
+
+    // Calculate confidence based on score vs total keywords
+    const totalKeywords = INTENT_KEYWORDS[bestIntent].length;
+    const confidence =
+      totalKeywords > 0 ? Math.min(bestScore / Math.max(totalKeywords, 3), 1.0) : 0.3;
+
+    // Determine complexity based on request characteristics
+    const complexity = this.determineComplexity(request, bestIntent, words);
+
+    // Determine if tools are required
+    const requiresTools = this.requiresTools(bestIntent, complexity);
+
+    return {
+      type: bestIntent,
+      confidence,
+      complexity,
+      keywords: this.extractKeywords(request),
+      requiresTools,
+    };
+  }
+
+  /**
+   * Determine complexity level
+   */
+  private determineComplexity(
+    request: string,
+    intent: IntentType,
+    words: string[],
+  ): ComplexityLevel {
+    const lowerRequest = request.toLowerCase();
+
+    // Multi-file / large scale indicators
+    const multiFileIndicators = [
+      "and",
+      "also",
+      "multiple",
+      "all",
+      "entire",
+      "whole",
+      "full",
+      "system",
+    ];
+    const hasMultiFile = multiFileIndicators.some((ind) => lowerRequest.includes(ind));
+
+    // Cross-domain indicators
+    const crossDomainIndicators = ["with", "using", "integration", "migrate", "between"];
+    const hasCrossDomain = crossDomainIndicators.some((ind) => lowerRequest.includes(ind));
+
+    // High-stakes indicators
+    const highStakesIndicators = [
+      "production",
+      "security",
+      "auth",
+      "payment",
+      "critical",
+      "password",
+    ];
+    const hasHighStakes = highStakesIndicators.some((ind) => lowerRequest.includes(ind));
+
+    // Bug fixing is always at least medium
+    const isBugFix =
+      intent === "debug" || lowerRequest.includes("bug") || lowerRequest.includes("fix");
+
+    // Very high complexity indicators
+    const veryHighIndicators = ["refactor entire", "migrate entire", "rewrite", "redesign"];
+    const isVeryHigh = veryHighIndicators.some((ind) => lowerRequest.includes(ind));
+
+    // Length-based complexity
+    const tokenCount = words.length;
+
+    // Determine complexity with bug fix priority
+    if (isVeryHigh || (tokenCount > 80 && hasMultiFile)) {
+      return "very_high";
+    }
+
+    if (tokenCount < 20 && !hasMultiFile && !hasCrossDomain && !isBugFix && intent !== "code") {
+      return "low";
+    }
+
+    if (tokenCount < 50 && !hasMultiFile && !hasHighStakes && !isBugFix) {
+      return "medium";
+    }
+
+    if (tokenCount < 100 || hasMultiFile || hasCrossDomain || isBugFix) {
+      return "high";
+    }
+
+    return "very_high";
+  }
+
+  /**
+   * Determine if task requires tools
+   */
+  private requiresTools(intent: IntentType, complexity: ComplexityLevel): boolean {
+    // Simple queries don't need tools
+    if (intent === "explain" || intent === "query") {
+      return complexity === "low";
+    }
+
+    // Most other intents need tools
+    return true;
+  }
+
+  /**
+   * Extract keywords from request
+   */
+  private extractKeywords(request: string): string[] {
+    const lower = request.toLowerCase();
+    const allKeywords = Object.values(INTENT_KEYWORDS).flat();
+
+    return allKeywords.filter((keyword) => lower.includes(keyword));
+  }
+
+  /**
+   * Select execution strategy
+   */
+  selectStrategy(
+    complexity: ComplexityLevel,
+    contextSize = 0,
+    routeMatch?: RouteMatch | null,
+  ): ExecutionStrategy {
+    // Route match overrides complexity-based selection
+    if (routeMatch?.strategy) {
+      return routeMatch.strategy;
+    }
+
+    // Context size check
+    if (contextSize > CONFIG.CONTEXT.SIZE_THRESHOLD) {
+      return "rlm";
+    }
+
+    // Complexity-based selection
+    return STRATEGY_CONFIG[complexity].strategy;
+  }
+
+  /**
+   * Match request against configured patterns
+   */
+  matchPattern(request: string): RouteMatch | null {
+    const lowerRequest = request.toLowerCase();
+    let bestMatch: RouteMatch | null = null;
+    let bestScore = 0;
+
+    for (const [routeName, config] of this.routes) {
+      for (const pattern of config.patterns) {
+        const lowerPattern = pattern.toLowerCase();
+
+        // Check for exact match or word-boundary match
+        // "fix bug" should match "fix the authentication bug"
+        const patternWords = lowerPattern.split(/\s+/);
+        let matchCount = 0;
+
+        for (const word of patternWords) {
+          if (word.length > 2 && lowerRequest.includes(word)) {
+            matchCount++;
+          }
+        }
+
+        // Consider it a match if all pattern words (length > 2) are found
+        if (matchCount === patternWords.filter((w) => w.length > 2).length && matchCount > 0) {
+          const score = lowerPattern.length; // Longer matches are better
+
+          if (score > bestScore) {
+            bestScore = score;
+            bestMatch = {
+              route: routeName,
+              pattern,
+              confidence: config.confidenceThreshold,
+              skill: config.skill,
+              skillChain: config.skillChain,
+              strategy: config.strategy,
+            };
+          }
+        }
+      }
+    }
+
+    return bestMatch;
+  }
+
+  /**
+   * Check if clarification is needed
+   */
+  needsClarification(confidence: number): boolean {
+    return confidence < 0.5;
+  }
+
+  /**
+   * Generate clarification prompt
+   */
+  private generateClarificationPrompt(request: string): string {
+    return `Your request "${request.substring(0, 50)}..." is unclear. Could you provide more details about what you'd like to accomplish?`;
+  }
+
+  /**
+   * Load routes from config
+   */
+  private loadRoutes(): void {
+    // Default routes if no config
+    const defaultRoutes: RouteConfig[] = [
+      {
+        patterns: ["debug", "fix bug", "troubleshoot"],
+        confidenceThreshold: 0.7,
+        skill: "code",
+        strategy: "single_skill",
+      },
+      {
+        patterns: ["verify", "test", "validate"],
+        confidenceThreshold: 0.6,
+        skillChain: ["code", "verification"],
+        strategy: "skill_chain",
+      },
+      {
+        patterns: ["refactor", "improve", "clean up"],
+        confidenceThreshold: 0.6,
+        skill: "refactor",
+        strategy: "single_skill",
+      },
+      {
+        patterns: ["research", "explore", "find"],
+        confidenceThreshold: 0.7,
+        skill: "research",
+        strategy: "single_skill",
+      },
+      {
+        patterns: ["implement", "create", "build"],
+        confidenceThreshold: 0.7,
+        skillChain: ["code", "verification"],
+        strategy: "skill_chain",
+      },
+      {
+        patterns: ["what is", "how do", "explain"],
+        confidenceThreshold: 0.9,
+        strategy: "direct",
+      },
+    ];
+
+    // Try to load from config file
+    if (existsSync(this.configPath)) {
+      try {
+        // Simple YAML parsing
+        const content = Bun.file(this.configPath).text();
+        // For now, use defaults - could enhance with real YAML parsing
+        this.configureRoutes(defaultRoutes);
+        return;
+      } catch {
+        // Fall back to defaults
+        logger.warn("Failed to load config file, using defaults");
+      }
+    }
+
+    this.configureRoutes(defaultRoutes);
+  }
+
+  /**
+   * Configure routes
+   */
+  private configureRoutes(routes: RouteConfig[]): void {
+    for (const route of routes) {
+      this.routes.set(route.patterns[0], route);
+    }
+  }
+
+  /**
+   * Add custom route
+   */
+  addRoute(name: string, config: RouteConfig): void {
+    this.routes.set(name, config);
+  }
+
+  /**
+   * Get routing decision explanation
+   */
+  explainDecision(decision: RoutingDecision): string {
+    const parts = [
+      `Intent: ${decision.intent.type} (${(decision.intent.confidence * 100).toFixed(0)}% confidence)`,
+      `Complexity: ${decision.intent.complexity}`,
+      `Strategy: ${decision.strategy}`,
+      `Latency target: ${STRATEGY_CONFIG[decision.intent.complexity].latencyTarget}`,
+    ];
+
+    if (decision.skill) {
+      parts.push(`Skill: ${decision.skill}`);
+    }
+
+    if (decision.skillChain) {
+      parts.push(`Skill chain: ${decision.skillChain.join(" → ")}`);
+    }
+
+    if (decision.needsClarification) {
+      parts.push(`⚠️ ${decision.clarificationPrompt}`);
+    }
+
+    return parts.join("\n");
+  }
+}
+
+// ============================================================================
+// CONVENIENCE EXPORTS
+// ============================================================================
+
+export const router = new CostAwareRouter();
+
+export async function classifyAndRoute(
+  request: string,
+  contextSize?: number,
+): Promise<RoutingDecision> {
+  return router.classifyAndRoute(request, contextSize);
+}
+
+export function classifyIntent(request: string): IntentClassification {
+  return router.classifyIntent(request);
+}
+
+export function selectStrategy(
+  complexity: ComplexityLevel,
+  contextSize?: number,
+): ExecutionStrategy {
+  return router.selectStrategy(complexity, contextSize);
+}
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+export const routingConfig = STRATEGY_CONFIG;
+
+export const defaultRoutes: RouteConfig[] = [
+  {
+    patterns: ["debug", "fix bug"],
+    confidenceThreshold: 0.7,
+    skill: "code",
+    strategy: "single_skill",
+  },
+  {
+    patterns: ["verify", "test"],
+    confidenceThreshold: 0.6,
+    skillChain: ["code", "verification"],
+    strategy: "skill_chain",
+  },
+  {
+    patterns: ["refactor"],
+    confidenceThreshold: 0.6,
+    skill: "refactor",
+    strategy: "single_skill",
+  },
+  {
+    patterns: ["research", "explore"],
+    confidenceThreshold: 0.7,
+    skill: "research",
+    strategy: "single_skill",
+  },
+  {
+    patterns: ["implement", "create"],
+    confidenceThreshold: 0.7,
+    skillChain: ["code", "verification"],
+    strategy: "skill_chain",
+  },
+  {
+    patterns: ["what is", "how do", "explain"],
+    confidenceThreshold: 0.9,
+    strategy: "direct",
+  },
+];
