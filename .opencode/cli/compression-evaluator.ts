@@ -18,9 +18,7 @@
 
 import { colors, printHeader } from "./lib/colors";
 
-// =============================================================================
 // TYPES
-// =============================================================================
 
 enum ProbeType {
   RECALL = "recall",
@@ -86,9 +84,7 @@ interface EvaluationSummary {
   error?: string;
 }
 
-// =============================================================================
 // EVALUATION RUBRICS
-// =============================================================================
 
 const RUBRIC_CRITERIA: Record<string, CriterionConfig[]> = {
   accuracy: [
@@ -177,9 +173,7 @@ const RUBRIC_CRITERIA: Record<string, CriterionConfig[]> = {
   ],
 };
 
-// =============================================================================
 // PROBE GENERATOR
-// =============================================================================
 
 class ProbeGenerator {
   private history: string;
@@ -326,9 +320,7 @@ class ProbeGenerator {
   }
 }
 
-// =============================================================================
 // COMPRESSION EVALUATOR
-// =============================================================================
 
 class CompressionEvaluator {
   private model: string;
@@ -531,9 +523,7 @@ class CompressionEvaluator {
   }
 }
 
-// =============================================================================
 // STRUCTURED SUMMARIZER
-// =============================================================================
 
 class StructuredSummarizer {
   private static TEMPLATE = `## Session Intent
@@ -693,9 +683,7 @@ class StructuredSummarizer {
   }
 }
 
-// =============================================================================
 // CLI
-// =============================================================================
 
 function printUsage(): void {
   printHeader("Compression Evaluator");
@@ -834,9 +822,7 @@ async function main(): Promise<void> {
   }
 }
 
-// =============================================================================
 // EXPORTS
-// =============================================================================
 
 export {
   ProbeType,

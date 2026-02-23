@@ -11,9 +11,9 @@
 
 import { colors, printHeader } from '../../cli/lib/colors';
 
-// =============================================================================
+
 // TYPES
-// =============================================================================
+
 
 enum VerificationCriterion {
   SYNTAX = "syntax",
@@ -39,9 +39,9 @@ interface VerificationReport {
   criteria_total: number;
 }
 
-// =============================================================================
+
 // PATTERNS
-// =============================================================================
+
 
 const VERIFICATION_PATTERNS = {
   empty_function: /def\s+\w+\(\s*\):\s*(?:pass|...|$)/,
@@ -71,9 +71,9 @@ const EDGE_CASE_PATTERNS = {
   type_checking: /(?:isinstance|type\(|typeof|as\s+\w+|<\w+>)/,
 };
 
-// =============================================================================
+
 // VERIFICATION ENGINE
-// =============================================================================
+
 
 class VerificationEngine {
   private criteria: Map<VerificationCriterion, (code: string, requirements: string) => VerificationResult>;
@@ -412,9 +412,9 @@ class VerificationEngine {
   }
 }
 
-// =============================================================================
+
 // SINGLETON
-// =============================================================================
+
 
 let verificationEngineInstance: VerificationEngine | null = null;
 
@@ -425,9 +425,9 @@ function getVerificationEngine(): VerificationEngine {
   return verificationEngineInstance;
 }
 
-// =============================================================================
+
 // CONFIDENCE ROUTER INTEGRATION
-// =============================================================================
+
 
 interface RouterResult {
   intent: string;
@@ -462,9 +462,9 @@ function calculateVerificationConfidence(report: VerificationReport, routerConfi
   return (report.confidence * verificationWeight) + (routerConfidence * routerWeight);
 }
 
-// =============================================================================
+
 // CLI
-// =============================================================================
+
 
 function printUsage(): void {
   printHeader('Verification Engine');
@@ -574,9 +574,9 @@ async function main(): Promise<void> {
   }
 }
 
-// =============================================================================
+
 // EXPORTS
-// =============================================================================
+
 
 export {
   VerificationEngine,

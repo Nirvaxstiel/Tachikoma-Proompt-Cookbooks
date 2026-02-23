@@ -17,9 +17,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 
-// =============================================================================
 // TYPES
-// =============================================================================
 
 export interface HashlineResult {
   success: boolean;
@@ -44,9 +42,7 @@ export interface VerifyResult {
   error?: string;
 }
 
-// =============================================================================
 // HASHLINE PROCESSOR
-// =============================================================================
 
 export class HashlineProcessor {
   private hashLength: number;
@@ -274,9 +270,7 @@ export class HashlineProcessor {
   }
 }
 
-// =============================================================================
 // SINGLETON
-// =============================================================================
 
 let _processorInstance: HashlineProcessor | null = null;
 
@@ -287,9 +281,7 @@ export function getHashlineProcessor(): HashlineProcessor {
   return _processorInstance;
 }
 
-// =============================================================================
 // CLI
-// =============================================================================
 
 function printUsage(): void {
   console.log(`

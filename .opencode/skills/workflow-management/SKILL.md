@@ -219,7 +219,7 @@ Type "approved" or describe issues found
 **Objective:** Automated code quality cleanup.
 
 **Checklist:**
-- [ ] Run formatter skill: `bash .opencode/skills/formatter/router.sh cleanup`
+- [ ] Run formatter skill: `bun run .opencode/skills/formatter/router.ts cleanup`
 - [ ] Verify: debug code removed, formatted, imports optimized, linting fixed
 - [ ] Document manual fixes needed
 

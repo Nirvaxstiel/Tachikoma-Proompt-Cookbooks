@@ -1,28 +1,14 @@
 #!/usr/bin/env bun
-/**
- * STATE.md Updater
- * Helper script to update STATE.md with task information
- * 
- * Converted from state-update.sh
- */
 
 import { existsSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { colors, printHeader, printSuccess, printError, printWarning } from './lib/colors';
 import { getTimestamp } from './lib/templates';
 
-// =============================================================================
-// PATHS
-// =============================================================================
-
 const CLI_DIR = import.meta.dir;
 const OPENCODE_DIR = join(CLI_DIR, '..');
 const TACHIKOMA_DIR = join(OPENCODE_DIR, 'agents', 'tachikoma');
 const STATE_FILE = join(OPENCODE_DIR, 'STATE.md');
-
-// =============================================================================
-// COMMANDS
-// =============================================================================
 
 function cmdStartTask(slug: string): number {
   if (!slug) {
@@ -261,10 +247,6 @@ Examples:
   bun run state-update.ts add-decision add-auth "Use JWT tokens" High
 `);
 }
-
-// =============================================================================
-// MAIN
-// =============================================================================
 
 const args = process.argv.slice(2);
 

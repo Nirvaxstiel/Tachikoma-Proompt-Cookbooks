@@ -1,12 +1,3 @@
-/**
- * Template strings for Tachikoma CLI
- * All heredocs converted to TypeScript template literals
- */
-
-// =============================================================================
-// SPEC FOLDER TEMPLATES
-// =============================================================================
-
 export const TODO_TEMPLATE = `# TODO - {taskName}
 **Started**: {timestamp} | **Status**: IN PROGRESS
 
@@ -26,25 +17,18 @@ export const TODO_TEMPLATE = `# TODO - {taskName}
 export const SPEC_TEMPLATE = `# SPEC - {taskName}
 
 ## Overview
-[Fill in: What are we building?]
+[What are we building?]
 
 ## Requirements
 - [ ] Requirement 1
 - [ ] Requirement 2
 
 ## Approach
-[Fill in: How will we implement this?]
+[How will we implement this?]
 
-## Acceptance Criteria (BDD Format)
+## Acceptance Criteria (BDD)
 
 ### AC-1: [Criterion Name]
-\`\`\`gherkin
-Given [precondition]
-When [action]
-Then [outcome]
-\`\`\`
-
-### AC-2: [Criterion Name]
 \`\`\`gherkin
 Given [precondition]
 When [action]
@@ -55,248 +39,108 @@ Then [outcome]
 export const DESIGN_TEMPLATE = `# Design - {taskName}
 
 ## Architecture
-[Fill in: High-level design]
+[High-level design]
 
 ## Data Flow
-[Fill in: How data flows through the system]
+[How data flows through the system]
 
 ## Interfaces
-[Fill in: API/functions to implement]
+[API/functions to implement]
 
 ## Error Handling
-[Fill in: How errors are handled]
+[How errors are handled]
 `;
 
 export const TASKS_TEMPLATE = `# Tasks - {taskName}
 
-## Context Estimate
-
-**Target**: Use ~50% of available context
-**Tasks**: 2-3 maximum (split large work into multiple plans)
-**Current bracket**: [FRESH >70% | MODERATE 40-70% | DEEP 20-40% | CRITICAL <20%]
+**Target**: ~50% context, 2-3 tasks max, split large work
 
 ---
 
-## Task List
+## Task 1.1: [Task Name]
 
-### Task 1.1: [Task Name]
+**Objective**: [What this accomplishes]
 
-### Objective
-[What this task accomplishes]
+**Requirements**:
+- [Req 1]: [Details]
 
-### Requirements
-- [Requirement 1]: [Details]
-- [Requirement 2]: [Details]
+**Acceptance Criteria**: AC-1, AC-2
 
-### Acceptance Criteria
-- [ ] AC-1: [criterion this satisfies]
-- [ ] AC-2: [criterion this satisfies]
+**Implementation**:
+- Files to modify: [List]
+- Dependencies: [Other tasks]
 
-### Implementation Details
-- [Files to modify]: [List]
-- [New files to create]: [List]
-- [Dependencies]: [Other tasks or components]
-- [Complexity estimate]: [Low/Medium/High]
+**Verification**:
+- Test: [how to verify]
+- Expected: [what success looks like]
 
-### Verification
-- [ ] Test command: [how to verify]
-- [ ] Expected output: [what success looks like]
-
-### Done Criteria
-- [ ] Code implemented
-- [ ] Verification passes
-- [ ] AC-1 satisfied
-- [ ] AC-2 satisfied
-
-### Checkpoint (Optional)
-Use when human interaction is needed:
-
-**checkpoint:human-verify** | **checkpoint:decision** | **checkpoint:human-action**
-
-**What was built:**
-- [Description of completed work]
-
-**How to verify:**
-1. [Step 1]
-2. [Step 2]
-
-**Resume signal:**
-Type "approved" or describe issues found
-
----
-
-### Task 1.2: [Task Name]
-
-### Objective
-[What this task accomplishes]
-
-### Requirements
-- [Requirement 1]: [Details]
-
-### Acceptance Criteria
-- [ ] AC-3: [criterion this satisfies]
-
-### Implementation Details
-- [Files to modify]: [List]
-- [New files to create]: [List]
-
-### Verification
-- [ ] Test command: [how to verify]
-- [ ] Expected output: [what success looks like]
-
-### Done Criteria
-- [ ] Code implemented
-- [ ] Verification passes
-- [ ] AC-3 satisfied
+**Checkpoint** (optional):
+- Type: human-verify | decision | human-action
+- What was built: [description]
+- Resume: "approved" or describe issues
 
 ---
 
 ## Dependencies
 - Task 1.1 → Task 1.2
-- Task 1.2 → [next task]
 
-## Notes
-[Additional notes, blockers, or considerations]
+**Notes**: [blockers, considerations]
 `;
 
 export const BOUNDARIES_TEMPLATE = `# Boundaries - {taskName}
 
 ## DO NOT CHANGE
 - [Protected file/pattern]
-- [Another protected element]
 
 ## SAFE TO MODIFY
 - [Allowed file/pattern]
-- [Another allowed element]
 
 ## PROTECTED PATTERNS
 - [Pattern to avoid]
 `;
 
-// =============================================================================
-// STATE.MD TEMPLATES
-// =============================================================================
-
 export const STATE_TEMPLATE = `# Project State
-
-## Project Reference
-
-**Current focus**: [Current task/milestone from projects/tasks]
-
----
 
 ## Current Position
 
-**Task**: [task-slug] | **Phase**: [current phase] | **Status**: [Planning | Executing | Validating | Cleanup | Complete | Blocked]
+**Task**: [task-slug] | **Phase**: [current phase] | **Status**: [Planning | Executing | Complete | Blocked]
 **Last activity**: [YYYY-MM-DD HH:MM] — [What happened]
 
-### Progress
-- Task completion: [░░░░░░░░░░] 0%
-- Current phase: [░░░░░░░░░░] 0%
-
 ---
 
-## Loop Position
+## Performance
 
-Current loop state:
-\`\`\`
-ANALYZE ──▶ DESIGN ──▶ IMPLEMENT ──▶ VALIDATE ──▶ CLEANUP
-  ○        ○         ◉               ○                ○    [Current phase]
-\`\`\`
-
----
-
-## Performance Metrics
-
-### Velocity
-- **Total tasks completed**: 0
-- **Average duration**: 0 min
-- **Total execution time**: 0.0 hours
-
-### By Task Type
-
-| Type | Tasks | Total Time | Avg/Task |
-|------|-------|------------|----------|
-| implement | 0/0 | - | - |
-| refactor | 0/0 | - | - |
-| debug | 0/0 | - | - |
-| research | 0/0 | - | - |
-
-### Recent Trend
-- Last 5 tasks: -
-- Trend: Stable
-
-*Updated after each task completion*
+| Tasks | Avg Duration |
+|-------|-------------|
+| 0 | 0 min |
 
 ---
 
 ## Accumulated Context
 
-### Decisions
-
-Decisions logged during task execution. Recent decisions affecting current work:
-
+**Decisions**:
 | Decision | Task | Impact |
 |----------|------|--------|
-| *No decisions yet* | - | - |
+| *None* | - | - |
 
 *Full logs in spec/{task-slug}/SUMMARY.md*
 
----
+**Blockers**: *None*
 
-### Deferred Issues
-
-Issues logged but not yet addressed:
-
-| Issue | Origin | Effort | Revisit |
-|-------|--------|--------|---------|
-| *No deferred issues* | - | - | - |
-
----
-
-### Blockers/Concerns
-
-Active blockers affecting progress:
-
-| Blocker | Impact | Resolution Path |
-|---------|--------|-----------------|
-| *No active blockers* | - | - |
-
----
-
-## Boundaries (Active)
-
-Protected elements for current task (from spec/{task-slug}/boundaries.md):
-
-*No active boundaries*
+**Boundaries**: *None*
 
 ---
 
 ## Session Continuity
 
-**Last session**: [timestamp]
-**Stopped at**: [what was happening]
+**Last**: [timestamp]
 **Next action**: [exact next action]
-**Resume context**: [key info needed]
+**Resume**: [key info needed]
 
 ---
 
-## RLM State (if applicable)
-
-**Active**: No
-**Last context path**: -
-**Last chunk processed**: -
-**Pending results**: -
-
----
-
-*STATE.md — Updated after every significant action*
-*Size target: <100 lines (digest, not archive)*
+*Updated after each significant action | Target: <100 lines*
 `;
-
-// =============================================================================
-// HANDOFF TEMPLATE
-// =============================================================================
 
 export const HANDOFF_TEMPLATE = `# Handoff: {timestamp}
 
@@ -384,10 +228,6 @@ Key information needed to continue:
 *Resume with: bun run .opencode/cli/handoff.ts resume*
 `;
 
-// =============================================================================
-// SUMMARY TEMPLATE
-// =============================================================================
-
 export const SUMMARY_TEMPLATE = `# Task Summary: {taskName}
 
 ---
@@ -467,18 +307,41 @@ export const SUMMARY_TEMPLATE = `# Task Summary: {taskName}
 {technicalNotes}
 
 ---
-
 *SUMMARY.md — Created during UNIFY phase*
 *Updates STATE.md with task completion results*
 `;
 
-// =============================================================================
-// UTILITY FUNCTIONS
-// =============================================================================
+// Minimal template for simple tasks (complexity < 0.3)
+export const SUMMARY_TEMPLATE_LITE = `# Task Summary: {taskName}
 
-/**
- * Simple template replacement
- */
+---
+
+**Completed**: {completedTimestamp}
+**Duration**: {duration} min
+**Status**: {status}
+
+---
+
+## What Was Done
+
+{accomplishments}
+
+---
+
+## Files Modified
+
+{filesModified}
+
+---
+
+## Next Steps
+
+{nextSteps}
+
+---
+*Quick summary for simple task*
+`;
+
 export function fillTemplate(template: string, values: Record<string, string>): string {
   let result = template;
   for (const [key, value] of Object.entries(values)) {
@@ -487,9 +350,10 @@ export function fillTemplate(template: string, values: Record<string, string>): 
   return result;
 }
 
-/**
- * Generate slug from task name
- */
+export function getSummaryTemplate(isSimple: boolean): string {
+  return isSimple ? SUMMARY_TEMPLATE_LITE : SUMMARY_TEMPLATE;
+}
+
 export function generateSlug(taskName: string): string {
   return taskName
     .toLowerCase()
@@ -500,16 +364,10 @@ export function generateSlug(taskName: string): string {
     .join('-');
 }
 
-/**
- * Get current timestamp
- */
 export function getTimestamp(): string {
   return new Date().toISOString().replace('T', ' ').slice(0, 16);
 }
 
-/**
- * Get ISO timestamp
- */
 export function getIsoTimestamp(): string {
   return new Date().toISOString();
 }

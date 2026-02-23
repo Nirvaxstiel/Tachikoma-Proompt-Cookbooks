@@ -10,9 +10,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { colors, printHeader, printSuccess, printWarning } from './lib/colors';
 
-// =============================================================================
+
 // PATHS
-// =============================================================================
+
 
 const CLI_DIR = import.meta.dir;
 const OPENCODE_DIR = join(CLI_DIR, '..');
@@ -20,9 +20,9 @@ const TACHIKOMA_DIR = join(OPENCODE_DIR, 'agents', 'tachikoma');
 const STATE_FILE = join(OPENCODE_DIR, 'STATE.md');
 const SPEC_DIR = join(TACHIKOMA_DIR, 'spec');
 
-// =============================================================================
+
 // PROGRESS DISPLAY
-// =============================================================================
+
 
 interface StateInfo {
   task: string;
@@ -184,9 +184,9 @@ function showProgress(verbose: boolean): number {
   return 0;
 }
 
-// =============================================================================
+
 // CLI
-// =============================================================================
+
 
 const args = process.argv.slice(2);
 const verbose = args.includes('--verbose') || args.includes('-v');

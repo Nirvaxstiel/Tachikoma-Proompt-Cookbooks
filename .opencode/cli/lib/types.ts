@@ -1,8 +1,3 @@
-/**
- * Shared types for Tachikoma CLI tools
- */
-
-// Classification result returned by router
 export interface ClassificationResult {
   query: string;
   intent: string;
@@ -16,7 +11,6 @@ export interface ClassificationResult {
   skills_bulk?: string;
 }
 
-// Intent route configuration
 export interface IntentRoute {
   intent: string;
   route: string;
@@ -28,25 +22,21 @@ export interface IntentRoute {
   skills_bulk?: string;
 }
 
-// Keywords configuration
 export interface KeywordsConfig {
   [intent: string]: string[];
 }
 
-// Full routes configuration
 export interface RoutesConfig {
   routes: { [intent: string]: IntentRoute };
   keywords: KeywordsConfig;
 }
 
-// Confidence route configuration
 export interface ConfidenceRoute {
   intent: string;
   keywords: string[];
   weight: number;
 }
 
-// Edit format configuration
 export interface EditFormatConfig {
   model: string;
   format: 'whole' | 'diff' | 'udiff' | 'hashline';

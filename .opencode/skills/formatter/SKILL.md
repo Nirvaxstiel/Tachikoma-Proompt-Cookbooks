@@ -28,7 +28,7 @@ Phase 5: Cleanup ← USES: formatter skill
 
 Tachikoma:
   1. Implementation complete
-  2. Invoke formatter: bash router.sh cleanup
+  2. Invoke formatter: bun run router.ts cleanup
   3. Review cleanup results
   4. Proceed to Phase 6: Review
 ```
@@ -75,7 +75,7 @@ Tachikoma:
 **Purpose**: Run complete cleanup on codebase
 
 ```bash
-bash router.sh cleanup [target]
+bun run router.ts cleanup [target]
 ```
 
 **Steps** (in order):
@@ -131,7 +131,7 @@ Actions performed:
 **Purpose**: Check for issues without making changes
 
 ```bash
-bash router.sh check [target]
+bun run router.ts check [target]
 ```
 
 **Use when**:
@@ -193,7 +193,7 @@ User: "Clean up this file"
 Tachikoma:
   Intent: implement (confidence: 0.9)
   Action: Run formatter on specific file
-  Command: bash router.sh cleanup src/components/Button.tsx
+  Command: bun run router.ts cleanup src/components/Button.tsx
 ```
 
 ---

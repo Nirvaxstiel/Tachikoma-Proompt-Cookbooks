@@ -29,7 +29,7 @@ User: "What are our naming conventions?"
 Tachikoma (internal):
   Intent: research (confidence: 0.9)
   Action: Extract naming conventions
-  Command: bash router.sh extract coding-standards "naming conventions"
+  Command: bun run router.ts extract coding-standards "naming conventions"
   Result: Instant answer, 0 tokens used
 ```
 
@@ -38,7 +38,7 @@ Tachikoma (internal):
 Tachikoma (internal):
   Intent: implement (confidence: 0.85)
   Action: Verify context files exist
-  Command: bash router.sh discover
+  Command: bun run router.ts discover
   Result: Knows which files to load
 ```
 
@@ -46,7 +46,7 @@ Tachikoma (internal):
 ```
 Tachikoma (internal):
   On startup: Check context system health
-  Command: bash router.sh status
+  Command: bun run router.ts status
   Result: Reports context directory state
 ```
 
@@ -66,7 +66,7 @@ Tachikoma (internal):
 
 **Usage**:
 ```bash
-bash router.sh discover
+bun run router.ts discover
 ```
 
 **Example Output**:
@@ -95,7 +95,7 @@ Found 6 context files:
 
 **Usage**:
 ```bash
-bash router.sh fetch "React" "hooks"
+bun run router.ts fetch "React" "hooks"
 ```
 
 **Note**: This prints instructions for using Context7 API. For actual fetching, use the context7 skill.
@@ -108,7 +108,7 @@ bash router.sh fetch "React" "hooks"
 
 **Usage**:
 ```bash
-bash router.sh harvest ANALYSIS.md
+bun run router.ts harvest ANALYSIS.md
 ```
 
 **What it does**:
@@ -125,8 +125,8 @@ bash router.sh harvest ANALYSIS.md
 
 **Usage**:
 ```bash
-bash router.sh extract coding-standards "naming conventions"
-bash router.sh extract 00-core-contract "stop conditions"
+bun run router.ts extract coding-standards "naming conventions"
+bun run router.ts extract 00-core-contract "stop conditions"
 ```
 
 **Why use this**: Faster than asking LLM to search, zero tokens.
@@ -139,7 +139,7 @@ bash router.sh extract 00-core-contract "stop conditions"
 
 **Usage**:
 ```bash
-bash router.sh organize
+bun run router.ts organize
 ```
 
 **Shows**:
@@ -156,8 +156,8 @@ bash router.sh organize
 
 **Usage**:
 ```bash
-bash router.sh cleanup .tmp/ 7
-bash router.sh cleanup .tmp/external-context/ 3
+bun run router.ts cleanup .tmp/ 7
+bun run router.ts cleanup .tmp/external-context/ 3
 ```
 
 **Safety**: Asks for confirmation before deleting.
@@ -170,7 +170,7 @@ bash router.sh cleanup .tmp/external-context/ 3
 
 **Usage**:
 ```bash
-bash router.sh status
+bun run router.ts status
 ```
 
 **Shows**:
@@ -189,7 +189,7 @@ User: "Fix the bug in authentication"
 
 Tachikoma:
   1. Classify: intent=debug, confidence=0.92
-  2. Discover context files: bash router.sh discover
+  2. Discover context files: bun run router.ts discover
   3. Load: core-contract + coding-standards
   4. Route to: code-agent skill
 ```
@@ -201,7 +201,7 @@ User: "What are our testing standards?"
 
 Tachikoma:
   1. Classify: intent=research, confidence=0.88
-  2. Extract info: bash router.sh extract coding-standards "testing"
+  2. Extract info: bun run router.ts extract coding-standards "testing"
   3. Parse output (0 tokens)
   4. Present answer with source citation
 ```
@@ -212,7 +212,7 @@ Tachikoma:
 User: "Save this analysis as context"
 
 Tachikoma:
-  1. Harvest: bash router.sh harvest ANALYSIS.md
+  1. Harvest: bun run router.ts harvest ANALYSIS.md
   2. Creates: .opencode/context-modules/40-analysis.md
   3. Updates: intent-routes.yaml (if needed)
   4. Confirms: Context available for future use
@@ -243,8 +243,8 @@ User Request
     ↓
 [Load Context Modules] ← USES: context-manager skill
     ↓
-    bash router.sh discover  # Verify files exist
-    bash router.sh status    # Check health
+    bun run router.ts discover  # Verify files exist
+    bun run router.ts status    # Check health
     ↓
 [Route to code-agent skill]
 ```

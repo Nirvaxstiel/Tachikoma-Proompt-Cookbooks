@@ -2,9 +2,9 @@
 // Type: TypeScript
 // Purpose: Track workflow state and support transitions
 
-// =============================================================================
+
 // TYPES
-// =============================================================================
+
 
 export type WorkflowState =
   | "INIT"
@@ -57,9 +57,9 @@ export interface Constraints {
   };
 }
 
-// =============================================================================
+
 // WORKFLOW STATE MACHINE
-// =============================================================================
+
 
 export class WorkflowStateMachine {
   private workflow: Workflow;
@@ -279,9 +279,9 @@ export class WorkflowStateMachine {
   }
 }
 
-// =============================================================================
+
 // CHECKPOINT SYSTEM
-// =============================================================================
+
 
 export class CheckpointSystem {
   private machine: WorkflowStateMachine;
@@ -357,9 +357,9 @@ export class CheckpointSystem {
   }
 }
 
-// =============================================================================
+
 // CONTEXT SWITCH DETECTION
-// =============================================================================
+
 
 export const CONTEXT_SWITCH_PATTERNS = [
   /actually.*want/i,
@@ -399,9 +399,9 @@ export class ContextSwitchDetector {
   }
 }
 
-// =============================================================================
+
 // WORKFLOW MANAGER
-// =============================================================================
+
 
 export class WorkflowManager {
   private activeWorkflows: Map<string, WorkflowStateMachine> = new Map();
@@ -496,9 +496,9 @@ export class WorkflowManager {
   }
 }
 
-// =============================================================================
+
 // EXAMPLE USAGE
-// =============================================================================
+
 
 async function exampleUsage() {
   const manager = new WorkflowManager();
@@ -543,6 +543,6 @@ if (import.meta.main) {
   exampleUsage();
 }
 
-// =============================================================================
+
 // EXPORTS - Already exported inline with class definitions above
-// =============================================================================
+

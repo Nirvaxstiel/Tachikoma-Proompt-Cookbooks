@@ -29,7 +29,7 @@ Tachikoma (internal):
   Intent: research (confidence: 0.91)
   Context: Training data has React 18, user needs React 19
   Action: Fetch current documentation
-  Command: bash router.sh quick "React" "Server Components"
+  Command: bun run router.ts quick "React" "Server Components"
   Result: Current docs from React 19
   Output: Presented to user with source citation
 ```
@@ -85,7 +85,7 @@ bash .opencode/skills/context7/router.sh quick "FastAPI" "dependencies"
 Find the library ID:
 
 ```bash
-bash router.sh search "React" "hooks"
+bun run router.ts search "React" "hooks"
 ```
 
 **Output:**
@@ -116,7 +116,7 @@ Next: Use 'fetch' with the library ID to get documentation
 Get documentation for a specific topic:
 
 ```bash
-bash router.sh fetch "/websites/react_dev_reference" "useState"
+bun run router.ts fetch "/websites/react_dev_reference" "useState"
 ```
 
 **Output:**
@@ -181,30 +181,30 @@ Tip: Reference this file in your context or pass to subagents
 
 ```bash
 # Find React
-bash router.sh search "React" "hooks"
+bun run router.ts search "React" "hooks"
 
 # Fetch useState docs
-bash router.sh fetch "/websites/react_dev_reference" "useState"
+bun run router.ts fetch "/websites/react_dev_reference" "useState"
 
 # Fetch useEffect docs
-bash router.sh fetch "/websites/react_dev_reference" "useEffect"
+bun run router.ts fetch "/websites/react_dev_reference" "useEffect"
 ```
 
 ### Next.js App Router
 
 ```bash
 # One-liner
-bash router.sh quick "Next.js" "app router"
+bun run router.ts quick "Next.js" "app router"
 
 # Or step by step
-bash router.sh search "Next.js" "routing"
-bash router.sh fetch "/vercel/next.js" "app router"
+bun run router.ts search "Next.js" "routing"
+bun run router.ts fetch "/vercel/next.js" "app router"
 ```
 
 ### FastAPI Dependencies
 
 ```bash
-bash router.sh quick "FastAPI" "dependency injection"
+bun run router.ts quick "FastAPI" "dependency injection"
 ```
 
 ---
@@ -215,10 +215,10 @@ Fetched documentation is cached in `.tmp/external-context/`:
 
 ```bash
 # List cached docs
-bash router.sh list
+bun run router.ts list
 
 # Clean up old docs (default: 7 days)
-bash router.sh cleanup 7
+bun run router.ts cleanup 7
 ```
 
 **Why cache?**
@@ -241,7 +241,7 @@ User: "How do React Server Components work?"
     ↓
 [Action: Fetch Current Documentation]
     Detects: Training data = React 18, Current = React 19
-    Command: bash router.sh quick "React" "Server Components"
+    Command: bun run router.ts quick "React" "Server Components"
     Saves: .tmp/external-context/react_server_components.txt
     ↓
 [Route to research-agent skill]

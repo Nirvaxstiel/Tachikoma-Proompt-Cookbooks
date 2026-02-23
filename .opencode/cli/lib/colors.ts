@@ -1,8 +1,3 @@
-/**
- * Terminal colors for CLI output
- * ANSI escape codes for cross-platform terminal colors
- */
-
 export const colors = {
   red: '\x1b[0;31m',
   green: '\x1b[0;32m',
@@ -15,7 +10,6 @@ export const colors = {
   dim: '\x1b[2m',
 };
 
-// ASCII-safe symbols for Windows compatibility
 export const symbols = {
   check: '[+]',
   warning: '[!]',
@@ -23,16 +17,10 @@ export const symbols = {
   arrow: '->',
 };
 
-/**
- * Colorize text
- */
 export function colorize(text: string, color: keyof typeof colors): string {
   return `${colors[color]}${text}${colors.reset}`;
 }
 
-/**
- * Print colored header
- */
 export function printHeader(title: string): void {
   const line = '='.repeat(60);
   console.log(`${colors.blue}${line}${colors.reset}`);
@@ -40,30 +28,18 @@ export function printHeader(title: string): void {
   console.log(`${colors.blue}${line}${colors.reset}`);
 }
 
-/**
- * Print success message
- */
 export function printSuccess(message: string): void {
   console.log(`${colors.green}${symbols.check}${colors.reset} ${message}`);
 }
 
-/**
- * Print error message
- */
 export function printError(message: string): void {
   console.log(`${colors.red}${symbols.error}${colors.reset} ${message}`);
 }
 
-/**
- * Print warning message
- */
 export function printWarning(message: string): void {
   console.log(`${colors.yellow}${symbols.warning}${colors.reset} ${message}`);
 }
 
-/**
- * Print info message (step indicator)
- */
 export function printStep(step: string, message: string): void {
   console.log(`${colors.yellow}${step}${colors.reset} ${message}`);
 }

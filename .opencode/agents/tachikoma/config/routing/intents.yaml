@@ -18,9 +18,9 @@ intents:
       - investigate
     confidence_threshold: 0.7
     context_modules:
-      - 00-core-contract.md
+      - 00-core-contract.md           # Base only (~100 lines)
+      - 00c-validation-rules.md       # Only validation (~80 lines)
       - 10-coding-standards.md
-      - 12-commenting-rules.md
     skill: code-agent
     strategy: direct
     notes: Must be deterministic, no variance
@@ -41,9 +41,9 @@ intents:
       - code
     confidence_threshold: 0.7
     context_modules:
-      - 00-core-contract.md
+      - 00-core-contract.md           # Base only (~100 lines)
+      - 00b-context-economics.md      # Economics for planning (~150 lines)
       - 10-coding-standards.md
-      - 12-commenting-rules.md
     skill: code-agent
     strategy: direct
     notes: Code must be correct
@@ -60,9 +60,9 @@ intents:
       - cleanup
     confidence_threshold: 0.7
     context_modules:
-      - 00-core-contract.md
+      - 00-core-contract.md           # Base only (~100 lines)
+      - 00b-context-economics.md      # Economics for planning (~150 lines)
       - 10-coding-standards.md
-      - 12-commenting-rules.md
     skill: code-agent
     strategy: direct
     notes: Preserves behavior, improves maintainability
@@ -80,7 +80,7 @@ intents:
       - pr review
     confidence_threshold: 0.7
     context_modules:
-      - 00-core-contract.md
+      - 00-core-contract.md           # Base only (~100 lines)
       - 30-research-methods.md
     skill: analysis-agent
     strategy: direct
@@ -100,7 +100,8 @@ intents:
       - explore
     confidence_threshold: 0.6
     context_modules:
-      - 00-core-contract.md
+      - 00-core-contract.md           # Base only (~100 lines)
+      - 00a-workflow-phases.md       # Phases for structuring (~150 lines)
       - 30-research-methods.md
     skill: research-agent
     strategy: direct
@@ -120,7 +121,7 @@ intents:
       - version control
     confidence_threshold: 0.8
     context_modules:
-      - 00-core-contract.md
+      - 00-core-contract.md           # Base only (~100 lines)
       - 20-git-workflow.md
     skill: git-commit
     strategy: direct
@@ -137,7 +138,7 @@ intents:
       - update docs
     confidence_threshold: 0.6
     context_modules:
-      - 00-core-contract.md
+      - 00-core-contract.md           # Base only (~100 lines)
       - 12-commenting-rules.md
     skill: self-learning
     strategy: direct
@@ -156,7 +157,7 @@ intents:
       - large scale
     confidence_threshold: 0.3
     context_modules:
-      - 00-core-contract.md
+      - 00-core-contract.md           # Base only (~100 lines)
     skill: rlm-subcall
     strategy: direct
     notes: For large context (more than 2000 tokens)
@@ -174,7 +175,7 @@ intents:
       - migration analysis
     confidence_threshold: 0.4
     context_modules:
-      - 00-core-contract.md
+      - 00-core-contract.md           # Base only (~100 lines)
       - 20-git-workflow.md
     subagent: rlm-subcall
     strategy: hybrid
@@ -192,7 +193,7 @@ intents:
       - update changelog
     confidence_threshold: 0.7
     context_modules:
-      - 00-core-contract.md
+      - 00-core-contract.md           # Base only (~100 lines)
       - 12-commenting-rules.md
     skill: pr
     strategy: direct

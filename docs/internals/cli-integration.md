@@ -41,10 +41,10 @@ Synthesize results
 **Example invocation**:
 ```bash
 # Before routing
-tachikoma$ bash .opencode/skills/context-manager/router.sh discover
+tachikoma$ bun run .opencode/skills/context-manager/router.ts discover
 
 # During Q&A
-tachikoma$ bash .opencode/skills/context-manager/router.sh extract coding-standards "naming"
+tachikoma$ bun run .opencode/skills/context-manager/router.ts extract coding-standards "naming"
 ```
 
 ---
@@ -61,7 +61,7 @@ tachikoma$ bash .opencode/skills/context-manager/router.sh extract coding-standa
 **Example invocation**:
 ```bash
 # During research processing
-tachikoma$ bash .opencode/skills/context7/router.sh quick "React" "hooks"
+tachikoma$ bun run .opencode/skills/context7/router.ts quick "React" "hooks"
 
 # Result: Current React 19 docs (not React 18 from training)
 ```

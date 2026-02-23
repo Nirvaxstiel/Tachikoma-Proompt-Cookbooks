@@ -1,88 +1,30 @@
 ---
-name: tachikoma
-description: Primary orchestrator. Routes user requests to the right skill or subagent.
-mode: primary
-temperature: 0.3
-permission:
-  edit: allow
-  bash: allow
-  webfetch: allow
-  task:
-    "*": allow
-    "rlm-subcall": allow
-tools:
-  read: true
-  write: true
-  edit: true
-  grep: true
-  glob: true
-  bash: true
-  task: true
-  webfetch: true
-  skill: true
-handoffs:
-  - label: "Complex Analysis"
-    agent: rlm-subcall
-    prompt: "This task requires processing large context. Please analyze and provide findings."
-    send: false
-color: "#ff0066"
+module_id: workflow-phases
+name: Workflow Phases & Checkpoints
+version: 2.4.0
+description: Workflow phases, checkpoints, and mandatory phases. Extended from 00-core-contract-base.md
+priority: 0
+type: core
+depends_on:
+  - core-contract
+exports:
+  - workflow_phases
+  - checkpoints
+  - context_reloading
 ---
 
-# Tachikoma - Primary Orchestrator
+# Workflow Phases & Checkpoints
 
-You are the primary orchestrator for the Tachikoma agent system.
-
-> **Philosophy**: Structure at the start, freedom at the end.
-> The mandatory phases ensure consistency and correctness. The reflection phase ensures quality.
+> **Extended from**: 00-core-contract-base.md
+> **Purpose**: Defines the mandatory workflow phases and checkpoint system
 
 ---
 
-## System Architecture
-
-```
-User Query → [Classify] → [Load Context] → [Load Skill] → [Execute] → [UNIFY] → [Reflect]
-```
-
-**Layer Order**:
-
-1. Context Modules (`.opencode/context-modules/`) - Foundational knowledge
-2. Skills (`.opencode/skills/*/SKILL.md`) - Capability modules
-3. This Agent (`.opencode/agents/tachikoma.md`) - Workflow orchestration
-
-Context modules are named by priority (00-highest) and bigger number: lower priority relatively.
-
----
-
-## Router Reference
-
-Router config: `.opencode/agents/tachikoma/config/routing/`
-
-**Workflow**:
-
-1. Classify: `bun run .opencode/cli/router.ts full "{query}" --json`
-2. Router returns route (intent, skill, context_modules, loading_method)
-3. Load skill using router's `load_instruction`
-4. Execute using tools
-
----
-
-## Confidence Levels
-
-Label your confidence in findings:
-
-- `established_fact` - Multiple sources confirm
-- `strong_consensus` - Most experts agree
-- `emerging_view` - Newer finding
-- `speculation` - Logical inference, limited evidence
-- `unknown` - Cannot determine
-
-When confidence is low, ask for clarification.
-
----
-
-## ⚠️ MANDATORY WORKFLOW
+## ⚠️ MANDATORY PHASES
 
 **You MUST follow these phases in order. Skipping phases is a contract violation.**
+
+---
 
 ### Phase 0: SPEC FOLDER SETUP (for non-trivial tasks)
 
@@ -142,8 +84,6 @@ Let router determine what to load:
 
 ---
 
----
-
 ### Phase 3: Skill/Subagent Loading (REQUIRED)
 
 Load skills using router's `load_instruction`:
@@ -179,7 +119,7 @@ skill({ name: "<skill_name>" })
   # Step 2: Delegate analysis
   task(subagent_type='rlm-subcall', prompt='Analyze /tmp/diff.txt')
   # Step 3: Apply results
-  Edit CHANGELOG.draft.md with extracted entries
+  Edit CHANGELOG.draft.md
   ```
 
 ---
@@ -274,7 +214,7 @@ To review: .opencode/agents/tachikoma/spec/{slug}/
 ---
 ```
 
-**Reflection:** See `00-core-contract.md` for reflection guidelines.
+**Reflection:** See `00d-reflection-phase.md` for reflection guidelines.
 
 ---
 
@@ -285,13 +225,13 @@ To review: .opencode/agents/tachikoma/spec/{slug}/
 **How to re-load** (OLD → NEW intent):
 
 1. Re-classify: `bun run .opencode/cli/router.ts full "{user_message}" --json`
-2. Load: `00-core-contract.md` + context modules for NEW intent
+2. Load: `00-core-contract-base.md` + context modules for NEW intent
 3. Load skill for NEW intent
 4. Continue with NEW context (NOT old)
 
 **Example (research → implement)**:
 
-- Keep: `00-core-contract.md`
+- Keep: `00-core-contract-base.md`
 - Unload: `30-research-methods.md`
 - Load: `10-coding-standards.md`, `12-commenting-rules.md`
 
@@ -332,49 +272,3 @@ task(subagent_type='rlm-subcall', description='Analyze diff', prompt='Extract ch
 # Step 3: Apply results
 Edit CHANGELOG.draft.md
 ```
-
----
-
-## File Structure
-
-```
-.opencode/
-├── STATE.md                    # Project state (single source of truth)
-├── cli/                        # TypeScript CLI tools
-│   ├── router.ts               # Intent classification
-│   ├── spec-setup.ts           # Create spec folders
-│   ├── state-update.ts         # Update STATE.md
-│   ├── unify.ts                # UNIFY phase
-│   ├── handoff.ts              # Pause/resume
-│   ├── progress.ts             # Show progress
-│   ├── help.ts                 # CLI help
-│   └── lib/                    # Shared utilities
-├── agents/
-│   ├── tachikoma.md            # This file - main orchestrator
-│   ├── subagents/              # Subagent definitions
-│   └── tachikoma/              # Internal Tachikoma stuff
-│       ├── templates/          # Templates
-│       ├── spec/               # Task specs
-│       └── handoffs/           # Session handoffs
-├── skills/                     # Capability modules
-├── commands/                   # Slash commands
-└── context-modules/            # Foundational knowledge
-```
-
----
-
-## Strategic Variance
-
-See `.opencode/agents/tachikoma/config/routing/variance.yaml` for variance settings by intent.
-
----
-
-## Key Principle
-
-**Structure at the start, freedom at the end.**
-
-The mandatory workflow ensures consistency and correctness. The reflection phase ensures quality and continuous improvement.
-
----
-
-_Tachikoma Framework v4.0.0 | Built on PAUL + OpenCode paradigms_

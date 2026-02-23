@@ -15,9 +15,7 @@ import { Database } from "bun:sqlite";
 import { loadYaml } from "./lib/yaml";
 import { colors, printHeader } from "./lib/colors";
 
-// =============================================================================
 // TYPES
-// =============================================================================
 
 enum EditFormat {
   STR_REPLACE = "str_replace",
@@ -58,9 +56,7 @@ interface EditResult {
   error?: string;
 }
 
-// =============================================================================
 // CONFIGURATION
-// =============================================================================
 
 const SCRIPT_DIR = import.meta.dir;
 const CONFIG_DIR = join(SCRIPT_DIR, "..", "agents", "tachikoma", "config");
@@ -171,9 +167,7 @@ function saveModelFormat(model: string, formatType: EditFormat): void {
   cachedModelFormats = null; // Invalidate cache
 }
 
-// =============================================================================
 // MODEL DETECTION
-// =============================================================================
 
 function getModelFromEnv(): string | null {
   for (const v of MODEL_ENV_VARS) {
@@ -239,9 +233,7 @@ function detectModel(): string {
   );
 }
 
-// =============================================================================
 // FORMAT SELECTION
-// =============================================================================
 
 const FALLBACK_CHAINS: Record<EditFormat, EditFormat[]> = {
   [EditFormat.STR_REPLACE]: [EditFormat.HASHLINE, EditFormat.APPLY_PATCH],
@@ -378,9 +370,7 @@ function getModelNotes(model: string): string[] {
   return notes;
 }
 
-// =============================================================================
 // EDIT EXECUTION (stub - actual execution done by opencode native)
-// =============================================================================
 
 async function executeWithRetry(
   filepath: string,
@@ -405,9 +395,7 @@ async function executeWithRetry(
   };
 }
 
-// =============================================================================
 // CLI
-// =============================================================================
 
 function printUsage(): void {
   printHeader("Edit Format Selector");

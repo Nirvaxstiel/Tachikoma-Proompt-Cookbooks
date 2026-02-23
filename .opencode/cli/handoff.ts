@@ -28,9 +28,7 @@ import {
   getIsoTimestamp,
 } from "./lib/templates";
 
-// =============================================================================
 // PATHS
-// =============================================================================
 
 const CLI_DIR = import.meta.dir;
 const OPENCODE_DIR = join(CLI_DIR, "..");
@@ -39,9 +37,7 @@ const STATE_FILE = join(OPENCODE_DIR, "STATE.md");
 const HANDOFF_DIR = join(TACHIKOMA_DIR, "handoffs");
 const SPEC_DIR = join(TACHIKOMA_DIR, "spec");
 
-// =============================================================================
 // PAUSE (CREATE HANDOFF)
-// =============================================================================
 
 function createHandoff(reason: string): number {
   if (!existsSync(STATE_FILE)) {
@@ -223,9 +219,7 @@ function updateStateForHandoff(handoffFile: string, nextAction: string): void {
   writeFileSync(STATE_FILE, content);
 }
 
-// =============================================================================
 // RESUME (RESTORE FROM HANDOFF)
-// =============================================================================
 
 function resumeFromHandoff(handoffFile?: string): number {
   if (!existsSync(HANDOFF_DIR)) {
@@ -288,9 +282,7 @@ function resumeFromHandoff(handoffFile?: string): number {
   return 0;
 }
 
-// =============================================================================
 // CLI
-// =============================================================================
 
 function printUsage(): void {
   console.log(`
