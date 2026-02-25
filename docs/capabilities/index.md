@@ -30,7 +30,7 @@ Position-aware context loading optimizes token placement for maximum effectivene
 
 Specialized skills handle specific task types with optimal tool usage.
 
-- 20 built-in specialized skills
+- 10 built-in specialized skills
 - Dynamic skill loading
 - Model-aware operations
 - Verification loops for critical tasks
@@ -50,7 +50,7 @@ Orchestrate multiple skills for complex workflows.
 
 ### 📋 PAUL Methodology
 
-<TODO: CLARIFY_PAUL> — Structured development framework.
+PAUL (Plan-Apply-Unify Loop) — Structured development framework.
 
 - **PLAN** — Define objectives and acceptance criteria
 - **APPLY** — Execute with verification
@@ -64,7 +64,7 @@ Never skip UNIFY — this is the heartbeat that prevents drift.
 
 ### 🔒 CARL Quality Gates
 
-<TODO: CLARIFY_CARL> — Context Augmentation & Reinforcement Layer.
+CARL (Context Augmentation & Reinforcement Layer) — Dynamic rule loading system.
 
 - Rule-based quality checks
 - Validation enforcement

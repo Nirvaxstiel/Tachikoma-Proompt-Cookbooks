@@ -2,126 +2,26 @@
 
 ## Requirements
 
+- Bun runtime (>=1.0.0)
+- OpenCode CLI
 - AI agent supporting Agent Skills (OpenCodeAI, Claude Code, etc.)
-- Your project directory
 
 ## Installation
 
-### Choose Your Installation Path
+Detailed installation instructions are available in the [Installation guide](./installation.md).
 
-Tachikoma supports two installation methods depending on your use case:
-
-::: info Installation Locations
-
-| Type       | Path                 | Use Case                           | Precedence |
-| ---------- | -------------------- | ---------------------------------- | ---------- |
-| **Local**  | `cwd/.opencode`      | Project-specific skills and config | Higher     |
-| **Global** | `~/.config/opencode` | Shared across all projects         | Lower      |
-
-Tachikoma automatically discovers skills from both locations.
-:::
-
-### Quick Install (Local)
-
-Install Tachikoma in your current project directory:
+Quick start:
 
 ```bash
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
+bun run install
 ```
 
-This installs to `./.opencode/` in your current working directory.
-
-### Quick Install (Global)
-
-Install Tachikoma globally for use across all projects:
-
-```bash
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash -s -- --global
-```
-
-This installs to `~/.config/opencode/`.
-
-### Advanced Install Options
-
-```bash
-# Install to specific directory
-curl -sS ... | bash -s -- -C /your/project
-
-# Install with pre-packaged Python (for offline/airgapped)
-curl -sS ... | bash -s -- --include-prepackaged-python
-
-# Install from specific branch
-curl -sS ... | bash -s -- -b develop
-
-# Global install from specific branch
-curl -sS ... | bash -s -- --global -b develop
-```
-
-### Manual Install
-
-```bash
-# Local installation
-cp -r .opencode AGENTS.md /your/project/
-
-# Global installation
-mkdir -p ~/.config/opencode
-cp -r .opencode/* ~/.config/opencode/
-cp AGENTS.md ~/.config/opencode/
-```
-
-**Important:** Don't gitignore `AGENTS.md` or `.opencode/` if you want project-specific customization.
-
-## Windows Setup
-
-```powershell
-# Option 1: Scoop (clean uninstall: scoop uninstall uv python)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-scoop install uv python
-
-# Option 2: Standalone UV (uninstall: delete uv.exe + uv cache clean)
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# Option 3: Bundled (use --include-prepackaged-python flag)
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
-```
-
-Scoop installs to `~/scoop/apps/` — no registry, no admin.
-
-## Update
-
-```bash
-# Local update
-./.opencode/tachikoma-install.sh
-
-# Global update
-~/.config/opencode/tachikoma-install.sh
-
-# With pre-packaged Python
-./.opencode/tachikoma-install.sh --include-prepackaged-python
-
-# From specific branch
-./.opencode/tachikoma-install.sh -b develop
-```
+This runs an interactive installer that lets you choose between:
+- **Local** - `.opencode/` (current project only)
+- **Global** - `~/.config/opencode/` (all projects)
+- **Custom** - Specify any installation path
 
 ## What Gets Installed
-
-```
-your-project/
-├── AGENTS.md              # System constitution
-└── .opencode/
-    ├── agents/            # Primary agent + subagents
-    ├── skills/            # 20 specialized skills
-    ├── context-modules/   # 7 context modules
-    ├── cli/               # TypeScript CLI tools
-    ├── assets/            # Bundled Python + UV (optional)
-    └── config/
-        └── intent-routes.yaml
-```
-
-**Token Optimized:** Skills reference context modules instead of duplicating content, reducing token consumption by ~15%.
-
-## How It Works
 
 Every request goes through a structured execution flow:
 
@@ -150,18 +50,20 @@ Every request goes through a structured execution flow:
 
 ### AI Agent
 
-The AI agent has Python injected into its environment. It runs scripts directly:
+The AI agent can run Tachikoma scripts directly as tools:
 
 ```bash
-python .opencode/tools/smoke_test.py
+tachikoma.where
+tachikoma.edit-format-selector recommend
 ```
 
 ### Manual
 
-Use `uv run` for consistent dependency management:
+Use `bun run` for direct script execution:
 
 ```bash
-uv run .opencode/tools/smoke_test.py
+bun run .opencode/plugins/tachikoma/where.ts
+bun run .opencode/plugins/tachikoma/edit-format-selector.ts recommend
 ```
 
 ## Understanding PAUL Methodology

@@ -19,20 +19,17 @@ A general purpose AI agent named after the curious AI tanks from _Ghost in the S
 Install Tachikoma as an OpenCode plugin:
 
 ```bash
-bun install
-
-# - All platforms: `~/.config/opencode`
-# - Windows: `C:\Users\username\.config\opencode`
-# - macOS: `/Users/username/.config/opencode`
-# - Linux: `/home/username/.config/opencode`
-
-# Then cd to your working directory;
-opencode
+bun run install
 ```
 
-And use `@tachikoma` or `TAB` to Tachikoma in the TUI to use as your main mode.
+This runs an interactive installer that lets you choose between:
+- **Local** - `.opencode/` (current project only)
+- **Global** - `~/.config/opencode/` (all projects)
+- **Custom** - Specify any installation path
 
-See [INSTALL.md](INSTALL.md) for detailed installation options.
+After installation, run `opencode` and use `@tachikoma` in the TUI.
+
+See [Installation Guide](docs/installation.md) for detailed installation options.
 
 ## Themes
 
