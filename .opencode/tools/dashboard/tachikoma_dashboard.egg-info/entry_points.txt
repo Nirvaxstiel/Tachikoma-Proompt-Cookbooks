@@ -1,2 +1,0 @@
-[console_scripts]
-tachikoma-dashboard = tachikoma_dashboard.__main__:main

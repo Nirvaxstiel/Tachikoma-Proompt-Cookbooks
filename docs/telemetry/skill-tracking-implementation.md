@@ -8,7 +8,7 @@ We've implemented skill tracking using OpenCode's **existing built-in telemetry*
 
 ### 1. Enhanced Database Queries
 
-**File:** `.opencode/tools/dashboard/tachikoma_dashboard/db.py`
+**File:** `dashboard/tachikoma_dashboard/db.py`
 
 **Improvements:**
 - ✅ Switch from querying `message` table to `part` table (more direct access to tool invocations)
@@ -22,7 +22,7 @@ We've implemented skill tracking using OpenCode's **existing built-in telemetry*
 
 ### 2. Enhanced Skill Model
 
-**File:** `.opencode/tools/dashboard/tachikoma_dashboard/models.py`
+**File:** `dashboard/tachikoma_dashboard/models.py`
 
 ```python
 @dataclass
@@ -35,22 +35,14 @@ class Skill:
     last_used: int | None = None    # NEW: Last invocation time
 ```
 
-### 3. Created Skill Analytics Tool
+### 3. Built-in Skill Analytics
 
-**File:** `.opencode/tools/dashboard/skill_analytics.py`
+The Tachikoma Dashboard includes built-in skill tracking through `get_session_skills()` and `get_skill_usage_stats()`:
 
-A standalone CLI tool to analyze skill usage:
+- View skill usage per session in the Skills panel
+- Query aggregated statistics programmatically via `get_skill_usage_stats()`
 
-```bash
-# Show all sessions with skills
-uv run .opencode/tools/dashboard/skill_analytics.py
-
-# Show skill usage statistics
-uv run .opencode/tools/dashboard/skill_analytics.py --stats
-
-# Show skills for a specific session
-uv run .opencode/tools/dashboard/skill_analytics.py --session <session_id>
-```
+No separate analytics tool is required - all tracking is integrated into the dashboard.
 
 ### 4. Documented Capabilities
 
@@ -63,7 +55,7 @@ Comprehensive documentation covering:
 - ✅ How to query skill invocations
 - ✅ Implementation status and recommendations
 
-**File:** `.opencode/tools/dashboard/README_SKILL_ANALYTICS.md`
+**File:** `dashboard/README_SKILL_ANALYTICS.md`
 
 User-facing documentation:
 - ✅ Quick start guide
@@ -86,70 +78,34 @@ User-facing documentation:
 | **Status** | `state.status` | Success/failure rates |
 | **Aggregated Stats** | GROUP BY queries | Cross-session patterns |
 
-### ❌ Advanced Metrics (Not Implemented)
+## Dashboard Integration
 
-These would require additional telemetry infrastructure:
+The Tachikoma Dashboard displays skill information in the **Skills Panel**:
 
-1. **Skill Iterations** - Retry loops, verification attempts
-2. **Edit Format Success** - Per-format tracking per model
-3. **RLM Performance** - Chunking, accuracy metrics
-4. **Intent Classification** - Confidence, correctness rates
-5. **Token Usage per Skill** - Context cost per skill
-
-## Example Usage
-
-### View Skill Usage Statistics
-
-```bash
-$ uv run .opencode/tools/dashboard/skill_analytics.py --stats --limit 5
-
-================================================================================
-SKILL USAGE STATISTICS
-================================================================================
-
-1. code-agent
-   Invocations:   45
-   Sessions:      12
-   Avg Duration:  2450.3ms
-   Total Time:    110.3s
-   Success Rate:  95.6%
-   First Used:    2026-02-17 10:23
-   Last Used:     2026-02-18 14:52
-
-2. research-agent
-   Invocations:   23
-   Sessions:      8
-   Avg Duration:  1870.1ms
-   Total Time:    43.0s
-   Success Rate:  87.0%
-   First Used:    2026-02-17 11:45
-   Last Used:     2026-02-18 09:12
+```
+┌─────────────────────────────────────────────────────────┐
+│ Skills                                            │
+├─────────────────────────────────────────────────────────┤
+│ Skill Name          | Invocations | Last Used       │
+├─────────────────────────────────────────────────────────┤
+│ code-agent          | 12          | 2026-02-18 14:52│
+│ research-agent      | 5           | 2026-02-18 09:12│
+│ formatter          | 8           | 2026-02-18 11:23│
+└─────────────────────────────────────────────────────────┘
 ```
 
-### View Sessions with Skills
+### View in Dashboard
+
+Run the dashboard to see skill usage in real-time:
 
 ```bash
-$ uv run .opencode/tools/dashboard/skill_analytics.py --limit 3
-
-================================================================================
-SESSIONS WITH SKILLS
-================================================================================
-
-1. Skill loading debugging
-   ID: ses_390b42bb3ffeK0jRl5jIlUKV8D
-   Updated: 2026-02-18 13:56
-   Skills: 11 - code-agent, research-agent, analysis-agent, ...
-
-2. WezTerm custom colors
-   ID: ses_39437293fffeeDJdXWDvB5bZ0j
-   Updated: 2026-02-17 21:28
-   Skills: 1 - context7
-
-3. WezTerm config refactor
-   ID: ses_39b006632ffeitsHg7Qeog27S8
-   Updated: 2026-02-16 14:26
-   Skills: 1 - git-commit
+cd dashboard
+./tachikoma-dashboard
 ```
+
+Select a session to view the skills that were loaded during that session.
+
+## Database Queries
 
 ## Database Queries
 
@@ -232,26 +188,19 @@ See `docs/telemetry/opencode-telemetry-capabilities.md` for details.
 ## Files Changed
 
 ```
-.opencode/tools/dashboard/tachikoma_dashboard/db.py
-.opencode/tools/dashboard/tachikoma_dashboard/models.py
-.opencode/tools/dashboard/skill_analytics.py          (NEW)
-.opencode/tools/dashboard/README_SKILL_ANALYTICS.md  (NEW)
-docs/telemetry/opencode-telemetry-capabilities.md    (NEW)
+dashboard/tachikoma_dashboard/db.py        - Skill tracking queries
+dashboard/tachikoma_dashboard/models.py     - Skill model
+dashboard/tachikoma_dashboard/widgets.py    - Skills panel UI
+docs/telemetry/opencode-telemetry-capabilities.md
 ```
 
 ## Testing
 
-All changes have been tested and verified:
+Skill tracking is built into the dashboard. Start the dashboard to see skill usage in action:
 
 ```bash
-# Test skill stats
-uv run .opencode/tools/dashboard/skill_analytics.py --stats
-
-# Test session listing
-uv run .opencode/tools/dashboard/skill_analytics.py
-
-# Verify data accuracy
-# (Checked against actual OpenCode database)
+cd dashboard
+./tachikoma-dashboard
 ```
 
 ## Conclusion

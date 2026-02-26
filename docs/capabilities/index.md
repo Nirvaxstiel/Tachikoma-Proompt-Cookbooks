@@ -1,119 +1,191 @@
 # Capabilities
 
-## Core
+Complete guide to Tachikoma's features and capabilities.
 
-### [Intent Routing](./intent-routing.md)
+## Core Capabilities
 
-Classifies requests and routes to the right specialist.
+### 🎯 Intent Classification & Routing
 
-- 18 intents (debug, implement, review, research, git, etc.)
-- Confidence-based classification
-- Automatic escalation for uncertain requests
+Automatic intent classification routes requests to optimal execution strategies based on task complexity.
 
-### [Context Management](./context-management.md)
+- **Low Complexity** — Direct response (1-2s)
+- **Medium Complexity** — Single skill (5-15s)
+- **High Complexity** — Skill chain (15-45s)
+- **Very High Complexity** — RLM orchestration (45-120s)
 
-Loads project-specific rules relevant to each task.
+[Learn more →](./intent-routing.md)
 
-- 7 context modules
-- Priority-based loading
-- Automatic module coupling
+### 🧠 Context Management
 
-### [Skill Execution](./skill-execution.md)
+Position-aware context loading optimizes token placement for maximum effectiveness.
 
-Specialized capabilities for specific tasks.
+- U-shaped attention bias awareness
+- Critical info at start/end
+- Context compression at 70-80% utilization
+- Structured summaries
 
-- 20 skills
-- SKILL.md format
-- Easy to extend
+[Learn more →](./context-management.md)
 
-### [Workflows & Skills](./skill-chains.md)
+### ⚡ Skill Execution
 
-Chain skills for complex tasks.
+Specialized skills handle specific task types with optimal tool usage.
 
-- **Workflows**: Sequential execution
-- **Skills Bulk**: All at once, agent picks
+- 10 built-in specialized skills
+- Dynamic skill loading
+- Model-aware operations
+- Verification loops for critical tasks
 
-### [Composite Intents](./composite-intents.md)
+[Learn more →](./skill-execution.md)
 
-Multi-part requests handled automatically.
+### 🔗 Skill Chains
 
-- `research-and-implement`
-- `implement-and-test`
-- `refactor-and-test`
+Orchestrate multiple skills for complex workflows.
 
-## Research-Backed
+- Sequential execution
+- State passing between skills
+- Error handling
+- Verification integration
 
-### [Epistemic Mode](./epistemic-mode.md)
+[Learn more →](./skill-chains.md)
 
-Confidence labeling for every claim.
+### 📋 PAUL Methodology
 
-- `established_fact` → `strong_consensus` → `emerging_view` → `speculation` → `unknown`
+PAUL (Plan-Apply-Unify Loop) — Structured development framework.
 
-### [Position-Aware Loading](./position-aware-loading.md)
+- **PLAN** — Define objectives and acceptance criteria
+- **APPLY** — Execute with verification
+- **UNIFY** — Close the loop
 
-Optimizes context placement for transformer attention.
+::: warning
+Never skip UNIFY — this is the heartbeat that prevents drift.
+:::
 
-### [Verification Loops](../research/verification-loops.md)
+[Learn more →](./paul-methodology.md)
 
-Reflection after execution improves quality.
+### 🔒 CARL Quality Gates
 
-## Advanced
+CARL (Context Augmentation & Reinforcement Layer) — Dynamic rule loading system.
 
-### [Subagents](./subagents.md)
+- Rule-based quality checks
+- Validation enforcement
+- Compliance verification
 
-Workers for large-context and parallel tasks.
+[Learn more →](./carl-quality-gates.md)
 
-- `explore`: Fast codebase search
-- `general`: Multi-step parallel work
-- `rlm-optimized`: Large context (>2000 tokens)
+## Advanced Capabilities
 
-### [Tools](./tools.md)
+### 🧩 Model-Aware Editing
 
-Development utilities.
+Dynamic edit format selection optimized for specific LLM models.
 
-- Smoke Test Framework
-- Hashline Processor
-- Context Manager CLI
+- `str_replace` — Claude, Mistral (exact string matching)
+- `str_replace_fuzzy` — Gemini (fuzzy whitespace)
+- `apply_patch` — GPT (diff format)
+- `hashline` — Grok, GLM (content-hash anchoring)
 
-## Reference
+[Learn more →](./model-aware-editing.md)
 
-### [Skills Specification](./skills-specification.md)
+### 🤖 Subagents
 
-Agent Skills format specification.
+Workers for large-context discovery and parallel tasks.
 
-### [Skill Templates](./skill-templates.md)
+- Codebase exploration
+- Parallel search execution
+- Long-running sessions
 
-Ready-to-use templates.
+[Learn more →](./subagents.md)
 
-## Customization
+### 🔍 Verification Loops
 
-- [Add a Skill](./customization/add-skill.md)
-- [Add an Agent](./customization/add-agent.md)
-- [Add an Intent](./customization/add-intent.md)
-- [Context Modules](./customization/context-modules.md)
+Generator-Verifier-Reviser pattern for high-stakes implementations.
+
+- GENERATE — Initial solution
+- VERIFY — Explicit criteria checking
+- REVISE — Fix based on feedback
+- Up to 3 iterations
+
+Use for: complex implementations, high-stakes fixes, correctness-critical tasks.
+
+Skip for: simple tasks (<50 lines), prototypes, well-understood patterns.
+
+[Learn more →](../research/verification-loops.md)
+
+## Research-Backed Features
+
+### 📊 Cost-Aware Routing
+
+Match task complexity to execution strategy for optimal speed vs accuracy.
+
+Research: "When Do Tools and Planning Help LLMs Think?" (arXiv:2601.02663)
+
+[Learn more →](../research/cost-aware-routing.md)
+
+### 📍 Position-Aware Context
+
+Optimize for tokens-per-task using U-shaped attention patterns.
+
+Research: "Found in the Middle" (ACL 2024)
+
+[Learn more →](../research/position-bias.md)
+
+### 🔬 Model Harness
+
+Edit format selection matters as much as model choice.
+
+Source: Can.ac blog (Feb 2026)
+
+[Learn more →](../research/model-harness.md)
+
+## Capability Matrix
+
+| Capability | Best For | Complexity | Latency |
+|------------|-----------|------------|---------|
+| Direct Response | Simple queries, <50 lines | Low | 1-2s |
+| Single Skill | Focused tasks, one domain | Medium | 5-15s |
+| Skill Chain | Multi-step workflows | High | 15-45s |
+| Verification Loop | High-stakes, correctness-critical | High | +10-30s |
+| Subagent | Large-context discovery, parallel tasks | Very High | 45-120s |
+| RLM | Massive contexts, 10M+ tokens | Very High | 2-5min |
+
+## Decision Flow
+
+```
+User Request
+    ↓
+Classify Intent
+    ↓
+Confidence > 0.7?
+    ├── NO → Ask for clarification
+    ↓ YES
+Context > 2000 tokens?
+    ├── YES → Use RLM subagent
+    ↓ NO
+Task Complexity?
+    ├── Simple → Direct response
+    ├── Medium → Single skill
+    ├── High → Skill chain
+    └── Critical → Verification loop
+    ↓
+Reflect on approach (freedom to question, flag issues)
+```
 
 ## Quick Reference
 
-| Task | Route |
-|------|-------|
-| Fix bug | `debug` → code-agent |
-| Write code | `implement` → code-agent |
-| Review code | `review` → analysis-agent |
-| Large refactor | `complex` → rlm-optimized |
-| Research APIs | `research` → research-agent |
-| Git operations | `git` → git-commit |
+| Need | Use | Link |
+|------|-----|------|
+| Understand routing | Intent Classification | [→](./intent-routing.md) |
+| Manage context | Context Management | [→](./context-management.md) |
+| Execute tasks | Skill Execution | [→](./skill-execution.md) |
+| Chain skills | Skill Chains | [→](./skill-chains.md) |
+| Structure work | PAUL Methodology | [→](./paul-methodology.md) |
+| Enforce quality | CARL Quality Gates | [→](./carl-quality-gates.md) |
+| Model-specific edits | Model-Aware Editing | [→](./model-aware-editing.md) |
+| Large contexts | Subagents | [→](./subagents.md) |
+| Verify correctness | Verification Loops | [→](../research/verification-loops.md) |
 
-| Complexity | Approach |
-|------------|----------|
-| Simple (< 1 file) | Single skill |
-| Medium (1-5 files) | Skill + context |
-| Complex (5+ files) | Workflow or skills_bulk |
-| Very complex (> 2000 tokens) | Subagent |
+## Next Steps
 
-## Research Foundation
-
-- [Position Bias](../research/position-bias.md)
-- [Verification Loops](../research/verification-loops.md)
-- [Recursive Language Models](../research/rlm.md)
-- [Cost-Aware Routing](../research/cost-aware-routing.md)
-- [Modularity](../research/modularity.md)
+- [Getting Started](../getting-started.md) — Installation and setup
+- [Concepts](../concepts/overview.md) — Architecture overview
+- [Research](../research/overview.md) — Research backing the design
+- [Internals](../internals/) — Database schema and internals

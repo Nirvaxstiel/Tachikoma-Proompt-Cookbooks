@@ -4,115 +4,116 @@
 
 # Tachikoma
 
-Routes requests to the right specialist. Classifies intent, loads relevant context, executes.
+A general purpose AI agent named after the curious AI tanks from _Ghost in the Shell_.
 
-Named after the curious AI tanks from _Ghost in the Shell_.
+## Features
 
----
+- **Cost-Aware Routing**: Match task complexity to optimal execution strategy
+- **PAUL Methodology**: Structured Plan-Apply-Unify loop with mandatory closure
+- **Verification Loops**: Generator-Verifier-Reviser pattern for complex tasks
+- **Position-Aware Context**: Mitigates U-shaped attention bias in LLMs
+- **Model-Aware Editing**: Dynamic edit format selection based on model
 
-## What It Does
+## Installation
 
-```
-User: "Fix the auth bug"
-    ↓
-1. Classify: debug intent (95% confidence)
-2. Load: coding-standards + commenting-rules
-3. Route: code-agent skill
-4. Execute: Bug fixed
-5. Reflect: Flag related issues, suggest improvements
-```
-
-**Structure at the start, freedom at the end.**
-
-Phases 1-4 are mandatory. Phase 5 is free — the agent can question its approach, flag concerns, or suggest improvements.
-
----
-
-## Core Concepts
-
-| Concept | What It Means |
-|---------|---------------|
-| **Orchestrator** | Primary agent coordinates all activity |
-| **Intent Routing** | Classifies requests, routes to appropriate skills |
-| **Context Modules** | Project-specific rules load based on task type |
-| **Skills** | Specialized capabilities for specific tasks |
-| **Subagents** | Workers for large-context or parallel tasks |
-
----
-
-## Quick Install
+Install Tachikoma as an OpenCode plugin:
 
 ```bash
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
+bun run install
 ```
 
-Or copy `AGENTS.md` and `.opencode/` to your repo root.
+This runs an interactive installer that lets you choose between:
+- **Local** - `.opencode/` (current project only)
+- **Global** - `~/.config/opencode/` (all projects)
+- **Custom** - Specify any installation path
 
-> UV and Python are bundled. No system Python required.
+After installation, run `opencode` and use `@tachikoma` in the TUI.
 
-Full guide: [docs/getting-started.md](docs/getting-started.md)
-
----
-
-## Windows Users
-
-```powershell
-# Option 1: Scoop (clean uninstall: scoop uninstall uv python)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-scoop install uv python
-
-# Option 2: Standalone UV (uninstall: delete uv.exe + uv cache clean)
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# Option 3: Bundled (use --include-prepackaged-python flag)
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
-```
-
----
-
-## Documentation
-
-| What | Where |
-|------|-------|
-| Overview | [docs/concepts/overview.md](docs/concepts/overview.md) |
-| Skills | [.opencode/skills/\*/SKILL.md](.opencode/skills/) |
-| Customization | [docs/capabilities/customization/overview.md](docs/capabilities/customization/overview.md) |
-
----
-
-## Tested Models
-
-| Model | Notes |
-|-------|-------|
-| Claude 4.6 Sonnet | Current sweet spot |
-| GLM 5 | Feels like Sonnet, cheaper |
-| Kimi K2.5 | Strong alternative |
-| Minimax M2.5 | Shockingly good |
-| Gemini 3 Deep Think | ARC-AGI-2: 84.6% |
-| GPT Codex 5.3 | Waiting for access for my sub |
-| GPT Codex 5.2 | It's ok |
-
----
+See [Installation Guide](docs/installation.md) for detailed installation options.
 
 ## Themes
 
 Ghost in the Shell inspired themes for OpenCode terminal:
 
-| Theme | View | Dark | Light |
-|-------|------|------|-------|
-| ghost-in-the-shell | Start | ![start](assets/tachikoma-dark-theme-gits-solid.png) | ![start](assets/tachikoma-light-theme-gits.png) |
+| Theme                     | View  | Dark                                                  | Light                                           |
+| ------------------------- | ----- | ----------------------------------------------------- | ----------------------------------------------- |
+| ghost-in-the-shell        | Start | ![start](assets/tachikoma-dark-theme-gits-solid.png)  | ![start](assets/tachikoma-light-theme-gits.png) |
 | lucent-ghost-in-the-shell | Start | ![start](assets/tachikoma-dark-theme-gits-lucent.png) | ![start](assets/tachikoma-light-theme-gits.png) |
 
-> Other screenshots [here](/assets/)
+> Other screenshots [here](assets/)
 
----
+### Using Tachikoma Tools
 
-## Research Basis
+Tachikoma exposes scripts as OpenCode tools:
+
+```
+@tachikoma Check edit format for current model
+[Agent uses tachikoma.edit-format-selector tool]
+
+@tachikoma Where is Tachikoma installed?
+[Agent uses tachikoma.where tool]
+
+> Check the `plugins` folder for more tools available.
+```
+
+## Core Concepts
+
+### Cost-Aware Routing
+
+| Complexity | Strategy          | Latency |
+| ---------- | ----------------- | ------- |
+| Low        | Direct response   | 1-2s    |
+| Medium     | Single skill      | 5-15s   |
+| High       | Skill chain       | 15-45s  |
+| Very High  | RLM orchestration | 45-120s |
+
+### PAUL Methodology
+
+1. **PLAN**: Define objective, acceptance criteria (Given/When/Then), tasks with verify steps, boundaries
+2. **APPLY**: Execute tasks sequentially, each with verification
+3. **UNIFY**: Reconcile plan vs actual, update `.tachikoma/state/STATE.md`, create `.tachikoma/state/summary.md`
+
+**Never skip UNIFY** - this is the heartbeat that prevents drift.
+
+### Verification Loops
+
+For complex implementations, use up to 3 verification iterations:
+
+1. GENERATE - Produce initial solution
+2. VERIFY - Check with explicit criteria
+3. REVISE - Fix based on verification
+4. REFLECT - Question approach, flag issues
+
+Use verification for: complex implementations, high-stakes fixes, first-time features, correctness-critical tasks.
+
+## Adding New Scripts
+
+1. Create a new `.ts` file in `src/plugin/tachikoma/`:
+
+```typescript
+#!/usr/bin/env bun
+/**
+ * My new capability
+ * Description of what it does
+ */
+
+const args = Bun.argv.slice(2);
+
+// Your logic here
+console.log(`Processing: ${args[0] || "no args"}`);
+```
+
+2. Reinstall: `bun run install`
+
+3. Script automatically becomes `tachikoma.my-new-capability` tool!
+
+## Documentation
+
+- [INSTALL.md](INSTALL.md) - Installation guide
+- [AGENTS.md](AGENTS.md) - Project-specific context
+- [src/agents/tachikoma.md](src/agents/tachikoma.md) - Agent configuration
 
 Links and stuff are in the `docs/` either on the [vitepress](https://nirvaxstiel.github.io/Tachikoma-Proompt-Cookbooks/), or [text](/docs)
-
----
 
 ## License
 

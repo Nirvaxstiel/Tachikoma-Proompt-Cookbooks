@@ -1,0 +1,47 @@
+# Edit Format Model Configuration
+
+# Model -> edit format mappings
+# Higher priority entries override lower ones
+
+# Core models (well-tested)
+model_formats:
+  # Claude family
+  claude: str_replace
+  claude-sonnet: str_replace
+  claude-opus: str_replace
+  claude-haiku: str_replace
+
+  # GPT family
+  gpt-4: apply_patch
+  gpt-4-turbo: apply_patch
+  gpt-4o: apply_patch
+  openai: apply_patch
+
+  # Gemini family
+  gemini: str_replace_fuzzy
+  gemini-1.5: str_replace_fuzzy
+  gemini-2.0: str_replace_fuzzy
+  gemini-2.5: str_replace_fuzzy
+
+  # Additional open-source models
+  llama: str_replace_fuzzy
+  codellama: str_replace_fuzzy
+  qwen: str_replace_fuzzy # or hashline for larger models
+  deepseek: hashline
+  mistral: str_replace
+  phi: str_replace_fuzzy
+  yi: hashline
+  internlm: str_replace_fuzzy
+  command-r: str_replace
+  solar: str_replace_fuzzy
+  mixtral: str_replace
+
+  # Other models - use hashline for reliability
+  grok: hashline
+  glm: hashline
+  minimax: hashline
+  big-picke: hashline
+
+# User-added models (learned/overrides)
+# Add here: bun run edit-format-selector.ts add <model> <format>
+user_models:

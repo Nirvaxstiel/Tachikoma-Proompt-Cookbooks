@@ -6,7 +6,7 @@ A real-time TUI dashboard for monitoring OpenCode agent sessions.
 
 The Tachikoma Dashboard provides a visual interface for monitoring agent activity, sessions, skills, and tasks. Built with [Textual](https://textual.textualize.io/), it features a GITS (Ghost in the Shell) themed aesthetic with red accent highlights.
 
-![Dashboard Preview](/assets/tachikoma-dashboard/alpha-preview-1.png)
+<!-- Screenshot placeholder: Dashboard preview would show session tree, details panel, skills monitor, and todo list -->
 
 ## Features
 
@@ -22,12 +22,13 @@ The Tachikoma Dashboard provides a visual interface for monitoring agent activit
 
 ```bash
 # Using the launcher script (recommended)
-.opencode/tools/tachikoma-dashboard        # Unix/macOS
-.opencode\tools\tachikoma-dashboard.bat    # Windows
+cd dashboard
+./tachikoma-dashboard        # Unix/macOS
+tachikoma-dashboard.bat      # Windows
 
 # Or directly with Python
-cd .opencode/tools/dashboard
-.venv/Scripts/python -m tachikoma_dashboard
+cd dashboard
+uv run python -m tachikoma_dashboard
 ```
 
 ### Command Line Options
@@ -197,10 +198,12 @@ Quick validation that the dashboard works:
 
 ```bash
 # Full smoke tests (requires Rich)
-uv run .opencode/tools/dashboard/test_smoke.py
+cd dashboard
+uv run python test_smoke.py
 
 # Minimal smoke tests (no dependencies)
-uv run .opencode/tools/dashboard/test_smoke_no_rich.py
+cd dashboard
+uv run python test_smoke_no_rich.py
 ```
 
 ### Unit Tests
@@ -208,7 +211,7 @@ uv run .opencode/tools/dashboard/test_smoke_no_rich.py
 Comprehensive pytest-based tests:
 
 ```bash
-cd .opencode/tools/dashboard
+cd dashboard
 
 # Run all tests
 uv run pytest tests/ -v
@@ -235,7 +238,7 @@ tests/
 ### Setup
 
 ```bash
-cd .opencode/tools/dashboard
+cd dashboard
 
 # Create virtual environment
 python -m venv .venv
@@ -245,7 +248,7 @@ python -m venv .venv
 source .venv/bin/activate  # Unix
 
 # Install dependencies
-pip install textual rich pytest pytest-cov
+uv sync
 ```
 
 ### Code Style
@@ -322,4 +325,4 @@ tachikoma-dashboard --json
 
 ## See Also
 
-- [Smoke Testing](../smoke-testing.md) - Full smoke test documentation
+- [Internals](../internals/) — Database schema and internals

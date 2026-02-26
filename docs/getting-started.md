@@ -2,135 +2,106 @@
 
 ## Requirements
 
+- Bun runtime (>=1.0.0)
+- OpenCode CLI
 - AI agent supporting Agent Skills (OpenCodeAI, Claude Code, etc.)
-- Your project directory
-
----
 
 ## Installation
 
-### Quick Install
+Detailed installation instructions are available in the [Installation guide](./installation.md).
+
+Quick start:
 
 ```bash
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
+bun run install
 ```
 
-UV and Python 3.10 are bundled. No system Python required.
-
-### Install Options
-
-```bash
-# Install to current directory
-curl -sS ... | bash
-
-# Install to specific directory
-curl -sS ... | bash -s -- -C /your/project
-
-# Install with pre-packaged Python (for offline/airgapped)
-curl -sS ... | bash -s -- --include-prepackaged-python
-
-# Install from specific branch
-curl -sS ... | bash -s -- -b develop
-```
-
-### Manual Install
-
-```bash
-cp -r .opencode AGENTS.md /your/project/
-```
-
-Don't gitignore `AGENTS.md` or `.opencode/`.
-
----
-
-## Windows Setup
-
-```powershell
-# Option 1: Scoop (clean uninstall: scoop uninstall uv python)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-scoop install uv python
-
-# Option 2: Standalone UV (uninstall: delete uv.exe + uv cache clean)
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# Option 3: Bundled (use --include-prepackaged-python flag)
-curl -sS https://raw.githubusercontent.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/master/.opencode/tachikoma-install.sh | bash
-```
-
-Scoop installs to `~/scoop/apps/` — no registry, no admin.
-
----
-
-## Update
-
-```bash
-./.opencode/tachikoma-install.sh
-
-# With pre-packaged Python
-./.opencode/tachikoma-install.sh --include-prepackaged-python
-
-# From specific branch
-./.opencode/tachikoma-install.sh -b develop
-```
-
----
+This runs an interactive installer that lets you choose between:
+- **Local** - `.opencode/` (current project only)
+- **Global** - `~/.config/opencode/` (all projects)
+- **Custom** - Specify any installation path
 
 ## What Gets Installed
 
-```
-your-project/
-├── AGENTS.md              # System constitution
-└── .opencode/
-    ├── agents/            # Primary agent + subagents
-    ├── skills/            # 20 specialized skills
-    ├── context-modules/   # 7 context modules
-    ├── assets/            # Bundled Python + UV (optional)
-    └── config/
-        └── intent-routes.yaml
-```
-
----
-
-## How It Works
-
-Every request goes through 5 phases:
+Every request goes through a structured execution flow:
 
 1. **Classify Intent** — What do you want?
 2. **Load Context** — Project rules for this task
 3. **Load Skill** — Appropriate specialist
-4. **Execute** — Do the work
+4. **Execute** — Do the work (follows PAUL when applicable)
 5. **Reflect** — Revisit, rethink, re-evaluate
 
-Phases 1-4 are mandatory. Phase 5 is free.
+**PAUL Framework** (when structured development needed):
 
-**Structure at the start, freedom at the end.**
+- **PLAN** — Define objectives and acceptance criteria (Given/When/Then)
+- **APPLY** — Execute with verification steps
+- **UNIFY** — Close loop, reconcile plan vs actual, update state
 
----
+**CARL Quality Gates** (active throughout):
+
+- Dynamic rule loading based on domain
+- Priority-based enforcement (Critical > High > Medium)
+- Blocks on critical violations
+
+::: tip Structure at the start, freedom at the end.
+:::
 
 ## Running Scripts
 
 ### AI Agent
 
-The AI agent has Python injected into its environment. It runs scripts directly:
+The AI agent can run Tachikoma scripts directly as tools:
 
 ```bash
-python .opencode/tools/smoke_test.py
+tachikoma.where
+tachikoma.edit-format-selector recommend
 ```
 
 ### Manual
 
-Use `uv run` for consistent dependency management:
+Use `bun run` for direct script execution:
 
 ```bash
-uv run .opencode/tools/smoke_test.py
+bun run .opencode/plugins/tachikoma/where.ts
+bun run .opencode/plugins/tachikoma/edit-format-selector.ts recommend
 ```
 
----
+## Understanding PAUL Methodology
+
+**PAUL (Plan-Apply-Unify Loop)** — Structured development framework for AI-assisted workflows.
+
+- **PLAN** — Define objectives and acceptance criteria (Given/When/Then format)
+- **APPLY** — Execute tasks sequentially with verification
+- **UNIFY** — Close the loop, reconcile plan vs actual, update state
+
+**Never skip UNIFY** — this is the heartbeat that prevents drift.
+
+**Quality over speed-for-speed's-sake. In-session context over subagent sprawl.**
+
+[Learn more about PAUL →](./capabilities/paul-methodology.md)
+
+## Understanding CARL
+
+**CARL (Context Augmentation & Reinforcement Layer)** — Dynamic rule loading system.
+
+CARL loads quality rules just-in-time based on context:
+
+- **Context Detection** — Detects active domains (PAUL, Development, Projects)
+- **Rule Loading** — Loads relevant rules dynamically
+- **Priority Enforcement** — Critical blocks, high warns, medium notes
+
+**Three Domains:**
+
+1. **PAUL Domain** — Loop enforcement, boundary protection
+2. **Development Domain** — Code quality, error handling, testing
+3. **Projects Domain** — Documentation, version handling
+
+[Learn more about CARL →](./capabilities/carl-quality-gates.md)
 
 ## Next Steps
 
-- [How It Works](concepts/overview.md)
-- [Skills](capabilities/skill-execution.md)
-- [Customization](capabilities/customization/overview.md)
-- [Troubleshooting](troubleshooting.md)
+- [Concepts Overview](./concepts/overview.md) — Understand the architecture
+- [Capabilities Index](./capabilities/index.md) — Explore all features
+- [PAUL Methodology](./capabilities/paul-methodology.md) — Learn the framework
+- [Intent Routing](./capabilities/intent-routing.md) — How requests are classified
+- [Internals](./internals/) — Database schema and internals
