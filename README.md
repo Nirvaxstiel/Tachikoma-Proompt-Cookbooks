@@ -16,16 +16,14 @@ A general purpose AI agent named after the curious AI tanks from _Ghost in the S
 
 ## Installation
 
-Install Tachikoma as an OpenCode plugin:
-
 ```bash
 bun run install
 ```
 
-This runs an interactive installer that lets you choose between:
-- **Local** - `.opencode/` (current project only)
-- **Global** - `~/.config/opencode/` (all projects)
-- **Custom** - Specify any installation path
+> Interactive installer with three options:
+> - **Local** - `.opencode/` (current project only)
+> - **Global** - `~/.config/opencode/` (all projects)
+> - **Custom** - Specify any installation path
 
 After installation, run `opencode` and use `@tachikoma` in the TUI.
 
@@ -44,16 +42,14 @@ Ghost in the Shell inspired themes for OpenCode terminal:
 
 ### Using Tachikoma Tools
 
-Tachikoma exposes scripts as OpenCode tools:
+> Tachikoma exposes scripts as OpenCode tools - check the `plugins` folder for more.
 
-```
+```bash
 @tachikoma Check edit format for current model
-[Agent uses tachikoma.edit-format-selector tool]
+# → Agent uses tachikoma.edit-format-selector tool
 
 @tachikoma Where is Tachikoma installed?
-[Agent uses tachikoma.where tool]
-
-> Check the `plugins` folder for more tools available.
+# → Agent uses tachikoma.where tool
 ```
 
 ## Core Concepts
@@ -88,7 +84,9 @@ Use verification for: complex implementations, high-stakes fixes, first-time fea
 
 ## Adding New Scripts
 
-1. Create a new `.ts` file in `src/plugin/tachikoma/`:
+> **Note**: During installation, `src/` is copied to `.opencode/` (the OpenCode convention). Add scripts to the installed location, not `src/`.
+
+1. Create a new `.ts` file in `.opencode/plugin/tachikoma/`:
 
 ```typescript
 #!/usr/bin/env bun
@@ -109,11 +107,16 @@ console.log(`Processing: ${args[0] || "no args"}`);
 
 ## Documentation
 
-- [INSTALL.md](INSTALL.md) - Installation guide
-- [AGENTS.md](AGENTS.md) - Project-specific context
+### Quick Links
+
+- [Getting Started](docs/getting-started.md) - Quick start guide
+- [Installation Guide](docs/installation.md) - Installation options and setup
 - [src/agents/tachikoma.md](src/agents/tachikoma.md) - Agent configuration
 
-Links and stuff are in the `docs/` either on the [vitepress](https://nirvaxstiel.github.io/Tachikoma-Proompt-Cookbooks/), or [text](/docs)
+### Full Documentation
+
+- [VitePress Site](https://nirvaxstiel.github.io/Tachikoma-Proompt-Cookbooks/)
+- [docs/](docs/) - Raw markdown source
 
 ## License
 
