@@ -40,6 +40,8 @@ export class OpensageCoordinator {
   private registry: AgentRegistry;
   private config: OpenSageConfig;
   private sessionHistory: Map<string, any[]>;
+  private currentDepth = 0;
+  private readonly MAX_DEPTH = 10;
 
   constructor(config: Partial<OpenSageConfig> = {}) {
     this.config = {
@@ -355,7 +357,7 @@ export class OpensageCoordinator {
 
     return record.success
       ? { result: record.result || "Completed successfully" }
-      : { error: record.error };
+      : { result: null, error: record.error };
   }
 
   private async executeAgent(
@@ -367,32 +369,44 @@ export class OpensageCoordinator {
     result?: any;
     error?: string;
   }> {
-    const startTime = Date.now();
-
-    try {
-      const result = await this.invokeAgentTool(agent.name, task, context);
-      const latency = Date.now() - startTime;
-
-      await this.registry.recordSuccess(
-        agent.name,
-        this.inferTaskType(task),
-        this.estimateAgentCost(latency),
-        latency,
-      );
-
-      return { success: true, result };
-    } catch (error) {
-      const latency = Date.now() - startTime;
-      await this.registry.recordFailure(
-        agent.name,
-        this.inferTaskType(task),
-        error instanceof Error ? error.message : String(error),
-      );
-
+    if (this.currentDepth >= this.MAX_DEPTH) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: `Maximum agent spawning depth ${this.MAX_DEPTH} exceeded. Possible infinite loop.`,
       };
+    }
+
+    this.currentDepth++;
+    try {
+      const startTime = Date.now();
+
+      try {
+        const result = await this.invokeAgentTool(agent.name, task, context);
+        const latency = Date.now() - startTime;
+
+        await this.registry.recordSuccess(
+          agent.name,
+          this.inferTaskType(task),
+          this.estimateAgentCost(latency),
+          latency,
+        );
+
+        return { success: true, result };
+      } catch (error) {
+        const latency = Date.now() - startTime;
+        await this.registry.recordFailure(
+          agent.name,
+          this.inferTaskType(task),
+          error instanceof Error ? error.message : String(error),
+        );
+
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
+    } finally {
+      this.currentDepth--;
     }
   }
 

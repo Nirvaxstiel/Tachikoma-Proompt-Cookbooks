@@ -202,6 +202,7 @@ export class VerificationLoop {
     let currentResult = initialResult;
     let iteration = 0;
     let needsRevision = true;
+    let madeProgress = false;
 
     const criteria = this.extractCriteria(request);
 
@@ -215,7 +216,13 @@ export class VerificationLoop {
 
       const revision = await this.revise(request, currentResult, verification.issues);
 
-      if (!revision.success || revision.revised === currentResult) {
+      if (!revision.success) {
+        break;
+      }
+
+      if (revision.revised !== currentResult) {
+        madeProgress = true;
+      } else if (!madeProgress) {
         break;
       }
 
@@ -226,7 +233,7 @@ export class VerificationLoop {
     return {
       result: currentResult,
       iterations: iteration + 1,
-      verified: iteration < this.maxIterations,
+      verified: iteration < this.maxIterations && madeProgress,
     };
   }
 

@@ -3,6 +3,7 @@ description: Tachikoma orchestrator: Routes work to optimal subagents/skills, pr
 mode: primary
 temperature: 0.3
 color: "#ff0066"
+steps: 50
 tools:
   write: true
   edit: true
