@@ -333,3 +333,72 @@ routes:
     confidence_threshold: 0.4
     skill: code
     strategy: single_skill
+
+  # =============================================================================
+  # OPENSAGE SELF-PROGRAMMING AGENT GENERATION
+  # =============================================================================
+
+  # Self-generating agent topology - vertical decomposition
+  opensage_vertical:
+    patterns:
+      - multi-step task
+      - complex workflow
+      - multiple stages
+      - sequential tasks
+      - step by step
+      - decompose task
+      - break down
+    confidence_threshold: 0.8
+    skill: opensage-orchestrator
+    strategy: single_skill
+
+  # Self-generating agent topology - horizontal ensemble
+  opensage_horizontal:
+    patterns:
+      - explore alternatives
+      - multiple approaches
+      - compare methods
+      - different solutions
+      - ensemble
+      - parallel exploration
+      - best approach
+    confidence_threshold: 0.75
+    skill: opensage-orchestrator
+    strategy: single_skill
+
+  # Dynamic tool generation
+  opensage_tool:
+    patterns:
+      - need specialized tool
+      - create tool for
+      - write custom tool
+      - new tool
+      - tool that can
+      - implement tool
+    confidence_threshold: 0.7
+    skill: opensage-orchestrator
+    strategy: single_skill
+
+  # Memory operations
+  opensage_memory_store:
+    patterns:
+      - store knowledge
+      - remember this
+      - save to memory
+      - persist information
+      - learn this pattern
+    confidence_threshold: 0.85
+    action: delegate_memory
+    strategy: custom
+
+  opensage_memory_query:
+    patterns:
+      - query memory
+      - search knowledge
+      - find related
+      - what do we know
+      - recall
+      - from memory
+    confidence_threshold: 0.85
+    action: delegate_memory
+    strategy: custom
