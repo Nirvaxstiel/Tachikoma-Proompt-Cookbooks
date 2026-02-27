@@ -112,6 +112,16 @@ Skip for: simple tasks (<50 lines), prototypes, well-understood patterns.
 
 ## Research-Backed Features
 
+### 🚀 OpenSage Self-Programming
+
+Self-programming agent generation engine for AI-centered agent development.
+
+- **Self-generating agent topology** — Create specialized subagents on-demand
+- **Dynamic tool synthesis** — Write custom tools at runtime
+- **Hierarchical memory management** — Graph-based knowledge persistence
+
+[Learn more →](./opensage-self-programming.md)
+
 ### 📊 Cost-Aware Routing
 
 Match task complexity to execution strategy for optimal speed vs accuracy.
