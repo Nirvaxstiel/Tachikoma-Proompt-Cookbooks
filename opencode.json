@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-3-opus",
+  "small_model": "anthropic/claude-3-haiku",
+  "experimental": {
+    "continue_loop_on_deny": false,
+    "batch_tool": true
+  },
+  "permission": {
+    "doom_loop": "ask"
+  }
+}

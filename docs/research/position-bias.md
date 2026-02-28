@@ -7,6 +7,7 @@ U-shaped attention bias in transformer models.
 LLMs exhibit **U-shaped attention bias** — tokens at beginning and end receive higher attention than middle, regardless of relevance.
 
 **Consequences:**
+
 - Important info in middle often ignored
 - 10-20% performance drop when key context is middle
 - "Lost in the middle" problem
@@ -18,6 +19,7 @@ LLMs exhibit **U-shaped attention bias** — tokens at beginning and end receive
 **Finding:** LLMs have U-shaped attention bias across architectures and sizes.
 
 **Results:**
+
 - Bias exists regardless of model size
 - Persists with instruction tuning
 - Affects open-source and proprietary models
@@ -29,6 +31,7 @@ LLMs exhibit **U-shaped attention bias** — tokens at beginning and end receive
 **Finding:** Causal masking amplifies early-position bias across layers.
 
 **Why:**
+
 1. Causal masking restricts attention to previous tokens
 2. Early tokens accumulate attention from all subsequent tokens
 3. Middle tokens get "squeezed"
@@ -37,16 +40,17 @@ LLMs exhibit **U-shaped attention bias** — tokens at beginning and end receive
 
 ## Quantitative Impact
 
-| Scenario | Accuracy |
-|----------|----------|
-| Key info at beginning | Baseline |
-| Key info in middle | -10-20% |
-| Key info at end | -2-5% |
-| With position-aware loading | +25-30% |
+| Scenario                    | Accuracy |
+| --------------------------- | -------- |
+| Key info at beginning       | Baseline |
+| Key info in middle          | -10-20%  |
+| Key info at end             | -2-5%    |
+| With position-aware loading | +25-30%  |
 
 ## Tachikoma's Solution
 
 **Strategy:**
+
 1. Intent classification first → know what context is needed
 2. Priority-based loading → important rules at beginning
 3. Selective loading → only relevant modules

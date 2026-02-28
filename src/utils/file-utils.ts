@@ -2,7 +2,7 @@
  * File utilities with error handling
  */
 
-import { constants, access, readFile } from "node:fs/promises";
+import { constants, access, mkdir, readFile } from "node:fs/promises";
 
 export interface FileReadResult<T = string> {
   success: boolean;
@@ -46,5 +46,16 @@ export async function readJSONFile<T = unknown>(path: string): Promise<FileReadR
       success: false,
       error: error instanceof Error ? error : new Error(String(error)),
     };
+  }
+}
+
+export async function ensureDir(path: string): Promise<void> {
+  try {
+    await mkdir(path, { recursive: true });
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code !== "EEXIST") {
+      throw error;
+    }
   }
 }

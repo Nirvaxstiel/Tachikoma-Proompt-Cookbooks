@@ -4,12 +4,13 @@ The scientific foundation behind Tachikoma's design.
 
 ## Quick Lookup
 
-| Technique | What | Used In | Research |
-|-----------|------|---------|----------|
-| Position-Aware Loading | Optimizes context placement | Context Management | [Position Bias](./position-bias) |
-| Verification Loops | GVR pattern | Skill Chains | [Verification](./verification-loops) |
-| Reflection Phase | Freedom to revisit, rethink | All skills | [Verification](./verification-loops) |
-| Model-Aware Editing | Optimal edit format | Skill Execution | [Model Harness](./model-harness) |
+| Technique              | What                        | Used In            | Research                             |
+| ---------------------- | --------------------------- | ------------------ | ------------------------------------ |
+| Position-Aware Loading | Optimizes context placement | Context Management | [Position Bias](./position-bias)     |
+| Verification Loops     | GVR pattern                 | Skill Chains       | [Verification](./verification-loops) |
+| Reflection Phase       | Freedom to revisit, rethink | All skills         | [Verification](./verification-loops) |
+| Model-Aware Editing    | Optimal edit format         | Skill Execution    | [Model Harness](./model-harness)     |
+
 ---
 
 Edit format selection matters as much as model choice. Research in **[Model Harness](./model-harness)**.
@@ -24,6 +25,7 @@ Edit format selection matters as much as model choice. Research in **[Model Harn
 U-shaped attention bias in transformers.
 
 **Papers:**
+
 - "Found in the Middle" (Hsieh et al., ACL 2024)
 - "On the Emergence of Position Bias" (Wu et al., ICML 2025)
 
@@ -32,6 +34,7 @@ U-shaped attention bias in transformers.
 Why verification beats retries.
 
 **Papers:**
+
 - "Towards Autonomous Mathematics Research" (arXiv:2602.10177)
 - "Accelerating Scientific Research with Gemini" (arXiv:2602.03837)
 

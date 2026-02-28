@@ -92,7 +92,7 @@ Example script:
 const args = Bun.argv.slice(2);
 
 // Your script logic here
-console.log(`Processing: ${args[0] || 'no args'}`);
+console.log(`Processing: ${args[0] || "no args"}`);
 ```
 
 After reinstall, it becomes `tachikoma.my-new-capability` tool!
@@ -176,6 +176,7 @@ Agent: I'll select the best edit format for this model
 ## About the Installer
 
 The installer uses **clack**, a modern TUI library that provides:
+
 - Clean, minimal aesthetics
 - Native arrow key navigation (no bugs)
 - Proper terminal handling
@@ -230,6 +231,7 @@ cp src/agents/tachikoma.md .opencode/agents/
 ### Tool Errors
 
 If a tool fails to execute:
+
 1. Check that the script has executable permissions
 2. Verify the script accepts arguments correctly
 3. Check that the script outputs to stdout (not stderr)

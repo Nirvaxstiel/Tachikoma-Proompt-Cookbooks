@@ -9,6 +9,7 @@
 ## The Problem
 
 Standard LLMs have fixed context windows (128K-200K tokens). How to handle:
+
 - Entire codebases
 - Large documentation sets
 - Multi-file refactoring
@@ -19,7 +20,7 @@ Standard LLMs have fixed context windows (128K-200K tokens). How to handle:
 ## MIT Paper: "Recursive Language Models"
 
 **Paper**: "Recursive Language Models: Efficient Long-Context Processing with Limited Computation"
-**arXiv**: https://arxiv.org/abs/2512.24601
+**arXiv**: <https://arxiv.org/abs/2512.24601>
 
 ### Key Findings
 
@@ -36,6 +37,7 @@ Standard LLMs have fixed context windows (128K-200K tokens). How to handle:
 **Concept**: Prompt lives in REPL (external to LLM)
 
 **How it works**:
+
 - Large context stored externally (not in LLM context)
 - LLM maintains symbolic reference to context
 - Only metadata in LLM context (constant size)
@@ -45,7 +47,8 @@ Standard LLMs have fixed context windows (128K-200K tokens). How to handle:
 **Concept**: LLM writes code that calls `sub_LLM()` in loops
 
 **How it works**:
-```
+
+```text
 # LLM generates this Python code
 chunks = chunk_indices(size=50000)
 results = []
@@ -63,6 +66,7 @@ for start, end in chunks:
 **Concept**: Results stored in REPL variables (`Final`)
 
 **How it works**:
+
 - Intermediate results stored in REPL
 - Final synthesis in variable `Final`
 - LLM only sees variable names, not actual results
@@ -72,6 +76,7 @@ for start, end in chunks:
 **Concept**: Only constant-size metadata in LLM context
 
 **How it works**:
+
 - No actual context chunks in LLM history
 - Only metadata: chunk IDs, processing status
 - Context window stays fixed regardless of input size
@@ -81,6 +86,7 @@ for start, end in chunks:
 **Concept**: LLM calls itself via subagent
 
 **How it works**:
+
 - Subagent acts as "sub-LLM"
 - Processes individual chunks
 - Returns structured results
@@ -90,12 +96,12 @@ for start, end in chunks:
 
 ## Performance Results
 
-| Metric | Result |
-|--------|--------|
-| **Context scaling** | 100x beyond context windows |
-| **Accuracy improvement** | 28.3% over base model |
-| **Quality** | Approaches GPT-5 on long-context tasks |
-| **Computation** | Limited - scales efficiently |
+| Metric                   | Result                                 |
+| ------------------------ | -------------------------------------- |
+| **Context scaling**      | 100x beyond context windows            |
+| **Accuracy improvement** | 28.3% over base model                  |
+| **Quality**              | Approaches GPT-5 on long-context tasks |
+| **Computation**          | Limited - scales efficiently           |
 
 ---
 

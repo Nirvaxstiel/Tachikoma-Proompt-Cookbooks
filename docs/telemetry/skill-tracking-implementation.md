@@ -11,6 +11,7 @@ We've implemented skill tracking using OpenCode's **existing built-in telemetry*
 **File:** `dashboard/tachikoma_dashboard/db.py`
 
 **Improvements:**
+
 - ✅ Switch from querying `message` table to `part` table (more direct access to tool invocations)
 - ✅ Track invocation count per skill (how many times each skill was used)
 - ✅ Capture first_loaded and last_used timestamps
@@ -49,6 +50,7 @@ No separate analytics tool is required - all tracking is integrated into the das
 **File:** `docs/telemetry/opencode-telemetry-capabilities.md`
 
 Comprehensive documentation covering:
+
 - ✅ What OpenCode's database provides
 - ✅ What we can track with existing data
 - ✅ What's missing (future enhancement opportunities)
@@ -58,6 +60,7 @@ Comprehensive documentation covering:
 **File:** `dashboard/README_SKILL_ANALYTICS.md`
 
 User-facing documentation:
+
 - ✅ Quick start guide
 - ✅ What's tracked
 - ✅ Example output
@@ -68,29 +71,29 @@ User-facing documentation:
 
 ### ✅ Basic Skill Metrics (Implemented)
 
-| Metric | Source | Description |
-|---------|---------|-------------|
-| **Skill Name** | `part.data.tool` | Which skill was invoked |
-| **Invocation Count** | Count of tool calls | How many times used |
-| **Session Usage** | Join with `session` table | Which sessions used which skills |
-| **First/Last Used** | `part.time_created` | Temporal usage patterns |
-| **Duration** | `state.time.end - state.time.start` | Execution time per invocation |
-| **Status** | `state.status` | Success/failure rates |
-| **Aggregated Stats** | GROUP BY queries | Cross-session patterns |
+| Metric               | Source                              | Description                      |
+| -------------------- | ----------------------------------- | -------------------------------- |
+| **Skill Name**       | `part.data.tool`                    | Which skill was invoked          |
+| **Invocation Count** | Count of tool calls                 | How many times used              |
+| **Session Usage**    | Join with `session` table           | Which sessions used which skills |
+| **First/Last Used**  | `part.time_created`                 | Temporal usage patterns          |
+| **Duration**         | `state.time.end - state.time.start` | Execution time per invocation    |
+| **Status**           | `state.status`                      | Success/failure rates            |
+| **Aggregated Stats** | GROUP BY queries                    | Cross-session patterns           |
 
 ## Dashboard Integration
 
 The Tachikoma Dashboard displays skill information in the **Skills Panel**:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
-│ Skills                                            │
+│ Skills                                                  │
 ├─────────────────────────────────────────────────────────┤
-│ Skill Name          | Invocations | Last Used       │
+│ Skill Name          | Invocations | Last Used           │
 ├─────────────────────────────────────────────────────────┤
-│ code-agent          | 12          | 2026-02-18 14:52│
-│ research-agent      | 5           | 2026-02-18 09:12│
-│ formatter          | 8           | 2026-02-18 11:23│
+│ code-agent          | 12          | 2026-02-18 14:52    │
+│ research-agent      | 5           | 2026-02-18 09:12    │
+│ formatter           | 8            | 2026-02-18 11:23   |
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -104,8 +107,6 @@ cd dashboard
 ```
 
 Select a session to view the skills that were loaded during that session.
-
-## Database Queries
 
 ## Database Queries
 
@@ -136,19 +137,19 @@ AND json_extract(p.data, '$.type') = 'tool'
 ORDER BY p.time_created DESC;
 ```
 
-## Dashboard Integration
+### Dashboard Integration
 
 The Tachikoma dashboard will display skill information in the **Loaded Skills Panel**:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
-│ Loaded Skills                                      │
+│ Loaded Skills                                           │
 ├─────────────────────────────────────────────────────────┤
-│ Skill Name          | Invocations | Last Used       │
+│ Skill Name          | Invocations | Last Used           │
 ├─────────────────────────────────────────────────────────┤
-│ code-agent          | 12          | 2026-02-18 14:52│
-│ research-agent      | 5           | 2026-02-18 09:12│
-│ formatter          | 8           | 2026-02-18 11:23│
+│ code-agent          | 12          | 2026-02-18 14:52    │
+│ research-agent      | 5           | 2026-02-18 09:12    │
+│ formatter           | 8           | 2026-02-18 11:23    │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -187,7 +188,7 @@ See `docs/telemetry/opencode-telemetry-capabilities.md` for details.
 
 ## Files Changed
 
-```
+```text
 dashboard/tachikoma_dashboard/db.py        - Skill tracking queries
 dashboard/tachikoma_dashboard/models.py     - Skill model
 dashboard/tachikoma_dashboard/widgets.py    - Skills panel UI

@@ -13,13 +13,7 @@ const BANNER =
   "   ██║   ██║  ██║╚██████╗██║  ██║██║██║  ██╗╚██████╔╝██║ ╚═╝ ██║██║  ██║\n" +
   "   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝\n";
 
-const IGNORE_PATTERNS = [
-  "node_modules",
-  "package.json",
-  "bun.lock",
-  ".gitignore",
-  ".DS_Store",
-];
+const IGNORE_PATTERNS = ["node_modules", "package.json", "bun.lock", ".gitignore", ".DS_Store"];
 const OPENCODE_DIR = ".opencode";
 
 let scriptPath = new URL(import.meta.url).pathname;
@@ -88,7 +82,21 @@ async function backupDir(src: string): Promise<string | null> {
   return backupPath;
 }
 
-async function copyDir(src: string, dest: string): Promise<void> {
+function updateProgress(current: number, total: number, width = 30): void {
+  const percentage = Math.floor((current / total) * 100);
+  const filled = Math.floor((current / total) * width);
+  const empty = width - filled;
+
+  const bar = "█".repeat(filled) + "░".repeat(empty);
+  process.stdout.write(`\r  [${bar}] ${current}/${total} (${percentage}%)`);
+}
+
+async function copyDir(
+  src: string,
+  dest: string,
+  total = 0,
+  progress: { current: number } = { current: 0 },
+): Promise<void> {
   await fs.mkdir(dest, { recursive: true });
 
   const entries = await fs.readdir(src, { withFileTypes: true });
@@ -102,11 +110,13 @@ async function copyDir(src: string, dest: string): Promise<void> {
     const destPath = path.join(dest, entry.name);
 
     if (entry.isDirectory()) {
-      console.log(`  ${entry.name}/`);
-      await copyDir(srcPath, destPath);
+      await copyDir(srcPath, destPath, total, progress);
     } else if (entry.isFile()) {
-      console.log(`  ${entry.name}`);
       await fs.copyFile(srcPath, destPath);
+      progress.current += 1;
+      if (total > 0) {
+        updateProgress(progress.current, total);
+      }
     }
   }
 }
@@ -197,16 +207,17 @@ async function install() {
     }
 
     console.log("Copying files...");
-    await copyDir(SRC_DIR, targetDir);
+    const totalFiles = await countFiles(SRC_DIR);
+    const progress = { current: 0 };
+    await copyDir(SRC_DIR, targetDir, totalFiles, progress);
+    process.stdout.write("\n");
 
     console.log("");
     console.log(green("✅ Installation complete!"));
 
     if (backupPath) {
       console.log(`📁 Backup saved to: ${backupPath}`);
-      console.log(
-        dim("   Remove it manually if you're satisfied with the installation."),
-      );
+      console.log(dim("   Remove it manually if you're satisfied with the installation."));
     }
 
     console.log("");
@@ -215,22 +226,6 @@ async function install() {
     console.log("  1. Run 'opencode'");
     console.log("  2. Use '@tachikoma' to invoke the agent");
     console.log("  3. Use 'tachikoma.*' tools for script operations");
-    console.log("");
-    console.log(dim("Available tools (auto-discovered from scripts):"));
-    console.log(dim("  - tachikoma.edit-format-selector"));
-    console.log(dim("  - tachikoma.where"));
-    console.log("");
-    console.log(dim("Available skills (auto-discovered from skills/):"));
-    console.log(dim("  - paul: PAUL Framework methodology"));
-    console.log(dim("  - carl: Rule-based quality gates"));
-    console.log(dim("  - code: Code implementation"));
-    console.log(dim("  - planning: PAUL-style planning"));
-    console.log(dim("  - research: Codebase exploration"));
-    console.log(dim("  - verification: Code validation"));
-    console.log(dim("  - context7: Live documentation"));
-    console.log(dim("  - refactor: Code refactoring"));
-    console.log(dim("  - git-commit: Conventional commits"));
-    console.log(dim("  - reasoning: Functional thinking"));
     console.log("");
   } catch (error) {
     console.error(magenta("Installation failed"));

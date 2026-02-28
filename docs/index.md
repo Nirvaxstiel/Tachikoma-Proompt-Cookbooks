@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Tachikoma
   text: Agent Orchestration
-  tagline: Research-backed AI agent system with PAUL methodology
+  tagline: Research-backed AI agent system with Plan methodology
   actions:
     - theme: brand
       text: Get Started
@@ -32,13 +32,13 @@ features:
     details: Match task complexity to execution strategy for optimal speed vs accuracy.
 ---
 
-## Two Installation Paths
+# Installation Paths
 
 Tachikoma can be installed in two locations:
 
-| Location | Path | Use Case |
-|----------|------|----------|
-| **Local** | `cwd/.opencode` | Project-specific configuration and skills |
+| Location   | Path                 | Use Case                                        |
+| ---------- | -------------------- | ----------------------------------------------- |
+| **Local**  | `cwd/.opencode`      | Project-specific configuration and skills       |
 | **Global** | `~/.config/opencode` | Shared skills and configuration across projects |
 
 ::: tip

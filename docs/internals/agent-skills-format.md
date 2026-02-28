@@ -3,7 +3,7 @@ title: Agent Skills Format
 description: The open standard for defining agent capabilities - SKILL.md specification.
 ---
 
-# Agent Skills Format
+## Agent Skills Format
 
 [Agent Skills](https://agentskills.io) is an open format for giving agents new capabilities. Write once, use everywhere.
 
@@ -16,14 +16,14 @@ description: The open standard for defining agent capabilities - SKILL.md specif
 
 ## Directory Structure
 
-```
+```text
 skill-name/
 └── SKILL.md          # Required
 ```
 
 Optional directories:
 
-```
+```text
 skill-name/
 ├── SKILL.md
 ├── scripts/          # Executable code
@@ -59,14 +59,14 @@ allowed-tools: Bash(git:*) Read
 
 ### Field Specifications
 
-| Field | Required | Constraints |
-|-------|----------|-------------|
-| `name` | Yes | 1-64 chars, lowercase, numbers, hyphens only |
-| `description` | Yes | 1-1024 chars, describes what and when |
-| `license` | No | License name or file reference |
-| `compatibility` | No | 1-500 chars, environment requirements |
-| `metadata` | No | Arbitrary key-value mapping |
-| `allowed-tools` | No | Space-delimited pre-approved tools |
+| Field           | Required | Constraints                                  |
+| --------------- | -------- | -------------------------------------------- |
+| `name`          | Yes      | 1-64 chars, lowercase, numbers, hyphens only |
+| `description`   | Yes      | 1-1024 chars, describes what and when        |
+| `license`       | No       | License name or file reference               |
+| `compatibility` | No       | 1-500 chars, environment requirements        |
+| `metadata`      | No       | Arbitrary key-value mapping                  |
+| `allowed-tools` | No       | Space-delimited pre-approved tools           |
 
 ### Name Rules
 
@@ -77,6 +77,7 @@ allowed-tools: Bash(git:*) Read
 - Must match parent directory name
 
 **Valid:**
+
 ```yaml
 name: pdf-processing
 name: data-analysis
@@ -84,6 +85,7 @@ name: code-review
 ```
 
 **Invalid:**
+
 ```yaml
 name: PDF-Processing    # uppercase
 name: -pdf              # starts with hyphen
@@ -93,11 +95,13 @@ name: pdf--processing   # consecutive hyphens
 ### Description Best Practices
 
 **Good:**
+
 ```yaml
 description: Extracts text and tables from PDF files, fills PDF forms, and merges PDFs. Use when working with PDF documents or when the user mentions PDFs, forms, or document extraction.
 ```
 
 **Poor:**
+
 ```yaml
 description: Helps with PDFs.
 ```
@@ -130,10 +134,12 @@ description: Reviews code for quality, security, and best practices.
 ## Examples
 
 ### Good Feedback
+
 - "Consider using `const` instead of `let` here"
 - "This could be a SQL injection risk"
 
 ### Bad Feedback
+
 - "This code is bad"
 - "Fix this"
 ```
@@ -144,13 +150,14 @@ description: Reviews code for quality, security, and best practices.
 
 Executable code agents can run:
 
-```
+```text
 scripts/
 ├── analyze.py
 └── transform.sh
 ```
 
 Scripts should:
+
 - Be self-contained or document dependencies
 - Include helpful error messages
 - Handle edge cases gracefully
@@ -159,7 +166,7 @@ Scripts should:
 
 Additional documentation loaded on demand:
 
-```
+```text
 references/
 ├── REFERENCE.md      # Detailed technical reference
 ├── FORMS.md          # Form templates
@@ -170,7 +177,7 @@ references/
 
 Static resources:
 
-```
+```text
 assets/
 ├── templates/
 │   └── config.yaml
@@ -189,6 +196,7 @@ Skills load in stages:
 Keep `SKILL.md` under 500 lines. Move details to separate files.
 
 After loading, reflect:
+
 - Was the skill content sufficient?
 - Should I add more instructions?
 - Are there edge cases to document?
@@ -213,6 +221,7 @@ skills-ref validate ./my-skill
 ```
 
 Checks:
+
 - Valid frontmatter
 - Name constraints
 - Description length
@@ -222,7 +231,7 @@ Checks:
 
 **Directory structure:**
 
-```
+```text
 pdf-processing/
 ├── SKILL.md
 ├── scripts/

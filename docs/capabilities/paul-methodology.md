@@ -1,296 +1,321 @@
-# PAUL Methodology
+# Plan Methodology
 
 **Plan-Apply-Unify Loop** — Structured AI-assisted development for quality and consistency.
 
 ## Overview
 
-PAUL is a structured development framework that ensures systematic execution with mandatory loop closure.
+Plan is a structured development framework that ensures systematic execution with mandatory loop closure.
 
-::: warning Never skip UNIFY — this is heartbeat that prevents drift.
-:::
+Plan fixes three key problems with AI-assisted development:
 
-PAUL fixes three key problems with AI-assisted development:
-
-1. **Loop integrity** — Every plan closes with UNIFY. No orphan plans. UNIFY reconciles what was planned vs what happened, updates state, logs decisions.
-2. **In-session context** — Subagents are expensive (~2,000-3,000 token launch cost) and produce lower quality for implementation work. PAUL keeps development in-session with properly managed context.
+1. **Loop integrity** — Every plan closes with Unify. No orphan plans. Unify reconciles what was planned vs what happened, updates state, logs decisions.
+2. **In-session context** — Subagents are expensive (~2,000-3,000 token launch cost) and produce lower quality for implementation work. Plan keeps development in-session with properly managed context.
 3. **Acceptance-driven development** — Acceptance criteria are first-class citizens. Define done before starting. Every task references its AC. BDD format: `Given [precondition] / When [action] / Then [outcome]`.
 
 ## The Three Phases
 
 ### 1. PLAN
 
-Define the approach before execution.
+Define approach before execution.
 
-**Components:**
+**Components**:
+
 - **Objective** — What you're building and why
 - **Acceptance Criteria** — Given/When/Then definitions of done (AC-1, AC-2, etc.)
 - **Tasks** — Specific actions with files, verification, done criteria
 - **Boundaries** — What NOT to change (hard constraints)
 
-**Example:**
+**Example**:
 
 ```markdown
 ## PLAN
 
 ### Objective
+
 Create a REST API endpoint for user authentication
 
 ### Acceptance Criteria
+
 ## AC-1: Feature Works
+
 - Given a valid username and password
 - When POST to `/api/auth/login`
 - Then receive JWT token and 200 status
 
 ## AC-2: Error Handling
+
 - Given invalid credentials
 - When POST to `/api/auth/login`
-- Then receive 401 status and error message
-
-### Tasks
-- **Task 1:** Create authentication handler (src/api/auth/login.ts)
-  - Verify: curl to endpoint returns 200
-  - Done: AC-1 satisfied
-
-- **Task 2:** Implement JWT token generation
-  - Verify: Token contains user ID and expiration
-  - Done: AC-1 satisfied
-
-- **Task 3:** Add error handling
-  - Verify: Invalid credentials return 401
-  - Done: AC-2 satisfied
-
-- **Task 4:** Write unit tests
-  - Verify: All tests pass
-  - Done: All AC satisfied
-
-### Boundaries
-## DO NOT CHANGE
-- database/migrations/*
-- src/lib/auth.ts
+- Then return 401 status
 ```
 
 ### 2. APPLY
 
 Execute tasks sequentially with verification.
 
-**Process:**
-- Tasks run sequentially
-- Each task has verification steps
-- Checkpoints pause for human input when needed
-- Deviations are logged for reconciliation in UNIFY
+**Components**:
 
-**Example:**
+- Execute tasks in order defined in PLAN
+- Verify each task against acceptance criteria
+- Track deviations from original plan
+- Log decisions made during execution
 
-```markdown
-## APPLY
+**Process**:
 
-### Task 1: Create authentication handler
-- Created `src/handlers/auth.ts`
-- Implemented `login()` function
-- Added credential validation
+For each task:
+1. Read task definition from PLAN
+2. Implement the action
+3. Verify against AC
+4. Mark as done or flag issue
+5. Document any deviations
 
-**Verification:**
-- [x] Endpoint accepts POST requests
-- [x] Returns JWT token on valid credentials
-- [x] Returns 401 on invalid credentials
+**Never**: Skip ahead without verification, assume tasks are done
 
-### Task 2: Implement JWT token generation
-- Added `jsonwebtoken` dependency
-- Created `generateToken()` utility
-- Set 1-hour expiration
+### 3. UNIFY ← Never skip!
 
-**Verification:**
-- [x] Token contains user ID
-- [x] Token expires in 1 hour
-- [x] Token signature valid
+Reconcile and close loop.
 
-### Task 3: Add error handling
-- Added try-catch blocks
-- Return 500 on server errors
-- Log errors for debugging
+**Components**:
 
-**Verification:**
-- [x] Errors caught and logged
-- [x] Proper status codes returned
+- Create summary of what was actually done vs planned
+- Update `.tachikoma/state/STATE.md` with loop position
+- Document key decisions
+- Flag unresolved issues
 
-### Task 4: Write unit tests
-- Created `tests/auth.test.ts`
-- 12 test cases covering:
-  - Valid login
-  - Invalid credentials
-  - Missing fields
-  - Server errors
+**Why Never Skip UNIFY**:
 
-**Verification:**
-- [x] All 12 tests pass
-- [x] Coverage > 80%
+This is the heartbeat that prevents drift. Without UNIFY:
+- Plans can be left incomplete
+- State becomes inconsistent
+- No record of decisions
+- Next iteration lacks context
+
+## File System Structure
+
+Plan uses a `.tachikoma/` directory:
+
+```text
+.tachikoma/
+├── STATE.md               # Current loop position and plan ID
+├── phases/
+│   ├── PLAN-{id}.md     # Plan documents
+│   └── SUMMARY-{id}.md  # Summary documents
+└── artifacts/            # Intermediate outputs
 ```
 
-### 3. UNIFY
+## Commands Reference
 
-Close the loop and reconcile plan vs actual.
+| Command | Description |
+| -------- | ----------- |
+| `/plan:init` | Initialize Plan in a project |
+| `/plan:create` | Create an executable plan |
+| `/plan:apply` | Execute an approved plan |
+| `/plan:unify` | Reconcile and close loop |
+| `/plan:progress` | Smart status + ONE next action |
+| `/plan:resume` | Restore context and continue |
+| `/plan:pause` | Create handoff for session break |
 
-**Components:**
-- **SUMMARY.md** — Document what was built
-- **Comparison** — Compare plan vs actual
-- **Decisions** — Record decisions and deferred issues
-- **State Update** — Update STATE.md with loop position
+## Usage Workflow
 
-**Never skip UNIFY.** Every plan needs closure. This is what separates structured development from chaos.
+### Starting a New Feature
 
-**Example:**
+1. **Initialize** Plan in project
+   ```
+   /plan:init
+   ```
 
-```markdown
-## UNIFY
+2. **Create plan** with objectives and acceptance criteria
+   ```
+   /plan:create "Add user authentication"
+   ```
 
-### Summary
-✓ Authentication endpoint created
-✓ JWT token generation implemented
-✓ Error handling added
-✓ Unit tests passing (12/12)
+3. **Review plan** - Confirm tasks and AC are correct
 
-### Comparison: Plan vs Actual
-- **Planned:** 4 tasks
-- **Completed:** 4 tasks
-- **Deviations:**
-  - Added rate limiting (not in original plan)
-  - Used `bcryptjs` instead of `bcrypt` (faster for this use case)
-  - Split handler into separate functions (better testability)
+4. **Execute plan** - Run tasks with verification
+   ```
+   /plan:apply
+   ```
 
-### Decisions Made
-- Rate limiting: Added for security (DDoS protection)
-- bcryptjs: Chosen for performance (2x faster than bcrypt)
-- Handler split: Improves testability (unit tests easier)
+5. **Unify loop** - Create summary, update state
+   ```
+   /plan:unify
+   ```
 
-### Deferred Issues
-- [ ] Add refresh token support (deferred to future phase)
-- [ ] Consider adding OAuth (deferred - out of scope)
-
-### Acceptance Criteria Results
-- AC-1 (Feature Works): PASS
-- AC-2 (Error Handling): PASS
-
-### State Update
-- Loop position: UNIFY → Complete
-- Current phase: 02-authentication
-- Next action: /paul:plan (next feature)
-```
-
-## PAUL Flow
+### Checking Status
 
 ```
-User Request
-    ↓
-/paul:plan
-    ├─ Define objective
-    ├─ Set acceptance criteria (AC-1, AC-2, etc.)
-    ├─ List tasks with verification
-    └─ Set boundaries
-    ↓
-/paul:apply
-    ├─ Execute task 1 → Verify
-    ├─ Execute task 2 → Verify
-    ├─ Execute task 3 → Verify
-    └─ ...
-    ↓
-/paul:unify ← Never skip!
-    ├─ Reconcile plan vs actual
-    ├─ Document differences
-    ├─ Record decisions
-    └─ Update STATE.md
-    ↓
-Complete (ready for next plan)
+/plan:progress
 ```
 
-## When to Use PAUL
-
-**Use PAUL when:**
-- Complex, multi-step implementations
-- Work spans multiple sessions
-- You need verifiable acceptance criteria
-- Quality and traceability matter
-- Scope creep is a concern
-
-**Examples:**
-- "Implement a complete authentication system"
-- "Refactor the entire payment module"
-- "Set up CI/CD pipeline from scratch"
-- "Migrate database to new schema"
-
-**Skip PAUL when:**
-- Simple, single-step tasks
-- Well-understood patterns
-- Prototypes and experiments
-- Quick fixes and tweaks
-
-**Examples:**
-- "Fix this typo"
-- "Add a console.log statement"
-- "Rename this variable"
-- "Update error message"
-
-## Project Structure
-
-PAUL uses a `.paul/` directory:
+**Output**:
 
 ```
-.paul/
-├── PROJECT.md           # Project context and requirements
-├── ROADMAP.md           # Phase breakdown and milestones
-├── STATE.md             # Loop position and session state
-├── config.md            # Optional integrations
-├── SPECIAL-FLOWS.md     # Optional skill requirements
-└── phases/
-    ├── 01-foundation/
-    │   ├── 01-01-PLAN.md
-    │   └── 01-01-SUMMARY.md
-    └── 02-authentication/
-        ├── 02-01-PLAN.md
-        └── 02-01-SUMMARY.md
+Current Phase: APPLY
+Active Plan: PLAN-20240228-001
+
+Tasks (3/5 complete):
+  Task 1: Create authentication handler ✓
+  Task 2: JWT generation ✓
+  Task 3: Add tests to validate auth →
+
+Next Action: /plan:apply (Task 3)
 ```
 
-**STATE.md** tracks:
-- Current phase and plan
-- Loop position (PLAN/APPLY/UNIFY markers)
-- Session continuity (where you stopped, what's next)
-- Accumulated decisions
-- Blockers and deferred issues
+### Resuming After Break
 
-## Key Commands
+```
+/plan:resume
+```
 
-| Command | What it does |
-|---------|--------------|
-| `/paul:init` | Initialize PAUL in a project |
-| `/paul:plan` | Create an executable plan |
-| `/paul:apply` | Execute an approved plan |
-| `/paul:unify` | Reconcile and close loop |
-| `/paul:progress` | Smart status + ONE next action |
-| `/paul:resume` | Restore context and continue |
-| `/paul:pause` | Create handoff for session break |
+**Output**:
 
-## Philosophy: Token Efficiency vs Speed
+```
+Restoring Plan session...
 
-PAUL optimizes for **token-to-value efficiency**, not raw speed:
+Current Phase: APPLY
+Active Plan: PLAN-20240228-001
 
-| Issue | Impact of Subagents | PAUL Approach |
-|-------|-------------------|---------------|
-| Launch cost | 2,000-3,000 tokens to spawn | Keep work in-session |
-| Context gathering | Starts fresh, researches from scratch | Context lives in main session |
-| Resynthesis | Results must be integrated back | Direct integration |
-| Quality gap | ~70% vs in-session work | ~100% quality |
+Tasks Completed (2/5):
+  Task 1: Create authentication handler ✓
+  Task 2: Implement JWT generation ✓
 
-**When PAUL does use subagents:**
-- **Discovery/exploration** — Codebase mapping, parallel exploration
-- **Research** — Web searches, documentation gathering
+Next Action: /plan:apply (Task 3)
+```
 
-For implementation, PAUL keeps everything in-session with proper context management.
+## Integration with Tachikoma Skills
 
-**"Quality over speed-for-speed's-sake. In-session context over subagent sprawl."**
+Plan integrates with Tachikoma's core skills:
+
+### plan Skill
+
+- **PLAN phase**: Structured planning with AC
+- **APPLY phase**: Execution with verification
+- **UNIFY phase**: Loop closure and summaries
+
+### dev Skill
+
+- **Task execution**: Implementation with built-in verification
+- **Refactoring**: Code improvements with GVR pattern
+- **Testing**: Test execution and validation
+
+### context Skill
+
+- **Research**: Understanding existing codebase
+- **Documentation**: External API references
+- **State persistence**: Plan and artifact management
+
+## Common Patterns
+
+### When User Says
+
+- "Plan this feature" → Use Plan methodology
+- "What's the plan?" → Check STATE.md
+- "Are we done?" → Check if UNIFY completed
+- "Continue" → Resume from saved state
+
+### Red Flags
+
+- "Just implement it" → Missing PLAN phase
+- "Skip verification, it's fine" → Violates Plan methodology
+- "We're done" without UNIFY → Incomplete loop
+- Moving to next task without verification → Violates APPLY phase
+
+## Research Backing
+
+Plan is based on verification loop research:
+
+- **Verification Loops** (arXiv:2602.10177)
+  - Generator-Verifier-Reviser pattern achieves 90% on math proofs vs 67% base
+  - Key insight: Separate concerns for generation and verification
+
+[Learn more →](../research/verification-loops.md)
+
+## Best Practices
+
+### For Planning
+
+1. **Start with "why"** — Understand business value before planning
+2. **Make AC testable** — Each criterion should be verifiable
+3. **Be specific with boundaries** — Explicitly state what NOT to do
+4. **Estimate complexity** — Each task should have time estimate
+5. **Define "done" clearly** — No ambiguity about completion
+
+### For Execution
+
+1. **Follow the plan** — Execute tasks in defined order
+2. **Verify each step** — Don't assume, confirm with tests
+3. **Log deviations** — Document changes from original plan
+4. **Mark completion** — Only mark done when verified
+
+### For Unification
+
+1. **Never skip UNIFY** — This is the critical heartbeat
+2. **Document decisions** — Record why changes were made
+3. **Flag blockers** — Identify what prevents next steps
+4. **Create clear next actions** — What should happen next loop
+
+## Troubleshooting
+
+### Common Issues
+
+**Issue**: UNIFY phase forgotten
+
+**Fix**: Run `/plan:unify` to close loop before starting next plan
+
+**Issue**: Tasks failing verification
+
+**Fix**: Review acceptance criteria, adjust plan with `/plan:apply`
+
+**Issue**: Lost context after session break
+
+**Fix**: Use `/plan:resume` to restore state
+
+**Issue**: STATE.md inconsistent
+
+**Fix**: Check loop_position matches actual phase, correct if needed
+
+## Examples
+
+### Example 1: API Feature
+
+**PLAN**:
+
+```
+Objective: Add user authentication API
+
+AC-1: Given no auth, When POST /auth/login, Then returns JWT
+AC-2: Given expired JWT, When access protected route, Then returns 401
+
+Tasks:
+1. Create authentication handler
+2. Implement JWT generation/validation
+3. Add authentication tests
+4. Update API documentation
+
+Boundaries:
+- DO NOT CHANGE: Database schema, User model
+```
+
+**APPLY**:
+
+```
+Task 1: Create authentication handler ✓
+Task 2: Implement JWT generation ✓
+Task 3: Add authentication tests ✓
+Task 4: Update API documentation ✓
+```
+
+**UNIFY**:
+
+```
+Summary: Auth API implemented
+AC Status: AC-1 ✓, AC-2 ✓
+Deviations: None
+Next: Deploy to staging
+```
 
 ## See Also
 
-- [Skill Execution](./skill-execution.md) — Using PAUL in skills
-- [Skill Chains](./skill-chains.md) — PAUL in workflows
-- [CARL Quality Gates](./carl-quality-gates.md) — Quality enforcement
-- [Verification Loops](../research/verification-loops.md) — Quality verification
-
+- [Skill Execution](./skill-execution.md) — Individual skill usage
+- [Skill Chains](./skill-chains.md) — Multi-skill orchestration
+- [Verification Loops](../research/verification-loops.md) — Research backing

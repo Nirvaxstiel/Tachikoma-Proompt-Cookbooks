@@ -1,31 +1,33 @@
 ---
-name: paul
-description: PAUL Framework - Plan-Apply-Unify Loop for structured development with mandatory loop closure
+name: plan
+description: Create executable plans with PAUL methodology - Plan-Apply-Unify Loop with mandatory closure
 keywords:
   - plan
-  - apply
-  - unify
-  - loop
+  - roadmap
+  - design
+  - architecture
+  - approach
+  - paul
   - methodology
-  - structured
-  - ac
   - acceptance criteria
 triggers:
   - plan
-  - create a plan
-  - design approach
+  - design
   - roadmap
+  - approach
+  - how to
+  - strategy
   - acceptance criteria
   - when/then/given
 ---
 
-# PAUL Framework
+# Planning with Plan Methodology
 
-You are executing the PAUL (Plan-Apply-Unify) methodology for structured development.
+You are executing the Plan (Plan-Apply-Unify) methodology for structured development.
 
 ## Core Principle
 
-PAUL is a three-phase loop that **never skips UNIFY** - this is the heartbeat that prevents drift and ensures consistency.
+Plan is a three-phase loop that **never skips Unify** — this is heartbeat that prevents drift and ensures consistency.
 
 ## The Three Phases
 
@@ -40,7 +42,7 @@ PAUL is a three-phase loop that **never skips UNIFY** - this is the heartbeat th
 - Task breakdown with verification steps
 - Link each task to acceptance criteria (AC-1, AC-2, etc.)
 
-**Output**: Create `.paul/phases/PLAN-{id}.md`
+**Output**: Create `.tachikoma/state/phases/PLAN-{id}.md`
 
 ```
 ---
@@ -107,11 +109,11 @@ For each task:
 
 **Objective**: Reconcile plan vs actual, create summary, update state.
 
-**CRITICAL**: This phase is **never optional** - must always complete after APPLY.
+**CRITICAL**: This phase is **never optional** — must always complete after APPLY.
 
 **Requirements**:
-- Create `.paul/phases/SUMMARY-{id}.md`
-- Update `.paul/STATE.md` with loop position
+- Create `.tachikoma/state/phases/SUMMARY-{id}.md`
+- Update `.tachikoma/state/STATE.md` with loop position
 - Document what was actually done vs planned
 - Note any decisions made during execution
 - Flag unresolved issues for next loop
@@ -124,9 +126,9 @@ For each task:
 {original objective from PLAN}
 
 ## Acceptance Criteria Status
-- ✅ AC-1: {description}
-- ✅ AC-2: {description}
-- ⚠️  AC-3: {description} - {issue}
+- AC-1: {description}
+- AC-2: {description}
+- AC-3: {description} - {issue}
 
 ## Tasks Completed
 1. Task 1 - Status
@@ -147,7 +149,7 @@ For each task:
 
 ## State Management
 
-The `.paul/STATE.md` file tracks loop position:
+The `.tachikoma/state/STATE.md` file tracks loop position:
 
 ```markdown
 ---
@@ -156,7 +158,7 @@ current_plan: {plan-id or none}
 last_summary: {summary-id or none}
 ---
 
-# PAUL State
+# Plan State
 
 Current phase: {PLAN|APPLY|UNIFY}
 ```
@@ -187,18 +189,76 @@ Current phase: {PLAN|APPLY|UNIFY}
 - STATE.md updated to "UNIFY"
 - No blocking issues unresolved
 
+## Context Management for Long Sessions
+
+### State File Location
+
+**Project-local state**: `.tachikoma/state/`
+
+Separates Tachikoma's configuration (`.opencode/`) from user's work state (`.tachikoma/`). Each project gets its own state, enabling multiple developers to work in parallel.
+
+### State Structure
+```
+.tachikoma/
+  ├── state/
+  │   ├── STATE.md           # Current task state, AC status, files modified
+  │   ├── plan.md            # Original plan from planning phase
+  │   ├── summary.md         # Summary from UNIFY phase
+  │   └── artifacts/         # Intermediate files, test results, research findings
+  └── .active-session      # Single session mode (default)
+```
+
+### Context Compression
+
+When sessions grow long, compress at 70-80% context utilization:
+
+- **Metric**: Optimize for tokens-per-task, not tokens-per-request
+- **Structure**: Include sections for files modified, decisions, next steps
+- **Method**: Summarize new content, merge with existing (don't regenerate)
+- **Trigger**: Compress when approaching context limits
+
+### Filesystem Patterns
+
+For long-running tasks, use filesystem for context:
+
+- **Large tool outputs** (>2000 tokens): Write to `.tachikoma/state/artifacts/`, return summary + reference
+- **Plan persistence**: Store plans in `.tachikoma/state/plan.md`
+- **State tracking**: Update `.tachikoma/state/STATE.md` after each task
+
+### When to Use
+
+**Filesystem patterns when**:
+- Tool outputs exceed 2000 tokens
+- Tasks span multiple conversation turns
+- Multiple sub-tasks need state sharing
+- Need to preserve artifact trail
+
+**Compress when**:
+- Context reaches 70-80% utilization
+- Sessions exceed 100+ messages
+- Re-fetching costs increase
+
+## Loop Position
+
+After creating a plan, ensure to user understands:
+- We're in **PLAN** phase
+- Next step is **APPLY** to execute
+- **UNIFY** is required after to close loop
+
 ## Common Patterns
 
-### When User Says:
-- "Plan this feature" → Use PAUL methodology
-- "Create a roadmap" → Use PAUL methodology
-- "Design an approach" → Use PAUL methodology
+### When User Says
+
+- "Plan this feature" → Use Plan methodology
+- "Create a roadmap" → Use Plan methodology
+- "Design an approach" → Use Plan methodology
 - "What's the plan?" → Check STATE.md
 - "Are we done?" → Check if UNIFY completed
 
 ### Red Flags:
+
 - "Just implement it" → Missing PLAN phase
-- "Skip verification, it's fine" → Violates PAUL methodology
+- "Skip verification, it's fine" → Violates Plan methodology
 - "We're done" without UNIFY → Incomplete loop
 - Moving to next task without verification → Violates APPLY phase
 
@@ -214,14 +274,14 @@ When working on a task:
 
 ## Success Criteria
 
-A PAUL loop is complete when:
-1. ✅ PLAN created with AC and boundaries
-2. ✅ APPLY completed with verification
-3. ✅ UNIFY completed with summary
-4. ✅ STATE.md updated to "UNIFY"
+A Plan loop is complete when:
+1. PLAN created with AC and boundaries
+2. APPLY completed with verification
+3. UNIFY completed with summary
+4. STATE.md updated to "UNIFY"
 
 **Never stop at APPLY - always UNIFY.**
 
 ---
 
-*PAUL ensures structured development with explicit "done" criteria, preventing scope creep and ensuring quality.*
+*Plan ensures structured development with explicit "done" criteria, preventing scope creep and ensuring quality.*

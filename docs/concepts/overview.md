@@ -26,6 +26,7 @@ Tachikoma provides structure during execution (phases 1-4) and freedom at the en
 ```
 
 **Why:**
+
 - Structure ensures quality and consistency
 - Freedom allows for creativity and improvement
 - Balance between automation and agency
@@ -34,14 +35,14 @@ Tachikoma provides structure during execution (phases 1-4) and freedom at the en
 
 Every major feature is grounded in peer-reviewed research:
 
-| Feature | Research | Source |
-|---------|----------|--------|
-| Intent Routing | Cost-Aware Routing | arXiv:2601.02663 |
-| Context Management | Position Bias | ACL 2024 |
-| Verification Loops | Generator-Verifier-Reviser | arXiv:2602.10177 |
-| Model-Aware Editing | Model Harness | Can Bouluk, Feb 2026 |
-| Large Context | RLM | arXiv:2512.24601 |
-| Skill Composition | Modularity | arXiv:2602.03279 |
+| Feature             | Research                   | Source               |
+| ------------------- | -------------------------- | -------------------- |
+| Intent Routing      | Cost-Aware Routing         | arXiv:2601.02663     |
+| Context Management  | Position Bias              | ACL 2024             |
+| Verification Loops  | Generator-Verifier-Reviser | arXiv:2602.10177     |
+| Model-Aware Editing | Model Harness              | Can Bouluk, Feb 2026 |
+| Large Context       | RLM                        | arXiv:2512.24601     |
+| Skill Composition   | Modularity                 | arXiv:2602.03279     |
 
 [Learn more about the research →](../research/overview.md)
 
@@ -56,14 +57,14 @@ Every major feature is grounded in peer-reviewed research:
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
 │  1. CLASSIFY INTENT                                         │
-│  - Extract intent keywords                                   │
-│  - Match against routes                                      │
-│  - Evaluate confidence                                       │
+│  - Extract intent keywords                                  │
+│  - Match against routes                                     │
+│  - Evaluate confidence                                      │
 │  - Select execution strategy                                │
 └──────────────────────────┬──────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  2. LOAD CONTEXT                                           │
+│  2. LOAD CONTEXT                                            │
 │  - Load system prompt                                       │
 │  - Load skill instructions                                  │
 │  - Load AGENTS.md (project rules)                           │
@@ -72,15 +73,15 @@ Every major feature is grounded in peer-reviewed research:
 └──────────────────────────┬──────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  3. LOAD SKILL                                             │
-│  - Discover skill from .opencode/skills/                   │
+│  3. LOAD SKILL                                              │
+│  - Discover skill from .opencode/skills/                    │
 │  - Load SKILL.md instructions                               │
 │  - Select model-aware edit format                           │
 │  - Prepare tools                                            │
 └──────────────────────────┬──────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  4. EXECUTE (PAUL)                                         │
+│  4. EXECUTE (PAUL)                                          │
 │  - PLAN: Define objectives, acceptance criteria             │
 │  - APPLY: Execute with verification loops                   │
 │  - UNIFY: Close loop, reconcile outcomes                    │
@@ -90,7 +91,7 @@ Every major feature is grounded in peer-reviewed research:
 │  5. REFLECT                                                 │
 │  - Freedom to question                                      │
 │  - Identify potential issues                                │
-│  - Suggest improvements                                    │
+│  - Suggest improvements                                     │
 │  - Update state                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -106,31 +107,31 @@ Every major feature is grounded in peer-reviewed research:
 └──────────────────────────┬──────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                    Context Manager                           │
+│                    Context Manager                          │
 │  - Loads project-specific rules                             │
-│  - Manages context compression                               │
+│  - Manages context compression                              │
 │  - Optimizes for position bias                              │
 └──────────────────────────┬──────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                     Skill System                            │
 │  - 20 specialized skills                                    │
-│  - Dynamic skill loading                                     │
-│  - Skill chain orchestration                                 │
+│  - Dynamic skill loading                                    │
+│  - Skill chain orchestration                                │
 └──────────────────────────┬──────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                   PAUL Framework                            │
-│  - Plan-Apply-Unify loops                                    │
-│  - Mandatory loop closure                                    │
-│  - Acceptance criteria                                       │
+│  - Plan-Apply-Unify loops                                   │
+│  - Mandatory loop closure                                   │
+│  - Acceptance criteria                                      │
 └──────────────────────────┬──────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                  CARL Quality Gates                         │
-│  - Context augmentation                                      │
+│  - Context augmentation                                     │
 │  - Quality gate enforcement                                 │
-│  - Reinforcement layer                                       │
+│  - Reinforcement layer                                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -140,12 +141,12 @@ Every major feature is grounded in peer-reviewed research:
 
 The first decision point in every request:
 
-| Complexity | Strategy | Latency |
-|------------|----------|---------|
-| Low | Direct response | 1-2s |
-| Medium | Single skill | 5-15s |
-| High | Skill chain | 15-45s |
-| Very High | RLM orchestration | 45-120s |
+| Complexity | Strategy          | Latency |
+| ---------- | ----------------- | ------- |
+| Low        | Direct response   | 1-2s    |
+| Medium     | Single skill      | 5-15s   |
+| High       | Skill chain       | 15-45s  |
+| Very High  | RLM orchestration | 45-120s |
 
 [Learn more →](../capabilities/intent-routing.md)
 
@@ -183,6 +184,7 @@ Position-aware loading of project rules:
 - Reinforcement layer — Blocks critical violations, warns on high
 
 **Three Domains:**
+
 1. **PAUL Domain** — Loop enforcement, boundary protection
 2. **Development Domain** — Code quality, error handling, testing
 3. **Projects Domain** — Documentation, version handling
@@ -193,12 +195,12 @@ Position-aware loading of project rules:
 
 Dynamic edit format selection:
 
-| Model | Format |
-|-------|--------|
-| Claude, Mistral | `str_replace` |
-| Gemini | `str_replace_fuzzy` |
-| GPT | `apply_patch` |
-| Grok, GLM | `hashline` |
+| Model           | Format              |
+| --------------- | ------------------- |
+| Claude, Mistral | `str_replace`       |
+| Gemini          | `str_replace_fuzzy` |
+| GPT             | `apply_patch`       |
+| Grok, GLM       | `hashline`          |
 
 [Learn more →](../capabilities/model-aware-editing.md)
 
@@ -206,10 +208,10 @@ Dynamic edit format selection:
 
 Tachikoma supports two installation methods:
 
-| Type | Path | Precedence |
-|------|------|------------|
-| **Local** | `cwd/.opencode` | Higher |
-| **Global** | `~/.config/opencode` | Lower |
+| Type       | Path                 | Precedence |
+| ---------- | -------------------- | ---------- |
+| **Local**  | `cwd/.opencode`      | Higher     |
+| **Global** | `~/.config/opencode` | Lower      |
 
 **Discovery:** Tachikoma checks both locations, with local taking precedence.
 
@@ -253,15 +255,15 @@ Maintain human oversight:
 
 ## Quick Reference
 
-| Need | Link |
-|------|------|
-| Install Tachikoma | [Getting Started](../getting-started.md) |
-| Understand routing | [Intent Routing](../capabilities/intent-routing.md) |
-| Use skills | [Skill Execution](../capabilities/skill-execution.md) |
-| Apply PAUL | [PAUL Methodology](../capabilities/paul-methodology.md) |
-| Enforce quality | [CARL Quality Gates](../capabilities/carl-quality-gates.md) |
-| Understand research | [Research Overview](../research/overview.md) |
-| View internals | [Internals](../internals/) |
+| Need                | Link                                                        |
+| ------------------- | ----------------------------------------------------------- |
+| Install Tachikoma   | [Getting Started](../getting-started.md)                    |
+| Understand routing  | [Intent Routing](../capabilities/intent-routing.md)         |
+| Use skills          | [Skill Execution](../capabilities/skill-execution.md)       |
+| Apply PAUL          | [PAUL Methodology](../capabilities/paul-methodology.md)     |
+| Enforce quality     | [CARL Quality Gates](../capabilities/carl-quality-gates.md) |
+| Understand research | [Research Overview](../research/overview.md)                |
+| View internals      | [Internals](../internals/)                                  |
 
 ## Next Steps
 

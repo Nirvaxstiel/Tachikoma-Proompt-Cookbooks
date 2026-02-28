@@ -1,5 +1,5 @@
 ---
-name: reasoning
+name: think
 description: Apply functional thinking principles to code design and reasoning
 keywords:
   - design
@@ -24,7 +24,7 @@ triggers:
 
 # Functional Thinking Principles
 
-When designing or reasoning about code, apply these principles:
+When designing or reasoning about code, apply these principles.
 
 ## Core Philosophy
 
@@ -82,7 +82,7 @@ When designing, ask:
 ## When to Apply
 
 - Designing new systems
-- Refactoring existing code  
+- Refactoring existing code
 - Making architectural decisions
 - Code reviews
 

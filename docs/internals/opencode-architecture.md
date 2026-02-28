@@ -3,11 +3,11 @@ title: Architecture Overview
 description: Core system design of OpenCode - packages, modules, and data flow.
 ---
 
-# Architecture Overview
+## Architecture Overview
 
 ## Package Structure
 
-```
+```text
 packages/
 ├── opencode/          # Core server (TUI, session management, tools)
 ├── app/               # Desktop app (Electron)
@@ -26,7 +26,7 @@ packages/
 
 ## Core Package Structure
 
-```
+```text
 packages/opencode/src/
 ├── agent/             # Agent definitions and management
 ├── session/           # Session/message handling
@@ -66,50 +66,54 @@ packages/opencode/src/
 ## Core Modules
 
 ### Session (`session/`)
+
 Manages conversations - the central abstraction.
 
 ```typescript
 // Key exports
-SessionTable    // SQLite table for sessions
-MessageTable    // SQLite table for messages
-PartTable       // SQLite table for message parts
-TodoTable       // SQLite table for todos
+SessionTable; // SQLite table for sessions
+MessageTable; // SQLite table for messages
+PartTable; // SQLite table for message parts
+TodoTable; // SQLite table for todos
 ```
 
 ### Agent (`agent/`)
+
 Defines execution modes with specific permissions and prompts.
 
 ```typescript
 // Built-in agents
-build       // Default - full tool access
-plan        // Read-only, no edits
-general     // Subagent for parallel work
-explore     // Fast codebase exploration
-compaction  // Context compaction
-title       // Generate session titles
-summary     // Generate summaries
+build; // Default - full tool access
+plan; // Read-only, no edits
+general; // Subagent for parallel work
+explore; // Fast codebase exploration
+compaction; // Context compaction
+title; // Generate session titles
+summary; // Generate summaries
 ```
 
 ### Tool (`tool/`)
+
 Atomic operations the agent can perform.
 
 ```typescript
 // Core tools
-BashTool        // Execute shell commands
-ReadTool        // Read files
-WriteTool       // Write files
-EditTool        // Edit files
-GlobTool        // Find files by pattern
-GrepTool        // Search file contents
-TaskTool        // Spawn subagents
-WebFetchTool    // Fetch URLs
-WebSearchTool   // Search the web
-CodeSearchTool  // Search code APIs
-SkillTool       // Load skills
-TodoWriteTool   // Manage todos
+BashTool; // Execute shell commands
+ReadTool; // Read files
+WriteTool; // Write files
+EditTool; // Edit files
+GlobTool; // Find files by pattern
+GrepTool; // Search file contents
+TaskTool; // Spawn subagents
+WebFetchTool; // Fetch URLs
+WebSearchTool; // Search the web
+CodeSearchTool; // Search code APIs
+SkillTool; // Load skills
+TodoWriteTool; // Manage todos
 ```
 
 ### Skill (`skill/`)
+
 Reusable capability modules loaded on demand.
 
 ```typescript
@@ -122,6 +126,7 @@ config.skills.urls
 ```
 
 ### Config (`config/`)
+
 Configuration loading with precedence.
 
 ```typescript
@@ -137,92 +142,97 @@ Configuration loading with precedence.
 
 ## Data Flow
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
-│                         User Input                               │
+│                         User Input                              │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Session Layer                               │
-│  • Create/retrieve session                                       │
-│  • Build message with context                                    │
+│                      Session Layer                              │
+│  • Create/retrieve session                                      │
+│  • Build message with context                                   │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Agent Selection                             │
-│  • Select agent based on mode                                    │
-│  • Load agent permissions                                        │
-│  • Load agent prompt                                             │
+│                      Agent Selection                            │
+│  • Select agent based on mode                                   │
+│  • Load agent permissions                                       │
+│  • Load agent prompt                                            │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Context Building                            │
-│  • Load skills (by name/description match)                       │
-│  • Load context modules                                          │
-│  • Build system prompt                                           │
+│                      Context Building                           │
+│  • Load skills (by name/description match)                      │
+│  • Load context modules                                         │
+│  • Build system prompt                                          │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      LLM Provider                                │
-│  • Stream response                                               │
-│  • Parse tool calls                                              │
+│                      LLM Provider                               │
+│  • Stream response                                              │
+│  • Parse tool calls                                             │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Tool Execution                              │
-│  • Check permissions                                             │
-│  • Execute tool                                                  │
-│  • Store result in PartTable                                     │
+│                      Tool Execution                             │
+│  • Check permissions                                            │
+│  • Execute tool                                                 │
+│  • Store result in PartTable                                    │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Response                                    │
-│  • Stream to UI                                                  │
-│  • Store in MessageTable                                         │
+│                      Response                                   │
+│  • Stream to UI                                                 │
+│  • Store in MessageTable                                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Key Patterns
 
 ### Instance State
+
 Per-project state management using `Instance.state()`:
 
 ```typescript
 export const state = Instance.state(async () => {
   // Initialization runs once per project
-  return { /* cached data */ }
-})
+  return {
+    /* cached data */
+  };
+});
 ```
 
 ### Event Bus
+
 Pub/sub for cross-module communication:
 
 ```typescript
-Bus.publish(Session.Event.Error, { error })
-Bus.subscribe(Session.Event.Message, handler)
+Bus.publish(Session.Event.Error, { error });
+Bus.subscribe(Session.Event.Message, handler);
 ```
 
 ### Plugin Hooks
+
 Extension points for customization:
 
 ```typescript
-Plugin.trigger("tool.definition", { toolID }, output)
-Plugin.trigger("experimental.chat.system.transform", { model }, { system })
+Plugin.trigger("tool.definition", { toolID }, output);
+Plugin.trigger("experimental.chat.system.transform", { model }, { system });
 ```
 
 ## Technology Stack
 
-| Component | Technology |
-|-----------|------------|
-| Runtime | Bun |
-| Database | SQLite (Drizzle ORM) |
-| LLM | Vercel AI SDK |
-| UI | OpenTUI (terminal), React (web) |
-| Config | JSON/JSONC with YAML frontmatter |
-| Validation | Zod |
+| Component  | Technology                       |
+| ---------- | -------------------------------- |
+| Runtime    | Bun                              |
+| Database   | SQLite (Drizzle ORM)             |
+| LLM        | Vercel AI SDK                    |
+| UI         | OpenTUI (terminal), React (web)  |
+| Config     | JSON/JSONC with YAML frontmatter |
+| Validation | Zod                              |

@@ -19,10 +19,10 @@ routes:
       - fails to
       - exception
     confidence_threshold: 0.7
-    skill: code
+    skill: dev
     strategy: single_skill
 
-  # Verification-focused tasks
+  # Verification-focused tasks (part of dev)
   verify:
     patterns:
       - verify
@@ -33,12 +33,10 @@ routes:
       - audit
       - test that
     confidence_threshold: 0.6
-    skill_chain:
-      - code
-      - verification
-    strategy: skill_chain
+    skill: dev
+    strategy: single_skill
 
-  # Testing tasks
+  # Testing tasks (part of dev)
   test:
     patterns:
       - test
@@ -51,10 +49,10 @@ routes:
       - unit test
       - integration test
     confidence_threshold: 0.6
-    skill: verification
+    skill: dev
     strategy: single_skill
 
-  # Refactoring tasks
+  # Refactoring tasks (part of dev)
   refactor:
     patterns:
       - refactor
@@ -65,10 +63,10 @@ routes:
       - optimize code
       - better way
     confidence_threshold: 0.6
-    skill: refactor
+    skill: dev
     strategy: single_skill
 
-  # Research tasks
+  # Research tasks (context)
   research:
     patterns:
       - research
@@ -79,10 +77,10 @@ routes:
       - understand
       - how does
       - how do i
-      - what is the best
+      - what is best
       - compare
     confidence_threshold: 0.7
-    skill: research
+    skill: context
     strategy: single_skill
 
   # Implementation tasks
@@ -98,14 +96,15 @@ routes:
       - add
     confidence_threshold: 0.7
     skill_chain:
-      - code
-      - verification
+      - dev
+      - think
     strategy: skill_chain
 
   # =============================================================================
   # GIT & VERSION CONTROL
   # =============================================================================
 
+  # Git tasks - use direct commands, no dedicated skill
   git:
     patterns:
       - commit
@@ -116,8 +115,7 @@ routes:
       - stage
       - git message
     confidence_threshold: 0.8
-    skill: git-commit
-    strategy: single_skill
+    strategy: direct
 
   git_branch:
     patterns:
@@ -127,8 +125,7 @@ routes:
       - git checkout
       - git merge
     confidence_threshold: 0.7
-    skill: git-commit
-    strategy: single_skill
+    strategy: direct
 
   # =============================================================================
   # PLANNING & DESIGN
@@ -143,8 +140,10 @@ routes:
       - approach
       - strategy
       - proposal
+      - acceptance criteria
+      - given when then
     confidence_threshold: 0.7
-    skill: planning
+    skill: plan
     strategy: single_skill
 
   review:
@@ -155,7 +154,7 @@ routes:
       - critique
       - assess
     confidence_threshold: 0.6
-    skill: research
+    skill: context
     strategy: single_skill
 
   # =============================================================================
@@ -175,7 +174,7 @@ routes:
       - mysql
       - mongodb
     confidence_threshold: 0.6
-    skill: code
+    skill: dev
     strategy: single_skill
 
   config:
@@ -187,7 +186,7 @@ routes:
       - environment
       - dotenv
     confidence_threshold: 0.7
-    skill: code
+    skill: dev
     strategy: single_skill
 
   # =============================================================================
@@ -205,7 +204,7 @@ routes:
       - request
       - response
     confidence_threshold: 0.6
-    skill: code
+    skill: dev
     strategy: single_skill
 
   auth:
@@ -222,8 +221,8 @@ routes:
       - security
     confidence_threshold: 0.6
     skill_chain:
-      - code
-      - verification
+      - dev
+      - think
     strategy: skill_chain
 
   # =============================================================================
@@ -238,7 +237,7 @@ routes:
       - image
       - compose
     confidence_threshold: 0.7
-    skill: code
+    skill: dev
     strategy: single_skill
 
   ci_cd:
@@ -251,7 +250,7 @@ routes:
       - deployment
       - cicd
     confidence_threshold: 0.6
-    skill: code
+    skill: dev
     strategy: single_skill
 
   # =============================================================================
@@ -268,7 +267,7 @@ routes:
       - write docs
       - document
     confidence_threshold: 0.7
-    skill: code
+    skill: dev
     strategy: single_skill
 
   # =============================================================================
@@ -286,7 +285,11 @@ routes:
       - rewrite
       - restructure
     confidence_threshold: 0.5
-    strategy: rlm
+    skill_chain:
+      - dev
+      - think
+      - plan
+    strategy: skill_chain
 
   # Simple queries (no tools needed)
   query:
@@ -299,7 +302,6 @@ routes:
       - tell me
       - what does
       - what are
-      - what is the
     confidence_threshold: 0.9
     strategy: direct
 
@@ -315,11 +317,10 @@ routes:
       - secure
       - hack
       - penetration
-      - vulnerability
     confidence_threshold: 0.5
     skill_chain:
-      - code
-      - verification
+      - dev
+      - think
     strategy: skill_chain
 
   hotfix:
@@ -331,5 +332,78 @@ routes:
       - asap
       - emergency
     confidence_threshold: 0.4
-    skill: code
+    skill: dev
     strategy: single_skill
+
+  # =============================================================================
+  # META ORCHESTRATION (Self-programming agent generation)
+  # =============================================================================
+
+  # Self-generating agent topology - vertical decomposition
+  meta_vertical:
+    patterns:
+      - multi-step task
+      - complex workflow
+      - multiple stages
+      - sequential tasks
+      - step by step
+      - decompose task
+      - break down
+    confidence_threshold: 0.8
+    skill: meta
+    strategy: single_skill
+
+  # Self-generating agent topology - horizontal ensemble
+  meta_horizontal:
+    patterns:
+      - explore alternatives
+      - multiple approaches
+      - compare methods
+      - different solutions
+      - ensemble
+      - parallel exploration
+      - best approach
+    confidence_threshold: 0.75
+    skill: meta
+    strategy: single_skill
+
+  # Dynamic tool generation
+  meta_tool:
+    patterns:
+      - need specialized tool
+      - create tool for
+      - write custom tool
+      - new tool
+      - tool that can
+      - implement tool
+    confidence_threshold: 0.7
+    skill: meta
+    strategy: single_skill
+
+  # Memory operations (requires context skill)
+  memory_store:
+    patterns:
+      - store knowledge
+      - remember this
+      - save to memory
+      - persist information
+      - learn this pattern
+    confidence_threshold: 0.85
+    skill_chain:
+      - meta
+      - context
+    strategy: skill_chain
+
+  memory_query:
+    patterns:
+      - query memory
+      - search knowledge
+      - find related
+      - what do we know
+      - recall
+      - from memory
+    confidence_threshold: 0.85
+    skill_chain:
+      - meta
+      - context
+    strategy: skill_chain

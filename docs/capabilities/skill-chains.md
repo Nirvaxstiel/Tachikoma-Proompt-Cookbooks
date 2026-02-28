@@ -15,12 +15,14 @@ Skill chains allow you to:
 ## When to Use Skill Chains
 
 **Use skill chains when:**
+
 - Tasks require multiple steps
 - Different domains are involved
 - Verification is needed after implementation
 - Workflows are reusable
 
 **Examples:**
+
 - "Implement and test a feature"
 - "Refactor and verify code"
 - "Create documentation and examples"
@@ -33,12 +35,12 @@ A skill chain is a sequence of skills with state passing:
 skill-chain:
   name: implement-verify
   skills:
-    - name: code-agent
+    - name: dev
       module: architecture.md
       verify: false
       continue_on_error: false
 
-    - name: verifier-code-agent
+    - name: verification
       module: testing-standards.md
       verify: true
       continue_on_error: true
@@ -67,7 +69,7 @@ todowrite({
 })
 ```
 
-Subsequent skills update the task list:
+Subsequent skills update task list:
 
 ```python
 todowrite({
@@ -116,7 +118,7 @@ Chain stops on first error:
 ```yaml
 skills:
   - name: implement
-    continue_on_error: false  # Stop here on error
+    continue_on_error: false # Stop here on error
 
   - name: verify
     continue_on_error: false
@@ -131,7 +133,7 @@ Chain continues despite errors:
 ```yaml
 skills:
   - name: implement
-    continue_on_error: true  # Continue even if this fails
+    continue_on_error: true # Continue even if this fails
 
   - name: verify
     continue_on_error: true
@@ -149,12 +151,13 @@ skills:
 ```yaml
 implement-verify:
   skills:
-    - code-agent          # Generate
-    - verifier-code-agent # Verify
-    - formatter           # Clean up
+    - dev # Generate
+    - dev # Verify (built-in)
+    - formatter # Clean up
 ```
 
 **Flow:**
+
 1. Implement feature
 2. Verify correctness
 3. Format code
@@ -164,13 +167,14 @@ implement-verify:
 ```yaml
 research-implement:
   skills:
-    - research           # Explore codebase
-    - planning           # Create plan
-    - code               # Implement
-    - verification       # Verify
+    - context # Explore codebase
+    - plan # Create plan
+    - dev # Implement
+    - dev # Verify (built-in)
 ```
 
 **Flow:**
+
 1. Research existing patterns
 2. Create implementation plan
 3. Execute implementation
@@ -181,12 +185,13 @@ research-implement:
 ```yaml
 refactor-verify:
   skills:
-    - refactor          # Refactor code
-    - verification      # Verify behavior unchanged
-    - tests             # Run tests
+    - dev # Refactor (includes refactoring methods)
+    - dev # Verify (built-in)
+    - dev # Run tests (if available)
 ```
 
 **Flow:**
+
 1. Refactor code structure
 2. Verify behavior unchanged
 3. Run test suite
@@ -196,27 +201,27 @@ refactor-verify:
 ```yaml
 full-pipeline:
   skills:
-    - research          # Understand context
-    - planning          # Create plan
-    - code              # Implement
-    - verification      # Verify correctness
-    - tests             # Run tests
-    - formatter         # Format code
-    - git-commit        # Commit changes
+    - context # Understand context
+    - plan # Create plan
+    - dev # Implement
+    - dev # Verify correctness
+    - dev # Run tests
+    - dev # Format code
 ```
 
 **Flow:**
+
 1. Research existing code
 2. Create implementation plan
 3. Write code
 4. Verify correctness
 5. Run tests
 6. Format code
-7. Commit changes
+7. Commit changes (via direct git commands)
 
 ## Creating a Skill Chain
 
-### Step 1: Define the Chain
+### Step 1: Define Chain
 
 Create `config/skill-chains.yaml`:
 
@@ -235,7 +240,7 @@ my-chain:
 ```yaml
 my-chain:
   skills:
-    - name: code-agent
+    - name: dev
       module: architecture.md
       context:
         project: "my-project"
@@ -253,9 +258,9 @@ my-chain:
 ```yaml
 my-chain:
   state:
-    - task-list        # Track progress
-    - plan-file        # Save/load plans
-    - results-file      # Pass results
+    - task-list # Track progress
+    - plan-file # Save/load plans
+    - results-file # Pass results
 ```
 
 ### Step 4: Configure Error Handling
@@ -277,27 +282,27 @@ feature-implementation:
 
   skills:
     # Step 1: Research existing patterns
-    - name: research
+    - name: context
       module: architecture.md
       output: research-results.json
       continue_on_error: false
 
     # Step 2: Create implementation plan
-    - name: planning
+    - name: plan
       module: coding-standards.md
       input: research-results.json
       output: plan.json
       continue_on_error: false
 
     # Step 3: Implement feature
-    - name: code
+    - name: dev
       module: architecture.md
       input: plan.json
       output: implementation.json
       continue_on_error: false
 
     # Step 4: Verify correctness
-    - name: verification
+    - name: dev
       module: testing-standards.md
       input: implementation.json
       output: verification-report.json
@@ -306,26 +311,26 @@ feature-implementation:
       continue_on_error: true
 
     # Step 5: Run tests
-    - name: tests
+    - name: dev
       module: testing-standards.md
       command: npm test
       output: test-results.json
       continue_on_error: true
 
     # Step 6: Format code
-    - name: formatter
+    - name: dev
       command: npm run format
       continue_on_error: true
 
     # Step 7: Commit changes
-    - name: git-commit
+    - name: dev
       type: conventional
       continue_on_error: true
 
   state:
-    - task-list          # Track progress
-    - plan-file          # Save/load plans
-    - results-file       # Pass results
+    - task-list # Track progress
+    - plan-file # Save/load plans
+    - results-file # Pass results
 
   error_handling:
     continue_on_error: true
@@ -351,6 +356,7 @@ routes:
 **User:** "Implement user authentication"
 
 **Execution:**
+
 1. Intent classified as `implement`
 2. Route to `feature-implementation` chain
 3. Execute skills sequentially
@@ -360,18 +366,18 @@ routes:
 
 ### For Chain Authors
 
-1. **Break down logically** — Each skill should have clear purpose
-2. **Define state passing** — Specify how data flows between skills
-3. **Handle errors gracefully** — Configure `continue_on_error` appropriately
-4. **Verify at the end** — Final skill should validate entire chain
-5. **Document dependencies** — State which skills require which inputs
+1. Break down logically — Each skill should have clear purpose
+2. Define state passing — Specify how data flows between skills
+3. Handle errors gracefully — Configure `continue_on_error` appropriately
+4. Verify at end — Final skill should validate entire chain
+5. Document dependencies — State which skills require which inputs
 
 ### For Users
 
-1. **Understand the chain** — Know what each step does
-2. **Review intermediate results** — Check outputs between skills
-3. **Handle errors** — Review error reports if chain fails
-4. **Iterate if needed** — Re-run chain or individual skills
+1. Understand the chain — Know what each step does
+2. Review intermediate results — Check outputs between skills
+3. Handle errors — Review error reports if chain fails
+4. Iterate if needed — Re-run chain or individual skills
 
 ## Research
 

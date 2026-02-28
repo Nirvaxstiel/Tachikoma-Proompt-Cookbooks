@@ -33,12 +33,14 @@ Synthesize results
 **Purpose**: Zero-token context operations
 
 **When Tachikoma uses it**:
+
 - Before loading context → `discover` (verify files exist)
 - Quick lookups → `extract` (0 tokens vs 300+ for LLM)
 - System health → `status`
 - Maintenance → `cleanup`
 
 **Example invocation**:
+
 ```bash
 # Before routing
 tachikoma$ bun run .opencode/skills/context-manager/router.ts discover
@@ -54,11 +56,13 @@ tachikoma$ bun run .opencode/skills/context-manager/router.ts extract coding-sta
 **Purpose**: Live documentation for research intent
 
 **When Tachikoma uses it**:
+
 - Research intent detected (confidence > 0.8)
 - Training data likely outdated (React, Next.js, etc.)
 - User asks about library APIs
 
 **Example invocation**:
+
 ```bash
 # During research processing
 tachikoma$ bun run .opencode/skills/context7/router.ts quick "React" "hooks"
@@ -70,12 +74,12 @@ tachikoma$ bun run .opencode/skills/context7/router.ts quick "React" "hooks"
 
 ## Token Savings
 
-| Operation | Without CLI | With CLI | Savings |
-|-----------|-------------|----------|---------|
-| Context discovery | 500 tokens | 0 tokens | 100% |
-| Info extraction | 300 tokens | 0 tokens | 100% |
-| Live docs fetch | 400 tokens | API call | Faster |
-| **Per session** | ~1200 tokens | ~0 tokens | **1200+ tokens** |
+| Operation         | Without CLI  | With CLI  | Savings          |
+| ----------------- | ------------ | --------- | ---------------- |
+| Context discovery | 500 tokens   | 0 tokens  | 100%             |
+| Info extraction   | 300 tokens   | 0 tokens  | 100%             |
+| Live docs fetch   | 400 tokens   | API call  | Faster           |
+| **Per session**   | ~1200 tokens | ~0 tokens | **1200+ tokens** |
 
 ---
 
@@ -102,7 +106,7 @@ routes:
     # Tachikoma runs: router.sh quick "{lib}" "{topic}" for external docs
     tools:
       - Read
-      - Bash  # For CLI tools
+      - Bash # For CLI tools
 ```
 
 ---
@@ -122,7 +126,7 @@ Tachikoma:
   3. Load: core-contract, coding-standards
   4. Route: code-agent skill
   5. Execute: Fix typo
-  
+
 Token cost: 0 (discovery via CLI)
 ```
 
@@ -141,7 +145,7 @@ Tachikoma:
   4. Load: core-contract, research-methods, + fetched docs
   5. Route: research-agent skill
   6. Execute: Explain with current examples
-  
+
 Token cost: 0 for discovery/fetch (CLI tools)
 ```
 
@@ -191,6 +195,7 @@ Tachikoma:
 - Results presented seamlessly
 
 **Why this works**:
+
 - Zero cognitive load for users
 - Consistent with OpenCode patterns
 - Maximum token efficiency

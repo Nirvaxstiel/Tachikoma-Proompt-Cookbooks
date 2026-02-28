@@ -4,7 +4,8 @@ A real-time TUI dashboard for monitoring OpenCode agent sessions.
 
 ## Overview
 
-The Tachikoma Dashboard provides a visual interface for monitoring agent activity, sessions, skills, and tasks. Built with [Textual](https://textual.textualize.io/), it features a GITS (Ghost in the Shell) themed aesthetic with red accent highlights.
+The Tachikoma Dashboard provides a visual interface for monitoring agent activity, sessions, skills, and tasks.
+Built with [Textual](https://textual.textualize.io/), it features a GITS (Ghost in the Shell) themed aesthetic with red accent highlights.
 
 <!-- Screenshot placeholder: Dashboard preview would show session tree, details panel, skills monitor, and todo list -->
 

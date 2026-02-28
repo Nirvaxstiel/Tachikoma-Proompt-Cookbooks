@@ -7,30 +7,20 @@ Detailed technical architecture of Tachikoma.
 Tachikoma is organized into several key systems:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Intent Router                           │
-│                    (Intent Classification)                  │
-└──────────────────────────┬──────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Context Manager                          │
-│              (Position-Aware Loading)                       │
-└──────────────────────────┬──────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│                     Skill System                            │
-│            (Skill Discovery & Execution)                    │
-└──────────────────────────┬──────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Tool Layer                               │
-│           (File, Bash, Search, Subagent)                    │
-└──────────────────────────┬──────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│                   Quality Systems                           │
-│              (PAUL + CARL)                                  │
-└─────────────────────────────────────────────────────────────┘
+                     Intent Router
+                  (Intent Classification)
+                            ↓
+                    Context Manager
+              (Position-Aware Loading)
+                            ↓
+                      Skill System
+            (Skill Discovery & Execution)
+                            ↓
+                       Tool Layer
+          (File, Bash, Search, Subagent)
+                            ↓
+                   Quality Systems
+              (PAUL + Verification)
 ```
 
 ## Component Breakdown
@@ -53,7 +43,7 @@ routes:
   debug:
     patterns: ["debug", "fix bug", "troubleshoot"]
     confidence_threshold: 0.7
-    skill: code-agent
+    skill: dev
     strategy: direct
 ```
 
@@ -113,7 +103,7 @@ Task Complexity?
 
 Triggered at 70-80% context utilization:
 
-```markdown
+```
 ## Files Changed (23 files)
 
 ### Core (8 files)
@@ -146,11 +136,11 @@ Triggered at 70-80% context utilization:
 
 ```
 .opencode/skills/
-├── code/SKILL.md
-├── refactor/SKILL.md
-├── verification/SKILL.md
-├── paul/SKILL.md
-└── carl/SKILL.md
+├── dev/SKILL.md        # Implementation, verification, refactoring
+├── think/SKILL.md       # Functional thinking principles
+├── plan/SKILL.md        # PAUL methodology, structured planning
+├── meta/SKILL.md        # Self-programming orchestration
+└── context/SKILL.md     # Research, documentation, RLM, memory
 ```
 
 **Execution Flow:**
@@ -223,83 +213,50 @@ tachikoma.edit-format-selector with args="detect"
 
 **Never skip UNIFY.** Every plan needs closure. This is the heartbeat that prevents drift.
 
-### 6. CARL Quality Gates
-
-**Context Augmentation & Reinforcement Layer** — Dynamic rule loading
-
-**Components:**
-
-1. **Context Augmentation**
-   - Detect active domains (PAUL, Development, Projects)
-   - Load relevant rules just-in-time
-   - Context stays lean
-
-2. **Quality Gates**
-   - Define rules by priority (Critical, High, Medium, Low)
-   - Check compliance
-   - Block critical violations
-
-3. **Reinforcement Layer**
-   - Enforce rules with priority
-   - Block on critical failures
-   - Warn on high-priority violations
-
 ## Data Flow
 
 ### Request Lifecycle
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  User Request: "Create user authentication API"             │
-└──────────────────────────┬──────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│  Intent Router                                              │
-│  - Pattern: "create", "api"                                 │
-│  - Confidence: 0.85                                         │
-│  - Strategy: Single skill (code-agent)                      │
-└──────────────────────────┬──────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│  Context Manager                                            │
-│  - Load system prompt                                       │
-│  - Load code skill                                          │
-│  - Load AGENTS.md                                           │
-│  - Load architecture context module                         │
-└──────────────────────────┬──────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│  Skill System                                               │
-│  - Load code skill                                          │
-│  - Select edit format (str_replace)                         │
-│  - Prepare tools                                            │
-└──────────────────────────┬──────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│  PAUL Framework                                             │
-│                                                             │
-│  PLAN:                                                      │
-│  - Objective: Create auth API                               │
-│  - Acceptance: Returns JWT, handles errors                  │
-│  - Tasks: Handler, JWT gen, tests                           │
-│                                                             │
-│  APPLY:                                                     │
-│  - Task 1: Create handler ✓                                 │
-│  - Task 2: JWT generation ✓                                 │
-│  - Task 3: Tests ✓                                          │
-│                                                             │
-│  UNIFY:                                                     │
-│  - Summary: Auth API created                                │
-│  - Tests: Passing                                           │
-│  - Next: Deploy to staging                                  │
-└──────────────────────────┬──────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│  Reflect                                                    │
-│  - Consider adding refresh tokens                           │
-│  - Suggest rate limiting                                    │
-│  - Flag potential issues                                    │
-└─────────────────────────────────────────────────────────────┘
+User Request: "Create user authentication API"
+    ↓
+Intent Router
+- Pattern: "create", "api"
+- Confidence: 0.85
+- Strategy: Single skill (dev)
+    ↓
+Context Manager
+- Load system prompt
+- Load dev skill
+- Load AGENTS.md
+- Load architecture context module
+    ↓
+Skill System
+- Load dev skill
+- Select edit format (str_replace)
+- Prepare tools
+    ↓
+PAUL Framework
+
+PLAN:
+- Objective: Create auth API
+- Acceptance: Returns JWT, handles errors
+- Tasks: Handler, JWT gen, tests
+
+APPLY:
+- Task 1: Create handler ✓
+- Task 2: JWT generation ✓
+- Task 3: Tests ✓
+
+UNIFY:
+- Summary: Auth API created
+- Tests: Passing
+- Next: Deploy to staging
+    ↓
+Reflect
+- Consider adding refresh tokens
+- Suggest rate limiting
+- Flag potential issues
 ```
 
 ### Skill Chain Data Flow
@@ -369,7 +326,7 @@ routes:
   debug:
     patterns: ["debug", "fix", "troubleshoot"]
     confidence_threshold: 0.7
-    skill: code-agent
+    skill: dev
     strategy: direct
 
   implement:
@@ -391,11 +348,10 @@ routes:
 # config/skill-chains.yaml
 feature-implementation:
   skills:
-    - research
-    - planning
-    - code
-    - verification
-    - tests
+    - context
+    - plan
+    - dev
+    - dev # verification
 
   state:
     - task-list
@@ -451,6 +407,7 @@ plan.save_state("plan_state.json")
 
 # Load
 plan = Plan.load_state("plan_state.json")
+plan.execute()
 ```
 
 ### Results Files
