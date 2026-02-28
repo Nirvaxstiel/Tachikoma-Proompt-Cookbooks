@@ -3,13 +3,13 @@ title: Configuration System
 description: How OpenCode loads and merges configuration from multiple sources.
 ---
 
-# Configuration System
+## Configuration System
 
 OpenCode loads configuration from multiple sources with a defined precedence order.
 
 ## Config Location
 
-```
+```text
 ~/.config/opencode/opencode.json    # Global config
 ./opencode.json                      # Project config
 ./.opencode/opencode.json           # Project .opencode dir
@@ -77,6 +77,7 @@ const Info = z.object({
 ## Key Configuration Fields
 
 ### Model Selection
+
 ```json
 {
   "model": "anthropic/claude-3-opus",
@@ -85,6 +86,7 @@ const Info = z.object({
 ```
 
 ### Agent Configuration
+
 ```json
 {
   "agent": {
@@ -98,6 +100,7 @@ const Info = z.object({
 ```
 
 ### Permissions
+
 ```json
 {
   "permission": {
@@ -111,6 +114,7 @@ const Info = z.object({
 ```
 
 ### MCP Servers
+
 ```json
 {
   "mcp": {
@@ -129,6 +133,7 @@ const Info = z.object({
 ```
 
 ### Skills
+
 ```json
 {
   "skills": {
@@ -139,6 +144,7 @@ const Info = z.object({
 ```
 
 ### LSP
+
 ```json
 {
   "lsp": {
@@ -151,6 +157,7 @@ const Info = z.object({
 ```
 
 ### Formatter
+
 ```json
 {
   "formatter": {
@@ -167,18 +174,20 @@ const Info = z.object({
 ```typescript
 // Config directories are discovered in order:
 const directories = [
-  Global.Path.config,              // ~/.config/opencode
-  ...Filesystem.up({               // Find .opencode up from cwd
+  Global.Path.config, // ~/.config/opencode
+  ...Filesystem.up({
+    // Find .opencode up from cwd
     targets: [".opencode"],
     start: Instance.directory,
     stop: Instance.worktree,
   }),
-  ...Filesystem.up({               // ~/.opencode
+  ...Filesystem.up({
+    // ~/.opencode
     targets: [".opencode"],
     start: Global.Path.home,
     stop: Global.Path.home,
   }),
-]
+];
 ```
 
 ## Loading from Directories
@@ -188,35 +197,35 @@ For each `.opencode/` directory:
 ```typescript
 // Load config files
 for (const file of ["opencode.jsonc", "opencode.json"]) {
-  result = merge(result, await loadFile(path.join(dir, file)))
+  result = merge(result, await loadFile(path.join(dir, file)));
 }
 
 // Load commands
-result.command = mergeDeep(result.command, await loadCommand(dir))
+result.command = mergeDeep(result.command, await loadCommand(dir));
 
 // Load agents
-result.agent = mergeDeep(result.agent, await loadAgent(dir))
+result.agent = mergeDeep(result.agent, await loadAgent(dir));
 
 // Load plugins
-result.plugin.push(...await loadPlugin(dir))
+result.plugin.push(...(await loadPlugin(dir)));
 ```
 
 ## Environment Variables
 
-| Variable | Purpose |
-|----------|---------|
-| `OPENCODE_CONFIG` | Custom config file path |
-| `OPENCODE_CONFIG_CONTENT` | Inline JSON config |
-| `OPENCODE_CONFIG_DIR` | Additional config directory |
-| `OPENCODE_PERMISSION` | Permission overrides (JSON) |
-| `OPENCODE_DISABLE_PROJECT_CONFIG` | Disable project config |
+| Variable                           | Purpose                     |
+| ---------------------------------- | --------------------------- |
+| `OPENCODE_CONFIG`                  | Custom config file path     |
+| `OPENCODE_CONFIG_CONTENT`          | Inline JSON config          |
+| `OPENCODE_CONFIG_DIR`              | Additional config directory |
+| `OPENCODE_PERMISSION`              | Permission overrides (JSON) |
+| `OPENCODE_DISABLE_PROJECT_CONFIG`  | Disable project config      |
 | `OPENCODE_DISABLE_EXTERNAL_SKILLS` | Disable external skill dirs |
-| `OPENCODE_ENABLE_QUESTION_TOOL` | Enable question tool |
-| `OPENCODE_ENABLE_EXA` | Enable Exa search tools |
-| `OPENCODE_EXPERIMENTAL_LSP_TOOL` | Enable LSP tool |
-| `OPENCODE_EXPERIMENTAL_PLAN_MODE` | Enable plan mode |
-| `OPENCODE_DISABLE_AUTOCOMPACT` | Disable auto-compaction |
-| `OPENCODE_DISABLE_PRUNE` | Disable pruning |
+| `OPENCODE_ENABLE_QUESTION_TOOL`    | Enable question tool        |
+| `OPENCODE_ENABLE_EXA`              | Enable Exa search tools     |
+| `OPENCODE_EXPERIMENTAL_LSP_TOOL`   | Enable LSP tool             |
+| `OPENCODE_EXPERIMENTAL_PLAN_MODE`  | Enable plan mode            |
+| `OPENCODE_DISABLE_AUTOCOMPACT`     | Disable auto-compaction     |
+| `OPENCODE_DISABLE_PRUNE`           | Disable pruning             |
 
 ## Config Merging
 
@@ -224,18 +233,21 @@ Arrays are concatenated, objects are deep-merged:
 
 ```typescript
 function merge(target: Info, source: Info): Info {
-  const merged = mergeDeep(target, source)
+  const merged = mergeDeep(target, source);
   if (target.plugin && source.plugin) {
-    merged.plugin = Array.from(new Set([...target.plugin, ...source.plugin]))
+    merged.plugin = Array.from(new Set([...target.plugin, ...source.plugin]));
   }
   if (target.instructions && source.instructions) {
-    merged.instructions = Array.from(new Set([...target.instructions, ...source.instructions]))
+    merged.instructions = Array.from(
+      new Set([...target.instructions, ...source.instructions]),
+    );
   }
-  return merged
+  return merged;
 }
 ```
 
 After config changes, reflect:
+
 - Did the config work as expected?
 - Are there conflicts to resolve?
 - Should I adjust precedence?
@@ -248,11 +260,11 @@ Admin-controlled config that overrides everything:
 // Platform-specific locations
 switch (process.platform) {
   case "darwin":
-    return "/Library/Application Support/opencode"
+    return "/Library/Application Support/opencode";
   case "win32":
-    return path.join(process.env.ProgramData, "opencode")
+    return path.join(process.env.ProgramData, "opencode");
   default:
-    return "/etc/opencode"
+    return "/etc/opencode";
 }
 ```
 
@@ -260,19 +272,19 @@ switch (process.platform) {
 
 ```typescript
 namespace Flag {
-  OPENCODE_CLIENT              // "app" | "cli" | "desktop"
-  OPENCODE_CONFIG              // Custom config path
-  OPENCODE_CONFIG_CONTENT      // Inline config
-  OPENCODE_CONFIG_DIR          // Additional config dir
-  OPENCODE_PERMISSION          // Permission overrides
-  OPENCODE_DISABLE_PROJECT_CONFIG
-  OPENCODE_DISABLE_EXTERNAL_SKILLS
-  OPENCODE_ENABLE_QUESTION_TOOL
-  OPENCODE_ENABLE_EXA
-  OPENCODE_EXPERIMENTAL_LSP_TOOL
-  OPENCODE_EXPERIMENTAL_PLAN_MODE
-  OPENCODE_DISABLE_AUTOCOMPACT
-  OPENCODE_DISABLE_PRUNE
+  OPENCODE_CLIENT; // "app" | "cli" | "desktop"
+  OPENCODE_CONFIG; // Custom config path
+  OPENCODE_CONFIG_CONTENT; // Inline config
+  OPENCODE_CONFIG_DIR; // Additional config dir
+  OPENCODE_PERMISSION; // Permission overrides
+  OPENCODE_DISABLE_PROJECT_CONFIG;
+  OPENCODE_DISABLE_EXTERNAL_SKILLS;
+  OPENCODE_ENABLE_QUESTION_TOOL;
+  OPENCODE_ENABLE_EXA;
+  OPENCODE_EXPERIMENTAL_LSP_TOOL;
+  OPENCODE_EXPERIMENTAL_PLAN_MODE;
+  OPENCODE_DISABLE_AUTOCOMPACT;
+  OPENCODE_DISABLE_PRUNE;
 }
 ```
 

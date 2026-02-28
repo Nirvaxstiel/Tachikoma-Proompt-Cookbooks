@@ -18,6 +18,7 @@ Transformers have a **U-shaped attention bias** — tokens at the start and end 
 **Research:** "Found in the Middle" (Hsieh et al., ACL 2024)
 
 **Impact:**
+
 - Start position: 100% weight
 - Middle position: 50% weight
 - End position: 100% weight
@@ -28,7 +29,7 @@ Transformers have a **U-shaped attention bias** — tokens at the start and end 
 
 Place the most critical information at the **start** or **end** of context:
 
-```
+```text
 [Most Critical Info] ← 100% weight
     ↓
 [Supporting Details] ← 75% weight
@@ -43,6 +44,7 @@ Place the most critical information at the **start** or **end** of context:
 ### Critical Information Placement
 
 **Place at start/end:**
+
 - Project-specific rules
 - Architecture constraints
 - Critical patterns
@@ -50,6 +52,7 @@ Place the most critical information at the **start** or **end** of context:
 - Error conditions to avoid
 
 **Place in middle:**
+
 - File listings
 - Code examples
 - Implementation details
@@ -61,7 +64,7 @@ Context modules are reusable blocks of project-specific knowledge.
 
 ### Module Structure
 
-```
+```text
 .opencode/context-modules/
 ├── project-rules.md          # General project guidelines
 ├── architecture.md          # Architecture decisions
@@ -125,6 +128,7 @@ Triggered at 70-80% context utilization.
 ## Files Changed (23 files)
 
 ### Core (8 files)
+
 - src/core/router.ts (added routing)
 - src/core/middleware.ts (auth middleware)
 - src/core/handlers.ts (request handlers)
@@ -132,17 +136,20 @@ Triggered at 70-80% context utilization.
 - ...
 
 ### Services (7 files)
+
 - src/services/auth.service.ts
 - src/services/user.service.ts
 - ...
 
 ### Tests (8 files)
+
 - tests/auth.test.ts
 - tests/user.test.ts
 - ...
 ```
 
 **Benefits:**
+
 - Maintains structure with explicit sections
 - Can be read incrementally
 - Merges with existing (don't regenerate)
@@ -150,11 +157,11 @@ Triggered at 70-80% context utilization.
 
 ### When to Compress
 
-| Metric | Threshold | Action |
-|--------|-----------|--------|
-| Context utilization | > 80% | Compress immediately |
-| History length | > 5000 tokens | Summarize |
-| File count | > 20 files | Group by category |
+| Metric              | Threshold     | Action               |
+| ------------------- | ------------- | -------------------- |
+| Context utilization | > 80%         | Compress immediately |
+| History length      | > 5000 tokens | Summarize            |
+| File count          | > 20 files    | Group by category    |
 
 ## Filesystem Patterns
 

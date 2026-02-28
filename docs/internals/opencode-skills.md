@@ -3,7 +3,7 @@ title: Skills System
 description: How OpenCode discovers, loads, and executes skills.
 ---
 
-# Skills System
+## Skills System
 
 Skills are reusable capability modules. They're loaded on demand based on task context.
 
@@ -11,7 +11,7 @@ Skills are reusable capability modules. They're loaded on demand based on task c
 
 A skill is a directory with a `SKILL.md` file:
 
-```
+```text
 skill-name/
 ├── SKILL.md          # Required: name, description, instructions
 ├── scripts/          # Optional: executable scripts
@@ -25,14 +25,13 @@ skill-name/
 ---
 name: skill-name
 description: What this skill does and when to use it.
-license: Apache-2.0           # Optional
-compatibility: Requires git   # Optional
-metadata:                      # Optional
+license: Apache-2.0 # Optional
+compatibility: Requires git # Optional
+metadata: # Optional
   author: example-org
   version: "1.0"
-allowed-tools: Bash(git:*) Read  # Optional: pre-approved tools
+allowed-tools: Bash(git:*) Read # Optional: pre-approved tools
 ---
-
 # Instructions
 
 Step-by-step instructions for the agent...
@@ -68,18 +67,18 @@ namespace Skill {
   const Info = z.object({
     name: z.string(),
     description: z.string(),
-    location: z.string(),  // File path to SKILL.md
-    content: z.string(),   // Full markdown content
-  })
+    location: z.string(), // File path to SKILL.md
+    content: z.string(), // Full markdown content
+  });
 
   // Get skill by name
-  async function get(name: string): Promise<Info>
-  
+  async function get(name: string): Promise<Info>;
+
   // Get all skills
-  async function all(): Promise<Info[]>
-  
+  async function all(): Promise<Info[]>;
+
   // Get skill directories
-  async function dirs(): Promise<string[]>
+  async function dirs(): Promise<string[]>;
 }
 ```
 
@@ -91,9 +90,7 @@ Skills can be loaded from URLs:
 // opencode.json
 {
   "skills": {
-    "urls": [
-      "https://example.com/.well-known/skills/"
-    ]
+    "urls": ["https://example.com/.well-known/skills/"]
   }
 }
 ```
@@ -121,6 +118,7 @@ Skills are loaded in stages:
 3. **Resources** (as needed): Scripts, references, assets loaded on demand
 
 After loading, reflect:
+
 - Was the skill content sufficient?
 - Should I add more instructions?
 - Are there edge cases to document?
@@ -131,7 +129,7 @@ The `skill` tool loads a skill into context:
 
 ```typescript
 // Usage in agent
-skill({ name: "skill-name" })
+skill({ name: "skill-name" });
 
 // Returns skill content
 ```
@@ -140,7 +138,7 @@ skill({ name: "skill-name" })
 
 OpenCode includes some built-in skills:
 
-```
+```text
 .opencode/skill/
 └── bun-file-io/
     └── SKILL.md    # Bun file I/O patterns
@@ -180,7 +178,7 @@ Example inputs and outputs...
 
 ### 3. Add optional resources
 
-```
+```text
 my-skill/
 ├── SKILL.md
 ├── scripts/
@@ -208,11 +206,13 @@ skills-ref validate ./my-skill
 ## Description Best Practices
 
 Good:
+
 ```yaml
 description: Extracts text from PDFs, fills forms, merges documents. Use when working with PDF files or when user mentions PDFs.
 ```
 
 Poor:
+
 ```yaml
 description: Helps with PDFs.
 ```
@@ -227,14 +227,14 @@ log.warn("duplicate skill name", {
   name: parsed.data.name,
   existing: skills[parsed.data.name].location,
   duplicate: match,
-})
+});
 ```
 
 ## Integration with Tachikoma
 
 Tachikoma uses the Agent Skills format for its skills:
 
-```
+```text
 .opencode/skills/
 ├── code-agent/SKILL.md
 ├── research-agent/SKILL.md

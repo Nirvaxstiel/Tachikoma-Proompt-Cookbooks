@@ -15,12 +15,14 @@ Skill chains allow you to:
 ## When to Use Skill Chains
 
 **Use skill chains when:**
+
 - Tasks require multiple steps
 - Different domains are involved
 - Verification is needed after implementation
 - Workflows are reusable
 
 **Examples:**
+
 - "Implement and test a feature"
 - "Refactor and verify code"
 - "Create documentation and examples"
@@ -116,7 +118,7 @@ Chain stops on first error:
 ```yaml
 skills:
   - name: implement
-    continue_on_error: false  # Stop here on error
+    continue_on_error: false # Stop here on error
 
   - name: verify
     continue_on_error: false
@@ -131,7 +133,7 @@ Chain continues despite errors:
 ```yaml
 skills:
   - name: implement
-    continue_on_error: true  # Continue even if this fails
+    continue_on_error: true # Continue even if this fails
 
   - name: verify
     continue_on_error: true
@@ -149,12 +151,13 @@ skills:
 ```yaml
 implement-verify:
   skills:
-    - code-agent          # Generate
+    - code-agent # Generate
     - verifier-code-agent # Verify
-    - formatter           # Clean up
+    - formatter # Clean up
 ```
 
 **Flow:**
+
 1. Implement feature
 2. Verify correctness
 3. Format code
@@ -164,13 +167,14 @@ implement-verify:
 ```yaml
 research-implement:
   skills:
-    - research           # Explore codebase
-    - planning           # Create plan
-    - code               # Implement
-    - verification       # Verify
+    - research # Explore codebase
+    - planning # Create plan
+    - code # Implement
+    - verification # Verify
 ```
 
 **Flow:**
+
 1. Research existing patterns
 2. Create implementation plan
 3. Execute implementation
@@ -181,12 +185,13 @@ research-implement:
 ```yaml
 refactor-verify:
   skills:
-    - refactor          # Refactor code
-    - verification      # Verify behavior unchanged
-    - tests             # Run tests
+    - refactor # Refactor code
+    - verification # Verify behavior unchanged
+    - tests # Run tests
 ```
 
 **Flow:**
+
 1. Refactor code structure
 2. Verify behavior unchanged
 3. Run test suite
@@ -196,16 +201,17 @@ refactor-verify:
 ```yaml
 full-pipeline:
   skills:
-    - research          # Understand context
-    - planning          # Create plan
-    - code              # Implement
-    - verification      # Verify correctness
-    - tests             # Run tests
-    - formatter         # Format code
-    - git-commit        # Commit changes
+    - research # Understand context
+    - planning # Create plan
+    - code # Implement
+    - verification # Verify correctness
+    - tests # Run tests
+    - formatter # Format code
+    - git-commit # Commit changes
 ```
 
 **Flow:**
+
 1. Research existing code
 2. Create implementation plan
 3. Write code
@@ -253,9 +259,9 @@ my-chain:
 ```yaml
 my-chain:
   state:
-    - task-list        # Track progress
-    - plan-file        # Save/load plans
-    - results-file      # Pass results
+    - task-list # Track progress
+    - plan-file # Save/load plans
+    - results-file # Pass results
 ```
 
 ### Step 4: Configure Error Handling
@@ -323,9 +329,9 @@ feature-implementation:
       continue_on_error: true
 
   state:
-    - task-list          # Track progress
-    - plan-file          # Save/load plans
-    - results-file       # Pass results
+    - task-list # Track progress
+    - plan-file # Save/load plans
+    - results-file # Pass results
 
   error_handling:
     continue_on_error: true
@@ -351,6 +357,7 @@ routes:
 **User:** "Implement user authentication"
 
 **Execution:**
+
 1. Intent classified as `implement`
 2. Route to `feature-implementation` chain
 3. Execute skills sequentially

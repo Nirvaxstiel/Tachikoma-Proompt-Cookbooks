@@ -14,6 +14,7 @@ Subagents are specialized worker agents that handle tasks that:
 ## When to Use Subagents
 
 **Use subagents when:**
+
 - Large-scale codebase discovery
 - Parallel search across multiple locations
 - Complex multi-step research
@@ -21,6 +22,7 @@ Subagents are specialized worker agents that handle tasks that:
 - Running long-running analyses
 
 **Examples:**
+
 - "Find all authentication patterns across the codebase"
 - "Research how payments are handled in this system"
 - "Explore the API architecture and document all endpoints"
@@ -33,12 +35,14 @@ Subagents are specialized worker agents that handle tasks that:
 **Purpose:** Fast codebase exploration and discovery
 
 **Best for:**
+
 - Finding files by patterns
 - Searching code for keywords
 - Understanding architecture
 - Quick exploration
 
 **Thoroughness Levels:**
+
 - `quick` — Basic search, shallow analysis
 - `medium` — Balanced exploration
 - `very thorough` — Comprehensive, deep analysis
@@ -59,6 +63,7 @@ task(
 **Purpose:** General-purpose research and multi-step tasks
 
 **Best for:**
+
 - Complex research tasks
 - Multi-step workflows
 - Cross-domain tasks
@@ -128,12 +133,12 @@ task(
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter       | Type   | Description                         |
+| --------------- | ------ | ----------------------------------- |
 | `subagent_type` | string | Type of subagent (general, explore) |
-| `description` | string | Short description (3-5 words) |
-| `prompt` | string | Detailed task instructions |
-| `task_id` | string | Optional: Resume existing session |
+| `description`   | string | Short description (3-5 words)       |
+| `prompt`        | string | Detailed task instructions          |
+| `task_id`       | string | Optional: Resume existing session   |
 
 ### Resuming Sessions
 
@@ -185,6 +190,7 @@ task(
 ```
 
 **Benefits:**
+
 - Faster overall execution
 - Independent tasks don't block
 - Better resource utilization
@@ -288,15 +294,15 @@ task(
 
 ## Subagent vs Main Agent
 
-| Aspect | Main Agent | Subagent |
-|--------|-----------|----------|
-| **Context** | In-session | Isolated |
-| **Duration** | Short-medium | Medium-long |
-| **Focus** | Implementation | Research/Exploration |
-| **Tool Access** | All tools | Subset of tools |
-| **Best For** | Code writing, edits | Discovery, analysis |
-| **Latency** | Low (1-45s) | High (45-120s) |
-| **Token Usage** | Efficient | Higher |
+| Aspect          | Main Agent          | Subagent             |
+| --------------- | ------------------- | -------------------- |
+| **Context**     | In-session          | Isolated             |
+| **Duration**    | Short-medium        | Medium-long          |
+| **Focus**       | Implementation      | Research/Exploration |
+| **Tool Access** | All tools           | Subset of tools      |
+| **Best For**    | Code writing, edits | Discovery, analysis  |
+| **Latency**     | Low (1-45s)         | High (45-120s)       |
+| **Token Usage** | Efficient           | Higher               |
 
 ## Best Practices
 

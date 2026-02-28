@@ -3,7 +3,7 @@ title: Agents System
 description: How OpenCode defines and manages agents - execution modes with permissions.
 ---
 
-# Agents System
+## Agents System
 
 Agents are execution modes with specific permissions, prompts, and configurations.
 
@@ -22,34 +22,36 @@ namespace Agent {
     temperature: z.number().optional(),
     color: z.string().optional(),
     permission: PermissionNext.Ruleset,
-    model: z.object({
-      modelID: z.string(),
-      providerID: z.string(),
-    }).optional(),
+    model: z
+      .object({
+        modelID: z.string(),
+        providerID: z.string(),
+      })
+      .optional(),
     variant: z.string().optional(),
     prompt: z.string().optional(),
     options: z.record(z.string(), z.any()),
     steps: z.number().int().positive().optional(),
-  })
+  });
 }
 ```
 
 ## Built-in Agents
 
-| Agent | Mode | Purpose |
-|-------|------|---------|
-| `build` | primary | Default - full tool access |
-| `plan` | primary | Read-only planning mode |
-| `general` | subagent | Parallel task execution |
-| `explore` | subagent | Fast codebase exploration |
-| `compaction` | primary | Context compaction (hidden) |
-| `title` | primary | Generate session titles (hidden) |
-| `summary` | primary | Generate summaries (hidden) |
+| Agent        | Mode     | Purpose                          |
+| ------------ | -------- | -------------------------------- |
+| `build`      | primary  | Default - full tool access       |
+| `plan`       | primary  | Read-only planning mode          |
+| `general`    | subagent | Parallel task execution          |
+| `explore`    | subagent | Fast codebase exploration        |
+| `compaction` | primary  | Context compaction (hidden)      |
+| `title`      | primary  | Generate session titles (hidden) |
+| `summary`    | primary  | Generate summaries (hidden)      |
 
 ## Agent Modes
 
 ```typescript
-type Mode = "primary" | "subagent" | "all"
+type Mode = "primary" | "subagent" | "all";
 
 // primary: Main conversation agent
 // subagent: Spawned for specific tasks
@@ -60,55 +62,58 @@ type Mode = "primary" | "subagent" | "all"
 
 ```typescript
 const defaults = PermissionNext.fromConfig({
-  "*": "allow",                    // Allow all by default
-  doom_loop: "ask",                // Ask on potential loops
+  "*": "allow", // Allow all by default
+  doom_loop: "ask", // Ask on potential loops
   external_directory: {
-    "*": "ask",                    // Ask for external dirs
-    [Truncate.GLOB]: "allow",      // Allow truncation temp
+    "*": "ask", // Ask for external dirs
+    [Truncate.GLOB]: "allow", // Allow truncation temp
   },
-  question: "deny",                // No questions by default
+  question: "deny", // No questions by default
   plan_enter: "deny",
   plan_exit: "deny",
   read: {
     "*": "allow",
-    "*.env": "ask",                // Ask before reading .env
+    "*.env": "ask", // Ask before reading .env
     "*.env.*": "ask",
     "*.env.example": "allow",
   },
-})
+});
 ```
 
 ## Agent-Specific Permissions
 
 ### Build Agent
+
 ```typescript
 build: {
   permission: merge(defaults, {
     question: "allow",
     plan_enter: "allow",
-  })
+  });
 }
 ```
 
 ### Plan Agent
+
 ```typescript
 plan: {
   permission: merge(defaults, {
     question: "allow",
     plan_exit: "allow",
     edit: {
-      "*": "deny",                 // No edits except plans
+      "*": "deny", // No edits except plans
       ".opencode/plans/*.md": "allow",
     },
-  })
+  });
 }
 ```
 
 ### Explore Agent
+
 ```typescript
 explore: {
   permission: merge(defaults, {
-    "*": "deny",                   // Deny all by default
+    "*": "deny", // Deny all by default
     grep: "allow",
     glob: "allow",
     list: "allow",
@@ -117,7 +122,7 @@ explore: {
     websearch: "allow",
     codesearch: "allow",
     read: "allow",
-  })
+  });
 }
 ```
 
@@ -177,43 +182,45 @@ Agents in `.opencode/agent/` or `.opencode/agents/` are automatically loaded.
 
 ## Agent Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `model` | string | Model ID (provider/model) |
-| `variant` | string | Model variant |
-| `temperature` | number | Sampling temperature |
-| `top_p` | number | Top-p sampling |
-| `prompt` | string | System prompt |
-| `mode` | enum | primary/subagent/all |
-| `hidden` | boolean | Hide from UI |
-| `color` | string | Hex color or theme color |
-| `steps` | number | Max agentic iterations |
-| `permission` | object | Tool permissions |
-| `disable` | boolean | Disable agent |
+| Field         | Type    | Description               |
+| ------------- | ------- | ------------------------- |
+| `model`       | string  | Model ID (provider/model) |
+| `variant`     | string  | Model variant             |
+| `temperature` | number  | Sampling temperature      |
+| `top_p`       | number  | Top-p sampling            |
+| `prompt`      | string  | System prompt             |
+| `mode`        | enum    | primary/subagent/all      |
+| `hidden`      | boolean | Hide from UI              |
+| `color`       | string  | Hex color or theme color  |
+| `steps`       | number  | Max agentic iterations    |
+| `permission`  | object  | Tool permissions          |
+| `disable`     | boolean | Disable agent             |
 
 ## Agent Selection
 
 ```typescript
 // Default agent selection
 async function defaultAgent() {
-  const cfg = await Config.get()
-  
+  const cfg = await Config.get();
+
   // Check for configured default
   if (cfg.default_agent) {
-    const agent = agents[cfg.default_agent]
-    if (agent.mode === "subagent") throw Error("subagent cannot be default")
-    if (agent.hidden) throw Error("hidden agent cannot be default")
-    return agent.name
+    const agent = agents[cfg.default_agent];
+    if (agent.mode === "subagent") throw Error("subagent cannot be default");
+    if (agent.hidden) throw Error("hidden agent cannot be default");
+    return agent.name;
   }
-  
+
   // Fall back to first visible primary
-  const primaryVisible = Object.values(agents)
-    .find(a => a.mode !== "subagent" && a.hidden !== true)
-  return primaryVisible.name
+  const primaryVisible = Object.values(agents).find(
+    (a) => a.mode !== "subagent" && a.hidden !== true,
+  );
+  return primaryVisible.name;
 }
 ```
 
 After agent execution, reflect:
+
 - Was the right agent selected?
 - Should I adjust permissions?
 - Are there edge cases to handle?
@@ -225,8 +232,8 @@ After agent execution, reflect:
 TaskTool.execute({
   subagent_type: "general",
   description: "Analyze codebase",
-  prompt: "Find all API endpoints"
-})
+  prompt: "Find all API endpoints",
+});
 ```
 
 ## Agent Generation
@@ -236,8 +243,8 @@ OpenCode can generate agents from descriptions:
 ```typescript
 const result = await Agent.generate({
   description: "Create an agent for code review",
-  model: { providerID: "anthropic", modelID: "claude-3-opus" }
-})
+  model: { providerID: "anthropic", modelID: "claude-3-opus" },
+});
 
 // Returns:
 // {
@@ -255,11 +262,7 @@ Permissions are merged in order:
 // 1. Start with defaults
 // 2. Merge agent-specific permissions
 // 3. Merge user config permissions
-item.permission = PermissionNext.merge(
-  defaults,
-  agentSpecific,
-  userConfig
-)
+item.permission = PermissionNext.merge(defaults, agentSpecific, userConfig);
 ```
 
 ## Integration with Tachikoma
@@ -270,7 +273,7 @@ Tachikoma extends the agent system with:
 - Context module loading per agent
 - Skill-based agent definitions
 
-```
+```text
 .opencode/skills/
 ├── code-agent/SKILL.md      # Maps to code-agent
 ├── research-agent/SKILL.md  # Maps to research-agent

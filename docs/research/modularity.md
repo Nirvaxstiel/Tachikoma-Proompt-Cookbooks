@@ -5,6 +5,7 @@ Why focused components beat monolithic approaches.
 ## The Problem
 
 One giant model trying to do everything:
+
 - Good at nothing in particular
 - Hard to maintain
 - Inflexible
@@ -16,14 +17,15 @@ One giant model trying to do everything:
 
 **Finding:** 4B proposer + modular skills = 91.6% on AIME25 (math competition).
 
-| Architecture | Size | Accuracy |
-|--------------|------|----------|
-| Monolithic (70B) | 70B | 78% |
-| Modular (4B + skills) | 4B | 91.6% |
+| Architecture          | Size | Accuracy |
+| --------------------- | ---- | -------- |
+| Monolithic (70B)      | 70B  | 78%      |
+| Modular (4B + skills) | 4B   | 91.6%    |
 
 > **Note**: Results from AIME25 math benchmark. Demonstrates that modular approaches can outperform larger monolithic models.
 
 **Why Modularity Wins:**
+
 1. Specialization — Each component optimized for its domain
 2. Composability — Mix and match as needed
 3. Maintainability — Update one without affecting others
@@ -75,12 +77,12 @@ context-modules/
 
 ## Comparison
 
-| Aspect | Monolithic | Modular |
-|--------|------------|---------|
-| Size | 3300+ lines | 1550 lines |
-| Testing | Hard | Independent |
-| Maintenance | Coupled | Isolated |
-| Loading | Everything | What's needed |
+| Aspect      | Monolithic  | Modular       |
+| ----------- | ----------- | ------------- |
+| Size        | 3300+ lines | 1550 lines    |
+| Testing     | Hard        | Independent   |
+| Maintenance | Coupled     | Isolated      |
+| Loading     | Everything  | What's needed |
 
 ## See Also
 

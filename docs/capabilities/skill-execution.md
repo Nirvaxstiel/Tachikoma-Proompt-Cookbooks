@@ -18,30 +18,30 @@ Tachikoma includes 20 specialized skills:
 
 ### Development Skills
 
-| Skill | Purpose | Complexity |
-|-------|---------|------------|
-| `code` | Code implementation | Medium |
-| `refactor` | Code refactoring | High |
-| `verification` | Code correctness validation | High |
-| `git-commit` | Conventional git commits | Low |
-| `planning` | PAUL-style planning | Medium |
-| `paul` | PAUL methodology execution | High |
-| `carl` | Quality gate enforcement | Medium |
+| Skill          | Purpose                     | Complexity |
+| -------------- | --------------------------- | ---------- |
+| `code`         | Code implementation         | Medium     |
+| `refactor`     | Code refactoring            | High       |
+| `verification` | Code correctness validation | High       |
+| `git-commit`   | Conventional git commits    | Low        |
+| `planning`     | PAUL-style planning         | Medium     |
+| `paul`         | PAUL methodology execution  | High       |
+| `carl`         | Quality gate enforcement    | Medium     |
 
 ### Research Skills
 
-| Skill | Purpose | Complexity |
-|-------|---------|------------|
-| `research` | Codebase exploration | High |
-| `reasoning` | Functional thinking | Medium |
-| `context7` | Live documentation retrieval | Low |
+| Skill       | Purpose                      | Complexity |
+| ----------- | ---------------------------- | ---------- |
+| `research`  | Codebase exploration         | High       |
+| `reasoning` | Functional thinking          | Medium     |
+| `context7`  | Live documentation retrieval | Low        |
 
 ### Knowledge Skills
 
-| Skill | Purpose | Complexity |
-|-------|---------|------------|
-| `code` | Execute implementation tasks | Variable |
-| `refactor` | Improve code structure | Medium |
+| Skill      | Purpose                      | Complexity |
+| ---------- | ---------------------------- | ---------- |
+| `code`     | Execute implementation tasks | Variable   |
+| `refactor` | Improve code structure       | Medium     |
 
 ## Skill Discovery
 
@@ -73,25 +73,32 @@ Each skill is defined in a `SKILL.md` file:
 # Code Implementation Skill
 
 ## Purpose
+
 Execute code implementation tasks with quality verification.
 
 ## Triggers
+
 - create, implement, build, write code
 - develop, add feature
 
 ## When to Use
+
 Use this skill when:
+
 - Implementing new features
 - Writing code components
 - Building functionality
 
 ## When NOT to Use
+
 Skip this skill when:
+
 - Pure information queries
 - Explaining existing code
 - Architecture discussions
 
 ## Methodology
+
 Uses PAUL framework with verification:
 
 1. **PLAN** — Define objectives, acceptance criteria, verification steps
@@ -99,34 +106,42 @@ Uses PAUL framework with verification:
 3. **UNIFY** — Close the loop, reconcile plan vs actual
 
 ## Verification
+
 For critical implementations, use up to 3 iterations:
+
 1. GENERATE — Initial solution
 2. VERIFY — Check with explicit criteria
 3. REVISE — Fix based on verification
 4. REFLECT — Question approach, flag issues
 
 ## Context Module
+
 References: architecture.md, coding-standards.md
 
 ## Tools
+
 - Read, Write, Edit — File operations
 - Bash — Command execution
 - Glob, Grep — File search
 
 ## Example
+
 User: "Create a REST API endpoint for user authentication"
 
 PLAN:
+
 - Objective: Create `/api/auth/login` endpoint
 - Acceptance: Returns JWT token, handles errors
 - Verify: Test endpoint, validate token format
 
 APPLY:
+
 - Implement authentication handler
 - Add error handling
 - Create tests
 
 UNIFY:
+
 - Summary: Endpoint created with tests
 - Tests passing: Yes
 - Next steps: Deploy to staging
@@ -159,12 +174,14 @@ For high-stakes or correctness-critical tasks, skills can use verification loops
 ### When to Use Verification
 
 **Use verification when:**
+
 - Complex implementations
 - High-stakes fixes
 - First-time features
 - Correctness is paramount
 
 **Skip verification when:**
+
 - Simple tasks (<50 lines)
 - Prototypes
 - Well-understood patterns
@@ -199,24 +216,29 @@ For high-stakes or correctness-critical tasks, skills can use verification loops
 # Task: Implement user authentication
 
 ## GENERATE
+
 Create authentication handler with JWT tokens.
 
 ## VERIFY
+
 - [ ] Returns JWT token on success? Yes
 - [ ] Handles invalid credentials? Yes
 - [ ] Validates token format? No ← Issue found
 - [ ] Tests passing? No ← Tests fail
 
 ## REVISE
+
 Fix token validation and tests.
 
 ## VERIFY (Round 2)
+
 - [ ] Returns JWT token on success? Yes
 - [ ] Handles invalid credentials? Yes
 - [ ] Validates token format? Yes
 - [ ] Tests passing? Yes ✓
 
 ## REFLECT
+
 - Token validation implemented correctly
 - All tests passing
 - Consider adding refresh token support (future enhancement)
@@ -237,12 +259,12 @@ tachikoma.edit-format-selector with args="recommend"
 tachikoma.edit-format-selector with args="add claude-3.5 str_replace"
 ```
 
-| Model | Format | Type |
-|-------|--------|------|
-| Claude, Mistral | `str_replace` | Exact string |
-| Gemini | `str_replace_fuzzy` | Fuzzy whitespace |
-| GPT | `apply_patch` | Diff format |
-| Grok, GLM | `hashline` | Content-hash |
+| Model           | Format              | Type             |
+| --------------- | ------------------- | ---------------- |
+| Claude, Mistral | `str_replace`       | Exact string     |
+| Gemini          | `str_replace_fuzzy` | Fuzzy whitespace |
+| GPT             | `apply_patch`       | Diff format      |
+| Grok, GLM       | `hashline`          | Content-hash     |
 
 [Learn more about model-aware editing →](./model-aware-editing.md)
 
@@ -252,22 +274,23 @@ Skills have access to a set of tools based on their purpose:
 
 ### Core Tools
 
-| Tool | Purpose |
-|------|---------|
-| `read` | Read files |
-| `write` | Write files |
-| `edit` | Edit files (exact string replacement) |
-| `bash` | Execute commands |
-| `glob` | Find files by pattern |
-| `grep` | Search file contents |
-| `task` | Launch subagents |
-| `skill` | Load specialized skills |
-| `question` | Ask user for clarification |
-| `todowrite` | Manage task lists |
+| Tool        | Purpose                               |
+| ----------- | ------------------------------------- |
+| `read`      | Read files                            |
+| `write`     | Write files                           |
+| `edit`      | Edit files (exact string replacement) |
+| `bash`      | Execute commands                      |
+| `glob`      | Find files by pattern                 |
+| `grep`      | Search file contents                  |
+| `task`      | Launch subagents                      |
+| `skill`     | Load specialized skills               |
+| `question`  | Ask user for clarification            |
+| `todowrite` | Manage task lists                     |
 
 ### Skill-Specific Tools
 
 Some skills have additional tools:
+
 - `code` — Code generation tools
 - `git-commit` — Git operations
 - `research` — Exploration tools
@@ -288,22 +311,28 @@ mkdir -p .opencode/skills/my-custom-skill
 # My Custom Skill
 
 ## Purpose
+
 Handle [specific task] for [project].
 
 ## Triggers
+
 - trigger1, trigger2, trigger3
 
 ## When to Use
+
 - [Specific condition]
 - [Specific condition]
 
 ## Methodology
+
 [Describe your approach]
 
 ## Context Module
+
 References: [module.md]
 
 ## Tools
+
 - tool1, tool2, tool3
 ```
 

@@ -32,13 +32,13 @@ features:
     details: Match task complexity to execution strategy for optimal speed vs accuracy.
 ---
 
-## Two Installation Paths
+# Installation Paths
 
 Tachikoma can be installed in two locations:
 
-| Location | Path | Use Case |
-|----------|------|----------|
-| **Local** | `cwd/.opencode` | Project-specific configuration and skills |
+| Location   | Path                 | Use Case                                        |
+| ---------- | -------------------- | ----------------------------------------------- |
+| **Local**  | `cwd/.opencode`      | Project-specific configuration and skills       |
 | **Global** | `~/.config/opencode` | Shared skills and configuration across projects |
 
 ::: tip

@@ -13,6 +13,7 @@ Research backing for Tachikoma's OpenSage self-programming agent generation engi
 ## Problem Statement
 
 Traditional Agent Development Kits (ADKs) follow a **human-centered paradigm**:
+
 - Engineers manually design agent topologies
 - Developers create toolsets upfront
 - Fixed memory structures defined by humans
@@ -36,11 +37,12 @@ Three core innovations:
 
 ```typescript
 Complex task → Analyze → Subtask 1, Subtask 2, Subtask 3
-                      ↓            ↓           ↓
-                   Agent 1    Agent 2   Agent 3
+                            ↓            ↓           ↓
+                        Agent 1    Agent 2   Agent 3
 ```
 
 **Results from paper:**
+
 - 60.2% resolved rate on CyberGym (vs 39.4% baseline)
 - 20% improvement from vertical decomposition alone
 - Reduced context overflow (6.4 vs 13.1 summarization events)
@@ -49,11 +51,12 @@ Complex task → Analyze → Subtask 1, Subtask 2, Subtask 3
 
 ```typescript
 Task → Multiple Strategies → Agent 1, Agent 2, Agent 3
-                                     ↓           ↓           ↓
-                                Results → Merge → Best Solution
+                               ↓        ↓         ↓
+                           Results → Merge → Best Solution
 ```
 
 **Results from paper:**
+
 - 15% improvement from ensemble mechanism
 - Better for tasks with multiple valid approaches
 - Reduced bias from single approach
@@ -68,23 +71,24 @@ Task → Multiple Strategies → Agent 1, Agent 2, Agent 3
 
 ```
 Agent Tool Generation:
-┌─────────────────────────────────┐
-│  Tool Specification             │
-│  - Name, Description           │
-│  - Args (Zod schema)         │
-│  - Implementation               │
-│  - Dependencies                │
-└─────────────────────────────────┘
+┌──────────────────────────┐
+│  Tool Specification      │
+│  - Name, Description     │
+│  - Args (Zod schema)     │
+│  - Implementation        │
+│  - Dependencies          │
+└──────────────────────────┘
               ↓
-┌─────────────────────────────────┐
-│  Tool Registration             │
-│  - Add to tool registry         │
-│  - Set permissions            │
-│  - Create metadata             │
-└─────────────────────────────────┘
+┌──────────────────────────┐
+│  Tool Registration       │
+│  - Add to tool registry  │
+│  - Set permissions       │
+│  - Create metadata       │
+└──────────────────────────┘
 ```
 
 **Results from paper:**
+
 - 25% improvement from domain-specific toolkit
 - 39 tools generated during CyberGym eval
 - Tools: fuzzers, generators, validators
@@ -100,14 +104,15 @@ Agent Tool Generation:
 
 ```
 Memory Graph:
-┌─────────────────────────────────────────────┐
-│  Nodes: Entities (code, concepts)      │
-│  Edges: Relationships (uses, creates)    │
-│  Embeddings: Similarity search           │
-└─────────────────────────────────────────────┘
+┌───────────────────────────────────────┐
+│ Nodes: Entities (code, concepts       │
+│ Edges: Relationships (uses, creates)  │
+│ Embeddings: Similarity search         │
+└───────────────────────────────────────┘
 ```
 
 **Results from paper:**
+
 - 3-5x more efficient retrieval
 - 30% context efficiency gain
 - Memory agent +20% compression efficiency
@@ -117,26 +122,25 @@ Memory Graph:
 
 ### Benchmarks
 
-| Benchmark | Task Type | Baseline (OpenHands) | OpenSage | Improvement |
-|-----------|-----------|----------------------|----------|------------|
-| CyberGym | Security vuln | 39.4% | 60.2% | +52.8% |
-| Terminal-Bench 2.0 | Terminal tasks | 64.7% | 65.2% | +0.8% |
-| SWE-Bench Pro | Software eng | 40.2% | 59.0% | +46.8% |
+| Benchmark          | Task Type      | Baseline (OpenHands) | OpenSage | Improvement |
+| ------------------ | -------------- | -------------------- | -------- | ----------- |
+| CyberGym           | Security vuln  | 39.4%                | 60.2%    | +52.8%      |
+| Terminal-Bench 2.0 | Terminal tasks | 64.7%                | 65.2%    | +0.8%       |
+| SWE-Bench Pro      | Software eng   | 40.2%                | 59.0%    | +46.8%      |
 
 ### Ablation Studies
 
 #### Self-Generating Agent Topology
 
-```
-Configuration                     | Resolved Rate |
----------------------------------|-------------|
-Full OpenSage                 | 60.2%        |
-No Horizontal (no ensemble)     | 52.6%        |
-No Vertical (no decomposition)   | 42.8%        |
-No Feature (baseline)           | 39.4%        |
-```
+| Configuration                  | Resolved Rate |
+| ------------------------------ | ------------- |
+| Full OpenSage                  | 60.2%         |
+| No Horizontal (no ensemble)    | 52.6%         |
+| No Vertical (no decomposition) | 42.8%         |
+| No Feature (baseline)          | 39.4%         |
 
 **Key findings:**
+
 - Vertical decomposition: +20% impact
 - Horizontal ensemble: +15% impact
 - Combined: +35% over baseline
@@ -144,30 +148,28 @@ No Feature (baseline)           | 39.4%        |
 
 #### Tooling System
 
-```
-Configuration                     | Resolved Rate |
----------------------------------|-------------|
-Full OpenSage + Domain Tools    | 60.2%        |
-No Tools (raw terminal)          | 23.4%        |
-No Domain Tools (basic tools)    | 36.7%        |
-```
+| Configuration                 | Resolved Rate |
+| ----------------------------- | ------------- |
+| Full OpenSage + Domain Tools  | 60.2%         |
+| No Tools (raw terminal)       | 23.4%         |
+| No Domain Tools (basic tools) | 36.7%         |
 
 **Key findings:**
+
 - Domain-specific toolkit: +25% impact
 - Dynamic tool creation: enables specialization
 - Tool management essential for heterogeneous tools
 
 #### Memory System
 
-```
-Configuration                     | Context Efficiency |
----------------------------------|-----------------|
-Graph Memory + Memory Agent      | 30% improvement |
-Graph Memory (no agent)          | 15% improvement |
-Linear Memory                     | baseline        |
-```
+| Configuration               | Context Efficiency |
+| --------------------------- | ------------------ |
+| Graph Memory + Memory Agent | 30% improvement    |
+| Graph Memory (no agent)     | 15% improvement    |
+| Linear Memory               | baseline           |
 
 **Key findings:**
+
 - Graph structure: 2x efficiency
 - Memory agent: +15% efficiency
 - Compression critical for long sessions
@@ -179,12 +181,14 @@ Linear Memory                     | baseline        |
 **Finding:** LLMs can design better agent structures than humans for many tasks.
 
 **Evidence:**
+
 - Model-generated prompts often more precise
 - Automatic specialization reduces cognitive load
 - Task-specific tools generated on-demand
 - Self-optimizing from performance data
 
 **Implication for Tachikoma:**
+
 - Enable agent generation for complex tasks
 - Let models decide optimal decomposition
 - Provide tools for tool creation
@@ -195,12 +199,14 @@ Linear Memory                     | baseline        |
 **Finding:** Not all tasks benefit from the same approach.
 
 **Evidence:**
+
 - Sequential: Good for dependencies (API: design → models → impl)
 - Parallel: Good for exploration (optimization, alternatives)
 - Context isolation prevents overflow
 - Specialized prompts improve focus
 
 **Implication for Tachikoma:**
+
 - Intent routing should detect decomposition needs
 - Support both vertical and horizontal patterns
 - Allow dynamic strategy selection
@@ -211,12 +217,14 @@ Linear Memory                     | baseline        |
 **Finding:** AI-written tools enable capabilities impossible with fixed toolsets.
 
 **Evidence:**
+
 - 39 tools generated in CyberGym eval
 - Fuzzers, validators, generators
 - Task-specific optimization
 - Adaptability to new domains
 
 **Implication for Tachikoma:**
+
 - Provide meta-tools for tool creation
 - Tool sandboxing for safety
 - Tool state management for complex workflows
@@ -227,12 +235,14 @@ Linear Memory                     | baseline        |
 **Finding:** Graph-based retrieval is significantly more efficient than linear.
 
 **Evidence:**
+
 - 3-5x efficiency improvement
 - Relationship awareness improves relevance
 - Memory agent enables compression
 - Supports complex knowledge representation
 
 **Implication for Tachikoma:**
+
 - Implement graph-based memory
 - Add memory agent for smart operations
 - Support similarity and pattern search
@@ -250,6 +260,7 @@ The paper notes that SOTA models don't consistently use advanced features:
 4. **Over-complex instructions** — Generated prompts become confusing
 
 **Implication for Tachikoma:**
+
 - Add validation for generated agents
 - Provide constraints for tool generation
 - Use verification loops before deployment
@@ -265,6 +276,7 @@ Even with OpenSage, models have limitations:
 - Context limits constrain agent depth
 
 **Implication for Tachikoma:**
+
 - Model-aware routing for OpenSage features
 - Cost-aware decisions on when to use
 - Fallback to traditional methods when needed
@@ -277,6 +289,7 @@ Even with OpenSage, models have limitations:
 **From paper:** Task complexity determines optimal strategy.
 
 **Tachikoma implementation:**
+
 ```yaml
 opensage_vertical:
   patterns: ["multi-step task", "complex workflow"]
@@ -292,6 +305,7 @@ opensage_horizontal:
 **From paper:** Agents improve with experience.
 
 **Tachikoma implementation:**
+
 ```typescript
 class AgentRegistry {
   // Track success/failure per agent-task pair
@@ -305,6 +319,7 @@ class AgentRegistry {
 **From paper:** Graph-based retrieval is 3-5x more efficient.
 
 **Tachikoma implementation:**
+
 ```typescript
 class GraphMemoryPlugin {
   // Add nodes (entities, code, concepts)

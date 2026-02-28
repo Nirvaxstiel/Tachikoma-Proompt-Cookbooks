@@ -12,12 +12,13 @@ Tools improve accuracy but add latency. Using the wrong tool wastes time or prod
 
 **Finding:** Tools improve accuracy by +20% but add 40x latency.
 
-| Metric | No Tools | With Tools |
-|--------|----------|------------|
-| Accuracy | 47.5% | 67.5% |
-| Latency | 8s | 317s |
+| Metric   | No Tools | With Tools |
+| -------- | -------- | ---------- |
+| Accuracy | 47.5%    | 67.5%      |
+| Latency  | 8s       | 317s       |
 
 **Implications:**
+
 1. Simple tasks — Direct response is faster and sufficient
 2. Complex tasks — Tools are necessary for accuracy
 3. Sweet spot — Match tool complexity to task
@@ -26,12 +27,12 @@ Tools improve accuracy but add latency. Using the wrong tool wastes time or prod
 
 ## Tachikoma's Solution
 
-| Complexity | Strategy | Latency |
-|------------|----------|---------|
-| Low | Direct response | 1-2s |
-| Medium | Single skill | 5-15s |
-| High | Multi-skill chain | 15-45s |
-| Very High | RLM orchestration | 45-120s |
+| Complexity | Strategy          | Latency |
+| ---------- | ----------------- | ------- |
+| Low        | Direct response   | 1-2s    |
+| Medium     | Single skill      | 5-15s   |
+| High       | Multi-skill chain | 15-45s  |
+| Very High  | RLM orchestration | 45-120s |
 
 ## Routing Decision
 

@@ -7,12 +7,14 @@ OpenSage is a **self-programming agent generation engine** that transforms Tachi
 ### The Paradigm Shift
 
 **Before (Human-Centered)**:
+
 - Engineers manually design agent structures
 - Developers create fixed toolsets upfront
 - Memory is pre-defined by humans
 - Agents follow rigid, predefined workflows
 
 **After (AI-Centered)**:
+
 - LLMs create specialized agents on-demand
 - AI writes its own tools when needed
 - Knowledge graph structures emerge from interactions
@@ -41,6 +43,7 @@ Creates specialized agents dynamically from task descriptions, then coordinates 
 When you request: "Implement a complete REST API with authentication, CRUD operations, and tests"
 
 Tachikoma:
+
 1. Analyzes the task complexity
 2. Determines this needs multiple specialized sub-tasks
 3. Generates agents for each sub-task:
@@ -52,6 +55,7 @@ Tachikoma:
 5. Integrates results into complete API
 
 **What powers this:**
+
 - **OpensageAgentsPlugin** (`src/plugin/tachikoma/opensage/opensage-agents.ts`)
   - `@generate-agent`: Creates agent from task description
   - `@vertical-decompose`: Breaks task into sequential sub-tasks
@@ -64,6 +68,7 @@ Tachikoma:
   - Tracks performance metrics
 
 **Types:** (`src/types/opensage-agent.ts`)
+
 - `AgentSpec`: Defines agent name, description, mode, tools, model
 - `VerticalDecomposition`: Sequential multi-agent topology
 - `HorizontalEnsemble`: Parallel ensemble with coordinator
@@ -78,6 +83,7 @@ Creates custom tools at runtime when existing tools don't meet requirements.
 When you need: "A tool that validates JWT tokens with RS256 algorithm"
 
 Tachikoma:
+
 1. Calls `@generate-tool` with the requirement
 2. AI generates:
    - Tool specification (name, description, parameters)
@@ -87,6 +93,7 @@ Tachikoma:
 4. Can be executed with state persistence
 
 **What powers this:**
+
 - **DynamicToolsPlugin** (`src/plugin/tachikoma/opensage/dynamic-tools.ts`)
   - `@generate-tool`: Creates tool from requirement
   - `@list-generated-tools`: Lists all generated tools
@@ -95,6 +102,7 @@ Tachikoma:
   - `@poll-async-job`: Checks status of background jobs
 
 **Types:** (`src/types/opensage-tool.ts`)
+
 - `ToolSpec`: Defines tool structure
 - `ToolState`: Tracks tool state across invocations
 - `AsyncJob`: Manages background tool execution
@@ -109,29 +117,32 @@ Stores knowledge in a graph structure (nodes and edges) rather than linear conte
 When Tachikoma encounters code structures, decisions, or patterns:
 
 1. **Add nodes** to knowledge graph:
+
    ```
-   @memory-add-node 
+   @memory-add-node
      type="code"
      label="AuthService.authenticate"
      content="Authenticates users via JWT tokens, returns User object"
-   
-   @memory-add-node 
+
+   @memory-add-node
      type="code"
      label="JWTMiddleware"
      content="Validates JWT tokens before protected routes"
    ```
 
 2. **Add relationships** between nodes:
+
    ```
-   @memory-add-edge 
+   @memory-add-edge
      fromId="AuthService.authenticate"
      toId="JWTMiddleware"
      type="uses"
    ```
 
 3. **Query knowledge** when needed:
+
    ```
-   @memory-query 
+   @memory-query
      query="authentication mechanisms"
      mode="similarity"
      maxResults=10
@@ -143,6 +154,7 @@ When Tachikoma encounters code structures, decisions, or patterns:
    ```
 
 **What powers this:**
+
 - **GraphMemoryPlugin** (`src/plugin/tachikoma/opensage/graph-memory.ts`)
   - `@memory-add-node`: Add entities to knowledge graph
   - `@memory-add-edge`: Add relationships
@@ -152,6 +164,7 @@ When Tachikoma encounters code structures, decisions, or patterns:
   - **Session hooks**: Auto-record events, compress when needed
 
 **Types:** (`src/types/opensage-memory.ts`)
+
 - `MemoryNode`: Represents entities (code, concepts, queries, answers)
 - `MemoryEdge`: Represents relationships (uses, depends_on, implements)
 - `MemoryGraph`: Collection of nodes and edges
@@ -175,6 +188,7 @@ Every time an agent executes:
 4. Enables agent optimization based on history
 
 **Example:**
+
 ```
 Task: "Review code for security vulnerabilities"
 
@@ -188,6 +202,7 @@ Future similar task:
 ```
 
 **What powers this:**
+
 - **AgentRegistry** (`src/plugin/tachikoma/opensage/agent-registry.ts`)
   - `recordSuccess()`: Log successful agent execution
   - `recordFailure()`: Log failed agent execution
@@ -196,6 +211,7 @@ Future similar task:
   - **File-based persistence**: `.opencode/agent-metrics.json`
 
 **Types:** (`src/types/opensage-registry.ts`)
+
 - `AgentMetrics`: Success/failure counts, cost, latency
 - `TaskRecord`: Individual task execution details
 - `PerformanceStats`: Aggregated statistics
@@ -207,6 +223,7 @@ Future similar task:
 **Issue:** Pre-defined agents can't adapt to new task types or domains. Every new domain requires manual agent design.
 
 **Solution:** Self-generating agents
+
 - AI creates specialized agents on-demand
 - Each agent is optimized for its specific sub-task
 - Agents can be re-used for similar future tasks
@@ -214,6 +231,7 @@ Future similar task:
 
 **Example:**
 Instead of manually creating a "PostgreSQL audit agent", Tachikoma:
+
 - Generates `@database-auditor` when first PostgreSQL audit task appears
 - Optimizes prompt based on PostgreSQL-specific patterns
 - Learns from past PostgreSQL audits to improve future performance
@@ -223,6 +241,7 @@ Instead of manually creating a "PostgreSQL audit agent", Tachikoma:
 **Issue:** Fixed toolsets can't support novel requirements or domain-specific needs without manual tool development.
 
 **Solution:** Dynamic tool synthesis
+
 - AI writes tools when existing ones aren't sufficient
 - Tools are immediately available in current session
 - Stateful tools can persist data across invocations
@@ -230,6 +249,7 @@ Instead of manually creating a "PostgreSQL audit agent", Tachikoma:
 
 **Example:**
 Instead of being limited to generic `bash` and `read`, you can:
+
 - Generate `@rs256-jwt-validator` tool for RS256 JWT validation
 - Generate `@graphql-schema-generator` tool for GraphQL schema creation
 - Generate `@fuzzer-generator` tool for security testing
@@ -239,6 +259,7 @@ Instead of being limited to generic `bash` and `read`, you can:
 **Issue:** As sessions grow, context becomes too large, causing summarization and loss of important details.
 
 **Solution:** Hierarchical memory with compression
+
 - Knowledge is stored in structured graph
 - Short-term event history compressed automatically
 - Relevant knowledge retrieved without loading full context
@@ -246,6 +267,7 @@ Instead of being limited to generic `bash` and `read`, you can:
 
 **Example:**
 Instead of loading entire codebase history:
+
 - Query: "How is user authentication handled?"
 - Retrieves: `AuthService.authenticate` node + related `JWTMiddleware` node
 - Gets exact answer without loading thousands of lines
@@ -255,6 +277,7 @@ Instead of loading entire codebase history:
 **Issue:** Which agent should handle a task is often unclear, leading to suboptimal choices.
 
 **Solution:** Performance-based recommendation
+
 - Track success rates, costs, latency per agent-task pair
 - Recommend agents with highest success rate for specific task types
 - Enable agent optimization over time
@@ -262,6 +285,7 @@ Instead of loading entire codebase history:
 
 **Example:**
 Task: "Generate unit tests for code"
+
 - `test-generator` agent: 95% success rate, avg 2.1s
 - `@unit-tester` agent: 78% success rate, avg 3.5s
 - Tachikoma recommends `test-generator` for future test generation tasks
@@ -271,6 +295,7 @@ Task: "Generate unit tests for code"
 **Issue:** Single-path execution misses potentially better solutions that would be found by exploring multiple approaches.
 
 **Solution:** Horizontal ensemble
+
 - Create multiple agents with different strategies
 - Execute in parallel
 - Coordinator merges results and selects best
@@ -278,6 +303,7 @@ Task: "Generate unit tests for code"
 
 **Example:**
 Task: "Optimize slow SQL query"
+
 - `@index-optimizer`: Suggests adding indexes
 - `@query-rewriter`: Rewrites query structure
 - `@caching-expert`: Adds caching layer
@@ -293,6 +319,7 @@ Task: "Optimize slow SQL query"
 - You want agents that improve over time with their specific tasks
 
 **Examples:**
+
 - "Implement a complete microservice with database, API, tests, and documentation"
 - "Migrate a large codebase to new architecture"
 - "Build a comprehensive CI/CD pipeline with multiple stages"
@@ -305,6 +332,7 @@ Task: "Optimize slow SQL query"
 - Integration with external service requires custom logic
 
 **Examples:**
+
 - "Validate OpenAPI schemas according to OpenAPI specification"
 - "Generate API documentation from TypeScript interfaces"
 - "Run load tests on a staging environment"
@@ -318,6 +346,7 @@ Task: "Optimize slow SQL query"
 - Need to recall architectural decisions or patterns
 
 **Examples:**
+
 - "What components are involved in user authentication flow?"
 - "Find all code that depends on the PaymentService"
 - "What patterns do we use for error handling?"
@@ -367,13 +396,13 @@ OpenSage integrates with OpenCode's systems:
 
 Based on OpenSage paper benchmarks:
 
-| Feature | Impact | Notes |
-|---------|--------|-------|
-| Vertical Decomposition | +20-30% task success | Sequential context passing prevents overflow |
-| Horizontal Ensemble | +15% solution quality | Multiple approaches reduce bias |
-| Dynamic Tools | +25% capability | Custom tools enable new capabilities |
-| Graph Memory | +30% retrieval efficiency | Structured knowledge vs linear search |
-| Performance Tracking | +10% efficiency | Better agent selection over time |
+| Feature                | Impact                    | Notes                                        |
+| ---------------------- | ------------------------- | -------------------------------------------- |
+| Vertical Decomposition | +20-30% task success      | Sequential context passing prevents overflow |
+| Horizontal Ensemble    | +15% solution quality     | Multiple approaches reduce bias              |
+| Dynamic Tools          | +25% capability           | Custom tools enable new capabilities         |
+| Graph Memory           | +30% retrieval efficiency | Structured knowledge vs linear search        |
+| Performance Tracking   | +10% efficiency           | Better agent selection over time             |
 
 ## Research Backing
 
@@ -386,6 +415,7 @@ All OpenSage features are implemented based on findings from:
   - Proves effectiveness of graph-based memory
 
 Key experimental results:
+
 - CyberGym (security vuln exploitation): 60.2% vs 39.4% baseline (OpenHands)
 - Terminal-Bench 2.0 (terminal tasks): 65.2% vs 64.7% baseline (Ante)
 - SWE-Bench Pro (software engineering): 59.0% vs 40.2% baseline (SWE-agent)
@@ -464,14 +494,14 @@ docs/
 
 ## Key Differences from Traditional Agents
 
-| Aspect | Traditional Agents | OpenSage-Powered Agents |
-|--------|------------------|------------------------|
-| **Agent Creation** | Human-designed | AI-generated on-demand |
-| **Tool Availability** | Fixed pre-defined | Dynamic synthesis |
-| **Memory Structure** | Linear context | Graph-based knowledge |
-| **Optimization** | Manual tuning | Automatic performance learning |
-| **Adaptability** | Static | Self-improving |
-| **Scalability** | Manual scaling | Self-replicating |
+| Aspect                | Traditional Agents | OpenSage-Powered Agents        |
+| --------------------- | ------------------ | ------------------------------ |
+| **Agent Creation**    | Human-designed     | AI-generated on-demand         |
+| **Tool Availability** | Fixed pre-defined  | Dynamic synthesis              |
+| **Memory Structure**  | Linear context     | Graph-based knowledge          |
+| **Optimization**      | Manual tuning      | Automatic performance learning |
+| **Adaptability**      | Static             | Self-improving                 |
+| **Scalability**       | Manual scaling     | Self-replicating               |
 
 ## Getting Started
 
@@ -515,7 +545,7 @@ Combine OpenSage features for complex workflows:
 @generate-tool requirement="Validate PostgreSQL migration SQL" language="sql" name="migration-validator"
 
 # 3. Decompose migration task
-@vertical-decompose 
+@vertical-decompose
   task="Migrate database schema to version 2.0"
   subtasks=[
     "Analyze existing schema differences",
@@ -527,27 +557,6 @@ Combine OpenSage features for complex workflows:
 
 # 4. Results integrated into complete migration workflow
 ```
-
-## Status
-
-| Component | Status |
-|-----------|--------|
-| Self-generating agent topology | ✅ Implemented |
-| Dynamic tool synthesis | ✅ Implemented |
-| Hierarchical memory management | ✅ Implemented |
-| Performance tracking | ✅ Implemented |
-| Integration with Tachikoma | ✅ Complete |
-| Documentation | ✅ Complete |
-| Tool sandboxing (Docker) | ⏳ Designed, not implemented |
-| Real embeddings (beyond hash) | ⏳ Placeholder, needs production service |
-
-## Notes
-
-- OpenSage represents a paradigm shift from human-centered to AI-centered agent development
-- Current models have limitations that prevent full utilization of self-programming capabilities
-- Performance improvements come from better agent specialization, not magic
-- OpenSage features are optional - Tachikoma works without them
-- The system learns and improves over time through performance tracking
 
 ## References
 

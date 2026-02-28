@@ -2,7 +2,8 @@
 
 ## Overview
 
-OpenCode provides built-in telemetry through its SQLite database at `~/.local/share/opencode/opencode.db`. This document describes what's available for tracking skill usage and how Tachikoma can leverage it.
+OpenCode provides built-in telemetry through its SQLite database at `~/.local/share/opencode/opencode.db`.
+This document describes what's available for tracking skill usage and how Tachikoma can leverage it.
 
 ## What OpenCode Provides ✅
 
@@ -27,9 +28,9 @@ The `part` table tracks detailed tool invocations with:
   "callID": "  functions.skill:42",
   "tool": "skill",
   "state": {
-    "status": "completed",      // running | completed | failed
+    "status": "completed", // running | completed | failed
     "input": {
-      "name": "code-agent",     // skill name
+      "name": "code-agent", // skill name
       "description": "..."
     },
     "output": "Result data...",
@@ -45,6 +46,7 @@ The `part` table tracks detailed tool invocations with:
 ### Built-in Analytics
 
 `opencode stats` command provides:
+
 - **Tool usage** - Frequency of each tool (including `skill`)
 - **Model usage** - Tokens, costs per model
 - **Session statistics** - Messages, tokens per session, median, cost per day
@@ -104,61 +106,66 @@ This provides **skill tracking without extra infrastructure**.
 OpenCode's telemetry lacks skill-specific metrics that would be useful for optimization:
 
 ### 1. Skill Invocation Metrics
+
 **Missing:** Detailed performance tracking per skill
 
-| Metric | Description | Use Case |
-|---------|-------------|-----------|
-| Tokens used | Context cost per skill | Optimize skill instructions |
-| Duration | Time to complete tasks | Identify slow skills |
-| Success rate | Tasks completed vs failed | Improve skill reliability |
-| Iterations | Retry loops, verification attempts | Reduce redundant work |
+| Metric       | Description                        | Use Case                    |
+| ------------ | ---------------------------------- | --------------------------- |
+| Tokens used  | Context cost per skill             | Optimize skill instructions |
+| Duration     | Time to complete tasks             | Identify slow skills        |
+| Success rate | Tasks completed vs failed          | Improve skill reliability   |
+| Iterations   | Retry loops, verification attempts | Reduce redundant work       |
 
 **Current approach:** Can infer from tool state (start/end times, status) but lacks granular metrics.
 
 ### 2. Skill Iterations
+
 **Missing:** Tracking retry loops and verification attempts
 
-| Iteration Data | Description | Use Case |
-|---------------|-------------|-----------|
-| Retry count | How many times skill retried | Identify flaky skills |
-| Verification loops | GVR pattern attempts | Optimize verification criteria |
-| Max iterations reached | Escalation events | Improve error handling |
+| Iteration Data         | Description                  | Use Case                       |
+| ---------------------- | ---------------------------- | ------------------------------ |
+| Retry count            | How many times skill retried | Identify flaky skills          |
+| Verification loops     | GVR pattern attempts         | Optimize verification criteria |
+| Max iterations reached | Escalation events            | Improve error handling         |
 
 **Current approach:** Can track tool invocations but not iteration relationships within a skill.
 
 ### 3. Edit Format Success Rates
+
 **Missing:** Per-format tracking per model
 
-| Metric | Description | Use Case |
-|---------|-------------|-----------|
-| Format success | Which formats work for which models | Optimize edit strategies |
-| Attempts per edit | Retry loops per edit | Reduce wasted tokens |
+| Metric                 | Description                          | Use Case                     |
+| ---------------------- | ------------------------------------ | ---------------------------- |
+| Format success         | Which formats work for which models  | Optimize edit strategies     |
+| Attempts per edit      | Retry loops per edit                 | Reduce wasted tokens         |
 | Format vs model matrix | Success rate by (model, format) pair | Choose best format per model |
 
 **Current approach:** Tool invocations track edits but not format-specific success rates.
 
 ### 4. RLM (Recursive Language Model) Performance
+
 **Missing:** Chunking and processing metrics
 
-| RLM Metric | Description | Use Case |
-|------------|-------------|-----------|
-| Chunk count | How many chunks processed | Optimize chunk size |
-| Processing time | Time per chunk | Identify bottlenecks |
-| Parallel vs sequential | Execution mode comparison | Optimize throughput |
-| Accuracy | Result correctness | Improve quality |
-| Token efficiency | Tokens per chunk | Reduce cost |
+| RLM Metric             | Description               | Use Case             |
+| ---------------------- | ------------------------- | -------------------- |
+| Chunk count            | How many chunks processed | Optimize chunk size  |
+| Processing time        | Time per chunk            | Identify bottlenecks |
+| Parallel vs sequential | Execution mode comparison | Optimize throughput  |
+| Accuracy               | Result correctness        | Improve quality      |
+| Token efficiency       | Tokens per chunk          | Reduce cost          |
 
 **Current approach:** Tool state tracks start/end times but not chunk-level metrics.
 
 ### 5. Intent Classification
+
 **Missing:** Classification accuracy and confidence
 
-| Intent Metric | Description | Use Case |
-|--------------|-------------|-----------|
-| Confidence score | Model's certainty | Identify uncertain classifications |
-| Actual correctness | Was classification right? | Improve routing |
-| Escalation rate | Tasks escalated to human | Adjust thresholds |
-| Confusion matrix | Which intents get confused | Disambiguate routing |
+| Intent Metric      | Description                | Use Case                           |
+| ------------------ | -------------------------- | ---------------------------------- |
+| Confidence score   | Model's certainty          | Identify uncertain classifications |
+| Actual correctness | Was classification right?  | Improve routing                    |
+| Escalation rate    | Tasks escalated to human   | Adjust thresholds                  |
+| Confusion matrix   | Which intents get confused | Disambiguate routing               |
 
 **Current approach:** No intent tracking at all in database.
 
@@ -167,37 +174,45 @@ OpenCode's telemetry lacks skill-specific metrics that would be useful for optim
 ### What Works Today
 
 ✅ **Skill Discovery**
+
 - Parse tool invocations for `skill` or skill-specific tool names
 - Extract skill names from `input.name` arguments
 
 ✅ **Usage Statistics**
+
 - Count how many times each skill is invoked
 - Track skill usage per session
 
 ✅ **Temporal Tracking**
+
 - When skills were loaded (`time.start`)
 - How long skills took to execute (`time.end - time.start`)
 - Skill usage over time
 
 ✅ **Status Tracking**
+
 - Running vs completed vs failed
 - Success/failure rates from tool state
 
 ✅ **Session Context**
+
 - Which sessions used which skills
 - Skill usage patterns across projects
 
 ### What Requires Enhancement
 
 ❌ **Granular Performance Metrics**
+
 - Need dedicated tracking for tokens, duration, success rate
 - Requires additional infrastructure (telemetry logger or DB extension)
 
 ❌ **Skill-Specific Metrics**
+
 - Verification loops, retry counts, GVR patterns
 - Requires skill-level instrumentation
 
 ❌ **Cross-Session Analytics**
+
 - Skill improvement over time
 - Pattern recognition across sessions
 - Requires aggregation layer
@@ -250,16 +265,19 @@ OpenCode's telemetry lacks skill-specific metrics that would be useful for optim
 ### Phase 2: Add Dedicated Telemetry (Future)
 
 **Option A: Extend OpenCode Database**
+
 - Add migration tables: `skill_metrics`, `edit_metrics`, `rlm_metrics`, `intent_metrics`
 - Integrate with OpenCode's infrastructure
 - Single source of truth
 
 **Option B: Separate Telemetry System**
+
 - Keep JSON-based telemetry logger (`.opencode/core/telemetry-logger.py`)
 - Store in `.opencode/telemetry/metrics.json`
 - Portable, no DB changes needed
 
 **Option C: Hybrid Approach**
+
 - Use OpenCode DB for basic tracking (already done)
 - Add separate telemetry for advanced metrics
 - Combine in dashboard for unified view

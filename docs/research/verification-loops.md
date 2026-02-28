@@ -13,16 +13,19 @@ Single-pass generation assumes outputs are correct. Models often miss their own 
 **Finding:** Generator-Verifier-Reviser pattern achieves 90% on IMO-ProofBench (math proofs) vs 67% base.
 
 **System:**
+
 ```
 Problem → Generator → Candidate → Verifier → [Pass | Revise | Restart]
 ```
 
 **Results:**
+
 - 90% on IMO-ProofBench Advanced (vs 67% base)
 - Autonomous solutions to 4 open Erdős problems
 - Natural language verifier admits failure
 
 **Why It Works:**
+
 1. Separate concerns — generator creates, verifier validates
 2. Different perspectives — verifier approaches from critique angle
 3. Explicit checking — verifier justifies pass/fail
@@ -35,6 +38,7 @@ Problem → Generator → Candidate → Verifier → [Pass | Revise | Restart]
 **Finding:** Human-AI collaboration with adversarial review detects subtle flaws.
 
 **Techniques:**
+
 - Iterative refinement
 - Problem decomposition
 - Adversarial reviewer to detect flaws
@@ -44,11 +48,11 @@ Problem → Generator → Candidate → Verifier → [Pass | Revise | Restart]
 
 ## Quantitative Impact (IMO-ProofBench)
 
-| Approach | Accuracy |
-|----------|----------|
-| Base Model | 67% |
-| Retry (3x) | 72% |
-| Verification Loop | 90% |
+| Approach          | Accuracy |
+| ----------------- | -------- |
+| Base Model        | 67%      |
+| Retry (3x)        | 72%      |
+| Verification Loop | 90%      |
 
 > **Note**: These results are from mathematical proof benchmarks. Your mileage may vary for code tasks.
 
@@ -79,20 +83,22 @@ Problem → Generator → Candidate → Verifier → [Pass | Revise | Restart]
 ```yaml
 implement-verify:
   skills:
-    - code-agent           # Generate
-    - verifier-code-agent  # Verify
-    - formatter            # Clean up
+    - code-agent # Generate
+    - verifier-code-agent # Verify
+    - formatter # Clean up
 ```
 
 ## When to Use
 
 **Use verification when:**
+
 - Complex implementations
 - High-stakes fixes
 - First-time features
 - Correctness is paramount
 
 **Skip verification when:**
+
 - Simple tasks (<50 lines)
 - Prototypes
 - Well-understood patterns

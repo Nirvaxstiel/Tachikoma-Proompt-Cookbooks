@@ -148,18 +148,18 @@ Source: Can.ac blog (Feb 2026)
 
 ## Capability Matrix
 
-| Capability | Best For | Complexity | Latency |
-|------------|-----------|------------|---------|
-| Direct Response | Simple queries, <50 lines | Low | 1-2s |
-| Single Skill | Focused tasks, one domain | Medium | 5-15s |
-| Skill Chain | Multi-step workflows | High | 15-45s |
-| Verification Loop | High-stakes, correctness-critical | High | +10-30s |
-| Subagent | Large-context discovery, parallel tasks | Very High | 45-120s |
-| RLM | Massive contexts, 10M+ tokens | Very High | 2-5min |
+| Capability        | Best For                                | Complexity | Latency |
+| ----------------- | --------------------------------------- | ---------- | ------- |
+| Direct Response   | Simple queries, <50 lines               | Low        | 1-2s    |
+| Single Skill      | Focused tasks, one domain               | Medium     | 5-15s   |
+| Skill Chain       | Multi-step workflows                    | High       | 15-45s  |
+| Verification Loop | High-stakes, correctness-critical       | High       | +10-30s |
+| Subagent          | Large-context discovery, parallel tasks | Very High  | 45-120s |
+| RLM               | Massive contexts, 10M+ tokens           | Very High  | 2-5min  |
 
 ## Decision Flow
 
-```
+```text
 User Request
     ↓
 Classify Intent
@@ -181,17 +181,17 @@ Reflect on approach (freedom to question, flag issues)
 
 ## Quick Reference
 
-| Need | Use | Link |
-|------|-----|------|
-| Understand routing | Intent Classification | [→](./intent-routing.md) |
-| Manage context | Context Management | [→](./context-management.md) |
-| Execute tasks | Skill Execution | [→](./skill-execution.md) |
-| Chain skills | Skill Chains | [→](./skill-chains.md) |
-| Structure work | PAUL Methodology | [→](./paul-methodology.md) |
-| Enforce quality | CARL Quality Gates | [→](./carl-quality-gates.md) |
-| Model-specific edits | Model-Aware Editing | [→](./model-aware-editing.md) |
-| Large contexts | Subagents | [→](./subagents.md) |
-| Verify correctness | Verification Loops | [→](../research/verification-loops.md) |
+| Need                 | Use                   | Link                                   |
+| -------------------- | --------------------- | -------------------------------------- |
+| Understand routing   | Intent Classification | [→](./intent-routing.md)               |
+| Manage context       | Context Management    | [→](./context-management.md)           |
+| Execute tasks        | Skill Execution       | [→](./skill-execution.md)              |
+| Chain skills         | Skill Chains          | [→](./skill-chains.md)                 |
+| Structure work       | PAUL Methodology      | [→](./paul-methodology.md)             |
+| Enforce quality      | CARL Quality Gates    | [→](./carl-quality-gates.md)           |
+| Model-specific edits | Model-Aware Editing   | [→](./model-aware-editing.md)          |
+| Large contexts       | Subagents             | [→](./subagents.md)                    |
+| Verify correctness   | Verification Loops    | [→](../research/verification-loops.md) |
 
 ## Next Steps
 

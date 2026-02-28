@@ -30,6 +30,7 @@ Route Decision
 ### Low Complexity
 
 **When:**
+
 - Simple queries (<50 lines)
 - Well-defined, single-step tasks
 - High confidence (>0.9)
@@ -38,6 +39,7 @@ Route Decision
 **Latency:** 1-2s
 
 **Examples:**
+
 - "What does this function do?"
 - "How do I implement X?"
 - "Explain this error message"
@@ -45,6 +47,7 @@ Route Decision
 ### Medium Complexity
 
 **When:**
+
 - Focused tasks requiring tools
 - One domain of knowledge
 - Moderate confidence (0.7-0.9)
@@ -53,6 +56,7 @@ Route Decision
 **Latency:** 5-15s
 
 **Examples:**
+
 - "Create a new API endpoint"
 - "Refactor this component"
 - "Add tests for this module"
@@ -60,6 +64,7 @@ Route Decision
 ### High Complexity
 
 **When:**
+
 - Multi-step workflows
 - Cross-domain knowledge
 - Moderate confidence (0.5-0.7)
@@ -68,6 +73,7 @@ Route Decision
 **Latency:** 15-45s
 
 **Examples:**
+
 - "Implement authentication flow"
 - "Set up CI/CD pipeline"
 - "Migrate database schema"
@@ -75,6 +81,7 @@ Route Decision
 ### Very High Complexity
 
 **When:**
+
 - Large-context tasks (>2000 tokens)
 - Complex orchestration
 - Lower confidence (<0.5)
@@ -83,18 +90,19 @@ Route Decision
 **Latency:** 45-120s
 
 **Examples:**
+
 - "Refactor entire codebase"
 - "Research architecture patterns"
 - "Optimize system performance"
 
 ## Confidence Thresholds
 
-| Score | Action | Rationale |
-|-------|--------|-----------|
-| < 0.5 | Ask clarification | Too uncertain, risk of error |
-| 0.5-0.7 | RLM/Subagent | Complex, needs exploration |
+| Score   | Action             | Rationale                         |
+| ------- | ------------------ | --------------------------------- |
+| < 0.5   | Ask clarification  | Too uncertain, risk of error      |
+| 0.5-0.7 | RLM/Subagent       | Complex, needs exploration        |
 | 0.7-0.9 | Single skill/chain | Clear intent, moderate complexity |
-| > 0.9 | Direct response | Simple, well-understood |
+| > 0.9   | Direct response    | Simple, well-understood           |
 
 ## Configuration
 
@@ -191,6 +199,7 @@ Reflect (freedom to question)
 **User:** "How do I create a new API endpoint in Express?"
 
 **Classification:**
+
 - Pattern: "how do i"
 - Domain: Express
 - Confidence: 0.95
@@ -204,6 +213,7 @@ Reflect (freedom to question)
 **User:** "Create a new REST API endpoint for user authentication"
 
 **Classification:**
+
 - Pattern: "create", "api endpoint"
 - Domain: Authentication
 - Confidence: 0.85
@@ -217,6 +227,7 @@ Reflect (freedom to question)
 **User:** "Implement OAuth2 authentication with JWT tokens, refresh tokens, and role-based access control"
 
 **Classification:**
+
 - Pattern: "implement", "authentication"
 - Domain: OAuth2, JWT, RBAC
 - Confidence: 0.75
@@ -230,6 +241,7 @@ Reflect (freedom to question)
 **User:** "Refactor the entire authentication system to use microservices architecture with proper separation of concerns"
 
 **Classification:**
+
 - Pattern: "refactor", "entire system"
 - Domain: Microservices
 - Confidence: 0.5

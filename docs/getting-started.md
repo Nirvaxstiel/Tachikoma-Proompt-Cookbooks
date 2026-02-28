@@ -17,6 +17,7 @@ bun run install
 ```
 
 This runs an interactive installer that lets you choose between:
+
 - **Local** - `.opencode/` (current project only)
 - **Global** - `~/.config/opencode/` (all projects)
 - **Custom** - Specify any installation path

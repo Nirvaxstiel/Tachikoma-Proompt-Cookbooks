@@ -4,18 +4,20 @@ Dynamic edit format selection optimized for specific LLM models.
 
 ## Overview
 
-Different LLM models have different capabilities for editing code. Model-Aware Editing (MAE) automatically selects the optimal edit format based on the model in use.
+Different LLM models have different capabilities for editing code.
+Model-Aware Editing (MAE) automatically selects the optimal edit format based on the model in use.
 
-**Why it matters:** Edit format selection is as important as model choice. Using the wrong format leads to failed edits and wasted tokens.
+**Why it matters:** Edit format selection is as important as model choice.
+Using the wrong format leads to failed edits and wasted tokens.
 
 ## Supported Edit Formats
 
-| Format | Models | Type | Description |
-|--------|--------|------|-------------|
-| `str_replace` | Claude, Mistral | Exact string | Precise string matching |
-| `str_replace_fuzzy` | Gemini | Fuzzy whitespace | Handles whitespace differences |
-| `apply_patch` | GPT-4, GPT-4o | Diff format | Standard patch syntax |
-| `hashline` | Grok, GLM, others | Content-hash | Anchored by content hash |
+| Format              | Models            | Type             | Description                    |
+| ------------------- | ----------------- | ---------------- | ------------------------------ |
+| `str_replace`       | Claude, Mistral   | Exact string     | Precise string matching        |
+| `str_replace_fuzzy` | Gemini            | Fuzzy whitespace | Handles whitespace differences |
+| `apply_patch`       | GPT-4, GPT-4o     | Diff format      | Standard patch syntax          |
+| `hashline`          | Grok, GLM, others | Content-hash     | Anchored by content hash       |
 
 ## Tachikoma Edit Format Selector
 
@@ -42,21 +44,24 @@ tachikoma.edit-format-selector with args="list"
 **Best for:** Claude, Mistral, models with precise tokenization
 
 **How it works:**
+
 ```typescript
 // Edit tool call
 edit({
   filePath: "src/app.ts",
   oldString: "const oldFunction = () => { ... }",
-  newString: "const newFunction = () => { ... }"
-})
+  newString: "const newFunction = () => { ... }",
+});
 ```
 
 **Pros:**
+
 - Precise, no ambiguity
 - Fast execution
 - Works well with exact tokenization
 
 **Cons:**
+
 - Fails on whitespace differences
 - Requires exact match
 - Can be brittle with large blocks
@@ -85,22 +90,25 @@ def hello_world():
 **Best for:** Gemini, models with flexible whitespace handling
 
 **How it works:**
+
 ```typescript
 // Edit tool call with fuzzy matching
 edit({
   filePath: "src/app.ts",
   oldString: "const oldFunction = () => { ... }",
   newString: "const newFunction = () => { ... }",
-  fuzzy: true  // Allow whitespace differences
-})
+  fuzzy: true, // Allow whitespace differences
+});
 ```
 
 **Pros:**
+
 - Handles whitespace variations
 - More flexible than exact match
 - Works with inconsistent formatting
 
 **Cons:**
+
 - Slightly slower
 - Can match unintended content
 - Less precise than exact match
@@ -130,7 +138,8 @@ def  hello_world()  :
 **Best for:** GPT-4, GPT-4o, models trained on patches
 
 **How it works:**
-```typescript
+
+````typescript
 // Edit tool call with patch format
 edit({
   filePath: "src/app.ts",
@@ -140,16 +149,18 @@ edit({
     @@ -10,7 +10,7 @@
      -const oldFunction = () => {
     +const newFunction = () => {
-     ```
-})
-```
+     ```,
+});
+````
 
 **Pros:**
+
 - Standard diff format
 - Handles large changes well
 - Familiar to developers
 
 **Cons:**
+
 - Verbose
 - Can be confusing
 - Requires diff syntax knowledge
@@ -181,21 +192,24 @@ def hello_tachikoma():
 **Best for:** Grok, GLM, other models with unique tokenization
 
 **How it works:**
+
 ```typescript
 // Edit tool call with hash anchors
 edit({
   filePath: "src/app.ts",
-  hashLine: "abc123def456",  // Content hash
-  newString: "const newFunction = () => { ... }"
-})
+  hashLine: "abc123def456", // Content hash
+  newString: "const newFunction = () => { ... }",
+});
 ```
 
 **Pros:**
+
 - Works with any model
 - Robust to whitespace changes
 - Unique identification
 
 **Cons:**
+
 - Requires pre-computation
 - Can be complex to use
 - Less common
