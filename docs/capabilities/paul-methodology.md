@@ -321,5 +321,4 @@ For implementation, PAUL keeps everything in-session with proper context managem
 
 - [Skill Execution](./skill-execution.md) — Using PAUL in skills
 - [Skill Chains](./skill-chains.md) — PAUL in workflows
-- [CARL Quality Gates](./carl-quality-gates.md) — Quality enforcement
 - [Verification Loops](../research/verification-loops.md) — Quality verification

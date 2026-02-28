@@ -28,7 +28,7 @@ CARL loads rules dynamically based on context:
 
 ```yaml
 # Context Detection
-if (workingDirectory.includes(".paul")) → Enable PAUL domain
+if (workingDirectory.includes(".paul")) → Enable plan skill domain
 if (hasCode || hasFeatures) → Enable Development domain
 if (hasProject) → Enable Projects domain
 
@@ -49,7 +49,7 @@ CARL manages three domains that activate based on context:
 
 #### PAUL Domain
 
-**Trigger**: When working directory contains `.paul` or when using PAUL methodology
+**Trigger**: When working directory contains `.paul` or when using plan skill methodology
 
 | Priority | Rule Name               | Enforcement                                   |
 | -------- | ----------------------- | --------------------------------------------- |
@@ -146,7 +146,7 @@ CARL manages three domains that activate based on context:
 
 **Action:** BLOCK execution
 **Reason:** PAUL requires approved plan before implementation
-**Fix:** Run `/paul:plan` to create an executable plan first
+**Fix:** Run `/plan:create` to create an executable plan first
 
 ### Rule: Loop Enforcement (Critical)
 
@@ -154,7 +154,7 @@ CARL manages three domains that activate based on context:
 
 **Action:** BLOCK execution
 **Reason:** Invalid loop position
-**Fix:** Start with `/paul:plan` to set proper loop state
+**Fix:** Start with `/plan:create` to set proper loop state
 ```
 
 ### Example 2: Development Domain Enforcement
@@ -335,6 +335,6 @@ CARL is the companion to PAUL:
 
 ## See Also
 
-- [PAUL Methodology](./paul-methodology.md) — Structured development
+- [Plan Methodology](./paul-methodology.md) — Structured development
 - [Skill Execution](./skill-execution.md) — Using CARL in skills
 - [Verification Loops](../research/verification-loops.md) — Quality verification

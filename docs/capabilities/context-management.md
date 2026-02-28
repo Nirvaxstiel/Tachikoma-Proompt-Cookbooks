@@ -112,7 +112,7 @@ CRITICAL: All endpoints must authenticate via JWT tokens.
 Skills reference modules instead of duplicating content:
 
 ```yaml
-# skill: code-agent
+# skill: dev
 context_module: architecture.md
 ```
 

@@ -117,7 +117,7 @@ routes:
       - "fix bug"
       - "troubleshoot"
     confidence_threshold: 0.7
-    skill: code-agent
+    skill: dev
     strategy: direct
 
   # Verification-focused tasks

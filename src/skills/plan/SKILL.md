@@ -1,31 +1,33 @@
 ---
-name: paul
-description: PAUL Framework - Plan-Apply-Unify Loop for structured development with mandatory loop closure
+name: plan
+description: Create executable plans with PAUL methodology - Plan-Apply-Unify Loop with mandatory closure
 keywords:
   - plan
-  - apply
-  - unify
-  - loop
+  - roadmap
+  - design
+  - architecture
+  - approach
+  - paul
   - methodology
-  - structured
-  - ac
   - acceptance criteria
 triggers:
   - plan
-  - create a plan
-  - design approach
+  - design
   - roadmap
+  - approach
+  - how to
+  - strategy
   - acceptance criteria
   - when/then/given
 ---
 
-# PAUL Framework
+# Planning with PAUL Methodology
 
 You are executing the PAUL (Plan-Apply-Unify) methodology for structured development.
 
 ## Core Principle
 
-PAUL is a three-phase loop that **never skips UNIFY** - this is the heartbeat that prevents drift and ensures consistency.
+PAUL is a three-phase loop that **never skips UNIFY** — this is heartbeat that prevents drift and ensures consistency.
 
 ## The Three Phases
 
@@ -107,7 +109,7 @@ For each task:
 
 **Objective**: Reconcile plan vs actual, create summary, update state.
 
-**CRITICAL**: This phase is **never optional** - must always complete after APPLY.
+**CRITICAL**: This phase is **never optional** — must always complete after APPLY.
 
 **Requirements**:
 - Create `.paul/phases/SUMMARY-{id}.md`
@@ -186,6 +188,39 @@ Current phase: {PLAN|APPLY|UNIFY}
 - SUMMARY.md created
 - STATE.md updated to "UNIFY"
 - No blocking issues unresolved
+
+## Context Management for Long Sessions
+
+### State File Location
+
+**Project-local state**: `.tachikoma/state/`
+
+Separates Tachikoma's configuration (`.opencode/`) from user's work state (`.tachikoma/`). Each project gets its own state, enabling multiple developers to work in parallel.
+
+### State Structure
+```
+.tachikoma/
+  ├── state/
+  │   ├── STATE.md           # Current task state, AC status, files modified
+  │   ├── plan.md            # Original plan from planning phase
+  │   ├── summary.md         # Summary from UNIFY phase
+  │   └── artifacts/         # Intermediate files, test results, research findings
+  └── .active-session      # Single session mode (default)
+```
+
+### Context Compression
+
+When sessions grow long, compress at 70-80% context utilization:
+- **Metric**: Optimize for tokens-per-task, not tokens-per-request
+- **Structure**: Include sections for files modified, decisions, next steps
+- **Method**: Summarize new content, merge with existing (don't regenerate)
+- **Trigger**: Compress when approaching context limits
+
+### Filesystem Patterns
+
+- **Large tool outputs** (>2000 tokens): Write to `.tachikoma/state/artifacts/`, return summary + reference
+- **Plan persistence**: Store plans in `.tachikoma/state/plan.md`
+- **State tracking**: Update `.tachikoma/state/STATE.md` after each task
 
 ## Common Patterns
 

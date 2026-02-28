@@ -11,7 +11,7 @@ Skills are reusable capability modules. They're loaded on demand based on task c
 
 A skill is a directory with a `SKILL.md` file:
 
-```text
+```
 skill-name/
 ├── SKILL.md          # Required: name, description, instructions
 ├── scripts/          # Optional: executable scripts
@@ -30,11 +30,11 @@ compatibility: Requires git # Optional
 metadata: # Optional
   author: example-org
   version: "1.0"
-allowed-tools: Bash(git:*) Read # Optional: pre-approved tools
+  allowed-tools: Bash(git:*) Read # Optional: pre-approved tools
 ---
 # Instructions
 
-Step-by-step instructions for the agent...
+Step-by-step instructions for agent...
 ```
 
 ## Discovery Paths
@@ -119,7 +119,7 @@ Skills are loaded in stages:
 
 After loading, reflect:
 
-- Was the skill content sufficient?
+- Was skill content sufficient?
 - Should I add more instructions?
 - Are there edge cases to document?
 
@@ -138,7 +138,7 @@ skill({ name: "skill-name" });
 
 OpenCode includes some built-in skills:
 
-```text
+```
 .opencode/skill/
 └── bun-file-io/
     └── SKILL.md    # Bun file I/O patterns
@@ -178,7 +178,7 @@ Example inputs and outputs...
 
 ### 3. Add optional resources
 
-```text
+```
 my-skill/
 ├── SKILL.md
 ├── scripts/
@@ -189,7 +189,7 @@ my-skill/
 
 ## Skill Validation
 
-Use the Agent Skills reference library:
+Use skills-ref validate:
 
 ```bash
 skills-ref validate ./my-skill
@@ -219,7 +219,7 @@ description: Helps with PDFs.
 
 ## Duplicate Handling
 
-If multiple skills have the same name, the last one loaded wins:
+If multiple skills have the same name, last one loaded wins:
 
 ```typescript
 // Warning logged
@@ -232,14 +232,80 @@ log.warn("duplicate skill name", {
 
 ## Integration with Tachikoma
 
-Tachikoma uses the Agent Skills format for its skills:
+Tachikoma uses Agent Skills format for its skills:
 
-```text
+```
 .opencode/skills/
-├── code-agent/SKILL.md
-├── research-agent/SKILL.md
-├── analysis-agent/SKILL.md
-└── ...
+├── dev/SKILL.md
+├── think/SKILL.md
+├── plan/SKILL.md
+├── meta/SKILL.md
+└── context/SKILL.md
 ```
 
 This ensures compatibility with the open standard while providing Tachikoma-specific functionality.
+
+## Tachikoma Core Skills
+
+### dev
+
+**Purpose:** Code implementation, verification, and refactoring
+
+**When to use:** Implementation tasks, bug fixes, code improvements
+
+**Includes:**
+
+- GVR pattern (Generate-Verify-Revise)
+- Refactoring methods
+- Model-aware editing
+
+### think
+
+**Purpose:** Functional thinking principles for code design
+
+**When to use:** Design decisions, architectural choices, refactoring
+
+**Includes:**
+
+- 16 functional thinking principles
+- Decision questions
+- Common refactor patterns
+
+### plan
+
+**Purpose:** Structured planning with PAUL methodology
+
+**When to use:** Multi-step features, roadmap creation, complex tasks
+
+**Includes:**
+
+- PLAN phase: Objectives, acceptance criteria
+- APPLY phase: Execution with verification
+- UNIFY phase: Loop closure
+- State management
+
+### meta
+
+**Purpose:** Self-generating agent orchestration
+
+**When to use:** Complex multi-step tasks, parallel exploration, dynamic tool creation
+
+**Includes:**
+
+- Vertical decomposition
+- Horizontal ensemble
+- Dynamic tool synthesis
+- Memory operations (with context skill)
+
+### context
+
+**Purpose:** Knowledge retrieval and management
+
+**When to use:** Research, documentation queries, large context processing
+
+**Includes:**
+
+- Codebase exploration
+- External documentation (Context7)
+- Graph-based memory
+- RLM for 10M+ token contexts

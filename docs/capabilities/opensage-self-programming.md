@@ -370,7 +370,7 @@ OpenSage features are integrated into Tachikoma's existing systems:
    - New routes for `opensage_vertical`, `opensage_horizontal`, `opensage_tool`, `opensage_memory_*`
    - Automatically detects when OpenSage should be used
 
-2. **Skill System** (`src/skills/opensage-orchestrator/SKILL.md`)
+2. **Skill System** (`src/skills/meta/SKILL.md`)
    - Documentation for OpenSage patterns
    - Best practices and usage examples
 
@@ -470,7 +470,7 @@ src/
 │   ├── dynamic-tools.ts          # Tool synthesis
 │   └── coordinator.ts            # Unified API
 │
-├── skills/opensage-orchestrator/
+├── skills/meta/
 │   └── SKILL.md                 # Documentation
 │
 ├── config/

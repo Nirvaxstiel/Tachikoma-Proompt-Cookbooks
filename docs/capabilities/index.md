@@ -4,7 +4,7 @@ Complete guide to Tachikoma's features and capabilities.
 
 ## Core Capabilities
 
-### 🎯 Intent Classification & Routing
+### Intent Classification & Routing
 
 Automatic intent classification routes requests to optimal execution strategies based on task complexity.
 
@@ -15,7 +15,7 @@ Automatic intent classification routes requests to optimal execution strategies 
 
 [Learn more →](./intent-routing.md)
 
-### 🧠 Context Management
+### Context Management
 
 Position-aware context loading optimizes token placement for maximum effectiveness.
 
@@ -26,18 +26,18 @@ Position-aware context loading optimizes token placement for maximum effectivene
 
 [Learn more →](./context-management.md)
 
-### ⚡ Skill Execution
+### Skill Execution
 
 Specialized skills handle specific task types with optimal tool usage.
 
-- 10 built-in specialized skills
+- 5 core skills (down from 11)
 - Dynamic skill loading
 - Model-aware operations
 - Verification loops for critical tasks
 
 [Learn more →](./skill-execution.md)
 
-### 🔗 Skill Chains
+### Skill Chains
 
 Orchestrate multiple skills for complex workflows.
 
@@ -48,33 +48,21 @@ Orchestrate multiple skills for complex workflows.
 
 [Learn more →](./skill-chains.md)
 
-### 📋 PAUL Methodology
+### PAUL Methodology
 
 PAUL (Plan-Apply-Unify Loop) — Structured development framework.
 
 - **PLAN** — Define objectives and acceptance criteria
 - **APPLY** — Execute with verification
-- **UNIFY** — Close the loop
+- **UNIFY** — Close loop
 
-::: warning
 Never skip UNIFY — this is the heartbeat that prevents drift.
-:::
 
 [Learn more →](./paul-methodology.md)
 
-### 🔒 CARL Quality Gates
-
-CARL (Context Augmentation & Reinforcement Layer) — Dynamic rule loading system.
-
-- Rule-based quality checks
-- Validation enforcement
-- Compliance verification
-
-[Learn more →](./carl-quality-gates.md)
-
 ## Advanced Capabilities
 
-### 🧩 Model-Aware Editing
+### Model-Aware Editing
 
 Dynamic edit format selection optimized for specific LLM models.
 
@@ -85,7 +73,7 @@ Dynamic edit format selection optimized for specific LLM models.
 
 [Learn more →](./model-aware-editing.md)
 
-### 🤖 Subagents
+### Subagents
 
 Workers for large-context discovery and parallel tasks.
 
@@ -95,7 +83,7 @@ Workers for large-context discovery and parallel tasks.
 
 [Learn more →](./subagents.md)
 
-### 🔍 Verification Loops
+### Verification Loops
 
 Generator-Verifier-Reviser pattern for high-stakes implementations.
 
@@ -105,14 +93,13 @@ Generator-Verifier-Reviser pattern for high-stakes implementations.
 - Up to 3 iterations
 
 Use for: complex implementations, high-stakes fixes, correctness-critical tasks.
-
 Skip for: simple tasks (<50 lines), prototypes, well-understood patterns.
 
 [Learn more →](../research/verification-loops.md)
 
 ## Research-Backed Features
 
-### 🚀 OpenSage Self-Programming
+### Meta Orchestration
 
 Self-programming agent generation engine for AI-centered agent development.
 
@@ -122,7 +109,7 @@ Self-programming agent generation engine for AI-centered agent development.
 
 [Learn more →](./opensage-self-programming.md)
 
-### 📊 Cost-Aware Routing
+### Cost-Aware Routing
 
 Match task complexity to execution strategy for optimal speed vs accuracy.
 
@@ -130,7 +117,7 @@ Research: "When Do Tools and Planning Help LLMs Think?" (arXiv:2601.02663)
 
 [Learn more →](../research/cost-aware-routing.md)
 
-### 📍 Position-Aware Context
+### Position-Aware Context
 
 Optimize for tokens-per-task using U-shaped attention patterns.
 
@@ -138,7 +125,7 @@ Research: "Found in the Middle" (ACL 2024)
 
 [Learn more →](../research/position-bias.md)
 
-### 🔬 Model Harness
+### Model Harness
 
 Edit format selection matters as much as model choice.
 
@@ -159,7 +146,7 @@ Source: Can.ac blog (Feb 2026)
 
 ## Decision Flow
 
-```text
+```
 User Request
     ↓
 Classify Intent
@@ -188,7 +175,6 @@ Reflect on approach (freedom to question, flag issues)
 | Execute tasks        | Skill Execution       | [→](./skill-execution.md)              |
 | Chain skills         | Skill Chains          | [→](./skill-chains.md)                 |
 | Structure work       | PAUL Methodology      | [→](./paul-methodology.md)             |
-| Enforce quality      | CARL Quality Gates    | [→](./carl-quality-gates.md)           |
 | Model-specific edits | Model-Aware Editing   | [→](./model-aware-editing.md)          |
 | Large contexts       | Subagents             | [→](./subagents.md)                    |
 | Verify correctness   | Verification Loops    | [→](../research/verification-loops.md) |
@@ -197,5 +183,5 @@ Reflect on approach (freedom to question, flag issues)
 
 - [Getting Started](../getting-started.md) — Installation and setup
 - [Concepts](../concepts/overview.md) — Architecture overview
-- [Research](../research/overview.md) — Research backing the design
+- [Research](../research/overview.md) — Research backing to design
 - [Internals](../internals/) — Database schema and internals

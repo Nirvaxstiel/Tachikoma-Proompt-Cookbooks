@@ -35,12 +35,12 @@ A skill chain is a sequence of skills with state passing:
 skill-chain:
   name: implement-verify
   skills:
-    - name: code-agent
+    - name: dev
       module: architecture.md
       verify: false
       continue_on_error: false
 
-    - name: verifier-code-agent
+    - name: verification
       module: testing-standards.md
       verify: true
       continue_on_error: true
@@ -69,7 +69,7 @@ todowrite({
 })
 ```
 
-Subsequent skills update the task list:
+Subsequent skills update task list:
 
 ```python
 todowrite({
@@ -151,8 +151,8 @@ skills:
 ```yaml
 implement-verify:
   skills:
-    - code-agent # Generate
-    - verifier-code-agent # Verify
+    - dev # Generate
+    - dev # Verify (built-in)
     - formatter # Clean up
 ```
 
@@ -167,10 +167,10 @@ implement-verify:
 ```yaml
 research-implement:
   skills:
-    - research # Explore codebase
-    - planning # Create plan
-    - code # Implement
-    - verification # Verify
+    - context # Explore codebase
+    - plan # Create plan
+    - dev # Implement
+    - dev # Verify (built-in)
 ```
 
 **Flow:**
@@ -185,9 +185,9 @@ research-implement:
 ```yaml
 refactor-verify:
   skills:
-    - refactor # Refactor code
-    - verification # Verify behavior unchanged
-    - tests # Run tests
+    - dev # Refactor (includes refactoring methods)
+    - dev # Verify (built-in)
+    - dev # Run tests (if available)
 ```
 
 **Flow:**
@@ -201,13 +201,12 @@ refactor-verify:
 ```yaml
 full-pipeline:
   skills:
-    - research # Understand context
-    - planning # Create plan
-    - code # Implement
-    - verification # Verify correctness
-    - tests # Run tests
-    - formatter # Format code
-    - git-commit # Commit changes
+    - context # Understand context
+    - plan # Create plan
+    - dev # Implement
+    - dev # Verify correctness
+    - dev # Run tests
+    - dev # Format code
 ```
 
 **Flow:**
@@ -218,11 +217,11 @@ full-pipeline:
 4. Verify correctness
 5. Run tests
 6. Format code
-7. Commit changes
+7. Commit changes (via direct git commands)
 
 ## Creating a Skill Chain
 
-### Step 1: Define the Chain
+### Step 1: Define Chain
 
 Create `config/skill-chains.yaml`:
 
@@ -241,7 +240,7 @@ my-chain:
 ```yaml
 my-chain:
   skills:
-    - name: code-agent
+    - name: dev
       module: architecture.md
       context:
         project: "my-project"
@@ -283,27 +282,27 @@ feature-implementation:
 
   skills:
     # Step 1: Research existing patterns
-    - name: research
+    - name: context
       module: architecture.md
       output: research-results.json
       continue_on_error: false
 
     # Step 2: Create implementation plan
-    - name: planning
+    - name: plan
       module: coding-standards.md
       input: research-results.json
       output: plan.json
       continue_on_error: false
 
     # Step 3: Implement feature
-    - name: code
+    - name: dev
       module: architecture.md
       input: plan.json
       output: implementation.json
       continue_on_error: false
 
     # Step 4: Verify correctness
-    - name: verification
+    - name: dev
       module: testing-standards.md
       input: implementation.json
       output: verification-report.json
@@ -312,19 +311,19 @@ feature-implementation:
       continue_on_error: true
 
     # Step 5: Run tests
-    - name: tests
+    - name: dev
       module: testing-standards.md
       command: npm test
       output: test-results.json
       continue_on_error: true
 
     # Step 6: Format code
-    - name: formatter
+    - name: dev
       command: npm run format
       continue_on_error: true
 
     # Step 7: Commit changes
-    - name: git-commit
+    - name: dev
       type: conventional
       continue_on_error: true
 
@@ -367,18 +366,18 @@ routes:
 
 ### For Chain Authors
 
-1. **Break down logically** — Each skill should have clear purpose
-2. **Define state passing** — Specify how data flows between skills
-3. **Handle errors gracefully** — Configure `continue_on_error` appropriately
-4. **Verify at the end** — Final skill should validate entire chain
-5. **Document dependencies** — State which skills require which inputs
+1. Break down logically — Each skill should have clear purpose
+2. Define state passing — Specify how data flows between skills
+3. Handle errors gracefully — Configure `continue_on_error` appropriately
+4. Verify at end — Final skill should validate entire chain
+5. Document dependencies — State which skills require which inputs
 
 ### For Users
 
-1. **Understand the chain** — Know what each step does
-2. **Review intermediate results** — Check outputs between skills
-3. **Handle errors** — Review error reports if chain fails
-4. **Iterate if needed** — Re-run chain or individual skills
+1. Understand the chain — Know what each step does
+2. Review intermediate results — Check outputs between skills
+3. Handle errors — Review error reports if chain fails
+4. Iterate if needed — Re-run chain or individual skills
 
 ## Research
 
