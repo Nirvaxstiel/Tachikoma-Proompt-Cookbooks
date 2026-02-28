@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Tachikoma
   text: Agent Orchestration
-  tagline: Research-backed AI agent system with PAUL methodology
+  tagline: Research-backed AI agent system with Plan methodology
   actions:
     - theme: brand
       text: Get Started
