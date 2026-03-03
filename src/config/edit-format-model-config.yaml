@@ -41,7 +41,3 @@ model_formats:
   glm: hashline
   minimax: hashline
   big-picke: hashline
-
-# User-added models (learned/overrides)
-# Add here: bun run edit-format-selector.ts add <model> <format>
-user_models:

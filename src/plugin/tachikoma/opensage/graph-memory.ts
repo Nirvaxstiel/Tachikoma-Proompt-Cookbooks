@@ -310,7 +310,7 @@ export const GraphMemoryPlugin = async ({ client, worktree }: Parameters<Plugin>
           const session = await client.session.get({ path: { id: args.sessionId } });
           const messages = await client.session.messages({ path: { id: args.sessionId } });
 
-          const { nodes, edges } = await extractEntitiesFromMessages(messages, session);
+          const { nodes, edges } = await extractEntitiesFromMessages(messages.data || [], session);
 
           const graph = await loadGraph();
           graph.nodes.push(...nodes);
@@ -403,7 +403,7 @@ function extractSubgraph(graph: MemoryGraph, centerIdParam: string, radius: numb
 
   const visited = new Set<string>();
   const result: MemoryNode[] = [];
-  const queue: Array<{ nodeId: string, depth: number }> = [{ nodeId: centerIdParam, depth: 0 }];
+  const queue: Array<{ nodeId: string; depth: number }> = [{ nodeId: centerIdParam, depth: 0 }];
 
   while (queue.length > 0) {
     const { nodeId, depth } = queue.shift()!;

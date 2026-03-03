@@ -1,10 +1,3 @@
-/**
- * Platform-aware path resolution
- *
- * Centralizes all file path operations for consistency across platforms
- * (Windows, Linux, macOS)
- */
-
 import { join } from "node:path";
 
 export function getHomeDir(): string {

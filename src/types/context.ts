@@ -1,7 +1,3 @@
-/**
- * Context manager type definitions
- */
-
 export type Priority = "critical" | "high" | "medium" | "low";
 
 export interface ContextSource {

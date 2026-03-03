@@ -1,24 +1,5 @@
-/**
- * Router constants and configuration
- */
+import type { ComplexityLevel, ExecutionStrategy } from "../types/router";
 
-import type { ComplexityLevel, ExecutionStrategy, IntentType, RouteConfig } from "../types/router";
-
-// Intent keywords for semantic classification
-export const INTENT_KEYWORDS: Record<IntentType, string[]> = {
-  code: ["create", "implement", "build", "write", "add", "make", "develop", "new feature"],
-  debug: ["debug", "fix", "bug", "error", "issue", "problem", "crash", "broken"],
-  research: ["research", "explore", "find", "investigate", "analyze", "understand", "how does"],
-  refactor: ["refactor", "improve", "clean", "restructure", "optimize", "simplify"],
-  test: ["test", "testing", "spec", "assert", "verify"],
-  verify: ["verify", "validate", "check", "ensure", "confirm", "audit"],
-  explain: ["explain", "what is", "how do", "describe", "tell me", "show me"],
-  plan: ["plan", "roadmap", "design", "architecture", "approach", "strategy"],
-  query: ["query", "get", "fetch", "list", "show", "display"],
-  unknown: [],
-};
-
-// Strategy complexity mapping
 export const STRATEGY_CONFIG: Record<
   ComplexityLevel,
   {
@@ -54,46 +35,6 @@ export const STRATEGY_CONFIG: Record<
   },
 };
 
-// Default routes
-export const DEFAULT_ROUTES: RouteConfig[] = [
-  {
-    patterns: ["debug", "fix bug", "troubleshoot"],
-    confidenceThreshold: 0.7,
-    skill: "code",
-    strategy: "single_skill",
-  },
-  {
-    patterns: ["verify", "test", "validate"],
-    confidenceThreshold: 0.6,
-    skillChain: ["code", "verification"],
-    strategy: "skill_chain",
-  },
-  {
-    patterns: ["refactor", "improve", "clean up"],
-    confidenceThreshold: 0.6,
-    skill: "refactor",
-    strategy: "single_skill",
-  },
-  {
-    patterns: ["research", "explore", "find"],
-    confidenceThreshold: 0.7,
-    skill: "research",
-    strategy: "single_skill",
-  },
-  {
-    patterns: ["implement", "create", "build"],
-    confidenceThreshold: 0.7,
-    skillChain: ["code", "verification"],
-    strategy: "skill_chain",
-  },
-  {
-    patterns: ["what is", "how do", "explain"],
-    confidenceThreshold: 0.9,
-    strategy: "direct",
-  },
-];
-
-// Complexity thresholds
 export const COMPLEXITY_THRESHOLDS = {
   MIN_KEYWORDS: 3,
   LOW_COMPLEXITY_TOKENS: 20,
@@ -102,19 +43,22 @@ export const COMPLEXITY_THRESHOLDS = {
   VERY_HIGH_TOKEN_THRESHOLD: 80,
 } as const;
 
-// Clarification confidence threshold
 export const CLARIFICATION_CONFIDENCE_THRESHOLD = 0.5;
 
-// Priority order for intent resolution
-export const INTENT_PRIORITY_ORDER: IntentType[] = [
-  "test",
-  "verify",
-  "debug",
-  "refactor",
-  "research",
-  "code",
-  "plan",
-  "explain",
-  "query",
-  "unknown",
-];
+export const CONFIDENCE_THRESHOLDS = {
+  VERIFICATION_PASS: 0.8,
+  CLARIFICATION_ASK: 0.5,
+} as const;
+
+export interface ConfidenceThresholds {
+  VERIFICATION_PASS: number;
+  CLARIFICATION_ASK: number;
+}
+
+export function getConfidenceThresholds(): ConfidenceThresholds {
+  return CONFIDENCE_THRESHOLDS;
+}
+
+export function explainThresholds(): string {
+  return `VERIFICATION_PASS (0.8): Internal GVR quality control threshold\nCLARIFICATION_ASK (0.5): When to ask user for clarification\nSee: docs/architecture/confidence-thresholds.md`;
+}

@@ -13,10 +13,10 @@ import {
   classifyIntent,
   router,
   selectStrategy,
-} from "./plugin/tachikoma/router";
+} from "../../src/plugin/tachikoma/router/index";
 
 // Test 1: Intent Classification (AC-1)
-function testIntentClassification() {
+async function testIntentClassification() {
   console.log("\n=== Test 1: Intent Classification (AC-1) ===");
 
   const testCases = [
@@ -47,7 +47,7 @@ function testIntentClassification() {
 }
 
 // Test 2: Complexity Detection
-function testComplexityDetection() {
+async function testComplexityDetection() {
   console.log("\n=== Test 2: Complexity Detection ===");
 
   const testCases = [
@@ -65,7 +65,7 @@ function testComplexityDetection() {
 
   let passed = 0;
   for (const tc of testCases) {
-    const result = classifyIntent(tc.request);
+    const result = await classifyIntent(tc.request);
     if (result.complexity === tc.expected) {
       passed++;
     } else {
@@ -134,10 +134,10 @@ function testPatternMatching() {
 }
 
 // Test 5: Low Confidence Clarification (AC-4)
-function testLowConfidenceClarification() {
+async function testLowConfidenceClarification() {
   console.log("\n=== Test 5: Low Confidence Clarification (AC-4) ===");
 
-  const result = classifyIntent("do the thing");
+  const result = await classifyIntent("do the thing");
 
   if (result.confidence < 0.5) {
     console.log(`✓ Low confidence (${result.confidence.toFixed(2)}) triggers clarification`);
@@ -215,11 +215,11 @@ async function runTests() {
 
   const results = [];
 
-  results.push(testIntentClassification());
-  results.push(testComplexityDetection());
+  results.push(await testIntentClassification());
+  results.push(await testComplexityDetection());
   results.push(testStrategySelection());
-  results.push(testPatternMatching());
-  results.push(testLowConfidenceClarification());
+  results.push(await testPatternMatching());
+  results.push(await testLowConfidenceClarification());
   results.push(await testLargeContextRouting());
   results.push(await testFullIntegration());
   results.push(testExplainDecision());

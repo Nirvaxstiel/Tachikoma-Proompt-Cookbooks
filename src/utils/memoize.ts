@@ -1,8 +1,3 @@
-/**
- * Memoization utility
- * Cache function results to avoid expensive recomputation
- */
-
 export function memoize<T extends (...args: unknown[]) => unknown>(
   fn: T,
   options?: {
@@ -13,7 +8,8 @@ export function memoize<T extends (...args: unknown[]) => unknown>(
   const cache = new Map<string, { value: ReturnType<T>; timestamp: number }>();
   const maxSize = options?.maxSize ?? 100;
 
-  const getKey = options?.keyGenerator ?? ((...args: unknown[]) => JSON.stringify(args));
+  const getKey =
+    options?.keyGenerator ?? ((...args: unknown[]) => JSON.stringify(args));
 
   return ((...args: Parameters<T>) => {
     const key = getKey(...args);

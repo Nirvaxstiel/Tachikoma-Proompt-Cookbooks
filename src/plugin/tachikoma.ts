@@ -17,7 +17,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { tool } from "@opencode-ai/plugin/tool";
 
-// TYPES
 interface ScriptInfo {
   name: string;
   path: string;
@@ -25,10 +24,8 @@ interface ScriptInfo {
   hasPathArg: boolean;
 }
 
-// UTILS
 function getPluginDir(): string {
   let scriptPath = new URL(import.meta.url).pathname;
-  // Fix Windows path issue with file:// URLs
   if (process.platform === "win32" && scriptPath.startsWith("/")) {
     scriptPath = scriptPath.substring(1);
   }
@@ -36,7 +33,6 @@ function getPluginDir(): string {
 }
 
 function getScriptsDir(): string {
-  // Scripts are in tachikoma/ subdirectory relative to plugin
   return path.join(getPluginDir(), "tachikoma");
 }
 
@@ -48,13 +44,11 @@ async function listScripts(): Promise<ScriptInfo[]> {
     const files = await fs.readdir(scriptsDir);
 
     for (const file of files) {
-      // Only register actual scripts, not agent modules
       if (!file.endsWith(".ts") || file.startsWith("_")) continue;
 
       const scriptPath = path.join(scriptsDir, file);
       const scriptName = file.replace(".ts", "");
 
-      // Extract description from JSDoc
       const scriptContent = await fs.readFile(scriptPath, "utf-8");
       const descMatch = scriptContent.match(/\/\*\*[\s\S]*?\*\//);
       const description = descMatch
@@ -66,19 +60,15 @@ async function listScripts(): Promise<ScriptInfo[]> {
             .split("\n")[0]
         : `Run ${scriptName} script`;
 
-      // Check if script is a standalone script (not an agent module)
-      // Agent modules have classes/exports, scripts have direct execution
-      const isScript =
-        scriptContent.includes("Bun.argv") ||
-        scriptContent.includes("process.argv") ||
-        scriptContent.includes("#!/usr/bin/env bun");
+      // Check if script is a standalone script (has shebang)
+      // Agent modules don't have shebangs
+      // Skip agent modules (core.ts, router.ts, etc.)
+      const isScript = scriptContent.startsWith("#!");
 
       if (!isScript) {
-        // Skip agent modules (core.ts, router.ts, etc.)
         continue;
       }
 
-      // Check if script uses path argument
       const hasPathArg =
         scriptContent.includes("Bun.argv[2]") ||
         scriptContent.includes("process.argv[2]") ||
@@ -103,11 +93,13 @@ function getSchema(script: ScriptInfo) {
     path: script.hasPathArg
       ? tool.schema.string().describe("Path to process")
       : tool.schema.string().optional().describe("Path (if applicable)"),
-    args: tool.schema.string().optional().describe("Arguments to pass to script"),
+    args: tool.schema
+      .string()
+      .optional()
+      .describe("Arguments to pass to script"),
   };
 }
 
-// PLUGIN
 export const TachikomaPlugin = async (ctx: any) => {
   const scripts = await listScripts();
   const tools: Record<string, any> = {};
@@ -120,7 +112,9 @@ export const TachikomaPlugin = async (ctx: any) => {
       description: script.description,
       args: schema,
       async execute(args, context) {
-        const scriptArgs = script.hasPathArg ? args.path || "" : args.args || "";
+        const scriptArgs = script.hasPathArg
+          ? args.path || ""
+          : args.args || "";
 
         const proc = Bun.spawn(["bun", "run", script.path, scriptArgs], {
           stdout: "pipe",

@@ -1,7 +1,3 @@
-/**
- * Common type definitions
- */
-
 import type { EditFormat, ModelFamily } from "../constants/edit-formats";
 
 export interface AgentContext {

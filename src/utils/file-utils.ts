@@ -1,7 +1,3 @@
-/**
- * File utilities with error handling
- */
-
 import { constants, access, mkdir, readFile } from "node:fs/promises";
 
 export interface FileReadResult<T = string> {
@@ -19,7 +15,9 @@ export async function fileExists(path: string): Promise<boolean> {
   }
 }
 
-export async function readTextFile(path: string): Promise<FileReadResult<string>> {
+export async function readTextFile(
+  path: string,
+): Promise<FileReadResult<string>> {
   try {
     const content = await readFile(path, "utf-8");
     return { success: true, data: content };
@@ -31,12 +29,17 @@ export async function readTextFile(path: string): Promise<FileReadResult<string>
   }
 }
 
-export async function readTextFileSafe(path: string, fallback: string): Promise<string> {
+export async function readTextFileSafe(
+  path: string,
+  fallback: string,
+): Promise<string> {
   const result = await readTextFile(path);
   return result.success ? (result.data ?? fallback) : fallback;
 }
 
-export async function readJSONFile<T = unknown>(path: string): Promise<FileReadResult<T>> {
+export async function readJSONFile<T = unknown>(
+  path: string,
+): Promise<FileReadResult<T>> {
   try {
     const content = await readFile(path, "utf-8");
     const parsed = JSON.parse(content) as T;

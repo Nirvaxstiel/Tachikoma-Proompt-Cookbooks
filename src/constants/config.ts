@@ -1,8 +1,3 @@
-/**
- * Configuration constants
- * Centralized configuration values to avoid magic numbers
- */
-
 export const CONFIG = {
   CONTEXT: {
     MAX_TOKENS: 128000,
@@ -12,6 +7,12 @@ export const CONFIG = {
   VERIFICATION: {
     MAX_ITERATIONS: 3,
     CONFIDENCE_THRESHOLD: 0.8,
+    MIN_RESULT_LENGTH: 50,
+    MAX_SINGLE_BLOCK_LENGTH: 200,
+    LONG_RESULT_THRESHOLD: 500,
+    SHORT_RESULT_PENALTY: 0.2,
+    LONG_RESULT_BONUS: 0.1,
+    MIN_FULL_CONTENT_LENGTH: 200,
   },
   RLM: {
     CHUNK_SIZE: 50000,
@@ -24,4 +25,15 @@ export const CONFIG = {
     END_WEIGHT: 0.95,
     MAX_MIDDLE_RATIO: 0.3,
   },
+  OPENSAGE: {
+    TASK_HISTORY_LIMIT: 10,
+    MIN_MULTI_STEP_LENGTH: 100,
+    COST_MULTIPLIER: 0.01,
+    BASE_LATENCY_MS: 5000,
+    ENSEMBLE_LATENCY_MS: 8000,
+  },
 } as const;
+
+export const VERIFICATION_CONFIDENCE_THRESHOLD = CONFIG.VERIFICATION.CONFIDENCE_THRESHOLD;
+
+export const CLARIFICATION_CONFIDENCE_THRESHOLD = 0.5;

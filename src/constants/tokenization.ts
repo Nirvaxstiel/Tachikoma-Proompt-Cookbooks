@@ -1,7 +1,3 @@
-/**
- * Token estimation constants
- */
-
 export const TOKEN_ESTIMATION = {
   WORDS_PER_TOKEN_NATURAL: 0.75,
   CODE_PATTERN_TOKEN_MULTIPLIER: 0.5,

@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod";
-import type { AgentMetrics, PerformanceStats, TaskRecord } from "../../types/opensage";
+import type { AgentMetrics, PerformanceStats, TaskRecord } from "../../../types/opensage-registry";
 
 async function ensureDir(path: string): Promise<void> {
   try {

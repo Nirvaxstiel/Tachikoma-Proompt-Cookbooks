@@ -1,7 +1,3 @@
-/**
- * Model confidence constants
- */
-
 export const MODEL_CONFIDENCE = {
   CLAUDE: 0.95,
   GPT: 0.94,

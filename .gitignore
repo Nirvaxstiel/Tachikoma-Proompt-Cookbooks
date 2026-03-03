@@ -32,3 +32,4 @@ docs/.vitepress/dist/
 # Agent artefacts that don't need to be tracked
 .paul/
 .tachikoma/
+.opencode/

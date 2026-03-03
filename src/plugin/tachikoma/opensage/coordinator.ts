@@ -37,11 +37,12 @@ export interface ExecutionResult {
 }
 
 export class OpensageCoordinator {
-  private registry: AgentRegistry;
+  private registry!: AgentRegistry;
   private config: OpenSageConfig;
   private sessionHistory: Map<string, any[]>;
   private currentDepth = 0;
   private readonly MAX_DEPTH = 10;
+  private initialized = false;
 
   constructor(config: Partial<OpenSageConfig> = {}) {
     this.config = {

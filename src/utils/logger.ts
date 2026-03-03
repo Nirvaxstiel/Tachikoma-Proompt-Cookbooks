@@ -1,8 +1,3 @@
-/**
- * Logging utility
- * Provides structured logging with levels and prefixes
- */
-
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 interface LoggerConfig {

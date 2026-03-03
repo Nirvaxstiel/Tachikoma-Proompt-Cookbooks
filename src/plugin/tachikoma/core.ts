@@ -11,6 +11,7 @@ export class GeneralPurposeAgent {
   private contextManager: PositionAwareContext;
   private modelHarness: ModelHarness;
   private rlmHandler: RLMHandler;
+  private initialized = false;
 
   constructor() {
     this.router = new CostAwareRouter();
@@ -20,7 +21,20 @@ export class GeneralPurposeAgent {
     this.rlmHandler = new RLMHandler();
   }
 
+  async initialize(): Promise<void> {
+    if (this.initialized) return;
+    await this.router.initialize();
+    this.initialized = true;
+  }
+
+  private ensureInitialized(): void {
+    if (!this.initialized) {
+      throw new Error("GeneralPurposeAgent not initialized. Call initialize() first.");
+    }
+  }
+
   async handleRequest(request: string, context: unknown): Promise<string> {
+    this.ensureInitialized();
     try {
       // Step 1: Classify intent and complexity
       const classification = await this.router.classifyIntent(request);
@@ -109,3 +123,7 @@ export class GeneralPurposeAgent {
 
 // Export singleton instance
 export const agent = new GeneralPurposeAgent();
+
+export async function initializeAgent(): Promise<void> {
+  await agent.initialize();
+}

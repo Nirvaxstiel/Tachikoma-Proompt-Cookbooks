@@ -1,23 +1,8 @@
-/**
- * RLM Handler - Recursive Language Model for Large Context Processing
- *
- * Key innovations over Python RLM:
- * - Adaptive chunking (semantic boundaries)
- * - Parallel processing via OpenCode subagents
- * - Metadata-only history for fixed context size
- *
- * Note: Compaction is handled by OpenCode natively.
- */
-
 import { join } from "node:path";
 
 import { CONFIG } from "../../constants/config";
 import { logger } from "../../utils/logger";
 import { estimateTokens } from "../../utils/token-estimator";
-
-// ============================================================================
-// TYPES
-// ============================================================================
 
 export interface Chunk {
   id: string;
@@ -85,9 +70,7 @@ const DEFAULT_CONFIG: RLMConfig = {
   recursionDepth: CONFIG.RLM.RECURSION_DEPTH,
 };
 
-// ============================================================================
 // SEMANTIC BOUNDARY PATTERNS
-// ============================================================================
 
 // More patterns for adaptive chunking
 const CODE_PATTERNS = [
@@ -109,9 +92,7 @@ const MARKDOWN_PATTERNS = [
   { pattern: /^---$/m, name: "hr" },
 ];
 
-// ============================================================================
 // RLM HANDLER CLASS
-// ============================================================================
 
 export class RLMHandler {
   private config: RLMConfig;
@@ -441,9 +422,7 @@ export class RLMHandler {
   }
 }
 
-// ============================================================================
 // CONVENIENCE EXPORTS
-// ============================================================================
 
 export const rlmHandler = new RLMHandler();
 
@@ -455,8 +434,6 @@ export async function processLargeContext(
   return rlmHandler.processLargeContext(request, context, options);
 }
 
-// ============================================================================
 // CONFIGURATION
-// ============================================================================
 
 export const rlmConfig = DEFAULT_CONFIG;

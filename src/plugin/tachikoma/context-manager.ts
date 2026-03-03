@@ -1,17 +1,3 @@
-/**
- * Position-Aware Context Manager
- *
- * Implements context loading with U-shaped attention bias optimization.
- * Based on research: "Found in the Middle" (Hsieh et al., ACL 2024)
- *
- * Key concepts:
- * - Start position: 100% attention weight
- * - Middle position: 50% attention weight
- * - End position: 100% attention weight
- *
- * Place critical info at boundaries, supporting details in middle.
- */
-
 import { existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
@@ -26,12 +12,6 @@ import {
   resolveToConfig,
 } from "../../utils/platform-paths";
 import { estimateTokens } from "../../utils/token-estimator";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-// CONSTANTS
-// ============================================================================
 
 export type Priority = "critical" | "high" | "medium" | "low";
 
@@ -79,10 +59,6 @@ export interface LoadedContext {
   compressed: boolean;
 }
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
 const POSITION_CONFIG: PositionConfig = {
   startWeight: CONFIG.POSITION.START_WEIGHT,
   middleWeight: CONFIG.POSITION.MIDDLE_WEIGHT,
@@ -96,10 +72,6 @@ const PRIORITY_ORDER: Record<Priority, number> = {
   medium: 2,
   low: 3,
 };
-
-// ============================================================================
-// CONTEXT MANAGER CLASS
-// ============================================================================
 
 export class PositionAwareContext {
   private maxTokens: number;
@@ -466,9 +438,7 @@ export class PositionAwareContext {
   }
 }
 
-// ============================================================================
 // CONVENIENCE EXPORTS
-// ============================================================================
 
 /**
  * Default context manager instance
@@ -482,9 +452,7 @@ export async function loadProjectContext(cwd: string, modules?: string[]): Promi
   return contextManager.loadContext({ cwd, modules });
 }
 
-// ============================================================================
 // CONFIGURATION EXPORT
-// ============================================================================
 
 export const positionBiasConfig = {
   uShapedBias: true,

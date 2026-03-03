@@ -75,46 +75,16 @@ async function saveConfig(config: FormatConfig): Promise<void> {
   lines.push("");
   lines.push("# Model -> edit format mappings");
   lines.push("");
-
-  const coreFormats = Object.entries(config.formats).filter(([k]) => !isUserAdded(k));
-
-  if (coreFormats.length > 0) {
-    lines.push("# Core models (well-tested)");
-    lines.push("model_formats:");
-    for (const [model, format] of coreFormats) {
-      lines.push(`  ${model}: ${format}`);
-    }
-    lines.push("");
+  lines.push("model_formats:");
+  for (const [model, format] of Object.entries(config.formats)) {
+    lines.push(`  ${model}: ${format}`);
   }
-
-  const userModels = Object.entries(config.formats).filter(([k]) => isUserAdded(k));
-
-  if (userModels.length > 0) {
-    lines.push("# User-added models (learned/overrides)");
-    lines.push("# Add here: bun run edit-format-selector.ts add <model> <format>");
-    lines.push("user_models:");
-    for (const [model, format] of userModels) {
-      lines.push(`  ${model}: ${format}`);
-    }
-  }
+  lines.push("");
+  lines.push("# User-added models (learned/overrides)");
+  lines.push("# Add here: bun run edit-format-selector.ts add <model> <format>");
+  lines.push("user_models:");
 
   await Bun.write(CONFIG_PATH, lines.join("\n"));
-}
-
-function isUserAdded(key: string): boolean {
-  const userModels = [
-    "big-pickle",
-    "llama",
-    "codellama",
-    "qwen",
-    "deepseek",
-    "phi",
-    "yi",
-    "internlm",
-    "solar",
-    "mixtral",
-  ];
-  return userModels.some((m) => key.toLowerCase().includes(m));
 }
 
 // MODEL DETECTION
@@ -147,25 +117,6 @@ function findFormatMatch(model: string, config: FormatConfig): EditFormat | null
   return null;
 }
 
-function getDefaultFormat(model: string): EditFormat {
-  const opensourcePatterns = [
-    "llama",
-    "qwen",
-    "deepseek",
-    "phi",
-    "yi",
-    "internlm",
-    "solar",
-    "mixtral",
-  ];
-
-  if (opensourcePatterns.some((p) => model.toLowerCase().includes(p))) {
-    return "hashline";
-  }
-
-  return "str_replace_fuzzy";
-}
-
 function selectFormat(model: string, config: FormatConfig): FormatRecommendation {
   const matched = findFormatMatch(model, config);
 
@@ -174,16 +125,15 @@ function selectFormat(model: string, config: FormatConfig): FormatRecommendation
       format: matched,
       model,
       confidence: 0.95,
-      reason: `Exact match in config: ${model} -> ${matched}`,
+      reason: `Match in config: ${model} -> ${matched}`,
     };
   }
 
-  const fallback = getDefaultFormat(model);
   return {
-    format: fallback,
+    format: "str_replace_fuzzy",
     model,
-    confidence: 0.6,
-    reason: `No config match, defaulting to ${fallback} for model family`,
+    confidence: 0.5,
+    reason: "No config match, using default format",
   };
 }
 

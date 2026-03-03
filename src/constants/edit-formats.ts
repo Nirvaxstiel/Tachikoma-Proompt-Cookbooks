@@ -18,17 +18,3 @@ export type ModelFamily =
   | "mistral"
   | "codellama"
   | "generic";
-
-/**
- * Default format mappings based on research
- */
-export const FORMAT_MAPPINGS: Record<ModelFamily, EditFormat> = {
-  claude: "str_replace",
-  gpt: "apply_patch",
-  gemini: "str_replace_fuzzy",
-  grok: "hashline",
-  glm: "hashline",
-  mistral: "str_replace",
-  codellama: "hashline",
-  generic: "str_replace_fuzzy",
-};

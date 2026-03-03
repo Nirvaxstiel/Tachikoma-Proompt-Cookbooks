@@ -1,17 +1,9 @@
-/**
- * Cost-Aware Intent Router
- *
- * Based on research: "When Do Tools and Planning Help LLMs Think?" (arXiv:2601.02663)
- *
- * Key insight: Tools improve accuracy +20% but add 40x latency
- * Solution: Match strategy to task complexity
- */
-
 import { CONFIG } from "../../../constants/config";
 import type {
   ComplexityLevel,
   ExecutionStrategy,
   IntentClassification,
+  IntentType,
   RouteConfig,
   RouteMatch,
   RoutingDecision,
@@ -27,16 +19,34 @@ export class CostAwareRouter {
   private patternMatcher: PatternMatcher;
   private routeConfigManager: RouteConfigManager;
   private configPath: string;
+  private initialized = false;
 
   constructor(configPath?: string) {
     this.configPath = configPath || resolveToConfig("config/intent-routes.yaml");
     this.routeConfigManager = new RouteConfigManager(this.configPath);
-    this.routes = this.routeConfigManager.loadRoutes();
-    this.intentClassifier = new IntentClassifier();
+    this.routes = new Map();
+    this.intentClassifier = new IntentClassifier(this.routes);
     this.patternMatcher = new PatternMatcher(this.routes);
   }
 
+  async initialize(): Promise<void> {
+    if (this.initialized) return;
+
+    this.routes = await this.routeConfigManager.loadRoutes();
+    this.intentClassifier = new IntentClassifier(this.routes);
+    this.patternMatcher = new PatternMatcher(this.routes);
+    this.initialized = true;
+  }
+
+  private ensureInitialized(): void {
+    if (!this.initialized) {
+      throw new Error("CostAwareRouter not initialized. Call initialize() first.");
+    }
+  }
+
   async classifyAndRoute(request: string, contextSize = 0): Promise<RoutingDecision> {
+    this.ensureInitialized();
+
     const intent = this.intentClassifier.classifyIntent(request);
 
     if (contextSize > CONFIG.CONTEXT.SIZE_THRESHOLD) {
@@ -69,6 +79,7 @@ export class CostAwareRouter {
   }
 
   classifyIntent(request: string): IntentClassification {
+    this.ensureInitialized();
     return this.intentClassifier.classifyIntent(request);
   }
 
@@ -90,6 +101,7 @@ export class CostAwareRouter {
   }
 
   matchPattern(request: string) {
+    this.ensureInitialized();
     return this.patternMatcher.matchPattern(request);
   }
 
@@ -124,14 +136,20 @@ export class CostAwareRouter {
 
 export const router = new CostAwareRouter();
 
+export async function initializeRouter(): Promise<void> {
+  await router.initialize();
+}
+
 export async function classifyAndRoute(
   request: string,
   contextSize?: number,
 ): Promise<RoutingDecision> {
+  await router.initialize();
   return router.classifyAndRoute(request, contextSize);
 }
 
-export function classifyIntent(request: string): IntentClassification {
+export async function classifyIntent(request: string): Promise<IntentClassification> {
+  await router.initialize();
   return router.classifyIntent(request);
 }
 
@@ -142,4 +160,5 @@ export function selectStrategy(
   return router.selectStrategy(complexity, contextSize);
 }
 
-export { DEFAULT_ROUTES, STRATEGY_CONFIG } from "../../../constants/router";
+export { STRATEGY_CONFIG } from "../../../constants/router";
+export type { ComplexityLevel, ExecutionStrategy, IntentType } from "../../../types/router";

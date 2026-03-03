@@ -1,9 +1,9 @@
-/**
- * Router type definitions
- */
-
 export type ComplexityLevel = "low" | "medium" | "high" | "very_high";
-export type ExecutionStrategy = "direct" | "single_skill" | "skill_chain" | "rlm";
+export type ExecutionStrategy =
+  | "direct"
+  | "single_skill"
+  | "skill_chain"
+  | "rlm";
 export type IntentType =
   | "code"
   | "debug"

@@ -1,21 +1,4 @@
-/**
- * Verification Loop - Generator-Verifier-Reviser Pattern
- *
- * Based on research: "Towards Autonomous Mathematics Research" (arXiv:2602.10177)
- *
- * Key insight: GVR pattern achieves 90% vs 67% base accuracy
- * - GENERATE: Initial solution
- * - VERIFY: Check with explicit criteria
- * - REVISE: Fix based on feedback
- * - REFLECT: Self-critique and issue flagging
- *
- * Max 3 iterations per research recommendation.
- */
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
+import { CONFIG } from "../../constants/config";
 import type { VerificationContext } from "../../types/common";
 
 export type VerificationStatus = "pass" | "fail" | "uncertain";
@@ -62,11 +45,6 @@ export interface VerificationConfig {
   criticalDomains: string[];
 }
 
-// ============================================================================
-// CRITERIA DEFINITIONS
-// ============================================================================
-
-// Criteria extractors based on request keywords
 const CRITERIA_EXTRACTORS: Record<string, () => VerificationCriterion[]> = {
   default: () => [
     {
@@ -178,10 +156,6 @@ const CRITERIA_EXTRACTORS: Record<string, () => VerificationCriterion[]> = {
     },
   ],
 };
-
-// ============================================================================
-// VERIFICATION LOOP CLASS
-// ============================================================================
 
 export class VerificationLoop {
   private maxIterations: number;
@@ -377,10 +351,6 @@ export class VerificationLoop {
     };
   }
 
-  // ============================================================================
-  // HELPER METHODS
-  // ============================================================================
-
   private generateFeedback(status: VerificationStatus, passed: number, total: number): string {
     switch (status) {
       case "pass":
@@ -437,8 +407,10 @@ export class VerificationLoop {
   private estimateConfidence(request: string, result: string): number {
     let confidence = 0.7;
 
-    if (result.length < 50) confidence -= 0.2;
-    else if (result.length > 500) confidence += 0.1;
+    if (result.length < CONFIG.VERIFICATION.MIN_RESULT_LENGTH)
+      confidence -= CONFIG.VERIFICATION.SHORT_RESULT_PENALTY;
+    else if (result.length > CONFIG.VERIFICATION.LONG_RESULT_THRESHOLD)
+      confidence += CONFIG.VERIFICATION.LONG_RESULT_BONUS;
 
     if (/\n\n/.test(result)) confidence += 0.1;
     if (/```[\s\S]*```/.test(result)) confidence += 0.1;
@@ -446,10 +418,6 @@ export class VerificationLoop {
     return Math.min(Math.max(confidence, 0), 1);
   }
 }
-
-// ============================================================================
-// CONVENIENCE EXPORTS
-// ============================================================================
 
 export const verifier = new VerificationLoop();
 
@@ -464,10 +432,6 @@ export async function verifyAndRevise(
 export function reflect(request: string, result: string): ReflectionResult {
   return verifier.reflect(request, result);
 }
-
-// ============================================================================
-// CONFIGURATION
-// ============================================================================
 
 export const verificationConfig: VerificationConfig = {
   maxIterations: 3,

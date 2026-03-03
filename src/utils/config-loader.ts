@@ -69,5 +69,8 @@ export async function loadJSONConfig<T = unknown>(
 }
 
 export function mergeConfigs<T>(...configs: Partial<T>[]): T {
-  return configs.reduce<T>((merged, config) => ({ ...merged, ...config }), {} as T);
+  return configs.reduce<T>(
+    (merged, config) => ({ ...merged, ...config }),
+    {} as T,
+  );
 }

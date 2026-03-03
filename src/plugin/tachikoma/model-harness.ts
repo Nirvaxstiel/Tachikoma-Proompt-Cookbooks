@@ -1,19 +1,7 @@
-/**
- * Model Harness - Edit Format Selection & Execution
- *
- * Based on research: "The Harness Problem" (Can Bouluk, Feb 2026)
- *
- * Key insight: Edit format selection matters as much as model choice.
- * - Claude → str_replace (exact)
- * - GPT → apply_patch (diff)
- * - Gemini → str_replace_fuzzy (whitespace-tolerant)
- * - Grok/GLM → hashline (content-hash anchoring)
- */
-
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import { type EditFormat, FORMAT_MAPPINGS, type ModelFamily } from "../../constants/edit-formats";
+import type { EditFormat, ModelFamily } from "../../constants/edit-formats";
 import { MODEL_CONFIDENCE } from "../../constants/model-confidence";
 import { MODEL_ENV_VARS } from "../../constants/model-env";
 import { MATCH_THRESHOLD } from "../../constants/tokenization";
@@ -22,14 +10,7 @@ import { logger } from "../../utils/logger";
 import { resolveToConfig } from "../../utils/platform-paths";
 import { parseSimpleYaml } from "../../utils/yaml-parser";
 
-// ============================================================================
-// RE-EXPORTS for backward compatibility
-// ============================================================================
 export type { EditFormat, ModelFamily };
-
-// ============================================================================
-// MODEL HARNESS CLASS
-// ============================================================================
 
 export class ModelHarness {
   private configPath: string;
@@ -112,49 +93,36 @@ export class ModelHarness {
       return "codellama";
     }
 
-    // Check for open source patterns (Qwen, DeepSeek, Phi, Yi, etc.)
-    if (
-      lower.includes("qwen") ||
-      lower.includes("deepseek") ||
-      lower.includes("phi") ||
-      lower.includes("yi") ||
-      lower.includes("internlm") ||
-      lower.includes("solar") ||
-      lower.includes("command-r")
-    ) {
-      return "codellama"; // Weak models benefit from hashline
+    // Command-R family
+    if (lower.includes("command-r")) {
+      return "codellama";
     }
 
     return "generic";
   }
 
   async selectFormat(family: ModelFamily): Promise<EditFormat> {
-    // Try loading from config
-    if (existsSync(this.configPath)) {
-      try {
-        const configFormat = await this.loadConfigFormat(family);
-        if (configFormat) return configFormat;
-      } catch {
-        // Fall back to defaults
-      }
-    }
+    const configFormat = await this.loadConfigFormat(family);
+    if (configFormat) return configFormat;
 
-    return FORMAT_MAPPINGS[family] || "str_replace_fuzzy";
+    return "hashline";
   }
 
   private async loadConfigFormat(family: ModelFamily): Promise<EditFormat | null> {
+    if (!existsSync(this.configPath)) {
+      return null;
+    }
+
     try {
       const content = await Bun.file(this.configPath).text();
       const parsed = parseSimpleYaml(content);
 
-      const formats = parsed.formats as Record<string, string> | undefined;
-      if (!formats) {
-        return null;
-      }
-
-      const format = formats[family.toLowerCase()];
-      if (format && isValidFormat(format)) {
-        return format as EditFormat;
+      const familyDefaults = parsed.family_defaults as Record<string, string> | undefined;
+      if (familyDefaults) {
+        const format = familyDefaults[family];
+        if (format && isValidFormat(format)) {
+          return format as EditFormat;
+        }
       }
     } catch (error) {
       logger.warn(`Failed to load config for model family: ${family}`, error);
@@ -336,7 +304,6 @@ export class ModelHarness {
     let charCount = 0;
     let startIndex = -1;
     let endIndex = -1;
-    const inMatch = false;
 
     const contentNorm = this.normalizeForFuzzy(content);
     const targetNorm = this.normalizeForFuzzy(oldString);
@@ -496,9 +463,7 @@ export class ModelHarness {
   }
 }
 
-// ============================================================================
 // CONVENIENCE EXPORTS
-// ============================================================================
 
 export const modelHarness = new ModelHarness();
 
@@ -511,21 +476,15 @@ export function executeEdit(content: string, change: EditChange, format?: EditFo
   return modelHarness.executeEdit(content, change, effectiveFormat);
 }
 
-// ============================================================================
-// CONFIGURATION
-// ============================================================================
+export const formatPriorities = [
+  "hashline",
+  "str_replace_fuzzy",
+  "str_replace",
+  "apply_patch",
+  "editblock",
+] as const;
 
-export const modelHarnessConfig = {
-  formatPriorities: ["hashline", "str_replace_fuzzy", "str_replace", "apply_patch", "editblock"],
-  modelFamilyMappings: FORMAT_MAPPINGS,
-  layeredMatching: true,
-  hashlineEnabled: true,
-  fuzzyMatchingThreshold: MATCH_THRESHOLD.FUZZY_MATCH_DEFAULT,
-};
-
-// ============================================================================
 // VALIDATION
-// ============================================================================
 
 function isValidFormat(value: string): boolean {
   return ["str_replace", "str_replace_fuzzy", "apply_patch", "hashline", "editblock"].includes(

@@ -1,4 +1,10 @@
-export type NodeType = "entity" | "concept" | "code" | "query" | "answer" | "event";
+export type NodeType =
+  | "entity"
+  | "concept"
+  | "code"
+  | "query"
+  | "answer"
+  | "event";
 
 export interface MemoryNode {
   id: string;

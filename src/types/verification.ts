@@ -1,7 +1,3 @@
-/**
- * Verification type definitions
- */
-
 export interface VerificationCriterion {
   name: string;
   check: (result: string, context?: unknown) => boolean | Promise<boolean>;

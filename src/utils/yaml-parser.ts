@@ -1,10 +1,3 @@
-/**
- * YAML Parser Utility
- *
- * Provides unified YAML parsing for the codebase.
- * Supports simple YAML structures commonly used in config files.
- */
-
 import type { z } from "zod";
 
 export interface ParseOptions {
@@ -17,20 +10,21 @@ export interface YamlNode {
   [key: string]: string | YamlNode | YamlNode[];
 }
 
-/**
- * Parse simple YAML content into an object
- */
-export function parseSimpleYaml(content: string, options: ParseOptions = {}): YamlNode {
+export function parseSimpleYaml(
+  content: string,
+  options: ParseOptions = {},
+): YamlNode {
   const { trimValues = true, skipComments = true, commentChar = "#" } = options;
 
   const lines = content.split("\n");
   const result: YamlNode = {};
-  const stack: Array<{ node: YamlNode; indent: number }> = [{ node: result, indent: 0 }];
+  const stack: Array<{ node: YamlNode; indent: number }> = [
+    { node: result, indent: 0 },
+  ];
 
   for (const line of lines) {
     const trimmed = line.trim();
 
-    // Skip empty lines and comments
     if (!trimmed || (skipComments && trimmed.startsWith(commentChar))) {
       continue;
     }
@@ -38,22 +32,18 @@ export function parseSimpleYaml(content: string, options: ParseOptions = {}): Ya
     const indent = line.search(/\S|$/);
     const current = stack[stack.length - 1];
 
-    // Determine nesting level
     while (stack.length > 1 && indent <= stack[stack.length - 1].indent) {
       stack.pop();
     }
 
     const parent = stack[stack.length - 1].node;
 
-    // Section (ends with :)
     if (trimmed.endsWith(":")) {
       const sectionName = trimmed.slice(0, -1).trim();
       const newSection: YamlNode = {};
       parent[sectionName] = newSection;
       stack.push({ node: newSection, indent });
-    }
-    // Key-value pair
-    else if (trimmed.includes(":")) {
+    } else if (trimmed.includes(":")) {
       const colonIndex = trimmed.indexOf(":");
       const key = trimmed.slice(0, colonIndex).trim();
       let value = trimmed.slice(colonIndex + 1).trim();
@@ -69,9 +59,6 @@ export function parseSimpleYaml(content: string, options: ParseOptions = {}): Ya
   return result;
 }
 
-/**
- * Parse YAML with Zod schema validation
- */
 export function parseYamlWithSchema<T>(
   content: string,
   schema: z.ZodType<T>,
@@ -81,9 +68,6 @@ export function parseYamlWithSchema<T>(
   return schema.parse(parsed);
 }
 
-/**
- * Load YAML file with optional schema validation
- */
 export async function loadYamlFile<T = YamlNode>(
   path: string,
   schema?: z.ZodType<T>,
@@ -103,9 +87,6 @@ export async function loadYamlFile<T = YamlNode>(
   }
 }
 
-/**
- * Check if YAML file exists
- */
 export async function yamlFileExists(path: string): Promise<boolean> {
   try {
     await Bun.file(path).text();
@@ -115,9 +96,6 @@ export async function yamlFileExists(path: string): Promise<boolean> {
   }
 }
 
-/**
- * Create a simple YAML string from an object
- */
 export function toSimpleYaml(obj: YamlNode, indent = 0): string {
   const spaces = "  ".repeat(indent);
   const lines: string[] = [];

@@ -1,17 +1,26 @@
-/**
- * Intent classification logic
- */
-
 import {
   CLARIFICATION_CONFIDENCE_THRESHOLD,
   COMPLEXITY_THRESHOLDS,
-  INTENT_KEYWORDS,
-  INTENT_PRIORITY_ORDER,
 } from "../../../constants/router";
-import type { ComplexityLevel, IntentClassification, IntentType } from "../../../types/router";
+import type {
+  ComplexityLevel,
+  IntentClassification,
+  IntentType,
+  RouteConfig,
+} from "../../../types/router";
 import { logger } from "../../../utils/logger";
 
 export class IntentClassifier {
+  constructor(private routes: Map<string, RouteConfig>) {}
+
+  private getIntentKeywords(intent: IntentType): string[] {
+    const route = this.routes.get(intent);
+    return route?.patterns || [];
+  }
+
+  private getIntentPriorityOrder(): IntentType[] {
+    return Array.from(this.routes.keys()) as IntentType[];
+  }
   classifyIntent(request: string): IntentClassification {
     const lowerRequest = request.toLowerCase();
     const words = lowerRequest.split(/\s+/);
@@ -32,22 +41,14 @@ export class IntentClassifier {
   }
 
   private scoreIntentType(lowerRequest: string): { bestIntent: IntentType; bestScore: number } {
-    const scores: Record<IntentType, number> = {
-      code: 0,
-      debug: 0,
-      research: 0,
-      refactor: 0,
-      test: 0,
-      verify: 0,
-      explain: 0,
-      plan: 0,
-      query: 0,
-      unknown: 0,
-    };
+    const scores = {} as Record<IntentType, number>;
 
-    for (const [intentType, keywords] of Object.entries(INTENT_KEYWORDS)) {
-      for (const keyword of keywords) {
-        if (lowerRequest.includes(keyword)) {
+    for (const [routeName, config] of this.routes.entries()) {
+      const intentType = routeName as IntentType;
+      scores[intentType] = 0;
+
+      for (const keyword of config.patterns) {
+        if (lowerRequest.includes(keyword.toLowerCase())) {
           const isSpecificIntent = [
             "test",
             "verify",
@@ -57,15 +58,16 @@ export class IntentClassifier {
             "explain",
           ].includes(intentType);
           const weight = isSpecificIntent ? 2 : 1;
-          scores[intentType as IntentType] += weight;
+          scores[intentType] += weight;
         }
       }
     }
 
+    const priorityOrder = this.getIntentPriorityOrder();
     let bestIntent: IntentType = "unknown";
     let bestScore = 0;
 
-    for (const intentType of INTENT_PRIORITY_ORDER) {
+    for (const intentType of priorityOrder) {
       const score = scores[intentType];
       if (score > bestScore) {
         bestScore = score;
@@ -77,7 +79,8 @@ export class IntentClassifier {
   }
 
   private calculateConfidence(bestScore: number, bestIntent: IntentType): number {
-    const totalKeywords = INTENT_KEYWORDS[bestIntent].length;
+    const keywords = this.getIntentKeywords(bestIntent);
+    const totalKeywords = keywords.length;
     return totalKeywords > 0
       ? Math.min(bestScore / Math.max(totalKeywords, COMPLEXITY_THRESHOLDS.MIN_KEYWORDS), 1.0)
       : 0.3;
@@ -89,6 +92,14 @@ export class IntentClassifier {
     words: string[],
   ): ComplexityLevel {
     const lowerRequest = request.toLowerCase();
+    const tokenCount = words.length;
+
+    const isVeryHigh = this.hasIndicators(lowerRequest, [
+      "refactor entire",
+      "migrate entire",
+      "rewrite",
+      "redesign",
+    ]);
 
     const hasMultiFile = this.hasIndicators(lowerRequest, [
       "and",
@@ -121,14 +132,7 @@ export class IntentClassifier {
     const isBugFix =
       intent === "debug" || lowerRequest.includes("bug") || lowerRequest.includes("fix");
 
-    const isVeryHigh = this.hasIndicators(lowerRequest, [
-      "refactor entire",
-      "migrate entire",
-      "rewrite",
-      "redesign",
-    ]);
-
-    const tokenCount = words.length;
+    const hasComplexityIndicators = hasMultiFile || hasCrossDomain || hasHighStakes || isBugFix;
 
     if (
       isVeryHigh ||
@@ -137,31 +141,29 @@ export class IntentClassifier {
       return "very_high";
     }
 
-    if (
+    const isSimpleTask =
       tokenCount < COMPLEXITY_THRESHOLDS.LOW_COMPLEXITY_TOKENS &&
-      !hasMultiFile &&
-      !hasCrossDomain &&
-      !isBugFix &&
-      intent !== "code"
-    ) {
+      !hasComplexityIndicators &&
+      intent !== "code";
+
+    if (isSimpleTask) {
       return "low";
     }
 
-    if (
+    const isMediumTask =
       tokenCount < COMPLEXITY_THRESHOLDS.MEDIUM_COMPLEXITY_TOKENS &&
       !hasMultiFile &&
       !hasHighStakes &&
-      !isBugFix
-    ) {
+      !isBugFix;
+
+    if (isMediumTask) {
       return "medium";
     }
 
-    if (
-      tokenCount < COMPLEXITY_THRESHOLDS.HIGH_COMPLEXITY_TOKENS ||
-      hasMultiFile ||
-      hasCrossDomain ||
-      isBugFix
-    ) {
+    const isHighTask =
+      tokenCount < COMPLEXITY_THRESHOLDS.HIGH_COMPLEXITY_TOKENS || hasComplexityIndicators;
+
+    if (isHighTask) {
       return "high";
     }
 
@@ -181,8 +183,11 @@ export class IntentClassifier {
 
   private extractKeywords(request: string): string[] {
     const lower = request.toLowerCase();
-    const allKeywords = Object.values(INTENT_KEYWORDS).flat() as string[];
-    return allKeywords.filter((keyword) => lower.includes(keyword));
+    const allKeywords: string[] = [];
+    for (const config of this.routes.values()) {
+      allKeywords.push(...config.patterns);
+    }
+    return allKeywords.filter((keyword) => lower.includes(keyword.toLowerCase()));
   }
 
   needsClarification(confidence: number): boolean {

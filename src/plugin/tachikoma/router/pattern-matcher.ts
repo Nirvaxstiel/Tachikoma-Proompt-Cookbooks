@@ -1,7 +1,3 @@
-/**
- * Pattern matching logic
- */
-
 import type { RouteConfig, RouteMatch } from "../../../types/router";
 
 export class PatternMatcher {
