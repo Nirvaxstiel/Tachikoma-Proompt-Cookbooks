@@ -35,12 +35,30 @@ export class DeepVerifier {
   private rubrics: Map<string, Rubric>;
   private history: VerificationOutcome[];
   private taxonomy: typeof FailureTaxonomyFactory;
+  private performanceMetrics: {
+    verificationCount: number;
+    totalVerificationTime: number;
+    avgVerificationTime: number;
+    cacheHitRate: number;
+    cacheHits: number;
+    cacheMisses: number;
+    rubricEvaluationTimes: Map<string, number[]>;
+  };
 
   constructor(config?: Partial<DeepVerifierConfig>) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.rubrics = new Map();
     this.history = [];
     this.taxonomy = FailureTaxonomyFactory;
+    this.performanceMetrics = {
+      verificationCount: 0,
+      totalVerificationTime: 0,
+      avgVerificationTime: 0,
+      cacheHitRate: 0,
+      cacheHits: 0,
+      cacheMisses: 0,
+      rubricEvaluationTimes: new Map(),
+    };
   }
 
   registerRubric(rubric: Rubric): void {
@@ -51,11 +69,17 @@ export class DeepVerifier {
     outcome: VerificationOutcome,
     context: VerificationContext,
   ): Promise<VerificationResult> {
+    const startTime = performance.now();
     const verifications = new Map<string, RubricEvaluation>();
 
     for (const [rubricId, rubric] of this.rubrics.entries()) {
+      const rubricStartTime = performance.now();
       const evaluation = await rubric.evaluate(outcome, context);
+      const rubricTime = performance.now() - rubricStartTime;
+
       verifications.set(rubricId, evaluation);
+
+      this.trackRubricPerformance(rubricId, rubricTime);
     }
 
     const verdict = this.computeVerdict(verifications);
@@ -72,6 +96,8 @@ export class DeepVerifier {
     if (this.config.enableTestTimeScaling) {
       this.addToHistory(outcome);
     }
+
+    this.trackVerificationPerformance(performance.now() - startTime);
 
     return result;
   }
@@ -238,5 +264,85 @@ export class DeepVerifier {
       categories: this.taxonomy.getAllCategories(),
       subcategories: this.taxonomy.getAllSubcategories(),
     };
+  }
+
+  private trackVerificationPerformance(timeMs: number): void {
+    this.performanceMetrics.verificationCount++;
+    this.performanceMetrics.totalVerificationTime += timeMs;
+    this.performanceMetrics.avgVerificationTime =
+      this.performanceMetrics.totalVerificationTime / this.performanceMetrics.verificationCount;
+  }
+
+  private trackRubricPerformance(rubricId: string, timeMs: number): void {
+    if (!this.performanceMetrics.rubricEvaluationTimes.has(rubricId)) {
+      this.performanceMetrics.rubricEvaluationTimes.set(rubricId, []);
+    }
+
+    const times = this.performanceMetrics.rubricEvaluationTimes.get(rubricId);
+    times?.push(timeMs);
+
+    if (times && times.length > 100) {
+      times.shift();
+    }
+  }
+
+  getPerformanceMetrics(): {
+    verificationCount: number;
+    avgVerificationTime: number;
+    cacheHitRate: number;
+    rubricPerformance: Map<string, { avg: number; min: number; max: number; count: number }>;
+  } {
+    const rubricPerformance = new Map();
+
+    for (const [rubricId, times] of this.performanceMetrics.rubricEvaluationTimes.entries()) {
+      if (times.length === 0) continue;
+
+      const avg = times.reduce((sum, time) => sum + time, 0) / times.length;
+      const min = Math.min(...times);
+      const max = Math.max(...times);
+
+      rubricPerformance.set(rubricId, { avg, min, max, count: times.length });
+    }
+
+    return {
+      verificationCount: this.performanceMetrics.verificationCount,
+      avgVerificationTime: this.performanceMetrics.avgVerificationTime,
+      cacheHitRate: this.performanceMetrics.cacheHitRate,
+      rubricPerformance,
+    };
+  }
+
+  resetPerformanceMetrics(): void {
+    this.performanceMetrics = {
+      verificationCount: 0,
+      totalVerificationTime: 0,
+      avgVerificationTime: 0,
+      cacheHitRate: 0,
+      cacheHits: 0,
+      cacheMisses: 0,
+      rubricEvaluationTimes: new Map(),
+    };
+  }
+
+  enableLazyRubricLoading(): void {
+    this.config.lazyUpdate = true;
+  }
+
+  disableLazyRubricLoading(): void {
+    this.config.lazyUpdate = false;
+  }
+
+  optimizeRubricWeights(): void {
+    const performance = this.getPerformanceMetrics();
+
+    for (const [rubricId, rubric] of this.rubrics.entries()) {
+      const rubricPerf = performance.rubricPerformance.get(rubricId);
+
+      if (rubricPerf && rubricPerf.count > 10) {
+        if (rubricPerf.avg > 100) {
+          rubric.weight = Math.max(0.1, (rubric.weight || 0.5) * 0.8);
+        }
+      }
+    }
   }
 }
