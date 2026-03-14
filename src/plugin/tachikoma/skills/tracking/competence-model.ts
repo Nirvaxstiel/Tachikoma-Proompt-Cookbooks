@@ -408,7 +408,7 @@ export class CompetenceModelBuilder
         learningRate: this.config.learningRate,
         convergenceRate: 0,
         routingAccuracy: 0,
-        lastUpdate: Date.now(),
+        lastUpdateTime: Date.now(),
       };
     }
 
@@ -432,7 +432,7 @@ export class CompetenceModelBuilder
       learningRate: this.config.learningRate,
       convergenceRate,
       routingAccuracy: 0,
-      lastUpdate: Date.now(),
+      lastUpdateTime: Date.now(),
     };
   }
 
