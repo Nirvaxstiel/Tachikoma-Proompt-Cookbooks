@@ -5,12 +5,6 @@
 Install Tachikoma agent as an OpenCode plugin:
 
 ```bash
-bun run install
-```
-
-Or run the install script directly:
-
-```bash
 bun run install.ts
 ```
 

@@ -13,7 +13,7 @@ Detailed installation instructions are available in the [Installation guide](./i
 Quick start:
 
 ```bash
-bun run install
+bun run install.ts
 ```
 
 This runs an interactive installer that lets you choose between:

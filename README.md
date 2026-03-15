@@ -17,7 +17,7 @@ A general purpose AI agent named after the curious AI tanks from _Ghost in the S
 ## Installation
 
 ```bash
-bun run install
+bun run install.ts
 ```
 
 > Interactive installer with three options:
@@ -101,7 +101,7 @@ const args = Bun.argv.slice(2);
 console.log(`Processing: ${args[0] || "no args"}`);
 ```
 
-2. Reinstall: `bun run install`
+2. Reinstall: `bun run install.ts`
 
 3. Script automatically becomes `tachikoma.my-new-capability` tool!
 

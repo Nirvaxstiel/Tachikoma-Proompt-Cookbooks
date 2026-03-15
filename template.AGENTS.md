@@ -37,7 +37,7 @@ This file provides project-specific context for Tachikoma agent.
 This project uses Tachikoma as an OpenCode agent plugin. Tachikoma is installed via:
 
 ```bash
-bun run install
+bun run install.ts
 # Installs to OPENCODE_DIR
 # OPENCODE_DIR = {CWD}/{OPENCODE_DIR}/
 # If installed globally, ~/.config/opencode/

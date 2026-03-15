@@ -7,7 +7,6 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch run src/index.ts",
-    "install": "bun run install.ts",
     "test": "bun test",
     "test:all": "bun test tests/",
     "test:infra": "bun test tests/infrastructure/",
