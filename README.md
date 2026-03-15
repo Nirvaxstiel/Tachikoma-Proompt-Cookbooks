@@ -115,7 +115,7 @@ console.log(`Processing: ${args[0] || "no args"}`);
 
 ### Full Documentation
 
-- [VitePress Site](https://nirvaxstiel.github.io/Tachikoma-Proompt-Cookbooks/)
+- [VitePress Site](https://nirvaxstiel.github.io/Tachikoma-Agent-Skills/)
 - [docs/](docs/) - Raw markdown source
 
 ## License

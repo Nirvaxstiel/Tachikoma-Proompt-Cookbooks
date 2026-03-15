@@ -3,7 +3,7 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   title: "Tachikoma",
   description: "Agent orchestration system for AI-assisted development with PAUL methodology",
-  base: "/Tachikoma-Proompt-Cookbooks/",
+  base: "/Tachikoma-Agent-Skills/",
 
   themeConfig: {
     logo: "/favicon.ico",
@@ -96,7 +96,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: "github", link: "https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks" },
+      { icon: "github", link: "https://github.com/Nirvaxstiel/Tachikoma-Agent-Skills" },
     ],
 
     footer: {
@@ -106,7 +106,7 @@ export default defineConfig({
 
     editLink: {
       text: "Edit this page on GitHub",
-      pattern: "https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks/edit/master/docs/:path",
+      pattern: "https://github.com/Nirvaxstiel/Tachikoma-Agent-Skills/edit/master/docs/:path",
     },
 
     search: {

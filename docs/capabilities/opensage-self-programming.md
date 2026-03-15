@@ -562,5 +562,5 @@ Combine OpenSage features for complex workflows:
 
 - [OpenSage Paper](https://arxiv.org/abs/2602.16891)
 - [OpenCode Documentation](https://opencode.ai/docs)
-- [Tachikoma GitHub](https://github.com/Nirvaxstiel/Tachikoma-Proompt-Cookbooks)
+- [Tachikoma GitHub](https://github.com/Nirvaxstiel/Tachikoma-Agent-Skills)
 - [OpenSage Research Integration](../research/opensage.md)
